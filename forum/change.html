@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生物视界 - 高中生物教学辅助平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        /* 下拉菜单样式 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .avatar-wrapper:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .carousel-container {
+            display: flex;
+            transition: transform 0.5s ease;
+            height: 100%;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            height: 100%;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-title {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            z-index: 10;
+        }
+
+        .carousel-title h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            margin: 0;
+        }
+
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+
+        .indicator.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .subtitle-section {
+            margin-left: 40px;
+            margin-bottom: 40px;
+        }
+
+        .subtitle-section p {
+            font-size: 1.3rem;
+            color: #4a5568;
+            line-height: 1.6;
+            font-weight: 500;
+            transform: translateY(-20px);
+            animation: fadeInDown 0.8s 0s forwards;
+        }
+
+        /* ===== 扁宽型卡片 ===== */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px 32px;
+            max-width: 1400px;
+            margin: 0 auto 60px auto;
+            padding: 0;
+        }
+
+        .card {
+            height: 140px;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .card-content {
+            padding: 20px 28px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            color: #666;
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        .card-icon {
+            font-size: 36px;
+            flex-shrink: 0;
+        }
+
+        .card-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tag {
+            background: rgba(102, 126, 234, 0.12);
+            color: #667eea;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .card-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .card-btn:hover {
+            background-color: #5a6fd8;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h4 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel {
+                height: 300px;
+            }
+
+            .carousel-title h1 {
+                font-size: 1.8rem;
+            }
+
+            .carousel-title {
+                left: 20px;
+            }
+
+            .subtitle-section {
+                margin-left: 20px;
+            }
+
+            .subtitle-section p {
+                font-size: 1.1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="top">
+        <div class="logo">
+            <img src="images/logo.png" alt="Logo">
+        </div>
+
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索">
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="#" class="nav-link active">首页</a>
+
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item" data-module="必修一" style="color: #90b2e6;">🔬必修一：分子与细胞</a>
+                        <a href="#" class="dropdown-item" data-module="必修二" style="color: #a194e3;">🧬必修二：遗传与进化</a>
+                        <a href="#" class="dropdown-item" data-module="选修一" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="#" class="dropdown-item" data-module="选修二" style="color: burlywood;">🌿选修二：生物与环境</a>
+                        <a href="#" class="dropdown-item" data-module="选修三" style="color: #6bd3b1;">🧫选修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="#" class="nav-link">PPT快搭</a>
+                <a href="#" class="nav-link">交感模型</a>
+                <a href="main.html" class="nav-link">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper">
+                    <div class="avatar">👤</div>
+                    <div class="upload-overlay">+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 轮播图 -->
+    <div class="carousel">
+        <div class="carousel-container">
+            <div class="carousel-slide">
+                <img src="images/picture1.jpg" alt="轮播图1">
+            </div>
+            <div class="carousel-slide">
+                <img src="images/picture2.jpg" alt="轮播图2">
+            </div>
+            <div class="carousel-slide">
+                <img src="images/picture3.jpg" alt="轮播图3">
+            </div>
+        </div>
+        <div class="carousel-title">
+            <h1>欢迎来到<span style="color: #c2fdf5;">生物视界</span></h1>
+        </div>
+        <div class="carousel-indicators">
+            <div class="indicator active"></div>
+            <div class="indicator"></div>
+            <div class="indicator"></div>
+        </div>
+    </div>
+
+    <!-- 副标题 -->
+    <div class="subtitle-section">
+        <p>探索生物学的奥秘，通过交互式学习体验掌握核心概念</p>
+    </div>
+
+    <!-- 四个功能卡片 - 2x2扁宽布局 -->
+    <div class="cards-container">
+        <!-- 交感模型卡片 -->
+        <div class="card">
+            <div class="card-content">
+                <div class="card-top">
+                    <div class="card-info">
+                        <div class="card-title">交感模型</div>
+                        <div class="card-desc">3D细胞结构、DNA双螺旋、光合作用过程...让抽象概念变得直观可见。</div>
+                    </div>
+                    <div class="card-icon">🧩</div>
+                </div>
+                <div class="card-bottom">
+                    <div class="card-tags">
+                        <span class="tag">3D模型</span>
+                        <span class="tag">交互式</span>
+                        <span class="tag">动画演示</span>
+                    </div>
+                    <a href="#" class="card-btn">探索模型</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PPT快搭卡片 -->
+        <div class="card">
+            <div class="card-content">
+                <div class="card-top">
+                    <div class="card-info">
+                        <div class="card-title">PPT快搭</div>
+                        <div class="card-desc">输入知识点，AI自动生成精美教学PPT，支持自定义风格和内容调整。</div>
+                    </div>
+                    <div class="card-icon">⚡</div>
+                </div>
+                <div class="card-bottom">
+                    <div class="card-tags">
+                        <span class="tag">AI生成</span>
+                        <span class="tag">一键导出</span>
+                        <span class="tag">模板丰富</span>
+                    </div>
+                    <a href="#" class="card-btn">使用助手</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 每日训练卡片 -->
+        <div class="card">
+            <div class="card-content">
+                <div class="card-top">
+                    <div class="card-info">
+                        <div class="card-title">每日训练</div>
+                        <div class="card-desc">根据学习进度智能推荐习题，精准定位薄弱知识点，高效提分。</div>
+                    </div>
+                    <div class="card-icon">📖</div>
+                </div>
+                <div class="card-bottom">
+                    <div class="card-tags">
+                        <span class="tag">智能推荐</span>
+                        <span class="tag">薄弱点定位</span>
+                        <span class="tag">高效提分</span>
+                    </div>
+                    <a href="#" class="card-btn">开始训练</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 论坛卡片 -->
+        <div class="card">
+            <div class="card-content">
+                <div class="card-top">
+                    <div class="card-info">
+                        <div class="card-title">论坛</div>
+                        <div class="card-desc">与老师和同学交流讨论，分享学习心得，解决疑难问题。</div>
+                    </div>
+                    <div class="card-icon">💬</div>
+                </div>
+                <div class="card-bottom">
+                    <div class="card-tags">
+                        <span class="tag">交流讨论</span>
+                        <span class="tag">学习心得</span>
+                        <span class="tag">问题解答</span>
+                    </div>
+                    <a href="#" class="card-btn">进入论坛</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h4>关于我们</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">平台介绍</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>用户之声</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">意见反馈</a></li>
+                        <li><a href="#">常见问题</a></li>
+                        <li><a href="#">指正反馈</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>应用菜单</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">首页</a></li>
+                        <li><a href="#">PPT快搭</a></li>
+                        <li><a href="#">论坛</a></li>
+                        <li><a href="#">交感模型</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 轮播图逻辑
+        const carousel = document.querySelector('.carousel');
+        const container = carousel.querySelector('.carousel-container');
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const indicators = carousel.querySelectorAll('.indicator');
+        let currentIndex = 0;
+        const slideCount = slides.length;
+
+        function updateSlidePosition() {
+            container.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        function updateIndicators() {
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % slideCount;
+            updateSlidePosition();
+            updateIndicators();
+        }
+
+        function goToSlide(index) {
+            currentIndex = index;
+            updateSlidePosition();
+            updateIndicators();
+        }
+
+        let autoSlideInterval = setInterval(nextSlide, 5000);
+
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => goToSlide(index));
+        });
+
+        carousel.addEventListener('mouseenter', () => clearInterval(autoSlideInterval));
+        carousel.addEventListener('mouseleave', () => {
+            autoSlideInterval = setInterval(nextSlide, 5000);
+        });
+
+        // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.dropdown');
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+        });
+    </script>
+</body>
+
+</html>
