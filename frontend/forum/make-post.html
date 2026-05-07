@@ -1187,6 +1187,25 @@
         try {
           const formData = new FormData();
           formData.append('file', file);
+          console.log('图片上传响应:');
+
+
+          // fetch(`${API_BASE_URL}/upload_image`, {
+          //   method: 'POST',
+          //   headers: {
+          //     'Authorization': `Bearer ${token}`
+          //   },
+          //   body: formData
+          // }).then(response => response.json())
+          //   .then(data => {
+          //     if (data.image_url) {
+          //       uploadedImageUrls.push(data.image_url);
+          //     }
+          //   })
+          //   .catch(error => {
+          //     console.error('图片上传失败:', error);
+          //     showAlert('error', '图片上传失败');
+          //   });
 
           const response = await fetch(`${API_BASE_URL}/upload_image`, {
             method: 'POST',
@@ -1202,7 +1221,7 @@
           }
         } catch (error) {
           console.error('图片上传失败:', error);
-          showAlert('error', '图片上传失败');
+          // showAlert('error', '图片上传失败');
         }
       });
     }
