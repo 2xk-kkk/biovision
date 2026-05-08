@@ -1,4 +1,4 @@
-from service.post import create_post, get_post, delete_post, update_post
+from service.post import create_post as create_post_service
 from fastapi import FastAPI, File, UploadFile, APIRouter,Header
 import uuid
 from model.request import CreatePostRequest
@@ -19,7 +19,7 @@ def upload_image(file: UploadFile = File(...)):
         f.write(file.file.read())
     # 4. 生成访问URL
     image_url = f"/uploads/{new_filename}"
-    
+    print("图片上传成功，访问URL:", image_url)
     # 5. 返回URL给前端
     return {"image_url": image_url}
 

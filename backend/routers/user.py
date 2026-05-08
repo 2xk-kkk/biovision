@@ -9,11 +9,9 @@ router = APIRouter()
 #用户注册接口
 @router.post("/register")
 def register(request: userRegisterRequest):
-    result = register_user(request.username, request.password, request.telephone)
-    return ApiResponse.success(data=result, msg="注册成功")
+    return register_user(request.username, request.password, request.telephone)
 
 #用户登录接口
 @router.post("/login")
 def login(request: userLoginRequest):
-    result = login_user(request.username, request.password)
-    return ApiResponse.success(data=result, msg="登录成功")
+    return login_user(request.username, request.password)

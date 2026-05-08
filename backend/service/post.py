@@ -7,9 +7,9 @@ from model.post import create_post, create_post_image
 def create_post(token, content, image_urls):
     db= get_db_connection()
     payload = verify_jwt(token)
-    if not payload:
+    if not payload.get("success"):
         return ApiResponse.error(msg="请先登录")
-    user_id = payload.get("user_id")
+    user_id = payload.get("msg").get("user_id")
     try:
         post_id = create_post(db, user_id, content)
         for index, image_url in enumerate(image_urls):
