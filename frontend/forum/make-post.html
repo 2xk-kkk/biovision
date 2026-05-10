@@ -1119,7 +1119,8 @@
     const uploadArea = document.getElementById('uploadArea');
     const uploadedImages = document.getElementById('uploadedImages');
 
-    uploadArea.addEventListener('click', function () {
+    uploadArea.addEventListener('click', function (e) {
+      e.preventDefault();
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
@@ -1190,22 +1191,22 @@
           console.log('图片上传响应:');
 
 
-          // fetch(`${API_BASE_URL}/upload_image`, {
-          //   method: 'POST',
-          //   headers: {
-          //     'Authorization': `Bearer ${token}`
-          //   },
-          //   body: formData
-          // }).then(response => response.json())
-          //   .then(data => {
-          //     if (data.image_url) {
-          //       uploadedImageUrls.push(data.image_url);
-          //     }
-          //   })
-          //   .catch(error => {
-          //     console.error('图片上传失败:', error);
-          //     showAlert('error', '图片上传失败');
-          //   });
+          fetch(`${API_BASE_URL}/upload_image`, {
+          method: 'POST',
+            headers: {
+               'Authorization': `Bearer ${token}`
+             },
+             body: formData
+           }).then(response => response.json())
+             .then(data => {
+               if (data.image_url) {
+                 uploadedImageUrls.push(data.image_url);
+               }
+             })
+             .catch(error => {
+               console.error('图片上传失败:', error);
+               showAlert('error', '图片上传失败');
+             });
 
           const response = await fetch(`${API_BASE_URL}/upload_image`, {
             method: 'POST',
