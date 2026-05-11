@@ -423,7 +423,7 @@
             font-size: 28px;
         }
 
-       .card-badge {
+        .card-badge {
             position: absolute;
             top: 12px;
             right: 12px;
@@ -606,7 +606,7 @@
         <aside class="sidebar">
             <div class="sidebar-title">目录导航</div>
             <div class="course-list">
-                <a href="main.html" class="course-item active" onclick="selectCourse(this)">
+                <a href="main.html" class="course-item" onclick="selectCourse(this)">
                     <div class="course-icon">🔬</div>
                     <div class="course-info">
                         <div class="course-name"><span style="font-size:10px;">必修一</span><br>分子与细胞</div>
@@ -634,7 +634,7 @@
                         <div class="course-count">3 个模型</div>
                     </div>
                 </a>
-                <a href="main5.html" class="course-item" onclick="selectCourse(this)">
+                <a href="main5.html" class="course-item active" onclick="selectCourse(this)">
                     <div class="course-icon">🧫</div>
                     <div class="course-info">
                         <div class="course-name"><span style="font-size:10px;">选修三</span><br>生物技术与工程</div>
@@ -670,13 +670,13 @@
             <div class="models-grid">
                 <a href="#" class="model-card">
                     <div class="card-preview">
-                        <div class="card-icon">🫧</div>
+                        <div class="card-icon">🧪</div>
                     </div>
                     <div class="card-info">
-                        <div class="card-title">磷脂双分子层</div>
-                        <div class="card-desc">构成生物膜的基本骨架，亲水头部朝外、疏水尾部朝内，形成稳定的双层结构</div>
+                        <div class="card-title">酵母菌的纯培养</div>
+                        <div class="card-desc">在无菌条件下，用平板划线法或稀释涂布法分离单菌落，获得单一酵母菌种群。</div>
                         <div class="card-footer">
-                            <span class="card-tag">第3章 · 细胞的基本结构</span>
+                            <span class="card-tag">第1章 · 发酵工程</span>
                             <div class="card-actions">
                                 <div class="action-btn">⭐</div>
                                 <div class="action-btn">▶</div>
@@ -686,63 +686,14 @@
                 </a>
                 <a href="#" class="model-card">
                     <div class="card-preview">
-                        <div class="card-icon">🐒</div>
+                        <div class="card-icon">🌱</div>
                         <div class="card-badge">易考</div>
                     </div>
                     <div class="card-info">
-                        <div class="card-title">动物细胞</div>
-                        <div class="card-desc">无细胞壁，含线粒体、内质网等细胞器，以有丝分裂方式增殖</div>
+                        <div class="card-title">植物体细胞杂交</div>
+                        <div class="card-desc">去壁融合原生质体，培养成杂种植株，克服远缘杂交障碍。</div>
                         <div class="card-footer">
-                            <span class="card-tag">第3章 · 细胞的基本结构</span>
-                            <div class="card-actions">
-                                <div class="action-btn">⭐</div>
-                                <div class="action-btn">▶</div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" class="model-card">
-                    <div class="card-preview">
-                        <div class="card-icon">🍀</div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">植物细胞</div>
-                        <div class="card-desc">具有细胞壁、叶绿体和大液泡，是光合作用和渗透作用的重要场所</div>
-                        <div class="card-footer">
-                            <span class="card-tag">第3章 · 细胞的基本结构</span>
-                            <div class="card-actions">
-                                <div class="action-btn">⭐</div>
-                                <div class="action-btn">▶</div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" class="model-card">
-                    <div class="card-preview">
-                        <div class="card-icon">♻️</div>
-                        <div class="card-badge">易考</div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">胞吞胞吐</div>
-                        <div class="card-desc">大分子物质进出细胞的方式，依赖膜的流动性，消耗ATP提供能量</div>
-                        <div class="card-footer">
-                            <span class="card-tag">第4章 · 细胞的物质输入与输出</span>
-                            <div class="card-actions">
-                                <div class="action-btn">⭐</div>
-                                <div class="action-btn">▶</div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" class="model-card">
-                    <div class="card-preview">
-                        <div class="card-icon">⚡</div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">能量转换</div>
-                        <div class="card-desc">光合作用将光能转化为化学能，呼吸作用释放能量供生命活动</div>
-                        <div class="card-footer">
-                            <span class="card-tag">第5章 · 细胞的能量供应与利用</span>
+                            <span class="card-tag">第2章 · 细胞工程</span>
                             <div class="card-actions">
                                 <div class="action-btn">⭐</div>
                                 <div class="action-btn">▶</div>
@@ -756,10 +707,77 @@
                         <div class="card-badge">易考</div>
                     </div>
                     <div class="card-info">
-                        <div class="card-title">有丝分裂</div>
-                        <div class="card-desc">有丝分裂的全过程，染色体行为与数量变化</div>
+                        <div class="card-title">单克隆抗体制备</div>
+                        <div class="card-desc">B细胞与骨髓瘤细胞融合，筛选杂交瘤细胞，生产特异性抗体。</div>
                         <div class="card-footer">
-                            <span class="card-tag">第6章 · 细胞的生命历程</span>
+                            <span class="card-tag">第2章 · 细胞工程</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon">🔬</div>
+                        <div class="card-badge">易考</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">哺乳动物受精过程</div>
+                        <div class="card-desc">精子与卵子融合，形成受精卵。</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第2章 · 细胞工程</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon">🔬</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">胚胎早期发育</div>
+                        <div class="card-desc">受精卵经卵裂形成桑葚胚，发育为囊胚，随后植入子宫内膜，进入原肠胚阶段并开始细胞分化。</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第2章 · 细胞工程</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon">🧪</div>
+                        <div class="card-badge">易考</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">PCR反应过程</div>
+                        <div class="card-desc">PCR通过变性、退火、延伸的循环，体外快速扩增特定DNA片段。</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第3章 · 基因工程</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon">🧬</div>
+                        <div class="card-badge">易考</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">基因表达载体构建</div>
+                        <div class="card-desc">将目的基因插入含启动子、终止子、标记基因等元件的质粒中，形成能在宿主细胞中表达的重组DNA分子。</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第3章 · 基因工程</span>
                             <div class="card-actions">
                                 <div class="action-btn">⭐</div>
                                 <div class="action-btn">▶</div>

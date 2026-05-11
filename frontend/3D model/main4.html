@@ -606,7 +606,7 @@
         <aside class="sidebar">
             <div class="sidebar-title">目录导航</div>
             <div class="course-list">
-                <a href="main.html" class="course-item active" onclick="selectCourse(this)">
+                <a href="main.html" class="course-item" onclick="selectCourse(this)">
                     <div class="course-icon">🔬</div>
                     <div class="course-info">
                         <div class="course-name"><span style="font-size:10px;">必修一</span><br>分子与细胞</div>
@@ -627,7 +627,7 @@
                         <div class="course-count">9 个模型</div>
                     </div>
                 </a>
-                <a href="main4.html" class="course-item" onclick="selectCourse(this)">
+                <a href="main4.html" class="course-item active" onclick="selectCourse(this)">
                     <div class="course-icon">🌿</div>
                     <div class="course-info">
                         <div class="course-name"><span style="font-size:10px;">选修二</span><br>生物与环境</div>
@@ -670,13 +670,14 @@
             <div class="models-grid">
                 <a href="#" class="model-card">
                     <div class="card-preview">
-                        <div class="card-icon">🫧</div>
+                        <div class="card-icon">📈</div>
+                         <div class="card-badge">易考</div>
                     </div>
                     <div class="card-info">
-                        <div class="card-title">磷脂双分子层</div>
-                        <div class="card-desc">构成生物膜的基本骨架，亲水头部朝外、疏水尾部朝内，形成稳定的双层结构</div>
+                        <div class="card-title">种群数量变化曲线</div>
+                        <div class="card-desc">种群数量变化有“J”型（指数增长）和“S”型（逻辑斯谛增长，受环境容纳量K值限制）两种曲线。</div>
                         <div class="card-footer">
-                            <span class="card-tag">第3章 · 细胞的基本结构</span>
+                            <span class="card-tag">第1章 · 总群及其动态</span>
                             <div class="card-actions">
                                 <div class="action-btn">⭐</div>
                                 <div class="action-btn">▶</div>
@@ -686,30 +687,13 @@
                 </a>
                 <a href="#" class="model-card">
                     <div class="card-preview">
-                        <div class="card-icon">🐒</div>
-                        <div class="card-badge">易考</div>
+                        <div class="card-icon">🌳</div>
                     </div>
                     <div class="card-info">
-                        <div class="card-title">动物细胞</div>
-                        <div class="card-desc">无细胞壁，含线粒体、内质网等细胞器，以有丝分裂方式增殖</div>
+                        <div class="card-title">群落演替</div>
+                        <div class="card-desc">一个群落被另一个群落取代的过程，分为初生演替和次生演替,最终趋向稳定顶极群落。</div>
                         <div class="card-footer">
-                            <span class="card-tag">第3章 · 细胞的基本结构</span>
-                            <div class="card-actions">
-                                <div class="action-btn">⭐</div>
-                                <div class="action-btn">▶</div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" class="model-card">
-                    <div class="card-preview">
-                        <div class="card-icon">🍀</div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">植物细胞</div>
-                        <div class="card-desc">具有细胞壁、叶绿体和大液泡，是光合作用和渗透作用的重要场所</div>
-                        <div class="card-footer">
-                            <span class="card-tag">第3章 · 细胞的基本结构</span>
+                            <span class="card-tag">第2章 · 群落及其演替</span>
                             <div class="card-actions">
                                 <div class="action-btn">⭐</div>
                                 <div class="action-btn">▶</div>
@@ -723,43 +707,10 @@
                         <div class="card-badge">易考</div>
                     </div>
                     <div class="card-info">
-                        <div class="card-title">胞吞胞吐</div>
-                        <div class="card-desc">大分子物质进出细胞的方式，依赖膜的流动性，消耗ATP提供能量</div>
+                        <div class="card-title">能量流动</div>
+                        <div class="card-desc">太阳能经生产者固定后，沿食物链单向传递，逐级递减，传递效率约为10%～20%。</div>
                         <div class="card-footer">
-                            <span class="card-tag">第4章 · 细胞的物质输入与输出</span>
-                            <div class="card-actions">
-                                <div class="action-btn">⭐</div>
-                                <div class="action-btn">▶</div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" class="model-card">
-                    <div class="card-preview">
-                        <div class="card-icon">⚡</div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">能量转换</div>
-                        <div class="card-desc">光合作用将光能转化为化学能，呼吸作用释放能量供生命活动</div>
-                        <div class="card-footer">
-                            <span class="card-tag">第5章 · 细胞的能量供应与利用</span>
-                            <div class="card-actions">
-                                <div class="action-btn">⭐</div>
-                                <div class="action-btn">▶</div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" class="model-card">
-                    <div class="card-preview">
-                        <div class="card-icon">🧫</div>
-                        <div class="card-badge">易考</div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">有丝分裂</div>
-                        <div class="card-desc">有丝分裂的全过程，染色体行为与数量变化</div>
-                        <div class="card-footer">
-                            <span class="card-tag">第6章 · 细胞的生命历程</span>
+                            <span class="card-tag">第3章 · 生态系统及其稳定性</span>
                             <div class="card-actions">
                                 <div class="action-btn">⭐</div>
                                 <div class="action-btn">▶</div>
