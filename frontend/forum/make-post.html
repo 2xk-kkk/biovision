@@ -752,7 +752,7 @@
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="navbar-left">
-      <a href="#" class="btn-secondary">
+      <a href="main.html" class="btn-secondary">
         <i class="fas fa-arrow-left"></i> 返回论坛
       </a>
     </div>
@@ -793,29 +793,29 @@
           <div class="form-group">
             <label class="form-label">选择板块<span class="required">*</span></label>
             <div class="section-select">
-              <div class="section-option selected" data-section="学习交流">
+              <div class="section-option selected" data-section="Question_discussion">
                 <i class="fas fa-comments"></i>
                 学习交流
               </div>
-              <div class="section-option" data-section="课程讨论">
+              <div class="section-option" data-section="Course_discussion">
                 <i class="fas fa-chalkboard-teacher"></i>
                 课程讨论
               </div>
-              <div class="section-option" data-section="可视化模型">
+              <div class="section-option" data-section="Visualization_model">
                 <i class="fas fa-cube"></i>
                 可视化模型
               </div>
-              <div class="section-option" data-section="备考经验">
+              <div class="section-option" data-section="Examination_experience">
                 <i class="fas fa-book"></i>
                 备考经验
               </div>
-              <div class="section-option" data-section="实验探究">
+              <div class="section-option" data-section="Question_discussion">
                 <i class="fas fa-flask"></i>
                 实验探究
               </div>
-              <div class="section-option" data-section="生活分享">
+              <div class="section-option" data-section="Question_discussion">
                 <i class="fas fa-heart"></i>
-                生活分享
+                问题讨论
               </div>
             </div>
           </div>
@@ -1192,21 +1192,21 @@
 
 
           fetch(`${API_BASE_URL}/upload_image`, {
-          method: 'POST',
+            method: 'POST',
             headers: {
-               'Authorization': `Bearer ${token}`
-             },
-             body: formData
-           }).then(response => response.json())
-             .then(data => {
-               if (data.image_url) {
-                 uploadedImageUrls.push(data.image_url);
-               }
-             })
-             .catch(error => {
-               console.error('图片上传失败:', error);
-               showAlert('error', '图片上传失败');
-             });
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          }).then(response => response.json())
+            .then(data => {
+              if (data.image_url) {
+                uploadedImageUrls.push(data.image_url);
+              }
+            })
+            .catch(error => {
+              console.error('图片上传失败:', error);
+              showAlert('error', '图片上传失败');
+            });
 
           const response = await fetch(`${API_BASE_URL}/upload_image`, {
             method: 'POST',
@@ -1239,6 +1239,9 @@
       const content = document.getElementById('postContent').value.trim();
       const token = localStorage.getItem('token');
 
+      const selectedSection = document.querySelector('.section-option.selected');
+      const tag = selectedSection ? selectedSection.dataset.section : 'Question_discussion';
+
       if (!token) {
         showAlert('error', '请先登录');
         return;
@@ -1266,13 +1269,14 @@
           },
           body: JSON.stringify({
             content: content,
-            image_urls: uploadedImageUrls
+            image_urls: uploadedImageUrls,
+            tag: tag
           })
         });
 
         const data = await response.json();
 
-        if (data.success) {
+        if (data.code === 200 || data.success) {
           showAlert('success', '发帖成功！正在跳转...');
           setTimeout(() => {
             window.location.href = 'main.html';
