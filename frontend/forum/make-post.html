@@ -958,7 +958,9 @@
 
   <script>
     const API_BASE_URL = 'http://localhost:8000/api';
+    console.log('make-post script loaded');
     const uploadedImageUrls = [];
+    const pendingImageFiles = [];
 
     function showAlert(type, message) {
       const existingAlert = document.querySelector('.global-alert');
@@ -1178,6 +1180,7 @@
           imageDiv.querySelector('.remove-image').onclick = function () {
             const imgIndex = this.dataset.index;
             uploadedImageUrls.splice(imgIndex, 1);
+            pendingImageFiles.splice(imgIndex, 1);
             imageDiv.remove();
             updateImageIndexes();
           };
@@ -1185,45 +1188,8 @@
         };
         reader.readAsDataURL(file);
 
-        try {
-          const formData = new FormData();
-          formData.append('file', file);
-          console.log('图片上传响应:');
-
-
-          fetch(`${API_BASE_URL}/upload_image`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            body: formData
-          }).then(response => response.json())
-            .then(data => {
-              if (data.image_url) {
-                uploadedImageUrls.push(data.image_url);
-              }
-            })
-            .catch(error => {
-              console.error('图片上传失败:', error);
-              showAlert('error', '图片上传失败');
-            });
-
-          const response = await fetch(`${API_BASE_URL}/upload_image`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            body: formData
-          });
-
-          const data = await response.json();
-          if (data.image_url) {
-            uploadedImageUrls.push(data.image_url);
-          }
-        } catch (error) {
-          console.error('图片上传失败:', error);
-          // showAlert('error', '图片上传失败');
-        }
+        // defer upload until submit
+        pendingImageFiles.push(file);
       });
     }
 
@@ -1233,9 +1199,28 @@
       });
     }
 
+    async function uploadPendingImages(token) {
+      const imageUrls = [];
+      for (const file of pendingImageFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch(`${API_BASE_URL}/upload_image`, {
+          method: 'POST',
+          headers: { 'token': token },
+          body: formData
+        });
+        const data = await resp.json();
+        if (data && data.image_url) imageUrls.push(data.image_url);
+      }
+      return imageUrls;
+    }
+
     // 发布帖子
     const submitBtn = document.querySelector('.btn-primary.large');
-    submitBtn.addEventListener('click', async function () {
+    console.log('submitBtn found', !!submitBtn);
+    if (!submitBtn) { console.warn('submitBtn not found'); }
+    submitBtn.addEventListener('click', async function (e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       const content = document.getElementById('postContent').value.trim();
       const token = localStorage.getItem('token');
 
@@ -1269,20 +1254,20 @@
           },
           body: JSON.stringify({
             content: content,
-            image_urls: uploadedImageUrls,
+            image_urls: await uploadPendingImages(token),
             tag: tag
           })
         });
 
-        const data = await response.json();
+        let data = null;
+        try { data = await response.json(); } catch (_) { }
 
-        if (data.code === 200 || data.success) {
-          showAlert('success', '发帖成功！正在跳转...');
-          setTimeout(() => {
-            window.location.href = 'main.html';
-          }, 1500);
+        if (response.ok) {
+          showAlert('success', '发帖成功，正在跳转...');
+          console.log('redirecting to main.html');
+          window.location.replace('main.html');
         } else {
-          showAlert('error', data.msg || '发帖失败');
+          showAlert('error', (data && data.msg) || '发帖失败');
         }
       } catch (error) {
         console.error('发帖失败:', error);

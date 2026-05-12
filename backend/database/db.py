@@ -37,7 +37,7 @@ def init_db():
         post_id integer not null,
         image_url text not null,
         sort_order integer not null,
-        create_at timestamp datetime default current_timestamp,
+        create_at timestamp default current_timestamp,
         foreign key(post_id) references posts(id) on delete cascade
     )''')
 
