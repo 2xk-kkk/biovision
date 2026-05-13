@@ -1,7 +1,7 @@
 from utils.jwt_utils import verify_jwt
 from utils.response import ApiResponse
 from database.db import get_db_connection
-from model.post import create_post as create_post_db, create_post_image, get_posts_by_tag_db, get_post_images
+from model.post import create_post as create_post_db, create_post_image, get_posts_by_tag_db, get_post_images, get_posts, get_post_images_by_post_ids
 
 def create_post(token, content, image_urls, tag):
     print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if content else 'None'}, image_urls={image_urls}, tag={tag}")
@@ -83,5 +83,44 @@ def get_posts_by_tag(tag, page=1, page_size=10):
         
     except Exception as e:
         return ApiResponse.error(msg=f"获取帖子失败: {str(e)}")
+    finally:
+        db.close()
+
+def get_all_posts(page=1, page_size=20):
+    db = get_db_connection()
+    try:
+        # 获取帖子数据（已按时间排序）
+        posts_data = get_posts(db, page, page_size)
+        
+        if not posts_data:
+            return ApiResponse.success(data={"posts": []}, msg="暂无帖子")
+        
+        # 组装帖子列表
+        posts_list = []
+        post_ids = []
+        for row in posts_data:
+            post_id = row[0]
+            post_ids.append(post_id)
+            posts_list.append({
+                "post_id": post_id,
+                "user_id": row[1],
+                "username": row[2],
+                "content": row[3],
+                "tag": row[4],
+                "create_at": row[5],
+                "images": []
+            })
+        
+        # 批量查询图片
+        if post_ids:
+            images = get_post_images_by_post_ids(db, post_ids)
+            for post in posts_list:
+                post["images"] = images.get(post["post_id"], [])
+        
+        return ApiResponse.success(data={
+            "posts": posts_list,
+            "page": page,
+            "page_size": page_size
+        }, msg="获取成功")
     finally:
         db.close()

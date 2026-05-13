@@ -646,116 +646,6 @@
           </div>
         </div>
 
-        <!-- 帖子卡片1 -->
-        <a href="post-detail.html" class="post-card-link">
-          <div class="post-card">
-            <div class="post-header">
-              <a href="user-profile.html" class="post-avatar-link" onclick="event.stopPropagation();">
-                <div class="post-avatar">生</div>
-              </a>
-              <div class="post-user-info">
-                <a href="user-profile.html" class="post-username-link" onclick="event.stopPropagation();">生物老师</a>
-                <div class="post-time">2026-04-20 14:30</div>
-              </div>
-            </div>
-            <a href="post-detail.html" class="post-card-link">
-              <div class=" post-tags">
-                <span class="post-tag">可视化模型</span>
-                <span class="post-tag green">细胞呼吸</span>
-                <span class="post-tag purple">高中生物</span>
-              </div>
-
-              <div class="post-content">
-                今天给大家分享一个关于细胞呼吸的可视化模型。这个模型可以帮助学生直观理解有氧呼吸和无氧呼吸的过程，包括细胞质基质、线粒体内膜上的反应过程。通过3D展示，学生可以更清晰地看到物质变化和能量转换的细节。配合课堂教学使用效果很好，欢迎各位老师下载使用！
-              </div>
-
-              <div class="post-actions">
-                <button class="action-btn" onclick="event.stopPropagation();">
-                  <i class="far fa-heart"></i> 12
-                </button>
-                <button class="action-btn" onclick="event.stopPropagation();">
-                  <i class="far fa-comment"></i> 3
-                </button>
-                <button class="action-btn" onclick="event.stopPropagation();">
-                  <i class="far fa-eye"></i> 15
-                </button>
-              </div>
-          </div>
-        </a>
-        </a>
-
-        <!-- 帖子卡片2 -->
-        <a href="post-detail.html" class="post-card-link">
-          <div class="post-card">
-            <div class="post-header">
-              <a href="user-profile.html" class="post-avatar-link" onclick="event.stopPropagation();">
-                <div class="post-avatar" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">张</div>
-              </a>
-              <div class="post-user-info">
-                <a href="user-profile.html" class="post-username-link" onclick="event.stopPropagation();">张老师</a>
-                <div class="post-time">2026-04-20 10:15</div>
-              </div>
-            </div>
-
-            <div class="post-tags">
-              <span class="post-tag green">光合作用</span>
-              <span class="post-tag orange">实验探究</span>
-            </div>
-
-            <div class="post-content">
-              光合作用实验的一些创新设计思路，分享给大家参考。通过改进传统实验装置，可以让学生更直观地观察到光合作用产生的氧气气泡，提高实验的可视化程度。
-            </div>
-
-            <div class="post-actions">
-              <button class="action-btn" onclick="event.stopPropagation();">
-                <i class="far fa-heart"></i> 8
-              </button>
-              <button class="action-btn" onclick="event.stopPropagation();">
-                <i class="far fa-comment"></i> 5
-              </button>
-              <button class="action-btn" onclick="event.stopPropagation();">
-                <i class="far fa-eye"></i> 23
-              </button>
-            </div>
-          </div>
-        </a>
-
-        <!-- 帖子卡片3 -->
-        <a href="post-detail.html" class="post-card-link">
-          <div class="post-card">
-            <div class="post-header">
-              <a href="user-profile.html" class="post-avatar-link" onclick="event.stopPropagation();">
-                <div class="post-avatar" style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);">李</div>
-              </a>
-              <div class="post-user-info">
-                <a href="user-profile.html" class="post-username-link" onclick="event.stopPropagation();">李同学</a>
-                <div class="post-time">2026-04-19 16:42</div>
-              </div>
-            </div>
-
-            <div class="post-tags">
-              <span class="post-tag purple">遗传规律</span>
-              <span class="post-tag">学习交流</span>
-            </div>
-
-            <div class="post-content">
-              关于孟德尔遗传定律的一些学习心得，特别是自由组合定律在解题中的应用技巧，希望对正在备考的同学们有所帮助。
-            </div>
-
-            <div class="post-actions">
-              <button class="action-btn" onclick="event.stopPropagation();">
-                <i class="far fa-heart"></i> 15
-              </button>
-              <button class="action-btn" onclick="event.stopPropagation();">
-                <i class="far fa-comment"></i> 8
-              </button>
-              <button class="action-btn" onclick="event.stopPropagation();">
-                <i class="far fa-eye"></i> 42
-              </button>
-            </div>
-          </div>
-        </a>
-
         <!-- 加载动画 -->
         <div class="loading-spinner" id="loading">
           <div class="spinner"></div>
@@ -859,8 +749,17 @@
   </button>
 
   <script>
-    //帖子显示模式，默认为最新
-    let currentTab = 'latest';
+    // 帖子显示模式，默认为最新
+    let currentTab = 'Latest';
+
+    // 后端 API 地址（FastAPI 默认端口 8000）
+    const API_BASE = 'http://127.0.0.1:8000';
+
+    // 分页 / 加载状态
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let hasMore = true;
+    let isLoading = false;
 
     // 获取所有排序按钮
     const sortBtns = document.querySelectorAll('.sort-btn');
@@ -872,9 +771,13 @@
         sortBtns.forEach(btn => btn.classList.remove('active'));
         this.classList.add('active');
 
-        // 设置 currentTab 为按钮文字
-        currentTab = this.textContent;
-        loadPosts();
+        if (this.classList.contains('new-btn')) {
+          LatestBtn.onclick();
+        } else if (this.classList.contains('hot-btn')) {
+          HotBtn.onclick();
+        } else if (this.classList.contains('cream-btn')) {
+          CreamBtn.onclick();
+        }
       });
     });
 
@@ -902,17 +805,201 @@
       loadPosts();
     }
 
-    // 加载帖子的函数
-    function loadPosts() {
-      if (currentTab === 'Latest') {
-        console.log('显示最新帖子');
-        // 按时间排序
-      } else if (currentTab === 'Hot') {
-        console.log('显示热门帖子');
-        // 按热度排序
-      } else if (currentTab === 'Cream') {
-        console.log('显示精华帖子');
-        // 显示精华帖
+    function resolveImageUrl(url) {
+      if (!url) return '';
+      if (/^https?:\/\//i.test(url)) return url;
+      if (url.startsWith('/')) return API_BASE + url;
+      return API_BASE + '/' + url;
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[ch]));
+    }
+
+    function getMainContentEl() {
+      return document.querySelector('.main-content');
+    }
+
+    function getLoadingEl() {
+      return document.getElementById('loading');
+    }
+
+    function clearRenderedPosts() {
+      const main = getMainContentEl();
+      if (!main) return;
+      main.querySelectorAll('a.post-card-link').forEach(el => el.remove());
+    }
+
+    function renderPosts(posts, { append = false } = {}) {
+      const main = getMainContentEl();
+      const loadingEl = getLoadingEl();
+      if (!main || !loadingEl) return;
+
+      if (!append) clearRenderedPosts();
+
+      const frag = document.createDocumentFragment();
+
+      posts.forEach(post => {
+        const username = post.username || '匿名用户';
+        const content = post.content || '';
+        const createAt = post.create_at || '';
+        const tag = post.tag || '';
+        const images = Array.isArray(post.images) ? post.images : [];
+
+        const avatarChar = (username.trim()[0] || '匿');
+
+        const a = document.createElement('a');
+        a.href = 'post-detail.html';
+        a.className = 'post-card-link';
+
+        const card = document.createElement('div');
+        card.className = 'post-card';
+
+        const header = document.createElement('div');
+        header.className = 'post-header';
+
+        const avatarLink = document.createElement('a');
+        avatarLink.href = 'user-profile.html';
+        avatarLink.className = 'post-avatar-link';
+        avatarLink.onclick = function (e) { e.stopPropagation(); };
+
+        const avatar = document.createElement('div');
+        avatar.className = 'post-avatar';
+        avatar.textContent = avatarChar;
+        avatarLink.appendChild(avatar);
+
+        const userInfo = document.createElement('div');
+        userInfo.className = 'post-user-info';
+
+        const usernameLink = document.createElement('a');
+        usernameLink.href = 'user-profile.html';
+        usernameLink.className = 'post-username-link';
+        usernameLink.onclick = function (e) { e.stopPropagation(); };
+        usernameLink.textContent = username;
+
+        const timeEl = document.createElement('div');
+        timeEl.className = 'post-time';
+        timeEl.textContent = createAt;
+
+        userInfo.appendChild(usernameLink);
+        userInfo.appendChild(timeEl);
+
+        header.appendChild(avatarLink);
+        header.appendChild(userInfo);
+
+        const tagsEl = document.createElement('div');
+        tagsEl.className = 'post-tags';
+        if (tag) {
+          const tags = String(tag).split(/[，,\s]+/).filter(Boolean);
+          (tags.length ? tags : [tag]).slice(0, 3).forEach(t => {
+            const span = document.createElement('span');
+            span.className = 'post-tag';
+            span.textContent = t;
+            tagsEl.appendChild(span);
+          });
+        }
+
+        const contentEl = document.createElement('div');
+        contentEl.className = 'post-content';
+        contentEl.innerHTML = escapeHtml(content);
+
+        if (images.length) {
+          const imgWrap = document.createElement('div');
+          imgWrap.style.marginTop = '12px';
+          imgWrap.style.display = 'flex';
+          imgWrap.style.gap = '10px';
+          imgWrap.style.flexWrap = 'wrap';
+
+          images.slice(0, 3).forEach(u => {
+            const img = document.createElement('img');
+            img.src = resolveImageUrl(u);
+            img.alt = '帖子图片';
+            img.loading = 'lazy';
+            img.style.width = '180px';
+            img.style.maxWidth = '100%';
+            img.style.height = '120px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '10px';
+            img.style.border = '1px solid #e2e8f0';
+            imgWrap.appendChild(img);
+          });
+
+          contentEl.appendChild(imgWrap);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'post-actions';
+        actions.innerHTML = `
+                <button class="action-btn" onclick="event.stopPropagation();">
+                  <i class="far fa-heart"></i> 0
+                </button>
+                <button class="action-btn" onclick="event.stopPropagation();">
+                  <i class="far fa-comment"></i> 0
+                </button>
+                <button class="action-btn" onclick="event.stopPropagation();">
+                  <i class="far fa-eye"></i> 0
+                </button>
+        `;
+
+        card.appendChild(header);
+        if (tagsEl.childNodes.length) card.appendChild(tagsEl);
+        card.appendChild(contentEl);
+        card.appendChild(actions);
+
+        a.appendChild(card);
+        frag.appendChild(a);
+      });
+
+      main.insertBefore(frag, loadingEl);
+    }
+
+    async function fetchLatestPosts(page) {
+      const url = `${API_BASE}/api/posts?page=${page}&page_size=${PAGE_SIZE}`;
+      const resp = await fetch(url, { method: 'GET' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const json = await resp.json();
+      if (!json || json.success !== true) throw new Error((json && json.msg) || '获取帖子失败');
+      const posts = (json.data && json.data.posts) ? json.data.posts : [];
+
+      // 前端兜底：按时间倒序排序（避免后端接口未排序的情况）
+      posts.sort((a, b) => {
+        const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
+        const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
+        const ta = Date.parse(sa) || 0;
+        const tb = Date.parse(sb) || 0;
+        return tb - ta;
+      });
+
+      return posts;
+    }
+
+    async function loadPosts() {
+      if (isLoading) return;
+      isLoading = true;
+      currentPage = 1;
+      hasMore = true;
+
+      const loadingEl = getLoadingEl();
+      if (loadingEl) loadingEl.classList.add('show');
+
+      try {
+        if (currentTab === 'Latest' || currentTab === 'Hot' || currentTab === 'Cream') {
+          // 目前后端只提供“按时间倒序”的帖子列表接口：/api/posts
+          const posts = await fetchLatestPosts(currentPage);
+          renderPosts(posts, { append: false });
+          hasMore = posts.length >= PAGE_SIZE;
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (loadingEl) loadingEl.classList.remove('show');
+        isLoading = false;
       }
     }
 
@@ -975,23 +1062,29 @@
         });
       }
 
+      // 初始化加载帖子
+      loadPosts();
+
       // 滚动加载和回顶部按钮
-      let loading = false;
+      async function loadMorePosts() {
+        if (isLoading || !hasMore) return;
+        isLoading = true;
 
-      function loadMorePosts() {
-        if (loading) return;
-        loading = true;
         const loadingElement = document.getElementById('loading');
-        if (loadingElement) {
-          loadingElement.classList.add('show');
-        }
+        if (loadingElement) loadingElement.classList.add('show');
 
-        setTimeout(function () {
-          if (loadingElement) {
-            loadingElement.classList.remove('show');
-          }
-          loading = false;
-        }, 1500);
+        try {
+          currentPage += 1;
+          const posts = await fetchLatestPosts(currentPage);
+          renderPosts(posts, { append: true });
+          if (posts.length < PAGE_SIZE) hasMore = false;
+        } catch (e) {
+          console.error(e);
+          hasMore = false;
+        } finally {
+          if (loadingElement) loadingElement.classList.remove('show');
+          isLoading = false;
+        }
       }
 
       window.addEventListener('scroll', function () {

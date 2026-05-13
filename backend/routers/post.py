@@ -1,8 +1,8 @@
 from service.post import create_post, get_posts_by_tag
-from fastapi import FastAPI, File, UploadFile, APIRouter,Header
+from fastapi import FastAPI, File, UploadFile, APIRouter,Header,Query
 import uuid
 from model.request import CreatePostRequest
-from utils.response import ApiResponse
+from service.post import get_all_posts
 
 router = APIRouter()
 
@@ -25,5 +25,12 @@ def create_post_api(
     return create_post(token, req.content, req.image_urls, req.tag)
 
 @router.get("/posts")
-def get_posts_by_tag_api(tag: str = "", page: int = 1, page_size: int = 10):
-    return get_posts_by_tag(tag, page, page_size)
+def get_posts(
+    tag: str = Query("", description="按标签筛选，留空则返回所有帖子"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100)
+):
+    """获取帖子列表，按时间倒序，支持按标签筛选"""
+    if tag:
+        return get_posts_by_tag(tag, page, page_size)
+    return get_all_posts(page, page_size)
