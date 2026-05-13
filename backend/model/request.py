@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 class userLoginRequest(BaseModel):
     username: str=Field(min_length=1, max_length=20, example="张三", description="用户名,长度为1-20个字符")
@@ -13,4 +14,5 @@ class changePasswordRequest(BaseModel):
 from pydantic import BaseModel
 class CreatePostRequest(BaseModel):
     content: str
-    image_urls: list[str] = []
+    tag: str = "Question_discussion"
+    image_urls: List[str] = []

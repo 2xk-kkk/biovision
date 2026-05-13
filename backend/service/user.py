@@ -84,7 +84,7 @@ def change_user_password(userid, old_password, new_password):
         return ApiResponse.error(msg="新密码长度必须在6到20个字符之间")
     if not re.search(r'[A-Za-z]', new_password) or not re.search(r'[0-9]', new_password):
         return ApiResponse.error(msg="新密码必须同时包含字母和数字")
-    if old_password!= new_password:
+    if old_password == new_password:
         return ApiResponse.error(msg="新密码不能与旧密码相同")
     db = get_db_connection()
     try:

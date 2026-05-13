@@ -18,7 +18,7 @@ def init_db():
         telephone text,
         avatar text,
         bio text,
-        create_at timestamp datetime default current_timestamp
+        create_at timestamp default current_timestamp
     )''')
 
     #创建帖子表
@@ -26,7 +26,8 @@ def init_db():
         id integer primary key autoincrement,
         user_id integer not null,
         content text not null,
-        create_at timestamp datetime default current_timestamp,
+        create_at timestamp default current_timestamp,
+        tag text default 'Question_discussion',
         foreign key(user_id) references users(id) on delete cascade              
     )''')
 
@@ -36,7 +37,7 @@ def init_db():
         post_id integer not null,
         image_url text not null,
         sort_order integer not null,
-        create_at timestamp datetime default current_timestamp,
+        create_at timestamp default current_timestamp,
         foreign key(post_id) references posts(id) on delete cascade
     )''')
 

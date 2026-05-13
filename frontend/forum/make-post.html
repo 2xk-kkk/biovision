@@ -752,7 +752,7 @@
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="navbar-left">
-      <a href="#" class="btn-secondary">
+      <a href="main.html" class="btn-secondary">
         <i class="fas fa-arrow-left"></i> 返回论坛
       </a>
     </div>
@@ -793,29 +793,29 @@
           <div class="form-group">
             <label class="form-label">选择板块<span class="required">*</span></label>
             <div class="section-select">
-              <div class="section-option selected" data-section="学习交流">
+              <div class="section-option selected" data-section="Question_discussion">
                 <i class="fas fa-comments"></i>
                 学习交流
               </div>
-              <div class="section-option" data-section="课程讨论">
+              <div class="section-option" data-section="Course_discussion">
                 <i class="fas fa-chalkboard-teacher"></i>
                 课程讨论
               </div>
-              <div class="section-option" data-section="可视化模型">
+              <div class="section-option" data-section="Visualization_model">
                 <i class="fas fa-cube"></i>
                 可视化模型
               </div>
-              <div class="section-option" data-section="备考经验">
+              <div class="section-option" data-section="Examination_experience">
                 <i class="fas fa-book"></i>
                 备考经验
               </div>
-              <div class="section-option" data-section="实验探究">
+              <div class="section-option" data-section="Question_discussion">
                 <i class="fas fa-flask"></i>
                 实验探究
               </div>
-              <div class="section-option" data-section="生活分享">
+              <div class="section-option" data-section="Question_discussion">
                 <i class="fas fa-heart"></i>
-                生活分享
+                问题讨论
               </div>
             </div>
           </div>
@@ -958,7 +958,9 @@
 
   <script>
     const API_BASE_URL = 'http://localhost:8000/api';
+    console.log('make-post script loaded');
     const uploadedImageUrls = [];
+    const pendingImageFiles = [];
 
     function showAlert(type, message) {
       const existingAlert = document.querySelector('.global-alert');
@@ -1178,6 +1180,7 @@
           imageDiv.querySelector('.remove-image').onclick = function () {
             const imgIndex = this.dataset.index;
             uploadedImageUrls.splice(imgIndex, 1);
+            pendingImageFiles.splice(imgIndex, 1);
             imageDiv.remove();
             updateImageIndexes();
           };
@@ -1185,45 +1188,8 @@
         };
         reader.readAsDataURL(file);
 
-        try {
-          const formData = new FormData();
-          formData.append('file', file);
-          console.log('图片上传响应:');
-
-
-          fetch(`${API_BASE_URL}/upload_image`, {
-          method: 'POST',
-            headers: {
-               'Authorization': `Bearer ${token}`
-             },
-             body: formData
-           }).then(response => response.json())
-             .then(data => {
-               if (data.image_url) {
-                 uploadedImageUrls.push(data.image_url);
-               }
-             })
-             .catch(error => {
-               console.error('图片上传失败:', error);
-               showAlert('error', '图片上传失败');
-             });
-
-          const response = await fetch(`${API_BASE_URL}/upload_image`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            body: formData
-          });
-
-          const data = await response.json();
-          if (data.image_url) {
-            uploadedImageUrls.push(data.image_url);
-          }
-        } catch (error) {
-          console.error('图片上传失败:', error);
-          // showAlert('error', '图片上传失败');
-        }
+        // defer upload until submit
+        pendingImageFiles.push(file);
       });
     }
 
@@ -1233,11 +1199,33 @@
       });
     }
 
+    async function uploadPendingImages(token) {
+      const imageUrls = [];
+      for (const file of pendingImageFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch(`${API_BASE_URL}/upload_image`, {
+          method: 'POST',
+          headers: { 'token': token },
+          body: formData
+        });
+        const data = await resp.json();
+        if (data && data.image_url) imageUrls.push(data.image_url);
+      }
+      return imageUrls;
+    }
+
     // 发布帖子
     const submitBtn = document.querySelector('.btn-primary.large');
-    submitBtn.addEventListener('click', async function () {
+    console.log('submitBtn found', !!submitBtn);
+    if (!submitBtn) { console.warn('submitBtn not found'); }
+    submitBtn.addEventListener('click', async function (e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       const content = document.getElementById('postContent').value.trim();
       const token = localStorage.getItem('token');
+
+      const selectedSection = document.querySelector('.section-option.selected');
+      const tag = selectedSection ? selectedSection.dataset.section : 'Question_discussion';
 
       if (!token) {
         showAlert('error', '请先登录');
@@ -1266,19 +1254,20 @@
           },
           body: JSON.stringify({
             content: content,
-            image_urls: uploadedImageUrls
+            image_urls: await uploadPendingImages(token),
+            tag: tag
           })
         });
 
-        const data = await response.json();
+        let data = null;
+        try { data = await response.json(); } catch (_) { }
 
-        if (data.success) {
-          showAlert('success', '发帖成功！正在跳转...');
-          setTimeout(() => {
-            window.location.href = 'main.html';
-          }, 1500);
+        if (response.ok) {
+          showAlert('success', '发帖成功，正在跳转...');
+          console.log('redirecting to main.html');
+          window.location.replace('main.html');
         } else {
-          showAlert('error', data.msg || '发帖失败');
+          showAlert('error', (data && data.msg) || '发帖失败');
         }
       } catch (error) {
         console.error('发帖失败:', error);
