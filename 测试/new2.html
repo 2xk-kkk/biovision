@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>有丝分裂演示</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>有丝分裂演示系统</h1>
+            <div class="cell-type-selector">
+                <button class="btn btn-active" data-type="animal">动物细胞</button>
+                <button class="btn" data-type="plant">植物细胞</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="animation-panel">
+                <h2>动画演示</h2>
+                <canvas id="animationCanvas" width="600" height="500"></canvas>
+                <div class="controls">
+                    <button id="playBtn" class="btn-control">播放</button>
+                    <button id="pauseBtn" class="btn-control">暂停</button>
+                    <button id="resetBtn" class="btn-control">重置</button>
+                    <div class="progress-bar">
+                        <input type="range" id="progressSlider" min="0" max="100" value="0">
+                        <span id="phaseLabel">间期</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-panel">
+                <h2>细胞成分变化</h2>
+                <canvas id="myChart"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #FF6384;"></span>
+                        <span>DNA分子数</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #36A2EB;"></span>
+                        <span>姐妹染色单体数</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #FFCE56;"></span>
+                        <span>染色体数</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chart-config.js"></script>
+    <script src="animation.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

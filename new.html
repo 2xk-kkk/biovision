@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>细胞有丝分裂演示</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .cell-type-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .cell-btn {
+            background: #e9ecef;
+            color: #333;
+            border: 2px solid transparent;
+        }
+
+        .cell-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .cell-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+        }
+
+        .control-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-control label {
+            font-weight: 500;
+        }
+
+        .speed-control input {
+            width: 150px;
+        }
+
+        .content {
+            display: flex;
+            gap: 20px;
+            padding: 30px;
+            height: 600px;
+        }
+
+        .animation-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .canvas-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #e9ecef;
+        }
+
+        #animationCanvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .phase-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-size: 0.95em;
+        }
+
+        .phase-info strong {
+            color: #667eea;
+        }
+
+        .chart-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .chart-container {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .dna-color {
+            background: #FF6384;
+        }
+
+        .sister-color {
+            background: #36A2EB;
+        }
+
+        .chromosome-color {
+            background: #FFCE56;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.1s linear;
+        }
+
+        @media (max-width: 1200px) {
+            .content {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .animation-section,
+            .chart-section {
+                min-height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .cell-type-selector,
+            .speed-control {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 细胞有丝分裂演示系统</h1>
+            <p>动物细胞 vs 植物细胞 - 交互式学习</p>
+        </div>
+
+        <div class="controls">
+            <div class="cell-type-selector">
+                <button class="cell-btn active" data-type="animal">🦴 动物细胞</button>
+                <button class="cell-btn" data-type="plant">🌱 植物细胞</button>
+            </div>
+            <button class="control-btn" id="playBtn">▶ 播放</button>
+            <button class="control-btn" id="pauseBtn">⏸ 暂停</button>
+            <button class="control-btn" id="resetBtn">🔄 重置</button>
+            <div class="speed-control">
+                <label for="speedSlider">播放速度:</label>
+                <input type="range" id="speedSlider" min="0.5" max="3" step="0.5" value="1">
+                <span id="speedDisplay">1.0x</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="animation-section">
+                <div class="canvas-container">
+                    <canvas id="animationCanvas" width="500" height="500"></canvas>
+                </div>
+                <div class="phase-info">
+                    <strong id="phaseTitle">间期</strong><br>
+                    <span id="phaseDesc">DNA复制，细胞进行正常代谢活动</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">📊 DNA、姐妹染色单体、染色体数量变化</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color dna-color"></div>
+                        <span>DNA分子数</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color sister-color"></div>
+                        <span>姐妹染色单体数</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color chromosome-color"></div>
+                        <span>染色体数</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dataChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mitosis.js"></script>
+</body>
+</html>
