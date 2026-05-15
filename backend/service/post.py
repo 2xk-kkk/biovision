@@ -4,30 +4,24 @@ from database.db import get_db_connection
 from model.post import create_post as create_post_db, create_post_image, get_posts_by_tag_db, get_post_images, get_posts, get_post_images_by_post_ids
 
 def create_post(token, content, image_urls, tag):
-    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if content else 'None'}, image_urls={image_urls}, tag={tag}")
+    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}")
     print(f"[DEBUG] image_urls type: {type(image_urls)}, value: {image_urls}")
     
     db = get_db_connection()
     payload = verify_jwt(token)
-    print(f"[DEBUG] JWT payload: {payload}")
     
     if not payload.get("success"):
         return ApiResponse.error(msg="请先登录")
     
     user_id = payload.get("msg").get("user_id")
-    print(f"[DEBUG] user_id from JWT: {user_id}, type: {type(user_id)}")
-    
     if user_id is None:
         return ApiResponse.error(msg="用户ID无效")
     
     user_id = int(user_id)
-    print(f"[DEBUG] user_id after int conversion: {user_id}")
     
     try:
-        print(f"[DEBUG] Calling model.create_post_db with user_id={user_id}, content={content[:50]}, tag={tag}")
         post_id = create_post_db(db, user_id, content, tag)
-        print(f"[DEBUG] Post created successfully, post_id={post_id}")
-        
+
         if image_urls:
             valid_image_urls = []
             if isinstance(image_urls, list):
@@ -35,13 +29,11 @@ def create_post(token, content, image_urls, tag):
             elif image_urls and isinstance(image_urls, str):
                 valid_image_urls = [image_urls]
             
-            print(f"[DEBUG] Valid image URLs to save: {valid_image_urls}")
-            
             for index, image_url in enumerate(valid_image_urls):
                 if image_url and str(image_url).strip():
                     create_post_image(db, post_id, str(image_url).strip(), index)
-                    print(f"[DEBUG] Image {index} saved: {image_url}")
         
+        db.commit()
         return ApiResponse.success(data={"post_id": post_id}, msg="帖子创建成功")
     except Exception as e:
         print(f"[DEBUG] Error: {type(e).__name__}: {str(e)}")
@@ -54,10 +46,25 @@ def create_post(token, content, image_urls, tag):
 def get_posts_by_tag(tag, page=1, page_size=10):
     db = get_db_connection()
     try:
+        # ==============================================
+        # 🔥 修复：正确统计标签数量
+        # ==============================================
+        cursor = db.cursor()
+        if tag:
+            cursor.execute("SELECT COUNT(*) FROM posts WHERE tag = ?", (tag,))
+        else:
+            cursor.execute("SELECT COUNT(*) FROM posts")
+        total_count = cursor.fetchone()[0]
+
         post_data = get_posts_by_tag_db(db, tag, page, page_size)
-        
+
         if not post_data:
-            return ApiResponse.success(data={"posts": []}, msg="没有找到相关帖子")
+            return ApiResponse.success(data={
+                "posts": [],
+                "total": total_count,
+                "page": page,
+                "page_size": page_size
+            }, msg="没有找到相关帖子")
         
         posts_list = []
         post_ids = []
@@ -79,9 +86,15 @@ def get_posts_by_tag(tag, page=1, page_size=10):
             for post in posts_list:
                  post["images"] = images.get(post["post_id"], [])
         
-        return ApiResponse.success(data={"posts": posts_list}, msg="获取帖子成功")
+        return ApiResponse.success(data={
+            "posts": posts_list,
+            "total": total_count,
+            "page": page,
+            "page_size": page_size
+        }, msg="获取帖子成功")
         
     except Exception as e:
+        print(f"[DEBUG] 获取标签失败: {e}")
         return ApiResponse.error(msg=f"获取帖子失败: {str(e)}")
     finally:
         db.close()
@@ -89,13 +102,20 @@ def get_posts_by_tag(tag, page=1, page_size=10):
 def get_all_posts(page=1, page_size=20):
     db = get_db_connection()
     try:
-        # 获取帖子数据（已按时间排序）
         posts_data = get_posts(db, page, page_size)
-        
+
+        cursor = db.cursor()
+        cursor.execute("SELECT COUNT(*) FROM posts")
+        total_count = cursor.fetchone()[0]
+
         if not posts_data:
-            return ApiResponse.success(data={"posts": []}, msg="暂无帖子")
-        
-        # 组装帖子列表
+            return ApiResponse.success(data={
+                "posts": [],
+                "total": total_count,
+                "page": page,
+                "page_size": page_size
+            }, msg="暂无帖子")
+
         posts_list = []
         post_ids = []
         for row in posts_data:
@@ -110,15 +130,15 @@ def get_all_posts(page=1, page_size=20):
                 "create_at": row[5],
                 "images": []
             })
-        
-        # 批量查询图片
+
         if post_ids:
             images = get_post_images_by_post_ids(db, post_ids)
             for post in posts_list:
                 post["images"] = images.get(post["post_id"], [])
-        
+
         return ApiResponse.success(data={
             "posts": posts_list,
+            "total": total_count,
             "page": page,
             "page_size": page_size
         }, msg="获取成功")
