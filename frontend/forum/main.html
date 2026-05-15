@@ -694,19 +694,19 @@
           </div>
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-value">128</div>
+              <div class="stat-value" id="stat-user">128</div>
               <div class="stat-label">用户总数</div>
             </div>
             <div class="stat-card green">
-              <div class="stat-value">256</div>
+              <div class="stat-value" id="stat-post">256</div>
               <div class="stat-label">帖子总数</div>
             </div>
             <div class="stat-card purple">
-              <div class="stat-value">512</div>
+              <div class="stat-value" id="stat-comments">512</div>
               <div class="stat-label">评论总数</div>
             </div>
             <div class="stat-card yellow">
-              <div class="stat-value">16</div>
+              <div class="stat-value" id="stat-online">16</div>
               <div class="stat-label">在线用户</div>
             </div>
           </div>
@@ -1008,7 +1008,7 @@
       // 初始化活跃度图表
       const ctx = document.getElementById('activityChart');
       if (ctx) {
-        new Chart(ctx.getContext('2d'), {
+        window.activityChart = new Chart(ctx.getContext('2d'), {
           type: 'line',
           data: {
             labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
@@ -1117,6 +1117,35 @@
         });
       }
     });
+    // 自动更新论坛统计数据
+// 自动更新论坛统计数据 + 图表
+async function updateForumStats() {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/stats');
+    const data = await res.json();
+    
+    if (data.success === true) {
+      // 更新数字
+      document.getElementById('stat-user').textContent = data.data.total_users;
+      document.getElementById('stat-post').textContent = data.data.total_posts;
+      document.getElementById('stat-comments').textContent = data.data.total_comments;
+      document.getElementById('stat-online').textContent = data.data.online_users;
+
+      // 更新图表（关键！）
+      if (window.activityChart) {
+        window.activityChart.data.datasets[0].data = data.data.activity;
+        window.activityChart.update();
+      }
+    }
+  } catch (e) {
+    console.log('统计数据更新失败');
+  }
+}
+
+// 立即执行一次
+updateForumStats();
+// 每15秒自动刷新
+setInterval(updateForumStats, 15000);
   </script>
 </body>
 

@@ -41,8 +41,16 @@ def init_db():
         foreign key(post_id) references posts(id) on delete cascade
     )''')
 
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_online (
+        user_id INTEGER PRIMARY KEY,
+        last_active INTEGER NOT NULL
+    )''')
+
+
     conn.commit()
     conn.close()
+
 
 if __name__ == "__main__":
     init_db()

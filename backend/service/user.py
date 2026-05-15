@@ -48,6 +48,14 @@ def login_user(username, password):
             return ApiResponse.error(msg="用户不存在")
         user_id,user_name,hashed_password = get_user_by_username(db, username)
         if verify_password(password, hashed_password):
+            import time
+            cursor = db.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO user_online (user_id, last_active) VALUES (?, ?)",
+                (user_id, int(time.time()))
+            )
+            db.commit()
+
             token = generate_jwt(user_id, user_name)
             return ApiResponse.success(
                 data={"token": token,
