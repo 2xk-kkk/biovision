@@ -660,30 +660,102 @@
             <i class="fas fa-th-large"></i> 论坛板块
           </div>
           <div class="forum-sections">
-            <a href="#" class="section-box active">
-              <div class="section-title">全部帖子</div>
-              <div class="section-count">24 个帖子</div>
-            </a>
+          <a href="#" class="section-box active">
+    <div class="section-title">全部帖子</div>
+    <div class="section-count" id="totalNum">加载中...</div>
+</a>
+
+<script>
+fetch("http://127.0.0.1:8000/api/posts?page=1")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("totalNum").innerText = data.data.total + " 个帖子";
+})
+.catch(err => {
+    document.getElementById("totalNum").innerText = "加载失败";
+});
+</script>
+
+<a href="#" class="section-box">
+  <div class="section-title">学习交流</div>
+  <div class="section-count" id="xuexiCount">加载中...</div>
+</a>
+
+<script>
+fetch("http://127.0.0.1:8000/api/posts?tag=Question_discussion&page=1")
+.then(res => res.json())
+.then(data => {
+  const count = data.data.total || 0;
+  document.getElementById("xuexiCount").innerText = count + " 个帖子";
+})
+.catch(err => {
+  document.getElementById("xuexiCount").innerText = "0 个帖子";
+});
+</script>
+           <a href="#" class="section-box">
+  <div class="section-title">课程讨论</div>
+  <div class="section-count" id="kechengCount">加载中...</div>
+</a>
+
+<script>
+fetch("http://127.0.0.1:8000/api/posts?tag=Course_discussion&page=1")
+.then(res => res.json())
+.then(data => {
+  const count = data.data.total || 0;
+  document.getElementById("kechengCount").innerText = count + " 个帖子";
+})
+.catch(err => {
+  document.getElementById("kechengCount").innerText = "0 个帖子";
+});
+</script>
             <a href="#" class="section-box">
-              <div class="section-title">学习交流</div>
-              <div class="section-count">8 个帖子</div>
-            </a>
+  <div class="section-title">可视化模型</div>
+  <div class="section-count" id="visualCount">加载中...</div>
+</a>
+
+<script>
+fetch("http://127.0.0.1:8000/api/posts?tag=Visualization_model&page=1")
+.then(res => res.json())
+.then(data => {
+  const count = data.data.total || 0;
+  document.getElementById("visualCount").innerText = count + " 个帖子";
+})
+.catch(err => {
+  document.getElementById("visualCount").innerText = "0 个帖子";
+});
+</script>
             <a href="#" class="section-box">
-              <div class="section-title">课程讨论</div>
-              <div class="section-count">6 个帖子</div>
-            </a>
-            <a href="#" class="section-box">
-              <div class="section-title">可视化模型</div>
-              <div class="section-count">4 个帖子</div>
-            </a>
-            <a href="#" class="section-box">
-              <div class="section-title">备考经验</div>
-              <div class="section-count">5 个帖子</div>
-            </a>
-            <a href="#" class="section-box">
-              <div class="section-title">生活分享</div>
-              <div class="section-count">2 个帖子</div>
-            </a>
+  <div class="section-title">备考经验</div>
+  <div class="section-count" id="kaoshiCount">加载中...</div>
+</a>
+
+<script>
+fetch("http://127.0.0.1:8000/api/posts?tag=Examination_experience&page=1")
+.then(res => res.json())
+.then(data => {
+  const count = data.data.total || 0;
+  document.getElementById("kaoshiCount").innerText = count + " 个帖子";
+})
+.catch(err => {
+  document.getElementById("kaoshiCount").innerText = "0 个帖子";
+});
+</script>
+           <a href="#" class="section-box">
+  <div class="section-title">生活分享</div>
+  <div class="section-count" id="lifeCount">加载中...</div>
+</a>
+
+<script>
+fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
+.then(res => res.json())
+.then(data => {
+  const count = data.data.total || 0;
+  document.getElementById("lifeCount").innerText = count + " 个帖子";
+})
+.catch(err => {
+  document.getElementById("lifeCount").innerText = "0 个帖子";
+});
+</script>
           </div>
         </div>
 
