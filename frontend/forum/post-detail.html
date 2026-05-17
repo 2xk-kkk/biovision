@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帖子详情 - biovision</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #3B82F6;
+      --primary-hover: #2563eb;
+      --secondary: #10B981;
+      --secondary-hover: #059669;
+      --accent: #8B5CF6;
+      --accent-hover: #7c3aed;
+      --danger: #EF4444;
+      --danger-hover: #dc2626;
+      --dark: #1e293b;
+      --gray-700: #334155;
+      --gray-600: #475569;
+      --gray-500: #64748b;
+      --gray-400: #94a3b8;
+      --gray-300: #cbd5e1;
+      --gray-200: #e2e8f0;
+      --gray-100: #f1f5f9;
+      --gray-50: #f8fafc;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--gray-50);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* 导航栏样式 */
+    .navbar {
+      background: var(--white);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 40px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .navbar-brand i {
+      font-size: 24px;
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--gray-600);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--gray-200);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-300);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* 主容器 - 宽屏布局 */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 40px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 32px;
+    }
+
+    /* 主内容区 */
+    .main-content {
+      min-width: 0;
+    }
+
+    /* 卡片样式 */
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .card-section {
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .card-section:last-child {
+      border-bottom: none;
+    }
+
+    /* 帖子头部 */
+    .post-header {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .post-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 600;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .post-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .post-info {
+      flex: 1;
+    }
+
+    .post-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .post-author-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      cursor: pointer;
+      transition: color 0.2s;
+      text-decoration: none;
+    }
+
+    .post-author-name:hover {
+      color: var(--primary);
+    }
+
+    .post-badge {
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+      color: #D97706;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 14px;
+      color: var(--gray-400);
+    }
+
+    .post-meta i {
+      margin-right: 6px;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .post-tag {
+      background: #e0f2fe;
+      color: #0284c7;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .post-tag:hover {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .post-tag.green {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .post-tag.green:hover {
+      background: var(--secondary);
+      color: var(--white);
+    }
+
+    .post-tag.purple {
+      background: #f3e8ff;
+      color: #9333ea;
+    }
+
+    .post-tag.purple:hover {
+      background: var(--accent);
+      color: var(--white);
+    }
+
+    /* 帖子内容 */
+    .post-content {
+      font-size: 16px;
+      color: var(--gray-700);
+      line-height: 1.9;
+    }
+
+    .post-content p {
+      margin-bottom: 20px;
+    }
+
+    .post-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .post-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      margin: 28px 0 16px 0;
+    }
+
+    .post-content ul {
+      margin: 16px 0;
+      padding-left: 28px;
+    }
+
+    .post-content li {
+      margin-bottom: 10px;
+      color: var(--gray-700);
+    }
+
+    /* 帖子图片 */
+    .post-images {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .post-image {
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .post-image:hover {
+      transform: scale(1.02);
+    }
+
+    .post-image img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    /* 操作按钮 */
+    .post-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--gray-50);
+      color: var(--gray-600);
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary);
+    }
+
+    .action-btn.liked {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+
+    .action-btn.liked:hover {
+      background: var(--danger);
+      color: var(--white);
+    }
+
+    .action-btn i {
+      font-size: 15px;
+    }
+
+    /* 评论区 */
+    .comments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .comments-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comments-title i {
+      color: var(--primary);
+    }
+
+    .comments-count {
+      background: var(--primary);
+      color: var(--white);
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    /* 评论输入 */
+    .comment-input-wrapper {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .comment-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .comment-input-box {
+      flex: 1;
+    }
+
+    .comment-textarea {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: all 0.2s;
+      background: var(--gray-50);
+    }
+
+    .comment-textarea:focus {
+      border-color: var(--primary);
+      background: var(--white);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .comment-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+
+    /* 评论列表 */
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .comment-item {
+      display: flex;
+      gap: 16px;
+    }
+
+    .comment-avatar-small {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .comment-avatar-small:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .comment-avatar-small.purple {
+      background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    }
+
+    .comment-avatar-small.blue {
+      background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
+    }
+
+    .comment-avatar-small.orange {
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    }
+
+    .comment-body {
+      flex: 1;
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .comment-author {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--dark);
+      cursor: pointer;
+      transition: color 0.2s;
+      text-decoration: none;
+    }
+
+    .comment-author:hover {
+      color: var(--primary);
+    }
+
+    .comment-time {
+      font-size: 13px;
+      color: var(--gray-400);
+    }
+
+    .comment-content {
+      font-size: 15px;
+      color: var(--gray-700);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .comment-actions-small {
+      display: flex;
+      gap: 20px;
+    }
+
+    .action-btn-small {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--gray-500);
+      font-size: 13px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+      transition: color 0.2s;
+    }
+
+    .action-btn-small:hover {
+      color: var(--primary);
+    }
+
+    /* 子评论 */
+    .child-comments {
+      margin-top: 20px;
+      margin-left: 60px;
+      padding-left: 20px;
+      border-left: 2px solid var(--gray-100);
+    }
+
+    .child-comment {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .child-comment:last-child {
+      margin-bottom: 0;
+    }
+
+    .child-comment .comment-avatar-small {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+
+    .child-comment .comment-avatar-small:hover {
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    /* 加载更多 */
+    .load-more {
+      text-align: center;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-100);
+      margin-top: 24px;
+    }
+
+    .load-more-btn {
+      background: var(--gray-50);
+      color: var(--gray-600);
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--gray-200);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .load-more-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+
+    /* 右侧边栏 */
+    .sidebar {
+      position: sticky;
+      top: 96px;
+      height: fit-content;
+    }
+
+    .sidebar-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-header i {
+      color: var(--primary);
+    }
+
+    .sidebar-content {
+      padding: 20px 24px;
+    }
+
+    /* 作者信息卡片 */
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .author-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .author-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .author-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: color 0.2s;
+      text-decoration: none;
+      display: block;
+    }
+
+    .author-name:hover {
+      color: var(--primary);
+    }
+
+    .author-bio {
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+
+    .author-stats {
+      display: flex;
+      gap: 24px;
+      padding: 16px 0;
+      border-top: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--gray-100);
+      margin-bottom: 16px;
+    }
+
+    .author-stat {
+      text-align: center;
+    }
+
+    .author-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .author-stat-label {
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+
+    .author-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .author-actions .btn-primary,
+    .author-actions .btn-secondary {
+      flex: 1;
+      justify-content: center;
+    }
+
+    /* 相关帖子 */
+    .related-post {
+      display: flex;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--gray-100);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .related-post:hover {
+      margin-left: 4px;
+    }
+
+    .related-post:last-child {
+      border-bottom: none;
+    }
+
+    .related-post-title {
+      flex: 1;
+      font-size: 14px;
+      color: var(--gray-700);
+      line-height: 1.5;
+    }
+
+    .related-post:hover .related-post-title {
+      color: var(--primary);
+    }
+
+    .related-post-meta {
+      font-size: 12px;
+      color: var(--gray-400);
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    /* 回顶部按钮 */
+    #backToTop {
+      position: fixed;
+      right: 40px;
+      bottom: 40px;
+      width: 50px;
+      height: 50px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 99;
+      color: var(--gray-600);
+    }
+
+    #backToTop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #backToTop:hover {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* 响应式 */
+    @media (max-width: 1200px) {
+      .main-container {
+        grid-template-columns: 1fr;
+        padding: 24px;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+
+      .main-container {
+        padding: 16px;
+      }
+
+      .card-section {
+        padding: 20px;
+      }
+
+      .post-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .post-actions {
+        flex-wrap: wrap;
+      }
+
+      .action-btn {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .child-comments {
+        margin-left: 40px;
+      }
+
+      #backToTop {
+        right: 20px;
+        bottom: 20px;
+        width: 44px;
+        height: 44px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-left">
+      <a href="main.html" class="btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回论坛
+      </a>
+    </div>
+
+    <a href="#" class="navbar-brand">
+      <i class="fas fa-file-alt"></i>
+      <span>帖子详情</span>
+    </a>
+
+    <div class="navbar-right"></div>
+  </nav>
+
+  <!-- 主容器 -->
+  <div class="main-container">
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 帖子卡片 -->
+      <div class="card">
+        <!-- 帖子头部 -->
+        <div class="card-section">
+          <div class="post-header">
+            <a href="user-profile.html" class="post-avatar" title="查看主页">生</a>
+            <div class="post-info">
+              <div class="post-author">
+                <a href="user-profile.html" class="post-author-name">生物老师</a>
+                <span class="post-badge">帖主</span>
+              </div>
+              <div class="post-meta">
+                <span><i class="far fa-clock"></i>2026-04-20 14:30</span>
+                <span><i class="far fa-eye"></i>256 次浏览</span>
+              </div>
+              <div class="post-tags">
+                <span class="post-tag">可视化模型</span>
+                <span class="post-tag green">细胞呼吸</span>
+                <span class="post-tag purple">高中生物</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 帖子内容 -->
+        <div class="card-section">
+          <div class="post-content">
+            <p>分享一个我制作的细胞呼吸过程3D可视化模型，包含糖酵解（Glycolysis）、柠檬酸循环（Krebs Cycle）和电子传递链的详细步骤。</p>
+
+            <p>这个模型可以帮助学生更直观地理解细胞呼吸的各个阶段，包括能量产生的过程和关键酶的作用。通过交互式操作，学生可以观察不同条件下细胞呼吸的变化，加深对这一重要生理过程的理解。</p>
+
+            <h3>模型特点</h3>
+            <ul>
+              <li>3D可视化展示细胞呼吸全过程</li>
+              <li>可交互的酶促反应演示</li>
+              <li>能量分子ATP产生的动态展示</li>
+              <li>支持不同条件下的呼吸速率模拟</li>
+            </ul>
+
+            <p>欢迎各位老师和学生使用，有任何问题可以在评论区提出！</p>
+          </div>
+
+          <!-- 帖子图片 -->
+          <div class="post-images">
+            <div class="post-image">
+              <img src="https://via.placeholder.com/400x300/3B82F6/ffffff?text=模型截图1" alt="细胞呼吸模型">
+            </div>
+            <div class="post-image">
+              <img src="https://via.placeholder.com/400x300/10B981/ffffff?text=模型截图2" alt="细胞呼吸模型">
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="card-section">
+          <div class="post-actions">
+            <button class="action-btn liked">
+              <i class="fas fa-heart"></i> 15
+            </button>
+            <button class="action-btn">
+              <i class="far fa-comment"></i> 8
+            </button>
+            <button class="action-btn">
+              <i class="far fa-bookmark"></i> 收藏
+            </button>
+            <button class="action-btn">
+              <i class="fas fa-share-alt"></i> 分享
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 评论区 -->
+      <div class="card">
+        <div class="card-section">
+          <div class="comments-header">
+            <div class="comments-title">
+              <i class="fas fa-comments"></i>
+              评论区
+              <span class="comments-count">8</span>
+            </div>
+          </div>
+
+          <!-- 评论输入 -->
+          <div class="comment-input-wrapper">
+            <div class="comment-avatar">小</div>
+            <div class="comment-input-box">
+              <textarea class="comment-textarea" placeholder="写下你的评论..."></textarea>
+              <div class="comment-actions">
+                <button class="btn-primary">
+                  <i class="fas fa-paper-plane"></i> 发布评论
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 评论列表 -->
+          <div class="comments-list">
+            <!-- 评论1 -->
+            <div class="comment-item">
+              <a href="user-profile.html" class="comment-avatar-small" title="查看主页">高</a>
+              <div class="comment-body">
+                <div class="comment-header">
+                  <a href="#" class="comment-author">高三学生</a>
+                  <span class="comment-time">2026-04-20 15:30</span>
+                </div>
+                <div class="comment-content">
+                  老师您好，请问这个模型支持移动端查看吗？另外有没有配套的教学课件？
+                </div>
+                <div class="comment-actions-small">
+                  <button class="action-btn-small">
+                    <i class="far fa-thumbs-up"></i> 3
+                  </button>
+                  <button class="action-btn-small">
+                    <i class="far fa-comment"></i> 回复
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 评论2 -->
+            <div class="comment-item">
+              <a href="#" class="comment-avatar-small purple" title="查看主页">生</a>
+              <div class="comment-body">
+                <div class="comment-header">
+                  <a href="#" class="comment-author">生物教研组长</a>
+                  <span class="comment-time">2026-04-20 16:45</span>
+                </div>
+                <div class="comment-content">
+                  这个模型制作得很精细，对于实验课的教学非常有帮助。已经收藏了！
+                </div>
+                <div class="comment-actions-small">
+                  <button class="action-btn-small">
+                    <i class="far fa-thumbs-up"></i> 5
+                  </button>
+                  <button class="action-btn-small">
+                    <i class="far fa-comment"></i> 回复
+                  </button>
+                </div>
+
+                <!-- 子评论 -->
+                <div class="child-comments">
+                  <div class="child-comment">
+                    <a href="#" class="comment-avatar-small blue" title="查看主页">生</a>
+                    <div class="comment-body">
+                      <div class="comment-header">
+                        <a href="user-profile.html" class="comment-author">生物老师 <span class="post-badge"
+                            style="font-size: 10px; padding: 2px 8px;">帖主</span></a>
+                        <span class="comment-time">2026-04-20 17:00</span>
+                      </div>
+                      <div class="comment-content">
+                        感谢肯定！后续会推出配套的教学课件，敬请期待~
+                      </div>
+                      <div class="comment-actions-small">
+                        <button class="action-btn-small">
+                          <i class="far fa-thumbs-up"></i> 2
+                        </button>
+                        <button class="action-btn-small">
+                          <i class="far fa-comment"></i> 回复
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 评论3 -->
+            <div class="comment-item">
+              <a href="#" class="comment-avatar-small orange" title="查看主页">高</a>
+              <div class="comment-body">
+                <div class="comment-header">
+                  <a href="#" class="comment-author">高二学生</a>
+                  <span class="comment-time">2026-04-21 09:15</span>
+                </div>
+                <div class="comment-content">
+                  这个模型真的很棒！看完之后对细胞呼吸过程清楚多了，感谢老师分享！
+                </div>
+                <div class="comment-actions-small">
+                  <button class="action-btn-small">
+                    <i class="far fa-thumbs-up"></i> 2
+                  </button>
+                  <button class="action-btn-small">
+                    <i class="far fa-comment"></i> 回复
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 加载更多 -->
+          <div class="load-more">
+            <button class="load-more-btn">加载更多评论</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧边栏 -->
+    <div class="sidebar">
+      <!-- 作者信息 -->
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <i class="fas fa-user"></i>
+          关于作者
+        </div>
+        <div class="sidebar-content">
+          <div class="author-info">
+            <a href="user-profile.html" class="author-avatar" title="查看主页">生</a>
+            <div>
+              <a href="user-profile.html" class="author-name">生物老师</a>
+              <div class="author-bio">高中生物教师 · 10年教龄</div>
+            </div>
+          </div>
+          <div class="author-stats">
+            <div class="author-stat">
+              <div class="author-stat-value">128</div>
+              <div class="author-stat-label">帖子</div>
+            </div>
+            <div class="author-stat">
+              <div class="author-stat-value">1.2k</div>
+              <div class="author-stat-label">粉丝</div>
+            </div>
+            <div class="author-stat">
+              <div class="author-stat-value">356</div>
+              <div class="author-stat-label">获赞</div>
+            </div>
+          </div>
+          <div class="author-actions">
+            <button class="btn-primary">
+              <i class="fas fa-plus"></i> 关注
+            </button>
+            <a href="user-profile.html" class="btn-secondary">
+              <i class="fas fa-user"></i> 查看主页
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 相关帖子 -->
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <i class="fas fa-link"></i>
+          相关帖子
+        </div>
+        <div class="sidebar-content">
+          <div class="related-post">
+            <div>
+              <div class="related-post-title">光合作用过程3D动画模型分享</div>
+              <div class="related-post-meta">
+                <span><i class="far fa-heart"></i> 8</span>
+                <span><i class="far fa-comment"></i> 5</span>
+              </div>
+            </div>
+          </div>
+          <div class="related-post">
+            <div>
+              <div class="related-post-title">DNA复制过程可视化动画详解</div>
+              <div class="related-post-meta">
+                <span><i class="far fa-heart"></i> 15</span>
+                <span><i class="far fa-comment"></i> 7</span>
+              </div>
+            </div>
+          </div>
+          <div class="related-post">
+            <div>
+              <div class="related-post-title">细胞分裂过程的动态演示</div>
+              <div class="related-post-meta">
+                <span><i class="far fa-heart"></i> 12</span>
+                <span><i class="far fa-comment"></i> 4</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 回顶部按钮 -->
+  <button id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <script>
+    // 回顶部功能
+    const backToTopBtn = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', function () {
+      if (window.pageYOffset > 300) {
+        backToTopBtn.classList.add('show');
+      } else {
+        backToTopBtn.classList.remove('show');
+      }
+    });
+
+    backToTopBtn.addEventListener('click', function () {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  </script>
+</body>
+
+</html>
