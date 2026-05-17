@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>biovision - 交互模型</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        /* ===== Logo 区域 ===== */
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        /* ===== 搜索框区域 ===== */
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        /* ===== 导航链接区域 ===== */
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        /* ===== 下拉菜单 ===== */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        /* ===== 用户头像区域 ===== */
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .avatar-wrapper:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        /* 主体布局 */
+        .main-container {
+            display: flex;
+            padding-top: 20px;
+            flex: 1;
+            /* 占据剩余空间 */
+        }
+
+        /* 左侧目录 —— 不再 fixed */
+        .sidebar {
+            width: 240px;
+            background: #fff;
+            border-right: 1px solid #e2e8f0;
+            padding: 56px 20px 32px;
+            /* 上：56px，左/右：20px，下：32px（可选） */
+            /* 移除了 position: fixed, top, bottom */
+            align-self: flex-start;
+            border-radius: 0px 12px 12px 0px;
+            margin-top: 30px;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+            padding-left: 12px;
+        }
+
+        /* 目录导航 */
+        .course-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .course-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s;
+            gap: 14px;
+            text-decoration: none;
+            color: #b9ebf1;
+        }
+
+        .course-item:hover {
+            background: #f1f5f9;
+        }
+
+        .course-item.active {
+            background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+            border: 1px solid #dbeafe;
+        }
+
+        .course-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .course-item.active .course-icon {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        }
+
+        .course-item:not(.active) .course-icon {
+            background: #f1f5f9;
+        }
+
+        .course-info {
+            flex: 1;
+        }
+
+        .course-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .course-item.active .course-name {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .course-count {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .course-item.active .course-count {
+            color: #8b5cf6;
+        }
+
+        /* 右侧内容区 */
+        .content {
+            flex: 1;
+            /* 移除了 margin-left: 240px */
+            padding: 32px 40px;
+        }
+
+        /* 页面头部 */
+        .page-header {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 32px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* 模型卡片网格 */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .model-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .model-card:hover {
+            transform: translateY(-4px);
+            border-color: #3b82f6;
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.12);
+        }
+
+        .card-preview {
+            height: 140px;
+            background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+       .card-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 10px;
+            background: rgba(246, 212, 212, 0.9);
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #f63b3b;
+        }
+
+        .card-info {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .card-tag {
+            display: inline-block;
+            margin-top: auto;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #f0f4ff;
+            color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h4 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+                /* 更稳妥的隐藏方式 */
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="top">
+        <div class="logo"></div>
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="#" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="#" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="#" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="#" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="#" class="nav-link">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link active">可视学习</a>
+                <a href="../forum/main.html" class="nav-link">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper">
+                    <div class="avatar">👤</div>
+                    <div class="upload-overlay">+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="main-container">
+        <!-- 左侧目录 -->
+        <aside class="sidebar">
+            <div class="sidebar-title">目录导航</div>
+            <div class="course-list">
+                <a href="main.html" class="course-item active" onclick="selectCourse(this)">
+                    <div class="course-icon">🔬</div>
+                    <div class="course-info">
+                        <div class="course-name"><span style="font-size:10px;">必修一</span><br>分子与细胞</div>
+                        <div class="course-count">6 个模型</div>
+                    </div>
+                </a>
+                <a href="main2.html" class="course-item" onclick="selectCourse(this)">
+                    <div class="course-icon">🧬</div>
+                    <div class="course-info">
+                        <div class="course-name"><span style="font-size:10px;">必修二</span><br>遗传与进化</div>
+                        <div class="course-count">5 个模型</div>
+                    </div>
+                </a>
+                <a href="main3.html" class="course-item" onclick="selectCourse(this)">
+                    <div class="course-icon">⚖️</div>
+                    <div class="course-info">
+                        <div class="course-name"><span style="font-size:10px;">选修一</span><br>稳态与调节</div>
+                        <div class="course-count">9 个模型</div>
+                    </div>
+                </a>
+                <a href="main4.html" class="course-item" onclick="selectCourse(this)">
+                    <div class="course-icon">🌿</div>
+                    <div class="course-info">
+                        <div class="course-name"><span style="font-size:10px;">选修二</span><br>生物与环境</div>
+                        <div class="course-count">3 个模型</div>
+                    </div>
+                </a>
+                <a href="main5.html" class="course-item" onclick="selectCourse(this)">
+                    <div class="course-icon">🧫</div>
+                    <div class="course-info">
+                        <div class="course-name"><span style="font-size:10px;">选修三</span><br>生物技术与工程</div>
+                        <div class="course-count">7 个模型</div>
+                    </div>
+                </a>
+            </div>
+        </aside>
+
+        <!-- 右侧内容区 -->
+        <main class="content">
+            <div class="page-header">
+                <div class="header-left">
+                    <h1>模型选择</h1>
+                    <p>探索交互式学习体验，直观理解生物概念</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">30</div>
+                        <div class="stat-label">可用模型</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">已学习</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0%</div>
+                        <div class="stat-label">完成率</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="models-grid">
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon"><img src="../images/plasma-membrane.png" alt="磷脂双分子层" width="40" height="40"></div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">磷脂双分子层</div>
+                        <div class="card-desc">构成生物膜的基本骨架，亲水头部朝外、疏水尾部朝内，形成稳定的双层结构</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第3章 · 细胞的基本结构</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon"><img src="../images/animal-cell.png" alt="动物细胞" width="40" height="40"></div>
+                        <div class="card-badge">易考</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">动物细胞</div>
+                        <div class="card-desc">无细胞壁，含线粒体、内质网等细胞器，以有丝分裂方式增殖</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第3章 · 细胞的基本结构</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon"><img src="../images/plant-cell.png" alt="植物细胞" width="40" height="40"></div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">植物细胞</div>
+                        <div class="card-desc">具有细胞壁、叶绿体和大液泡，是光合作用和渗透作用的重要场所</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第3章 · 细胞的基本结构</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon"><img src="../images/golgi.png" alt="高尔基体" width="40" height="40"></div>
+                        <div class="card-badge">易考</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">胞吞胞吐</div>
+                        <div class="card-desc">大分子物质进出细胞的方式，依赖膜的流动性，消耗ATP提供能量</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第4章 · 细胞的物质输入与输出</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon"><img src="../images/mitocondria.png" alt="能量转换" width="40" height="40"></div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">能量转换</div>
+                        <div class="card-desc">光合作用将光能转化为化学能，呼吸作用释放能量供生命活动</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第5章 · 细胞的能量供应与利用</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <a href="new.html" class="model-card">
+                    <div class="card-preview">
+                        <div class="card-icon"><img src="../images/cell-division.png" alt="有丝分裂" width="40" height="40"></div>
+                        <div class="card-badge">易考</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">有丝分裂</div>
+                        <div class="card-desc">有丝分裂的全过程，染色体行为与数量变化</div>
+                        <div class="card-footer">
+                            <span class="card-tag">第6章 · 细胞的生命历程</span>
+                            <div class="card-actions">
+                                <div class="action-btn">⭐</div>
+                                <div class="action-btn">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>关于我们</h4>
+                <ul class="footer-links">
+                    <li><a href="#">平台介绍</a></li>
+                    <li><a href="#">联系我们</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>用户之声</h4>
+                <ul class="footer-links">
+                    <li><a href="#">意见反馈</a></li>
+                    <li><a href="#">常见问题</a></li>
+                    <li><a href="#">指正反馈</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>应用菜单</h4>
+                <ul class="footer-links">
+                    <li><a href="#">首页</a></li>
+                    <li><a href="#">PPT快搭</a></li>
+                    <li><a href="#">论坛</a></li>
+                    <li><a href="#">交感模型</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+        </div>
+    </div>
+
+    <script>
+        // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+
+        function selectCourse(item) {
+            document.querySelectorAll('.course-item').forEach(i => {
+                i.classList.remove('active');
+            });
+            item.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

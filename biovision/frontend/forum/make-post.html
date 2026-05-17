@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>发帖 - biovision</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #3B82F6;
+      --primary-hover: #2563eb;
+      --secondary: #10B981;
+      --secondary-hover: #059669;
+      --accent: #8B5CF6;
+      --accent-hover: #7c3aed;
+      --danger: #EF4444;
+      --danger-hover: #dc2626;
+      --dark: #1e293b;
+      --gray-700: #334155;
+      --gray-600: #475569;
+      --gray-500: #64748b;
+      --gray-400: #94a3b8;
+      --gray-300: #cbd5e1;
+      --gray-200: #e2e8f0;
+      --gray-100: #f1f5f9;
+      --gray-50: #f8fafc;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--gray-50);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* 导航栏样式 */
+    .navbar {
+      background: var(--white);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 40px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar-brand {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .navbar-brand i {
+      font-size: 24px;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary.large {
+      padding: 14px 32px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--gray-600);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--gray-200);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-300);
+    }
+
+    /* 用户头像 */
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .user-dropdown {
+      position: relative;
+    }
+
+    .user-dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 12px;
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      min-width: 200px;
+      overflow: hidden;
+      display: none;
+      border: 1px solid var(--gray-100);
+    }
+
+    .user-dropdown-menu.show {
+      display: block;
+    }
+
+    .user-dropdown-item {
+      padding: 12px 20px;
+      color: var(--gray-600);
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+
+    .user-dropdown-item:hover {
+      background: var(--gray-50);
+      color: var(--primary);
+    }
+
+    .user-dropdown-item.danger {
+      color: var(--danger);
+    }
+
+    .user-dropdown-item.danger:hover {
+      background: #fef2f2;
+    }
+
+    /* 主容器 - 宽屏布局 */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 40px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 32px;
+    }
+
+    /* 主内容区 */
+    .main-content {
+      min-width: 0;
+    }
+
+    /* 页面标题 */
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 15px;
+      color: var(--gray-500);
+    }
+
+    /* 发帖卡片 */
+    .post-form-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .card-section {
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .card-section:last-child {
+      border-bottom: none;
+    }
+
+    /* 用户信息 */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-avatar-large {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .user-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    .user-hint {
+      font-size: 14px;
+      color: var(--gray-400);
+    }
+
+    /* 表单样式 */
+    .form-group {
+      margin-bottom: 28px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+
+    .form-label .required {
+      color: var(--danger);
+      margin-left: 4px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s;
+      background-color: var(--gray-50);
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      background-color: var(--white);
+    }
+
+    .form-input::placeholder {
+      color: var(--gray-400);
+    }
+
+    .form-textarea {
+      min-height: 300px;
+      resize: vertical;
+      line-height: 1.8;
+      font-family: inherit;
+      font-size: 15px !important;
+      color: var(--gray-700) !important;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 13px;
+      color: var(--gray-400);
+      margin-top: 8px;
+    }
+
+    /* 板块选择 */
+    .section-select {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .section-option {
+      padding: 20px;
+      border: 2px solid var(--gray-200);
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 15px;
+      color: var(--gray-600);
+      background: var(--white);
+    }
+
+    .section-option:hover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.03);
+    }
+
+    .section-option.selected {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.08);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .section-option i {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: var(--gray-400);
+    }
+
+    .section-option.selected i {
+      color: var(--primary);
+    }
+
+    /* 标签选择 */
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .tag-option {
+      padding: 8px 18px;
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--white);
+    }
+
+    .tag-option:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .tag-option.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--white);
+    }
+
+    /* 自定义标签输入 */
+    .custom-tag-input {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .custom-tag-input input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .custom-tag-input input:focus {
+      border-color: var(--primary);
+    }
+
+    .custom-tag-input button {
+      padding: 10px 20px;
+      background: var(--gray-100);
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .custom-tag-input button:hover {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    /* 已选标签 */
+    .selected-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .selected-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: var(--white);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    .selected-tag .remove-tag {
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .selected-tag .remove-tag:hover {
+      opacity: 1;
+    }
+
+    /* 编辑器工具栏 */
+    .editor-container {
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .editor-textarea {
+      border: none;
+      border-radius: 12px;
+    }
+
+    /* 图片上传区域 */
+    .upload-area {
+      border: 2px dashed var(--gray-200);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--gray-50);
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.03);
+    }
+
+    .upload-area i {
+      font-size: 40px;
+      color: var(--gray-300);
+      margin-bottom: 16px;
+    }
+
+    .upload-area:hover i {
+      color: var(--primary);
+    }
+
+    .upload-area p {
+      font-size: 15px;
+      color: var(--gray-500);
+      margin-bottom: 8px;
+    }
+
+    .upload-area .upload-hint {
+      font-size: 13px;
+      color: var(--gray-400);
+    }
+
+    /* 已上传图片 */
+    .uploaded-images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .uploaded-image {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+    }
+
+    .uploaded-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .uploaded-image .remove-image {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .uploaded-image .remove-image:hover {
+      background: var(--danger);
+    }
+
+    /* 提交按钮区 */
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--gray-50);
+    }
+
+    .draft-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* 右侧边栏 */
+    .sidebar {
+      position: sticky;
+      top: 96px;
+      height: fit-content;
+    }
+
+    .sidebar-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-header i {
+      color: var(--primary);
+    }
+
+    .sidebar-content {
+      padding: 20px 24px;
+    }
+
+    /* 提示卡片 */
+    .tips-list {
+      list-style: none;
+    }
+
+    .tips-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      font-size: 14px;
+      color: var(--gray-600);
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .tips-list li:last-child {
+      border-bottom: none;
+    }
+
+    .tips-list li i {
+      color: var(--secondary);
+      margin-top: 3px;
+    }
+
+    /* 规范卡片 */
+    .rules-list {
+      list-style: none;
+    }
+
+    .rules-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 14px;
+      color: var(--gray-600);
+    }
+
+    .rules-list li i {
+      color: var(--gray-400);
+      width: 16px;
+    }
+
+    /* 草稿卡片 */
+    .draft-item {
+      padding: 16px;
+      background: var(--gray-50);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .draft-item:hover {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .draft-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--dark);
+      margin-bottom: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .draft-meta {
+      font-size: 12px;
+      color: var(--gray-400);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .draft-empty {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--gray-400);
+      font-size: 14px;
+    }
+
+    .draft-empty i {
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: var(--gray-300);
+    }
+
+    /* 响应式 */
+    @media (max-width: 1200px) {
+      .main-container {
+        grid-template-columns: 1fr;
+        padding: 24px;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+
+      .main-container {
+        padding: 16px;
+      }
+
+      .card-section {
+        padding: 20px;
+      }
+
+      .section-select {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .form-actions {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .draft-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .btn-primary.large {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-left">
+      <a href="main.html" class="btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回论坛
+      </a>
+    </div>
+
+    <a href="#" class="navbar-brand">
+      <i class="fas fa-leaf"></i>
+      <span>生物论坛</span>
+    </a>
+
+    <div class="navbar-right"></div>
+  </nav>
+
+  <!-- 主容器 -->
+  <div class="main-container">
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <h1 class="page-title">发布新帖</h1>
+        <p class="page-subtitle">分享你的知识、经验或问题，与大家一起交流学习</p>
+      </div>
+
+      <!-- 发帖表单 -->
+      <div class="post-form-card">
+        <!-- 用户信息 -->
+        <div class="card-section">
+          <div class="user-info">
+            <div class="user-avatar-large">小</div>
+            <div>
+              <div class="user-name">小小怪博士</div>
+              <div class="user-hint">正在撰写新帖子...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 选择板块 -->
+        <div class="card-section">
+          <div class="form-group">
+            <label class="form-label">选择板块<span class="required">*</span></label>
+            <div class="section-select">
+              <div class="section-option selected" data-section="Question_discussion">
+                <i class="fas fa-comments"></i>
+                学习交流
+              </div>
+              <div class="section-option" data-section="Course_discussion">
+                <i class="fas fa-chalkboard-teacher"></i>
+                课程讨论
+              </div>
+              <div class="section-option" data-section="Visualization_model">
+                <i class="fas fa-cube"></i>
+                可视化模型
+              </div>
+              <div class="section-option" data-section="Examination_experience">
+                <i class="fas fa-book"></i>
+                备考经验
+              </div>
+              <div class="section-option" data-section="Question_discussion">
+                <i class="fas fa-flask"></i>
+                实验探究
+              </div>
+              <div class="section-option" data-section="Question_discussion">
+                <i class="fas fa-heart"></i>
+                问题讨论
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 内容编辑器 -->
+        <div class="card-section">
+          <div class="form-group">
+            <label class="form-label">帖子内容<span class="required">*</span></label>
+            <div class="editor-container">
+              <textarea class="form-input form-textarea editor-textarea" id="postContent"
+                placeholder="在这里详细描述你要分享的内容..." maxlength="10000"></textarea>
+            </div>
+            <div class="char-count"><span id="contentCount">0</span>/10000</div>
+          </div>
+        </div>
+
+        <!-- 图片上传 -->
+        <div class="card-section">
+          <div class="form-group">
+            <label class="form-label">上传图片（可选）</label>
+            <div class="upload-area" id="uploadArea">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>点击或拖拽图片到此处上传</p>
+              <div class="upload-hint">支持 JPG、PNG、GIF 格式，单张图片不超过 10MB</div>
+            </div>
+            <div class="uploaded-images" id="uploadedImages"></div>
+          </div>
+        </div>
+
+        <!-- 选择标签 -->
+        <div class="card-section">
+          <div class="form-group">
+            <label class="form-label">选择标签（最多5个）</label>
+            <div class="tags-container">
+              <span class="tag-option">细胞呼吸</span>
+              <span class="tag-option">光合作用</span>
+              <span class="tag-option">遗传规律</span>
+              <span class="tag-option">神经调节</span>
+              <span class="tag-option">高考备考</span>
+              <span class="tag-option">实验探究</span>
+              <span class="tag-option">生态系统</span>
+              <span class="tag-option">备课资源</span>
+            </div>
+            <div class="custom-tag-input">
+              <input type="text" id="customTag" placeholder="输入自定义标签后按回车或点击添加..." maxlength="10">
+              <button type="button" id="addTagBtn">添加标签</button>
+            </div>
+            <div class="selected-tags" id="selectedTags"></div>
+          </div>
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="card-section form-actions">
+          <div class="draft-actions">
+            <button class="btn-secondary">
+              <i class="fas fa-save"></i> 保存草稿
+            </button>
+          </div>
+          <button class="btn-primary large">
+            <i class="fas fa-paper-plane"></i> 发布帖子
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧边栏 -->
+    <div class="sidebar">
+      <!-- 发帖提示 -->
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <i class="fas fa-lightbulb"></i>
+          发帖小贴士
+        </div>
+        <div class="sidebar-content">
+          <ul class="tips-list">
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>标题要简洁明了，准确概括帖子内容</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>内容要有价值，可以是经验分享、问题讨论或资源推荐</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>选择合适的板块和标签，让内容更容易被发现</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>可以使用 Markdown 排版，让内容更美观</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 社区规范 -->
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <i class="fas fa-shield-alt"></i>
+          社区规范
+        </div>
+        <div class="sidebar-content">
+          <ul class="rules-list">
+            <li>
+              <i class="fas fa-circle"></i>
+              <span>禁止发布违法违规内容</span>
+            </li>
+            <li>
+              <i class="fas fa-circle"></i>
+              <span>禁止广告推广和垃圾信息</span>
+            </li>
+            <li>
+              <i class="fas fa-circle"></i>
+              <span>尊重他人，文明交流</span>
+            </li>
+            <li>
+              <i class="fas fa-circle"></i>
+              <span>原创内容请注明来源</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 草稿箱 -->
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <i class="fas fa-file-alt"></i>
+          我的草稿
+        </div>
+        <div class="sidebar-content">
+          <div class="draft-empty">
+            <i class="fas fa-inbox"></i>
+            <p>暂无草稿</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8000/api';
+    console.log('make-post script loaded');
+    const uploadedImageUrls = [];
+    const pendingImageFiles = [];
+
+    function showAlert(type, message) {
+      const existingAlert = document.querySelector('.global-alert');
+      if (existingAlert) {
+        existingAlert.remove();
+      }
+
+      const alert = document.createElement('div');
+      alert.className = `global-alert alert-${type}`;
+      alert.innerHTML = `
+        <div class="alert-content">
+          <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      alert.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 16px 24px;
+        border-radius: 10px;
+        background: ${type === 'success' ? '#059669' : '#dc2626'};
+        color: white;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        animation: slideDown 0.3s ease;
+      `;
+
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .global-alert { animation: slideDown 0.3s ease; }
+      `;
+      document.head.appendChild(style);
+
+      document.body.appendChild(alert);
+
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => alert.remove(), 300);
+      }, 3000);
+    }
+
+    // 下拉菜单
+    const userAvatarBtn = document.getElementById('userAvatarBtn');
+    const dropdown = document.getElementById('userDropdownMenu');
+
+    if (userAvatarBtn && dropdown) {
+      userAvatarBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dropdown.classList.toggle('show');
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      if (dropdown && !dropdown.contains(event.target) && event.target !== userAvatarBtn) {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    // 板块选择
+    document.querySelectorAll('.section-option').forEach(option => {
+      option.addEventListener('click', function () {
+        document.querySelectorAll('.section-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+
+    // 标签选择
+    let selectedTags = [];
+    const maxTags = 5;
+
+    document.querySelectorAll('.tag-option').forEach(tag => {
+      tag.addEventListener('click', function () {
+        const tagName = this.textContent;
+
+        if (this.classList.contains('selected')) {
+          this.classList.remove('selected');
+          selectedTags = selectedTags.filter(t => t !== tagName);
+        } else if (selectedTags.length < maxTags) {
+          this.classList.add('selected');
+          selectedTags.push(tagName);
+        } else {
+          alert('最多只能选择5个标签');
+        }
+
+        updateSelectedTags();
+      });
+    });
+
+    // 添加自定义标签
+    const customTagInput = document.getElementById('customTag');
+    const addTagBtn = document.getElementById('addTagBtn');
+
+    function addCustomTag() {
+      const tagName = customTagInput.value.trim();
+
+      if (tagName && selectedTags.length < maxTags && !selectedTags.includes(tagName)) {
+        selectedTags.push(tagName);
+        updateSelectedTags();
+        customTagInput.value = '';
+      } else if (selectedTags.length >= maxTags) {
+        alert('最多只能选择5个标签');
+      }
+    }
+
+    addTagBtn.addEventListener('click', addCustomTag);
+    customTagInput.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addCustomTag();
+      }
+    });
+
+    // 更新已选标签显示
+    function updateSelectedTags() {
+      const container = document.getElementById('selectedTags');
+      container.innerHTML = selectedTags.map(tag => `
+        <span class="selected-tag">
+          ${tag}
+          <i class="fas fa-times remove-tag" data-tag="${tag}"></i>
+        </span>
+      `).join('');
+
+      container.querySelectorAll('.remove-tag').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const tagName = this.dataset.tag;
+          selectedTags = selectedTags.filter(t => t !== tagName);
+
+          document.querySelectorAll('.tag-option').forEach(tag => {
+            if (tag.textContent === tagName) {
+              tag.classList.remove('selected');
+            }
+          });
+
+          updateSelectedTags();
+        });
+      });
+    }
+
+    // 字数统计
+    const contentInput = document.getElementById('postContent');
+    const contentCount = document.getElementById('contentCount');
+
+    contentInput.addEventListener('input', function () {
+      contentCount.textContent = this.value.length;
+    });
+
+    // 图片上传
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadedImages = document.getElementById('uploadedImages');
+
+    uploadArea.addEventListener('click', function (e) {
+      e.preventDefault();
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.onchange = function (e) {
+        handleFiles(e.target.files);
+      };
+      input.click();
+    });
+
+    uploadArea.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      this.style.borderColor = 'var(--primary)';
+      this.style.background = 'rgba(59, 130, 246, 0.05)';
+    });
+
+    uploadArea.addEventListener('dragleave', function (e) {
+      e.preventDefault();
+      this.style.borderColor = 'var(--gray-200)';
+      this.style.background = 'var(--gray-50)';
+    });
+
+    uploadArea.addEventListener('drop', function (e) {
+      e.preventDefault();
+      this.style.borderColor = 'var(--gray-200)';
+      this.style.background = 'var(--gray-50)';
+      handleFiles(e.dataTransfer.files);
+    });
+
+    async function handleFiles(files) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showAlert('error', '请先登录');
+        return;
+      }
+
+      Array.from(files).forEach(async (file, index) => {
+        if (!file.type.startsWith('image/')) {
+          showAlert('error', '只能上传图片文件');
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          showAlert('error', '图片大小不能超过 10MB');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const imageDiv = document.createElement('div');
+          imageDiv.className = 'uploaded-image';
+          imageDiv.innerHTML = `
+            <img src="${e.target.result}" alt="预览">
+            <button class="remove-image" data-index="${index}"><i class="fas fa-times"></i></button>
+          `;
+          imageDiv.querySelector('.remove-image').onclick = function () {
+            const imgIndex = this.dataset.index;
+            uploadedImageUrls.splice(imgIndex, 1);
+            pendingImageFiles.splice(imgIndex, 1);
+            imageDiv.remove();
+            updateImageIndexes();
+          };
+          uploadedImages.appendChild(imageDiv);
+        };
+        reader.readAsDataURL(file);
+
+        // defer upload until submit
+        pendingImageFiles.push(file);
+      });
+    }
+
+    function updateImageIndexes() {
+      document.querySelectorAll('.uploaded-image .remove-image').forEach((btn, index) => {
+        btn.dataset.index = index;
+      });
+    }
+
+    async function uploadPendingImages(token) {
+      const imageUrls = [];
+      for (const file of pendingImageFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch(`${API_BASE_URL}/upload_image`, {
+          method: 'POST',
+          headers: { 'token': token },
+          body: formData
+        });
+        const data = await resp.json();
+        if (data && data.image_url) imageUrls.push(data.image_url);
+      }
+      return imageUrls;
+    }
+
+    // 发布帖子
+    const submitBtn = document.querySelector('.btn-primary.large');
+    console.log('submitBtn found', !!submitBtn);
+    if (!submitBtn) { console.warn('submitBtn not found'); }
+    submitBtn.addEventListener('click', async function (e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const content = document.getElementById('postContent').value.trim();
+      const token = localStorage.getItem('token');
+
+      const selectedSection = document.querySelector('.section-option.selected');
+      const tag = selectedSection ? selectedSection.dataset.section : 'Question_discussion';
+
+      if (!token) {
+        showAlert('error', '请先登录');
+        return;
+      }
+
+      if (!content) {
+        showAlert('error', '请输入帖子内容');
+        return;
+      }
+
+      if (content.length > 10000) {
+        showAlert('error', '帖子内容不能超过10000字');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发布中...';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/create_post`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({
+            content: content,
+            image_urls: await uploadPendingImages(token),
+            tag: tag
+          })
+        });
+
+        let data = null;
+        try { data = await response.json(); } catch (_) { }
+
+        if (response.ok) {
+          showAlert('success', '发帖成功，正在跳转...');
+          console.log('redirecting to main.html');
+          window.location.replace('main.html');
+        } else {
+          showAlert('error', (data && data.msg) || '发帖失败');
+        }
+      } catch (error) {
+        console.error('发帖失败:', error);
+        showAlert('error', '网络错误，请稍后重试');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发布帖子';
+      }
+    });
+  </script>
+</body>
+
+</html>

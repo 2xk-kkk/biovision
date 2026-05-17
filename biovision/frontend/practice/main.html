@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生物视界 - 高中生物教学辅助平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+
+        /* 顶部导航栏 - 生物视界风格 */
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .avatar-wrapper:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* 顶部卡片区 */
+        .top-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, #edfffa 0%, #e6f9ff 100%);
+            border: 1px solid #abebf4;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .welcome-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #7181e6, #81c2d3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            color: #1aa486;
+        }
+
+        .welcome-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #7fcad7;
+            margin-top: 4px;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.green {
+            background: #f6ffed;
+            color: #1ac1c4;
+        }
+
+        .stat-icon.blue {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .stat-icon.orange {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .stat-icon.purple {
+            background: #f9f0ff;
+            color: #722ed1;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #8c8c8c;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #262626;
+        }
+
+        .stat-desc {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-top: 4px;
+        }
+
+        /* 中部三列布局 */
+        .middle-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* 左列 - 做题贡献 */
+        .contribution-card {
+            padding: 20px;
+        }
+
+        .contribution-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .contribution-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contribution-stat-label {
+            font-size: 13px;
+            color: #8c8c8c;
+        }
+
+        .contribution-stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1ab9c4;
+        }
+
+        /* 日历热力图 */
+        .heatmap-container {
+            margin-bottom: 16px;
+        }
+
+        .heatmap-months {
+            display: flex;
+            margin-left: 28px;
+            margin-bottom: 4px;
+        }
+
+        .heatmap-month {
+            font-size: 11px;
+            color: #8c8c8c;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 24px repeat(13, 1fr);
+            grid-template-rows: 18px repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .heatmap-day-label {
+            font-size: 10px;
+            color: #8c8c8c;
+            display: flex;
+            align-items: center;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 3px;
+            background: #ebedf0;
+        }
+
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: #8c8c8c;
+        }
+
+        .heatmap-legend-cells {
+            display: flex;
+            gap: 3px;
+        }
+
+        .heatmap-legend-cell {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .legend-less {
+            background: #ebedf0;
+        }
+
+        .legend-more {
+            background: #1ac4b0;
+        }
+
+        /* 右列 - 公告栏（原在中间） */
+        .announcement-card {
+            padding: 20px;
+        }
+
+        .announcement-list {
+            margin-bottom: 24px;
+        }
+
+        .announcement-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+        }
+
+        .announcement-item:hover {
+            background: #fafafa;
+            margin: 0 -12px;
+            padding-left: 12px;
+            padding-right: 12px;
+            border-radius: 6px;
+        }
+
+        .announcement-icon {
+            width: 32px;
+            height: 32px;
+            background: #fff7e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fa8c16;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .announcement-content {
+            flex: 1;
+        }
+
+        .announcement-title {
+            font-size: 14px;
+            color: #262626;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .announcement-new {
+            background: #ff4d4f;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: normal;
+        }
+
+        .announcement-time {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-top: 4px;
+        }
+
+        /* 中列 - Beta功能（原在右边） */
+        .beta-card {
+            padding: 20px;
+        }
+
+        .beta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .beta-item {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .beta-item:hover {
+            background: #edfbff;
+            border-color: #8febd7;
+            transform: translateY(-2px);
+        }
+
+        .beta-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 8px;
+            background: linear-gradient(135deg, #9fe8f1, #bbfcfc);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .beta-name {
+            font-size: 13px;
+            color: #262626;
+            font-weight: 500;
+        }
+
+        /* 下部五本教材掌握进度 */
+        .progress-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .progress-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+        }
+
+        .progress-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-summary-label {
+            font-size: 13px;
+            color: #8c8c8c;
+        }
+
+        .progress-summary-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #77d9ca;
+        }
+
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 24px;
+        }
+
+        .subject-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            background: #fafafa;
+            transition: all 0.3s;
+        }
+
+        .subject-card:hover {
+            background: #edffff;
+        }
+
+        .subject-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .subject-ring {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 12px;
+            position: relative;
+        }
+
+        .subject-ring svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .subject-ring-bg {
+            fill: none;
+            stroke: #e8e8e8;
+            stroke-width: 10;
+        }
+
+        .subject-ring-progress {
+            fill: none;
+            stroke: #1ac4c4;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .subject-ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .subject-ring-percent {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1ac4b9;
+        }
+
+        .subject-ring-label {
+            font-size: 10px;
+            color: #8c8c8c;
+        }
+
+        .subject-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .subject-stats {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .subject-stat {
+            text-align: center;
+        }
+
+        .subject-stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1890ff;
+        }
+
+        .subject-stat-label {
+            font-size: 10px;
+            color: #8c8c8c;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h4 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .top-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .middle-section {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .progress-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .top-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .middle-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .progress-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="top">
+        <div class="logo"></div>
+
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="#" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="#" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="#" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="#" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="#" class="nav-link">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link active">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link">可视学习</a>
+                <a href="../forum/main.html" class="nav-link">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper">
+                    <div class="avatar">👤</div>
+                    <div class="upload-overlay">+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 顶部卡片区 -->
+        <div class="top-cards">
+            <!-- 欢迎卡片 -->
+            <div class="card welcome-card">
+                <div class="welcome-icon">👤</div>
+                <div>
+                    <div class="welcome-text">欢迎回来</div>
+                    <div class="welcome-title">Lofrmin</div>
+                </div>
+            </div>
+            
+            <!-- 已做题数卡片 -->
+            <div class="card stat-card">
+                <div class="stat-icon green">✓</div>
+                <div class="stat-info">
+                    <div class="stat-label">已做题数</div>
+                    <div class="stat-value">0</div>
+                    <div class="stat-desc">完成度 0%</div>
+                </div>
+            </div>
+            
+            <!-- 总题目卡片 -->
+            <div class="card stat-card">
+                <div class="stat-icon blue">📁</div>
+                <div class="stat-info">
+                    <div class="stat-label">总题目</div>
+                    <div class="stat-value">877题</div>
+                    <div class="stat-desc">五本教材总计</div>
+                </div>
+            </div>
+            
+            <!-- 通关进度卡片 -->
+            <div class="card stat-card">
+                <div class="stat-icon purple">🎯</div>
+                <div class="stat-info">
+                    <div class="stat-label">通关进度</div>
+                    <div class="stat-value">0%</div>
+                    <div class="stat-desc">继续加油</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中部三列布局 -->
+        <div class="middle-section">
+            <!-- 左列 - 做题贡献 -->
+            <div class="card contribution-card">
+                <h3 class="section-title">做题贡献（最近90天）</h3>
+                <div class="contribution-stats">
+                    <div class="contribution-stat">
+                        <span class="contribution-stat-label">做题天数</span>
+                        <span class="contribution-stat-value">0</span>
+                    </div>
+                    <div class="contribution-stat">
+                        <span class="contribution-stat-label">连续天数</span>
+                        <span class="contribution-stat-value">0</span>
+                    </div>
+                </div>
+                
+                <div class="heatmap-container">
+                    <div class="heatmap-months">
+                        <span class="heatmap-month">2月</span>
+                        <span class="heatmap-month">3月</span>
+                        <span class="heatmap-month">4月</span>
+                        <span class="heatmap-month">5月</span>
+                    </div>
+                    <div class="heatmap-grid" id="heatmapGrid">
+                        <!-- 热力图格子由JS生成 -->
+                    </div>
+                </div>
+                
+                <div class="heatmap-legend">
+                    <span>少</span>
+                    <div class="heatmap-legend-cells">
+                        <div class="heatmap-legend-cell legend-less"></div>
+                        <div class="heatmap-legend-cell legend-less"></div>
+                        <div class="heatmap-legend-cell legend-less"></div>
+                        <div class="heatmap-legend-cell legend-less"></div>
+                        <div class="heatmap-legend-cell legend-more"></div>
+                    </div>
+                    <span>多</span>
+                </div>
+            </div>
+
+            <!-- 中列 - Beta功能 -->
+            <div class="card beta-card">
+                <h3 class="section-title">Beta功能</h3>
+                <div class="beta-grid">
+                    <div class="beta-item">
+                        <div class="beta-icon">🧠</div>
+                        <div class="beta-name">错题集</div>
+                    </div>
+                    <div class="beta-item">
+                        <div class="beta-icon">🔍</div>
+                        <div class="beta-name">真题大观</div>
+                    </div>
+                    <div class="beta-item">
+                        <div class="beta-icon">🗺️</div>
+                        <div class="beta-name">导图Agent</div>
+                    </div>
+                    <div class="beta-item">
+                        <div class="beta-icon">🏆</div>
+                        <div class="beta-name">院校PK</div>
+                    </div>
+                    <div class="beta-item">
+                        <div class="beta-icon">📚</div>
+                        <div class="beta-name">教材溯源</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右列 - 公告栏 -->
+            <div class="card announcement-card">
+                <h3 class="section-title">公告</h3>
+                <div class="announcement-list">
+                    <div class="announcement-item">
+                        <div class="announcement-icon">📢</div>
+                        <div class="announcement-content">
+                            <div class="announcement-title">
+                                公测问题交流QQ群
+                                <span class="announcement-new">new</span>
+                            </div>
+                            <div class="announcement-time">2026-04-29 15:14</div>
+                        </div>
+                    </div>
+                    <div class="announcement-item">
+                        <div class="announcement-icon">📢</div>
+                        <div class="announcement-content">
+                            <div class="announcement-title">
+                                公测公告1
+                                <span class="announcement-new">new</span>
+                            </div>
+                            <div class="announcement-time">2026-04-20 15:17</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下部五本教材掌握进度 -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <h3 class="progress-title">五本教材掌握进度</h3>
+                <div class="progress-summary">
+                    <span class="progress-summary-label">五本教材平均掌握率</span>
+                    <span class="progress-summary-value">0%</span>
+                </div>
+            </div>
+            
+            <div class="progress-grid">
+                <!-- 必修一：分子与细胞 -->
+                <div class="subject-card">
+                    <div class="subject-icon">🔬</div>
+                    <div class="subject-ring">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                        </svg>
+                        <div class="subject-ring-text">
+                            <div class="subject-ring-percent">0%</div>
+                            <div class="subject-ring-label">掌握率</div>
+                        </div>
+                    </div>
+                    <div class="subject-name">必修一：分子与细胞</div>
+                    <div class="subject-stats">
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">186</div>
+                            <div class="subject-stat-label">共X题</div>
+                        </div>
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">0%</div>
+                            <div class="subject-stat-label">做题进度</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 必修二：遗传与进化 -->
+                <div class="subject-card">
+                    <div class="subject-icon">🧬</div>
+                    <div class="subject-ring">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                        </svg>
+                        <div class="subject-ring-text">
+                            <div class="subject-ring-percent">0%</div>
+                            <div class="subject-ring-label">掌握率</div>
+                        </div>
+                    </div>
+                    <div class="subject-name">必修二：遗传与进化</div>
+                    <div class="subject-stats">
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">198</div>
+                            <div class="subject-stat-label">共X题</div>
+                        </div>
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">0%</div>
+                            <div class="subject-stat-label">做题进度</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选修一：稳态与调节 -->
+                <div class="subject-card">
+                    <div class="subject-icon">⚖️</div>
+                    <div class="subject-ring">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                        </svg>
+                        <div class="subject-ring-text">
+                            <div class="subject-ring-percent">0%</div>
+                            <div class="subject-ring-label">掌握率</div>
+                        </div>
+                    </div>
+                    <div class="subject-name">选修一：稳态与调节</div>
+                    <div class="subject-stats">
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">175</div>
+                            <div class="subject-stat-label">共X题</div>
+                        </div>
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">0%</div>
+                            <div class="subject-stat-label">做题进度</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选修二：生物与环境 -->
+                <div class="subject-card">
+                    <div class="subject-icon">🌿</div>
+                    <div class="subject-ring">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                        </svg>
+                        <div class="subject-ring-text">
+                            <div class="subject-ring-percent">0%</div>
+                            <div class="subject-ring-label">掌握率</div>
+                        </div>
+                    </div>
+                    <div class="subject-name">选修二：生物与环境</div>
+                    <div class="subject-stats">
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">162</div>
+                            <div class="subject-stat-label">共X题</div>
+                        </div>
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">0%</div>
+                            <div class="subject-stat-label">做题进度</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选修三：生物技术与工程 -->
+                <div class="subject-card">
+                    <div class="subject-icon">🧫</div>
+                    <div class="subject-ring">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                        </svg>
+                        <div class="subject-ring-text">
+                            <div class="subject-ring-percent">0%</div>
+                            <div class="subject-ring-label">掌握率</div>
+                        </div>
+                    </div>
+                    <div class="subject-name">选修三：生物技术与工程</div>
+                    <div class="subject-stats">
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">156</div>
+                            <div class="subject-stat-label">共X题</div>
+                        </div>
+                        <div class="subject-stat">
+                            <div class="subject-stat-value">0%</div>
+                            <div class="subject-stat-label">做题进度</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>    
+     <!-- 页脚 -->
+    <div class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h4>关于我们</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">平台介绍</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>用户之声</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">意见反馈</a></li>
+                        <li><a href="#">常见问题</a></li>
+                        <li><a href="#">指正反馈</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>应用菜单</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">首页</a></li>
+                        <li><a href="#">PPT快搭</a></li>
+                        <li><a href="#">论坛</a></li>
+                        <li><a href="#">交感模型</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 生成日历热力图
+        function generateHeatmap() {
+            const grid = document.getElementById('heatmapGrid');
+            const days = ['周一', '', '周三', '', '周五', '', '周日'];
+            const weeks = 13;
+            
+            for (let i = 0; i < 7; i++) {
+                const label = document.createElement('div');
+                label.className = 'heatmap-day-label';
+                label.textContent = days[i];
+                grid.appendChild(label);
+            }
+            
+            for (let week = 0; week < weeks; week++) {
+                for (let day = 0; day < 7; day++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'heatmap-cell';
+                    grid.appendChild(cell);
+                }
+            }
+        }
+        
+        generateHeatmap();
+        
+        // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+        
+        // 导航链接点击效果
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.classList.contains('dropdown-toggle')) return;
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Beta功能卡片点击效果
+        document.querySelectorAll('.beta-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const name = this.querySelector('.beta-name').textContent;
+                alert(`即将打开: ${name}`);
+            });
+        });
+        
+        // 公告项点击效果
+        document.querySelectorAll('.announcement-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const title = this.querySelector('.announcement-title').textContent.replace('new', '').trim();
+                alert(`即将打开公告: ${title}`);
+            });
+        });
+
+        // 搜索表单提交
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = this.querySelector('.search-input').value;
+            if (query.trim()) {
+                alert(`搜索: ${query}`);
+            }
+        });
+    </script>
+</body>
+</html>
