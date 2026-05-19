@@ -516,510 +516,565 @@
         </section>
       </main>
     </div>
+   <script>
+  (() => {
+    // ========== 状态管理 ==========
+    // 定义动画播放的全局状态
+    const state = {
+      progress: 0,        // 当前进度（0 到 1）
+      playing: false,     // 是否正在播放
+      dragging: false,    // 是否正在拖拽进度条
+      dragShell: null,    // 当前拖拽的图表容器（用于判断在哪个图表上拖动）
+      lastTs: 0,          // 上一帧的时间戳（用于控制播放速度）
+    };
 
-    <script>
-      (() => {
-        const state = {
-          progress: 0,
-          playing: false,
-          dragging: false,
-          dragShell: null,
-          lastTs: 0,
-        };
+    // ========== DOM 元素引用 ==========
+    // 缓存所有需要操作的 HTML 元素，避免重复查询
+    const els = {
+      phaseText: document.getElementById("phaseText"),           // 显示当前阶段名称
+      progressText: document.getElementById("progressText"),     // 显示进度百分比
+      playBtn: document.getElementById("playBtn"),               // 播放/暂停按钮
+      resetBtn: document.getElementById("resetBtn"),             // 重置按钮
+      stageRoot: document.getElementById("stageRoot"),           // 细胞分裂舞台（SVG 内容容器）
+      dnaChartRoot: document.getElementById("dnaChartRoot"),     // DNA 含量图表 SVG 容器
+      chrChartRoot: document.getElementById("chrChartRoot"),     // 染色体数量图表容器
+      sisChartRoot: document.getElementById("sisChartRoot"),     // 姐妹染色单体数量图表容器
+      dnaCursorRoot: document.getElementById("dnaCursorRoot"),   // DNA 图表上的动态光标
+      chrCursorRoot: document.getElementById("chrCursorRoot"),
+      sisCursorRoot: document.getElementById("sisCursorRoot"),
+      dnaChartShell: document.getElementById("dnaChartShell"),   // 包裹图表的可点击区域（用于拖拽）
+      chrChartShell: document.getElementById("chrChartShell"),
+      sisChartShell: document.getElementById("sisChartShell"),
+      scrubFill: document.getElementById("scrubFill"),           // 进度条填充背景
+      dnaValue: document.getElementById("dnaValue"),             // 实时显示 DNA 数值
+      chrValue: document.getElementById("chrValue"),
+      sisValue: document.getElementById("sisValue"),
+    };
 
-        const els = {
-          phaseText: document.getElementById("phaseText"),
-          progressText: document.getElementById("progressText"),
-          playBtn: document.getElementById("playBtn"),
-          resetBtn: document.getElementById("resetBtn"),
-          stageRoot: document.getElementById("stageRoot"),
-          dnaChartRoot: document.getElementById("dnaChartRoot"),
-          chrChartRoot: document.getElementById("chrChartRoot"),
-          sisChartRoot: document.getElementById("sisChartRoot"),
-          dnaCursorRoot: document.getElementById("dnaCursorRoot"),
-          chrCursorRoot: document.getElementById("chrCursorRoot"),
-          sisCursorRoot: document.getElementById("sisCursorRoot"),
-          dnaChartShell: document.getElementById("dnaChartShell"),
-          chrChartShell: document.getElementById("chrChartShell"),
-          sisChartShell: document.getElementById("sisChartShell"),
-          scrubFill: document.getElementById("scrubFill"),
-          dnaValue: document.getElementById("dnaValue"),
-          chrValue: document.getElementById("chrValue"),
-          sisValue: document.getElementById("sisValue"),
-        };
+    // ========== 工具函数 ==========
+    const clamp = (v, min, max) => Math.min(max, Math.max(min, v)); // 限制数值在 [min, max] 范围内
+    const lerp = (a, b, t) => a + (b - a) * t;                     // 线性插值
+    const ease = (t) => t * t * (3 - 2 * t);                        // 平滑缓动函数（三次 Hermite）
 
-        const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-        const lerp = (a, b, t) => a + (b - a) * t;
-        const ease = (t) => t * t * (3 - 2 * t);
+    // ========== 数据采样函数 ==========
+    // 根据给定的关键点数组，在进度 p 处插值得到 y 值
+    function sample(points, p) {
+      if (p <= points[0][0]) return points[0][1]; // 在第一个点之前，返回起点值
+      for (let i = 0; i < points.length - 1; i++) {
+        const [x1, y1] = points[i];
+        const [x2, y2] = points[i + 1];
+        if (p <= x2) {
+          const t = (p - x1) / (x2 - x1); // 计算局部比例
+          return lerp(y1, y2, clamp(t, 0, 1)); // 插值得到结果
+        }
+      }
+      return points[points.length - 1][1]; // 超出范围则返回最后一个点
+    }
 
-        function sample(points, p) {
-          if (p <= points[0][0]) return points[0][1];
-          for (let i = 0; i < points.length - 1; i++) {
-            const [x1, y1] = points[i];
-            const [x2, y2] = points[i + 1];
-            if (p <= x2) {
-              const t = (p - x1) / (x2 - x1);
-              return lerp(y1, y2, clamp(t, 0, 1));
-            }
+    // ========== 获取当前进度下的三组数据（DNA、染色体、姐妹染色单体） ==========
+    function getSeries(p) {
+      return {
+        // DNA 含量变化曲线（n → 2n → 2n → 1.6n → n）
+        dna: sample(
+          [
+            [0, 1],
+            [0.18, 1],
+            [0.35, 2],
+            [0.78, 2],
+            [0.92, 1.6],
+            [1, 1],
+          ],
+          p
+        ),
+        // 染色体数量（n → n → n → 2n → 2n → n）
+        chr: sample(
+          [
+            [0, 1],
+            [0.3, 1],
+            [0.58, 1],
+            [0.72, 2],
+            [0.88, 2],
+            [1, 1],
+          ],
+          p
+        ),
+        // 姐妹染色单体数量（0 → 0 → 2 → 2 → 0.8 → 0）
+        sister: sample(
+          [
+            [0, 0],
+            [0.25, 0],
+            [0.38, 2],
+            [0.7, 2],
+            [0.84, 0.8],
+            [0.95, 0],
+            [1, 0],
+          ],
+          p
+        ),
+      };
+    }
+
+    // ========== 阶段名称映射 ==========
+    function phaseName(p) {
+      if (p < 0.2) return "间期";
+      if (p < 0.36) return "前期";
+      if (p < 0.58) return "中期";
+      if (p < 0.82) return "后期";
+      return "末期 / 细胞质分裂";
+    }
+
+    // ========== 阶段描述文本 ==========
+    function phaseDescription(p) {
+      if (p < 0.2) return "染色质松散，DNA 已复制但尚未凝缩成可见染色体";
+      if (p < 0.36) return "染色质开始螺旋化，核膜逐渐解体，纺锤体形成";
+      if (p < 0.58) return "染色体排列在赤道板上，便于平均分配到两端";
+      if (p < 0.82) return "姐妹染色单体分离并向两极移动";
+      return "形成两个子细胞，遗传物质重新分配完成";
+    }
+
+    // ========== 生成 SVG 路径字符串 ==========
+    function makePath(points) {
+      return points
+        .map((pt, index) => `${index === 0 ? "M" : "L"} ${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`)
+        .join(" ");
+    }
+
+    // ========== 构建一个图表面板（DNA / 染色体 / 姐妹染色单体） ==========
+    function buildChartPanel(rootEl, series, lineColor, shellTitle, markerType) {
+      const w = 700; // 图表宽度
+      const h = 240; // 高度
+      const pad = { l: 70, r: 24, t: 20, b: 56 }; // 内边距
+      const innerW = w - pad.l - pad.r;
+      const innerH = h - pad.t - pad.b;
+
+      // 坐标映射函数
+      const xFor = (p) => pad.l + innerW * p;               // 进度 → x 坐标
+      const yFor = (v) => pad.t + innerH * (1 - v / 2);     // 数值（0~2）→ y 坐标（翻转）
+
+      // 阶段分界点（用于网格和标签）
+      const phaseStops = [
+        [0, "间期"],
+        [0.25, "前期"],
+        [0.5, "中期"],
+        [0.75, "后期"],
+        [1, "末期"],
+      ];
+
+      // 计算关键点坐标
+      const points = phaseStops.map(([p]) => [xFor(p), yFor(series(p))]);
+
+      // 生成水平和垂直网格线
+      const grid = [];
+      const yTicks = [0, 1, 2];
+      for (const tick of yTicks) {
+        const y = yFor(tick);
+        grid.push(`<line x1="${pad.l}" y1="${y}" x2="${w - pad.r}" y2="${y}" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="6 4" />`);
+      }
+      for (let i = 0; i < phaseStops.length; i++) {
+        const x = xFor(phaseStops[i][0]);
+        grid.push(`<line x1="${x}" y1="${pad.t}" x2="${x}" y2="${h - pad.b}" stroke="#e1e1e1" stroke-width="1" stroke-dasharray="6 4" />`);
+      }
+
+      // 生成数据点标记（圆形/方形/三角形）
+      const markers = points
+        .map(([x, y]) => {
+          if (markerType === "square") {
+            return `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" fill="${lineColor}" stroke="${lineColor}" />`;
           }
-          return points[points.length - 1][1];
-        }
-
-        function getSeries(p) {
-          return {
-            dna: sample(
-              [
-                [0, 1],
-                [0.18, 1],
-                [0.35, 2],
-                [0.78, 2],
-                [0.92, 1.6],
-                [1, 1],
-              ],
-              p
-            ),
-            chr: sample(
-              [
-                [0, 1],
-                [0.3, 1],
-                [0.58, 1],
-                [0.72, 2],
-                [0.88, 2],
-                [1, 1],
-              ],
-              p
-            ),
-            sister: sample(
-              [
-                [0, 0],
-                [0.25, 0],
-                [0.38, 2],
-                [0.7, 2],
-                [0.84, 0.8],
-                [0.95, 0],
-                [1, 0],
-              ],
-              p
-            ),
-          };
-        }
-
-        function phaseName(p) {
-          if (p < 0.2) return "间期";
-          if (p < 0.36) return "前期";
-          if (p < 0.58) return "中期";
-          if (p < 0.82) return "后期";
-          return "末期 / 细胞质分裂";
-        }
-
-        function phaseDescription(p) {
-          if (p < 0.2) return "染色质松散，DNA 已复制但尚未凝缩成可见染色体";
-          if (p < 0.36) return "染色质开始螺旋化，核膜逐渐解体，纺锤体形成";
-          if (p < 0.58) return "染色体排列在赤道板上，便于平均分配到两端";
-          if (p < 0.82) return "姐妹染色单体分离并向两极移动";
-          return "形成两个子细胞，遗传物质重新分配完成";
-        }
-
-        function makePath(points) {
-          return points
-            .map((pt, index) => `${index === 0 ? "M" : "L"} ${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`)
-            .join(" ");
-        }
-
-        function buildChartPanel(rootEl, series, lineColor, shellTitle, markerType) {
-          const w = 700;
-          const h = 240;
-          const pad = { l: 70, r: 24, t: 20, b: 56 };
-          const innerW = w - pad.l - pad.r;
-          const innerH = h - pad.t - pad.b;
-          const xFor = (p) => pad.l + innerW * p;
-          const yFor = (v) => pad.t + innerH * (1 - v / 2);
-
-          const phaseStops = [
-            [0, "间期"],
-            [0.25, "前期"],
-            [0.5, "中期"],
-            [0.75, "后期"],
-            [1, "末期"],
-          ];
-          const points = phaseStops.map(([p]) => [xFor(p), yFor(series(p))]);
-
-          const grid = [];
-          const yTicks = [0, 1, 2];
-          for (const tick of yTicks) {
-            const y = yFor(tick);
-            grid.push(`<line x1="${pad.l}" y1="${y}" x2="${w - pad.r}" y2="${y}" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="6 4" />`);
+          if (markerType === "triangle") {
+            return `<polygon points="${x},${y - 6} ${x - 6},${y + 5} ${x + 6},${y + 5}" fill="${lineColor}" stroke="${lineColor}" />`;
           }
-          for (let i = 0; i < phaseStops.length; i++) {
-            const x = xFor(phaseStops[i][0]);
-            grid.push(`<line x1="${x}" y1="${pad.t}" x2="${x}" y2="${h - pad.b}" stroke="#e1e1e1" stroke-width="1" stroke-dasharray="6 4" />`);
+          return `<circle cx="${x}" cy="${y}" r="5.5" fill="${lineColor}" stroke="${lineColor}" />`;
+        })
+        .join("");
+
+      // X 轴标签
+      const xLabels = phaseStops
+        .map(([p, label]) => `<text x="${xFor(p)}" y="${h - 18}" text-anchor="middle" fill="#222222" font-size="13" font-weight="700">${label}</text>`)
+        .join("");
+
+      // Y 轴标签（2n, n, 0）
+      const yLabels = `
+        <text x="18" y="${yFor(2) + 4}" fill="#222222" font-size="12">2n</text>
+        <text x="24" y="${yFor(1) + 4}" fill="#222222" font-size="12">n</text>
+        <text x="24" y="${yFor(0) + 4}" fill="#222222" font-size="12">0</text>
+      `;
+
+      // 图例
+      const legend = `
+        <g>
+          <rect x="10" y="10" width="200" height="42" rx="8" fill="rgba(255,255,255,0.92)" stroke="#d0d0d0" />
+          <line x1="22" y1="31" x2="56" y2="31" stroke="${lineColor}" stroke-width="3.5" stroke-linecap="round" />
+          ${markerType === "square"
+            ? `<rect x="37" y="26" width="10" height="10" fill="${lineColor}" />`
+            : markerType === "triangle"
+              ? `<polygon points="42,25 36,36 48,36" fill="${lineColor}" />`
+              : `<circle cx="42" cy="31" r="5.5" fill="${lineColor}" />`}
+          <text x="70" y="35" fill="#111827" font-size="13">${shellTitle}</text>
+        </g>
+      `;
+
+      // 将整个 SVG 内容写入容器
+      rootEl.innerHTML = `
+        <rect x="0" y="0" width="${w}" height="${h}" rx="16" fill="#ffffff" />
+        <g opacity="0.95">${grid.join("")}</g>
+        <path d="${makePath(points)}" fill="none" stroke="${lineColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="miter" />
+        ${markers}
+        <line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${h - pad.b}" stroke="#1f2937" stroke-width="1.2" />
+        <line x1="${pad.l}" y1="${h - pad.b}" x2="${w - pad.r}" y2="${h - pad.b}" stroke="#1f2937" stroke-width="1.2" />
+        ${legend}
+        <g>
+          ${yLabels}
+          ${xLabels}
+          <text x="${pad.l + innerW / 2}" y="${h - 2}" text-anchor="middle" fill="#222222" font-size="12">分裂阶段</text>
+        </g>
+      `;
+    }
+
+    // ========== 绘制单个染色体（未分离状态） ==========
+    function chromosome(x, y, scale, rotate, opacity, opened) {
+      const arm = opened ? 18 : 24; // 分离后臂变短
+      const stroke = 9 * scale;
+      return `
+        <g transform="translate(${x}, ${y}) rotate(${rotate}) scale(${scale})" opacity="${opacity}" filter="url(#softGlow)">
+          <path d="M -${arm} -26 C -10 -10, -10 10, -${arm} 26" fill="none" stroke="url(#chromosomeFill)" stroke-width="${stroke}" stroke-linecap="round" />
+          <path d="M ${arm} -26 C 10 -10, 10 10, ${arm} 26" fill="none" stroke="url(#chromosomeFill)" stroke-width="${stroke}" stroke-linecap="round" />
+          <line x1="-11" y1="-6" x2="11" y2="6" stroke="rgba(255,255,255,0.8)" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" />
+        </g>
+      `;
+    }
+
+    // ========== 绘制已分离的染色体（末期） ==========
+    function separatedChromosome(cx, cy, division, bias) {
+      const offsetX = 34 + 22 * division;
+      const offsetY = 28 + 16 * division;
+      const leftX = cx - offsetX * bias;
+      const rightX = cx + offsetX * bias;
+      const topY = cy - offsetY;
+      const bottomY = cy + offsetY;
+      return `
+        <g filter="url(#softGlow)">
+          <path d="M ${leftX - 10} ${topY - 24} C ${leftX - 18} ${topY - 4}, ${leftX - 16} ${topY + 12}, ${leftX - 4} ${topY + 26}" fill="none" stroke="url(#chromosomeFill)" stroke-width="7" stroke-linecap="round" />
+          <path d="M ${rightX + 10} ${bottomY + 24} C ${rightX + 18} ${bottomY + 4}, ${rightX + 16} ${bottomY - 12}, ${rightX + 4} ${bottomY - 26}" fill="none" stroke="url(#chromosomeFill)" stroke-width="7" stroke-linecap="round" />
+          <circle cx="${leftX}" cy="${topY}" r="8" fill="#dfe7ff" opacity="0.9" />
+          <circle cx="${rightX}" cy="${bottomY}" r="8" fill="#dfe7ff" opacity="0.9" />
+        </g>
+      `;
+    }
+
+    // ========== 渲染细胞分裂舞台（主视图） ==========
+    function renderStage(p) {
+      const cellX = 400; // 细胞中心 X
+      const cellY = 270; // Y
+      const cellR = 184; // 半径
+
+      // 各阶段动画参数（基于进度 p 的插值）
+      const chromatin = clamp((p - 0.08) / 0.26, 0, 1);       // 染色质凝缩程度
+      const envelopeBreak = clamp((p - 0.22) / 0.18, 0, 1);   // 核膜破裂
+      const alignment = clamp((p - 0.4) / 0.18, 0, 1);        // 染色体对齐赤道板
+      const separation = clamp((p - 0.58) / 0.18, 0, 1);      // 姐妹染色单体分离
+      const division = clamp((p - 0.78) / 0.18, 0, 1);        // 胞质分裂
+      const nucleusOpacity = clamp(1 - (p - 0.28) / 0.11, 0, 1); // 核仁透明度
+      const spindleOpacity = clamp((p - 0.22) / 0.16, 0, 1);  // 纺锤体出现
+
+      // 四个染色体初始位置
+      const chromPositions = [
+        [-92, -56],
+        [94, -50],
+        [-84, 56],
+        [86, 58],
+      ];
+
+      // 间期：绘制染色质云（模糊线条）
+      const cloud = [];
+      if (chromatin < 0.92) {
+        for (let i = 0; i < 6; i++) {
+          const a = i * 1.08;
+          const dx = Math.cos(a) * 18;
+          const dy = Math.sin(a * 1.2) * 16;
+          cloud.push(`
+            <path d="M ${cellX - 64 + dx} ${cellY - 40 + dy}
+                     C ${cellX - 24 + dx} ${cellY - 74 + dy},
+                       ${cellX + 18 + dx} ${cellY - 34 + dy},
+                       ${cellX + 62 + dx} ${cellY - 54 + dy}
+                     M ${cellX - 66 + dx} ${cellY + 14 + dy}
+                     C ${cellX - 18 + dx} ${cellY - 10 + dy},
+                       ${cellX + 24 + dx} ${cellY + 40 + dy},
+                     ${cellX + 70 + dx} ${cellY + 16 + dy}
+                  fill="none"
+                  stroke="rgba(180, 233, 255, 0.9)"
+                  stroke-width="${1.2 + i * 0.18}"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+          `);
+        }
+      }
+
+      // 纺锤体微管（从两极连接染色体）
+      const spindle = [];
+      if (p > 0.22) {
+        const poles = [[250, 110], [550, 110], [250, 430], [550, 430]];
+        const targets = [
+          [-96, -26 - 46 * separation],
+          [96, -24 - 46 * separation],
+          [-96, 26 + 46 * separation],
+          [96, 24 + 46 * separation],
+        ];
+        for (let i = 0; i < 4; i++) {
+          const [sx, sy] = chromPositions[i];
+          const [tx, ty] = targets[i];
+          const x = lerp(sx, tx, separation);
+          const y = lerp(sy, ty, separation);
+          for (const [px, py] of poles) {
+            spindle.push(`<line x1="${cellX + x}" y1="${cellY + y}" x2="${px}" y2="${py}" stroke="url(#spindle)" stroke-width="2.2" />`);
           }
-
-          const markers = points
-            .map(([x, y]) => {
-              if (markerType === "square") {
-                return `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" fill="${lineColor}" stroke="${lineColor}" />`;
-              }
-              if (markerType === "triangle") {
-                return `<polygon points="${x},${y - 6} ${x - 6},${y + 5} ${x + 6},${y + 5}" fill="${lineColor}" stroke="${lineColor}" />`;
-              }
-              return `<circle cx="${x}" cy="${y}" r="5.5" fill="${lineColor}" stroke="${lineColor}" />`;
-            })
-            .join("");
-
-          const xLabels = phaseStops
-            .map(([p, label]) => `<text x="${xFor(p)}" y="${h - 18}" text-anchor="middle" fill="#222222" font-size="13" font-weight="700">${label}</text>`)
-            .join("");
-
-          const yLabels = `
-            <text x="18" y="${yFor(2) + 4}" fill="#222222" font-size="12">2n</text>
-            <text x="24" y="${yFor(1) + 4}" fill="#222222" font-size="12">n</text>
-            <text x="24" y="${yFor(0) + 4}" fill="#222222" font-size="12">0</text>
-          `;
-
-          const legend = `
-            <g>
-              <rect x="10" y="10" width="200" height="42" rx="8" fill="rgba(255,255,255,0.92)" stroke="#d0d0d0" />
-              <line x1="22" y1="31" x2="56" y2="31" stroke="${lineColor}" stroke-width="3.5" stroke-linecap="round" />
-              ${markerType === "square"
-                ? `<rect x="37" y="26" width="10" height="10" fill="${lineColor}" />`
-                : markerType === "triangle"
-                  ? `<polygon points="42,25 36,36 48,36" fill="${lineColor}" />`
-                  : `<circle cx="42" cy="31" r="5.5" fill="${lineColor}" />`}
-              <text x="70" y="35" fill="#111827" font-size="13">${shellTitle}</text>
-            </g>
-          `;
-
-          rootEl.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="${h}" rx="16" fill="#ffffff" />
-            <g opacity="0.95">${grid.join("")}</g>
-            <path d="${makePath(points)}" fill="none" stroke="${lineColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="miter" />
-            ${markers}
-            <line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${h - pad.b}" stroke="#1f2937" stroke-width="1.2" />
-            <line x1="${pad.l}" y1="${h - pad.b}" x2="${w - pad.r}" y2="${h - pad.b}" stroke="#1f2937" stroke-width="1.2" />
-            ${legend}
-            <g>
-              ${yLabels}
-              ${xLabels}
-              <text x="${pad.l + innerW / 2}" y="${h - 2}" text-anchor="middle" fill="#222222" font-size="12">分裂阶段</text>
-            </g>
-          `;
         }
+      }
 
-        function chromosome(x, y, scale, rotate, opacity, opened) {
-          const arm = opened ? 18 : 24;
-          const stroke = 9 * scale;
-          return `
-            <g transform="translate(${x}, ${y}) rotate(${rotate}) scale(${scale})" opacity="${opacity}" filter="url(#softGlow)">
-              <path d="M -${arm} -26 C -10 -10, -10 10, -${arm} 26" fill="none" stroke="url(#chromosomeFill)" stroke-width="${stroke}" stroke-linecap="round" />
-              <path d="M ${arm} -26 C 10 -10, 10 10, ${arm} 26" fill="none" stroke="url(#chromosomeFill)" stroke-width="${stroke}" stroke-linecap="round" />
-              <line x1="-11" y1="-6" x2="11" y2="6" stroke="rgba(255,255,255,0.8)" stroke-width="4" stroke-linecap="round" />
-              <circle cx="0" cy="0" r="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" />
-            </g>
-          `;
-        }
+      // 动态染色体（根据阶段变换位置、旋转、缩放）
+      const chromosomeGroup = chromPositions
+        .map((pos, i) => {
+          const bias = i < 2 ? -1 : 1;
+          const phaseX = lerp(pos[0], pos[0] * 0.72, chromatin);
+          const phaseY = lerp(pos[1], pos[1] * 0.72, chromatin);
+          const x = cellX + phaseX + alignment * 18 * bias + separation * 150 * bias;
+          const y = cellY + phaseY + (i % 2 === 0 ? -10 : 10) * separation;
+          const rotate = bias * lerp(-18, 16, separation) + (i % 2 === 0 ? -8 : 8);
+          const scale = lerp(0.72, 1, chromatin);
+          const opacity = lerp(0.55, 1, chromatin);
+          return chromosome(x, y, scale, rotate, opacity, separation > 0.46);
+        })
+        .join("");
 
-        function separatedChromosome(cx, cy, division, bias) {
-          const offsetX = 34 + 22 * division;
-          const offsetY = 28 + 16 * division;
-          const leftX = cx - offsetX * bias;
-          const rightX = cx + offsetX * bias;
-          const topY = cy - offsetY;
-          const bottomY = cy + offsetY;
-          return `
-            <g filter="url(#softGlow)">
-              <path d="M ${leftX - 10} ${topY - 24} C ${leftX - 18} ${topY - 4}, ${leftX - 16} ${topY + 12}, ${leftX - 4} ${topY + 26}" fill="none" stroke="url(#chromosomeFill)" stroke-width="7" stroke-linecap="round" />
-              <path d="M ${rightX + 10} ${bottomY + 24} C ${rightX + 18} ${bottomY + 4}, ${rightX + 16} ${bottomY - 12}, ${rightX + 4} ${bottomY - 26}" fill="none" stroke="url(#chromosomeFill)" stroke-width="7" stroke-linecap="round" />
-              <circle cx="${leftX}" cy="${topY}" r="8" fill="#dfe7ff" opacity="0.9" />
-              <circle cx="${rightX}" cy="${bottomY}" r="8" fill="#dfe7ff" opacity="0.9" />
-            </g>
-          `;
-        }
+      // 细胞膜
+      const membrane = `
+        <g>
+          <circle cx="${cellX}" cy="${cellY}" r="${cellR}" fill="none" stroke="url(#cellStroke)" stroke-width="8" />
+          <circle cx="${cellX}" cy="${cellY}" r="${cellR - 9}" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1.2" />
+        </g>
+      `;
 
-        function renderStage(p) {
-          const cellX = 400;
-          const cellY = 270;
-          const cellR = 184;
+      // 细胞核（间期）
+      const nucleus = `
+        <g opacity="${nucleusOpacity}">
+          <circle cx="${cellX}" cy="${cellY}" r="${118 - 22 * envelopeBreak}" fill="rgba(145,178,255,0.08)" stroke="rgba(180,213,255,0.5)" stroke-width="2.5" />
+          <circle cx="${cellX}" cy="${cellY}" r="${34 - 8 * envelopeBreak}" fill="rgba(110,231,255,0.14)" stroke="rgba(110,231,255,0.42)" stroke-width="1.8" />
+        </g>
+      `;
 
-          const chromatin = clamp((p - 0.08) / 0.26, 0, 1);
-          const envelopeBreak = clamp((p - 0.22) / 0.18, 0, 1);
-          const alignment = clamp((p - 0.4) / 0.18, 0, 1);
-          const separation = clamp((p - 0.58) / 0.18, 0, 1);
-          const division = clamp((p - 0.78) / 0.18, 0, 1);
-          const nucleusOpacity = clamp(1 - (p - 0.28) / 0.11, 0, 1);
-          const spindleOpacity = clamp((p - 0.22) / 0.16, 0, 1);
+      // 纺锤极发光效果
+      const poleLight = `
+        <g opacity="${spindleOpacity * 0.92}">
+          <circle cx="250" cy="110" r="16" fill="rgba(110,231,255,0.22)" />
+          <circle cx="550" cy="110" r="16" fill="rgba(110,231,255,0.22)" />
+          <circle cx="250" cy="430" r="16" fill="rgba(110,231,255,0.22)" />
+          <circle cx="550" cy="430" r="16" fill="rgba(110,231,255,0.22)" />
+        </g>
+      `;
 
-          const chromPositions = [
-            [-92, -56],
-            [94, -50],
-            [-84, 56],
-            [86, 58],
-          ];
+      // 赤道板指示线（中期）
+      const equator = `
+        <g opacity="${alignment}">
+          <line x1="${cellX - 150}" y1="${cellY}" x2="${cellX + 150}" y2="${cellY}" stroke="rgba(110,231,255,0.4)" stroke-width="2" stroke-dasharray="10 10" />
+          <text x="${cellX}" y="${cellY - 18}" text-anchor="middle" fill="rgba(220,233,255,0.72)" font-size="13">赤道板 / 赤道面</text>
+        </g>
+      `;
 
-          const cloud = [];
-          if (chromatin < 0.92) {
-            for (let i = 0; i < 6; i++) {
-              const a = i * 1.08;
-              const dx = Math.cos(a) * 18;
-              const dy = Math.sin(a * 1.2) * 16;
-              cloud.push(`
-                <path d="M ${cellX - 64 + dx} ${cellY - 40 + dy}
-                         C ${cellX - 24 + dx} ${cellY - 74 + dy},
-                           ${cellX + 18 + dx} ${cellY - 34 + dy},
-                           ${cellX + 62 + dx} ${cellY - 54 + dy}
-                         M ${cellX - 66 + dx} ${cellY + 14 + dy}
-                         C ${cellX - 18 + dx} ${cellY - 10 + dy},
-                           ${cellX + 24 + dx} ${cellY + 40 + dy},
-                         ${cellX + 70 + dx} ${cellY + 16 + dy}
-                      fill="none"
-                      stroke="rgba(180, 233, 255, 0.9)"
-                      stroke-width="${1.2 + i * 0.18}"
-                      stroke-linecap="round"
-                      stroke-linejoin="round" />
-              `);
-            }
-          }
+      // 胞质分裂沟（末期）
+      const cleavage = `
+        <g opacity="${division}">
+          <path d="M ${cellX - 120 + division * 100} ${cellY - 186}
+                   C ${cellX - 72 + division * 82} ${cellY - 120},
+                     ${cellX - 42 + division * 48} ${cellY + 118},
+                     ${cellX - 16 + division * 10} ${cellY + 186}
+                   M ${cellX + 120 - division * 100} ${cellY - 186}
+                   C ${cellX + 72 - division * 82} ${cellY - 120},
+                     ${cellX + 42 - division * 48} ${cellY + 118},
+                      ${cellX + 16 - division * 10} ${cellY + 186}
+                fill="none"
+                stroke="rgba(255,255,255,0.18)"
+                stroke-width="2"
+                stroke-dasharray="7 8" />
+        </g>
+      `;
 
-          const spindle = [];
-          if (p > 0.22) {
-            const poles = [
-              [250, 110],
-              [550, 110],
-              [250, 430],
-              [550, 430],
-            ];
-            const targets = [
-              [-96, -26 - 46 * separation],
-              [96, -24 - 46 * separation],
-              [-96, 26 + 46 * separation],
-              [96, 24 + 46 * separation],
-            ];
-            for (let i = 0; i < 4; i++) {
-              const [sx, sy] = chromPositions[i];
-              const [tx, ty] = targets[i];
-              const x = lerp(sx, tx, separation);
-              const y = lerp(sy, ty, separation);
-              for (const [px, py] of poles) {
-                spindle.push(`<line x1="${cellX + x}" y1="${cellY + y}" x2="${px}" y2="${py}" stroke="url(#spindle)" stroke-width="2.2" />`);
-              }
-            }
-          }
+      // 子细胞核（末期）
+      const daughterNuclei = `
+        <g opacity="${division}">
+          <circle cx="${cellX - 88}" cy="${cellY}" r="${90 - 10 * division}" fill="rgba(145,178,255,0.07)" stroke="rgba(180,213,255,0.34)" stroke-width="2" />
+          <circle cx="${cellX + 88}" cy="${cellY}" r="${90 - 10 * division}" fill="rgba(145,178,255,0.07)" stroke="rgba(180,213,255,0.34)" stroke-width="2" />
+        </g>
+      `;
 
-          const chromosomeGroup = chromPositions
-            .map((pos, i) => {
-              const bias = i < 2 ? -1 : 1;
-              const phaseX = lerp(pos[0], pos[0] * 0.72, chromatin);
-              const phaseY = lerp(pos[1], pos[1] * 0.72, chromatin);
-              const x = cellX + phaseX + alignment * 18 * bias + separation * 150 * bias;
-              const y = cellY + phaseY + (i % 2 === 0 ? -10 : 10) * separation;
-              const rotate = bias * lerp(-18, 16, separation) + (i % 2 === 0 ? -8 : 8);
-              const scale = lerp(0.72, 1, chromatin);
-              const opacity = lerp(0.55, 1, chromatin);
-              return chromosome(x, y, scale, rotate, opacity, separation > 0.46);
-            })
-            .join("");
+      // 子细胞中的染色体
+      const daughterChromosomes = `
+        <g opacity="${division}">
+          ${separatedChromosome(cellX - 88, cellY, division, 1)}
+          ${separatedChromosome(cellX + 88, cellY, division, -1)}
+        </g>
+      `;
 
-          const membrane = `
-            <g>
-              <circle cx="${cellX}" cy="${cellY}" r="${cellR}" fill="none" stroke="url(#cellStroke)" stroke-width="8" />
-              <circle cx="${cellX}" cy="${cellY}" r="${cellR - 9}" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1.2" />
-            </g>
-          `;
+      // 更新舞台内容
+      els.stageRoot.innerHTML = `
+        <text x="40" y="48" fill="rgba(220,233,255,0.82)" font-size="16">${phaseName(p)}：${phaseDescription(p)}</text>
+        ${membrane}
+        ${poleLight}
+        ${equator}
+        ${nucleus}
+        ${cloud.join("")}
+        ${spindle.join("")}
+        ${chromosomeGroup}
+        ${cleavage}
+        ${daughterNuclei}
+        ${daughterChromosomes}
+        <g opacity="${division}">
+          <text x="${cellX - 88}" y="${cellY + 138}" text-anchor="middle" fill="rgba(220,233,255,0.7)" font-size="14">子细胞 1</text>
+          <text x="${cellX + 88}" y="${cellY + 138}" text-anchor="middle" fill="rgba(220,233,255,0.7)" font-size="14">子细胞 2</text>
+        </g>
+      `;
+    }
 
-          const nucleus = `
-            <g opacity="${nucleusOpacity}">
-              <circle cx="${cellX}" cy="${cellY}" r="${118 - 22 * envelopeBreak}" fill="rgba(145,178,255,0.08)" stroke="rgba(180,213,255,0.5)" stroke-width="2.5" />
-              <circle cx="${cellX}" cy="${cellY}" r="${34 - 8 * envelopeBreak}" fill="rgba(110,231,255,0.14)" stroke="rgba(110,231,255,0.42)" stroke-width="1.8" />
-            </g>
-          `;
+    // ========== 主渲染函数 ==========
+    function render() {
+      const p = clamp(state.progress, 0, 1);
+      const series = getSeries(p);
 
-          const poleLight = `
-            <g opacity="${spindleOpacity * 0.92}">
-              <circle cx="250" cy="110" r="16" fill="rgba(110,231,255,0.22)" />
-              <circle cx="550" cy="110" r="16" fill="rgba(110,231,255,0.22)" />
-              <circle cx="250" cy="430" r="16" fill="rgba(110,231,255,0.22)" />
-              <circle cx="550" cy="430" r="16" fill="rgba(110,231,255,0.22)" />
-            </g>
-          `;
+      // 更新 UI 文本
+      els.phaseText.textContent = phaseName(p);
+      els.progressText.textContent = `${Math.round(p * 100)}%`;
+      els.dnaValue.textContent = `${series.dna.toFixed(1)}n`;
+      els.chrValue.textContent = `${series.chr.toFixed(1)}n`;
+      els.sisValue.textContent = `${series.sister.toFixed(1)}n`;
 
-          const equator = `
-            <g opacity="${alignment}">
-              <line x1="${cellX - 150}" y1="${cellY}" x2="${cellX + 150}" y2="${cellY}" stroke="rgba(110,231,255,0.4)" stroke-width="2" stroke-dasharray="10 10" />
-              <text x="${cellX}" y="${cellY - 18}" text-anchor="middle" fill="rgba(220,233,255,0.72)" font-size="13">赤道板 / 赤道面</text>
-            </g>
-          `;
+      // 更新进度条
+      els.scrubFill.style.width = `${p * 100}%`;
 
-          const cleavage = `
-            <g opacity="${division}">
-              <path d="M ${cellX - 120 + division * 100} ${cellY - 186}
-                       C ${cellX - 72 + division * 82} ${cellY - 120},
-                         ${cellX - 42 + division * 48} ${cellY + 118},
-                         ${cellX - 16 + division * 10} ${cellY + 186}
-                       M ${cellX + 120 - division * 100} ${cellY - 186}
-                       C ${cellX + 72 - division * 82} ${cellY - 120},
-                         ${cellX + 42 - division * 48} ${cellY + 118},
-                          ${cellX + 16 - division * 10} ${cellY + 186}
-                    fill="none"
-                    stroke="rgba(255,255,255,0.18)"
-                    stroke-width="2"
-                    stroke-dasharray="7 8" />
-            </g>
-          `;
+      // 渲染舞台和图表光标
+      renderStage(p);
+      buildChartsOnce();       // 只构建一次图表（避免重复）
+      renderChartCursors(p);   // 更新三个图表上的动态光标
+    }
 
-          const daughterNuclei = `
-            <g opacity="${division}">
-              <circle cx="${cellX - 88}" cy="${cellY}" r="${90 - 10 * division}" fill="rgba(145,178,255,0.07)" stroke="rgba(180,213,255,0.34)" stroke-width="2" />
-              <circle cx="${cellX + 88}" cy="${cellY}" r="${90 - 10 * division}" fill="rgba(145,178,255,0.07)" stroke="rgba(180,213,255,0.34)" stroke-width="2" />
-            </g>
-          `;
+    // ========== 图表只构建一次的标志 ==========
+    let chartsBuilt = false;
+    function buildChartsOnce() {
+      if (chartsBuilt) return;
+      chartsBuilt = true;
+      buildChartPanel(els.dnaChartRoot, (p) => getSeries(p).dna, "#1f77b4", "DNA 含量", "circle");
+      buildChartPanel(els.chrChartRoot, (p) => getSeries(p).chr, "#ff7f0e", "染色体数", "square");
+      buildChartPanel(els.sisChartRoot, (p) => getSeries(p).sister, "#2ca02c", "姐妹染色单体", "triangle");
+    }
 
-          const daughterChromosomes = `
-            <g opacity="${division}">
-              ${separatedChromosome(cellX - 88, cellY, division, 1)}
-              ${separatedChromosome(cellX + 88, cellY, division, -1)}
-            </g>
-          `;
+    // ========== 渲染图表上的动态光标（垂直线 + 数值标签） ==========
+    function renderChartCursor(rootEl, p, value, color, label) {
+      const w = 700;
+      const h = 240;
+      const pad = { l: 70, r: 24, t: 20, b: 56 };
+      const innerW = w - pad.l - pad.r;
+      const innerH = h - pad.t - pad.b;
+      const x = pad.l + innerW * p;
+      const y = pad.t + innerH * (1 - value / 2.4); // 注意这里用了 2.4 而非 2，可能是为了视觉调整
+      const textY = Math.max(18, y - 12);
 
-          els.stageRoot.innerHTML = `
-            <text x="40" y="48" fill="rgba(220,233,255,0.82)" font-size="16">${phaseName(p)}：${phaseDescription(p)}</text>
-            ${membrane}
-            ${poleLight}
-            ${equator}
-            ${nucleus}
-            ${cloud.join("")}
-            ${spindle.join("")}
-            ${chromosomeGroup}
-            ${cleavage}
-            ${daughterNuclei}
-            ${daughterChromosomes}
-            <g opacity="${division}">
-              <text x="${cellX - 88}" y="${cellY + 138}" text-anchor="middle" fill="rgba(220,233,255,0.7)" font-size="14">子细胞 1</text>
-              <text x="${cellX + 88}" y="${cellY + 138}" text-anchor="middle" fill="rgba(220,233,255,0.7)" font-size="14">子细胞 2</text>
-            </g>
-          `;
-        }
+      rootEl.innerHTML = `
+        <line x1="${x}" y1="${pad.t}" x2="${x}" y2="${h - pad.b}" stroke="rgba(60,60,60,0.7)" stroke-width="1.5" stroke-dasharray="6 6" />
+        <circle cx="${x}" cy="${y}" r="6.5" fill="${color}" stroke="#ffffff" stroke-width="2" />
+        <rect x="${Math.min(x + 8, w - 150)}" y="${Math.max(8, textY - 14)}" width="140" height="22" rx="6" fill="rgba(255,255,255,0.95)" stroke="rgba(0,0,0,0.12)" />
+        <text x="${Math.min(x + 14, w - 136)}" y="${textY}" fill="#111827" font-size="12" font-weight="700">${label}: ${value.toFixed(1)}n</text>
+      `;
+    }
 
-        function render() {
-          const p = clamp(state.progress, 0, 1);
-          const series = getSeries(p);
-          els.phaseText.textContent = phaseName(p);
-          els.progressText.textContent = `${Math.round(p * 100)}%`;
-          els.dnaValue.textContent = `${series.dna.toFixed(1)}n`;
-          els.chrValue.textContent = `${series.chr.toFixed(1)}n`;
-          els.sisValue.textContent = `${series.sister.toFixed(1)}n`;
-          els.scrubFill.style.width = `${p * 100}%`;
-          renderStage(p);
-          buildChartsOnce();
-          renderChartCursors(p);
-        }
+    // ========== 设置进度并触发渲染 ==========
+    function setProgress(next) {
+      state.progress = clamp(next, 0, 1);
+      render();
+    }
 
-        let chartsBuilt = false;
+    // ========== 从鼠标位置计算进度 ==========
+    function progressFromClientX(shell, clientX) {
+      const rect = shell.getBoundingClientRect();
+      return clamp((clientX - rect.left) / rect.width, 0, 1);
+    }
 
-        function buildChartsOnce() {
-          if (chartsBuilt) return;
-          chartsBuilt = true;
-          buildChartPanel(els.dnaChartRoot, (p) => getSeries(p).dna, "#1f77b4", "DNA 含量", "circle");
-          buildChartPanel(els.chrChartRoot, (p) => getSeries(p).chr, "#ff7f0e", "染色体数", "square");
-          buildChartPanel(els.sisChartRoot, (p) => getSeries(p).sister, "#2ca02c", "姐妹染色单体", "triangle");
-        }
+    // ========== 批量更新三个图表的光标 ==========
+    function renderChartCursors(p) {
+      const s = getSeries(p);
+      renderChartCursor(els.dnaCursorRoot, p, s.dna, "#6ee7ff", "DNA");
+      renderChartCursor(els.chrCursorRoot, p, s.chr, "#c29cff", "染色体");
+      renderChartCursor(els.sisCursorRoot, p, s.sister, "#ffd166", "姐妹染色单体");
+    }
 
-        function renderChartCursor(rootEl, p, value, color, label) {
-          const w = 700;
-          const h = 240;
-          const pad = { l: 70, r: 24, t: 20, b: 56 };
-          const innerW = w - pad.l - pad.r;
-          const innerH = h - pad.t - pad.b;
-          const x = pad.l + innerW * p;
-          const y = pad.t + innerH * (1 - value / 2.4);
-          const textY = Math.max(18, y - 12);
+    // ========== 拖拽开始 ==========
+    function beginDrag(shell, clientX) {
+      state.dragging = true;
+      state.dragShell = shell;
+      state.playing = false;
+      els.playBtn.textContent = "播放";
+      setProgress(progressFromClientX(shell, clientX));
+    }
 
-          rootEl.innerHTML = `
-            <line x1="${x}" y1="${pad.t}" x2="${x}" y2="${h - pad.b}" stroke="rgba(60,60,60,0.7)" stroke-width="1.5" stroke-dasharray="6 6" />
-            <circle cx="${x}" cy="${y}" r="6.5" fill="${color}" stroke="#ffffff" stroke-width="2" />
-            <rect x="${Math.min(x + 8, w - 150)}" y="${Math.max(8, textY - 14)}" width="140" height="22" rx="6" fill="rgba(255,255,255,0.95)" stroke="rgba(0,0,0,0.12)" />
-            <text x="${Math.min(x + 14, w - 136)}" y="${textY}" fill="#111827" font-size="12" font-weight="700">${label}: ${value.toFixed(1)}n</text>
-          `;
-        }
+    // ========== 拖拽中 ==========
+    function moveDrag(clientX) {
+      if (!state.dragging || !state.dragShell) return;
+      setProgress(progressFromClientX(state.dragShell, clientX));
+    }
 
-        
+    // ========== 拖拽结束 ==========
+    function endDrag() {
+      state.dragging = false;
+      state.dragShell = null;
+    }
 
-        function setProgress(next) {
-          state.progress = clamp(next, 0, 1);
-          render();
-        }
+    // ========== 事件监听：拖拽图表区域 ==========
+    [els.dnaChartShell, els.chrChartShell, els.sisChartShell].forEach((shell) => {
+      shell.addEventListener("pointerdown", (e) => {
+        shell.setPointerCapture?.(e.pointerId);
+        beginDrag(shell, e.clientX);
+      });
+    });
 
-        function progressFromClientX(shell, clientX) {
-          const rect = shell.getBoundingClientRect();
-          return clamp((clientX - rect.left) / rect.width, 0, 1);
-        }
+    // 全局监听鼠标移动和释放
+    window.addEventListener("pointermove", (e) => moveDrag(e.clientX));
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
 
-        function renderChartCursors(p) {
-          const s = getSeries(p);
-          renderChartCursor(els.dnaCursorRoot, p, s.dna, "#6ee7ff", "DNA");
-          renderChartCursor(els.chrCursorRoot, p, s.chr, "#c29cff", "染色体");
-          renderChartCursor(els.sisCursorRoot, p, s.sister, "#ffd166", "姐妹染色单体");
-        }
+    // ========== 播放/暂停按钮 ==========
+    els.playBtn.addEventListener("click", () => {
+      state.playing = !state.playing;
+      els.playBtn.textContent = state.playing ? "暂停" : "播放";
+      if (state.playing) {
+        state.lastTs = performance.now();
+        requestAnimationFrame(tick);
+      }
+    });
 
-        function beginDrag(shell, clientX) {
-          state.dragging = true;
-          state.dragShell = shell;
-          state.playing = false;
-          els.playBtn.textContent = "播放";
-          setProgress(progressFromClientX(shell, clientX));
-        }
+    // ========== 重置按钮 ==========
+    els.resetBtn.addEventListener("click", () => {
+      state.playing = false;
+      els.playBtn.textContent = "播放";
+      setProgress(0);
+    });
 
-        function moveDrag(clientX) {
-          if (!state.dragging || !state.dragShell) return;
-          setProgress(progressFromClientX(state.dragShell, clientX));
-        }
+    // ========== 动画循环（播放时调用） ==========
+    function tick(ts) {
+      if (!state.playing) return;
+      const delta = Math.min(0.03, (ts - state.lastTs) / 1000); // 限制最大步长
+      state.lastTs = ts;
+      setProgress(state.progress + delta * 0.16); // 控制播放速度
+      if (state.progress >= 1) {
+        state.playing = false;
+        els.playBtn.textContent = "播放";
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
 
-        function endDrag() {
-          state.dragging = false;
-          state.dragShell = null;
-        }
-
-        [els.dnaChartShell, els.chrChartShell, els.sisChartShell].forEach((shell) => {
-          shell.addEventListener("pointerdown", (e) => {
-            shell.setPointerCapture?.(e.pointerId);
-            beginDrag(shell, e.clientX);
-          });
-        });
-        window.addEventListener("pointermove", (e) => moveDrag(e.clientX));
-        window.addEventListener("pointerup", endDrag);
-        window.addEventListener("pointercancel", endDrag);
-
-        els.playBtn.addEventListener("click", () => {
-          state.playing = !state.playing;
-          els.playBtn.textContent = state.playing ? "暂停" : "播放";
-          if (state.playing) {
-            state.lastTs = performance.now();
-            requestAnimationFrame(tick);
-          }
-        });
-
-        els.resetBtn.addEventListener("click", () => {
-          state.playing = false;
-          els.playBtn.textContent = "播放";
-          setProgress(0);
-        });
-
-        function tick(ts) {
-          if (!state.playing) return;
-          const delta = Math.min(0.03, (ts - state.lastTs) / 1000);
-          state.lastTs = ts;
-          setProgress(state.progress + delta * 0.16);
-          if (state.progress >= 1) {
-            state.playing = false;
-            els.playBtn.textContent = "播放";
-            return;
-          }
-          requestAnimationFrame(tick);
-        }
-
-        buildChartsOnce();
-        setProgress(0);
-        window.addEventListener("resize", () => render());
-      })();
+    // ========== 初始化 ==========
+    buildChartsOnce(); // 构建图表
+    setProgress(0);    // 初始进度为 0
+    window.addEventListener("resize", () => render()); // 窗口大小变化时重绘
+  })();
     </script>
   </body>
 </html>

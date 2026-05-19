@@ -441,6 +441,43 @@
             text-align: center;
         }
 
+         .user-dropdown {
+      position: relative;
+    }
+
+    .user-dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 8px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 160px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .user-dropdown-menu.show {
+      display: block;
+    }
+
+    .user-dropdown-item {
+      padding: 10px 16px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      display: block;
+      transition: background 0.2s;
+    }
+
+    .user-dropdown-item:hover {
+      background: #f1f5f9;
+    }
+
+    .user-dropdown-item.danger {
+      color: #ef4444;
+    }
         @media (max-width: 900px) {
             .cards-container {
                 grid-template-columns: 1fr;
@@ -523,10 +560,26 @@
                 <a href="forum/main.html" class="nav-link">论坛</a>
             </div>
 
-            <div class="user-actions">
-                <div class="avatar-wrapper">
+           <div class="user-actions">
+                <div class="avatar-wrapper" id="userAvatarBtn">
                     <div class="avatar">👤</div>
                     <div class="upload-overlay">+</div>
+
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <a href="#" class="user-dropdown-item">
+                                <i class="fas fa-user"></i> 个人中心
+                            </a>
+                            <a href="#" class="user-dropdown-item">
+                                <i class="fas fa-file-alt"></i> 我的帖子
+                            </a>
+                            <a href="#" class="user-dropdown-item">
+                                <i class="fas fa-cog"></i> 设置
+                            </a>
+                            <a href="./login/login-main.html" class="user-dropdown-item danger">
+                                <i class="fas fa-sign-out-alt"></i> 退出登录
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -724,6 +777,22 @@
             autoSlideInterval = setInterval(nextSlide, 5000);
         });
 
+        // 用户下拉菜单
+        const userAvatarBtn = document.getElementById('userAvatarBtn');
+        const dropdown = document.getElementById('userDropdownMenu');
+
+        if (userAvatarBtn && dropdown) {
+            userAvatarBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!dropdown.contains(event.target) && event.target !== userAvatarBtn) {
+            dropdown.classList.remove('show');
+          }
+        });
+      }
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
             toggle.addEventListener('click', function (e) {
