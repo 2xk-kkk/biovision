@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,119 +20,219 @@
       line-height: 1.6;
     }
 
-    /* 导航栏样式 */
-    .navbar {
-      background: #fff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 12px 24px;
+    .top {
+      background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+      height: 60px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 999;
     }
 
-    .navbar-brand {
-      font-size: 20px;
-      font-weight: 700;
-      color: #3B82F6;
-      text-decoration: none;
+    .logo {
+      width: 120px;
+      height: 40px;
+      background-image: url(../images/logo.png);
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      flex-shrink: 0;
     }
 
-    .navbar-search {
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .search {
       flex: 1;
-      max-width: 400px;
-      margin: 0 32px;
-      position: relative;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-form {
+      display: flex;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #f9fafb;
     }
 
     .search-input {
-      width: 100%;
-      padding: 8px 16px 8px 40px;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
+      flex: 1;
+      border: none;
+      padding: 8px 16px;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      background: transparent;
     }
 
-    .search-input:focus {
-      border-color: #3B82F6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    .search-btn {
+      background: #667eea;
+      border: none;
+      padding: 0 16px;
+      cursor: pointer;
+      font-size: 16px;
+      color: white;
     }
 
-    .search-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #9ca3af;
-    }
-
-    .navbar-nav {
+    .nav-area {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
     }
 
     .nav-link {
-      color: #64748b;
       text-decoration: none;
+      color: #374151;
       font-size: 14px;
       font-weight: 500;
-      padding: 4px 0;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
+      transition: all 0.2s;
+      padding: 4px 8px;
+      border-radius: 4px;
+      position: relative;
     }
 
     .nav-link:hover {
-      color: #3B82F6;
+      color: #667eea;
+      background-color: #f3f4f6;
     }
 
     .nav-link.active {
-      color: #3B82F6;
-      border-bottom-color: #3B82F6;
+      color: #667eea;
+      background-color: #f0f6fd;
     }
 
     .btn-primary {
-      background: #3B82F6;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 500;
-      border: none;
-      cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: #667eea;
+      color: #fff;
       text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      transition: background 0.2s;
     }
 
     .btn-primary:hover {
-      background: #2563eb;
+      background: #5a6fd8;
     }
 
-    .user-avatar {
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      min-width: 200px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f3f4f6;
+      color: #667eea;
+    }
+
+    .dropdown.show .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-toggle::after {
+      content: '';
+      display: inline-block;
+      width: 0;
+      height: 0;
+      margin-left: 6px;
+      vertical-align: middle;
+      border-top: 4px solid;
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .avatar {
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
-      color: #fff;
+      background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+      color: white;
+      overflow: hidden;
+      transition: transform 0.2s;
     }
 
-    .user-dropdown {
-      position: relative;
+    .avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .upload-overlay {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background: #667eea;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: white;
+      border: 2px solid white;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .avatar-wrapper:hover .upload-overlay {
+      opacity: 1;
     }
 
     .user-dropdown-menu {
@@ -147,6 +246,7 @@
       min-width: 160px;
       overflow: hidden;
       display: none;
+      z-index: 1000;
     }
 
     .user-dropdown-menu.show {
@@ -170,21 +270,18 @@
       color: #ef4444;
     }
 
-    /* 主容器样式 */
     .main-container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 24px 16px;
     }
 
-    /* 内容区域布局 */
     .content-layout {
       display: grid;
       grid-template-columns: 1fr 320px;
       gap: 24px;
     }
 
-    /* 卡片通用样式 */
     .card {
       background: #fff;
       border-radius: 12px;
@@ -206,7 +303,6 @@
       color: #3B82F6;
     }
 
-    /* 论坛板块样式 */
     .forum-sections {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -251,7 +347,6 @@
       color: #94a3b8;
     }
 
-    /* 统计卡片样式 */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -289,7 +384,6 @@
       color: #F59E0B;
     }
 
-    /* 活跃度图表容器 */
     .activity-chart {
       margin-top: 20px;
     }
@@ -301,7 +395,6 @@
       margin-bottom: 12px;
     }
 
-    /* 热门标签样式 */
     .tags-cloud {
       display: flex;
       flex-wrap: wrap;
@@ -324,7 +417,6 @@
       color: #fff;
     }
 
-    /* 帖子排序按钮 */
     .sort-buttons {
       display: flex;
       gap: 8px;
@@ -352,7 +444,6 @@
       color: #fff;
     }
 
-    /* 帖子卡片样式 */
     .post-card {
       background: #fff;
       border-radius: 12px;
@@ -360,16 +451,11 @@
       margin-bottom: 16px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       transition: box-shadow 0.2s;
+      cursor: pointer;
     }
 
     .post-card:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .post-card-link {
-      text-decoration: none;
-      color: inherit;
-      display: block;
     }
 
     .post-header {
@@ -379,7 +465,6 @@
       margin-bottom: 12px;
     }
 
-    /* 头像样式 - 首字母头像 */
     .post-avatar {
       width: 44px;
       height: 44px;
@@ -394,7 +479,6 @@
       flex-shrink: 0;
     }
 
-    /* 头像链接样式 */
     .post-avatar-link {
       display: inline-block;
       text-decoration: none;
@@ -405,7 +489,6 @@
       transform: scale(1.1);
     }
 
-    /* 如果后端传入真实头像图片，img标签会覆盖背景 */
     .post-avatar img {
       width: 44px;
       height: 44px;
@@ -481,6 +564,7 @@
       color: #475569;
       line-height: 1.7;
       margin-bottom: 16px;
+      white-space: pre-wrap;
     }
 
     .post-actions {
@@ -510,7 +594,6 @@
       color: #ef4444;
     }
 
-    /* 加载动画 */
     .loading-spinner {
       display: none;
       justify-content: center;
@@ -536,7 +619,6 @@
       }
     }
 
-    /* 回顶部按钮 */
     .back-to-top {
       position: fixed;
       right: 24px;
@@ -566,75 +648,101 @@
       background: #f1f5f9;
     }
 
-    /* 移动端适配 */
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
     @media (max-width: 768px) {
       .content-layout {
         grid-template-columns: 1fr;
       }
 
-      .navbar-search {
+      .nav-links {
         display: none;
       }
 
-      .navbar-nav {
-        gap: 16px;
+      .search {
+        max-width: 100%;
       }
 
-      .nav-link {
-        font-size: 13px;
+      .top {
+        gap: 12px;
+      }
+
+      .logo {
+        width: 96px;
       }
     }
   </style>
 </head>
 
 <body>
-  <!-- 导航栏 -->
-  <nav class="navbar">
-    <a href="#" class="navbar-brand">
-      <i class="fas fa-leaf"></i> 生物论坛
-    </a>
-
-    <div class="navbar-search">
-      <i class="fas fa-search search-icon"></i>
-      <input type="text" class="search-input" placeholder="搜索帖子、用户或话题...">
+  <div class="top">
+    <div class="logo">
+      <img src="../images/logo.png" alt="Logo">
     </div>
 
-    <div class="navbar-nav">
-      <a href="#" class="nav-link active">首页</a>
-      <a href="#" class="nav-link">课程</a>
-      <a href="#" class="nav-link">论坛</a>
-      <a href="#" class="nav-link">可视化</a>
-      <a href="#" class="nav-link">AI工具</a>
-      <a href="make-post.html" class="btn-primary">
-        <i class="fas fa-plus"></i> 发帖
-      </a>
+    <div class="search">
+      <form class="search-form">
+        <input type="text" class="search-input" placeholder="搜索">
+        <button type="submit" class="search-btn">🔍</button>
+      </form>
+    </div>
 
-      <div class="user-dropdown">
-        <div class="user-avatar" id="userAvatarBtn">小</div>
-        <div class="user-dropdown-menu" id="userDropdownMenu">
-          <a href="#" class="user-dropdown-item">
-            <i class="fas fa-user"></i> 个人中心
-          </a>
-          <a href="#" class="user-dropdown-item">
-            <i class="fas fa-file-alt"></i> 我的帖子
-          </a>
-          <a href="#" class="user-dropdown-item">
-            <i class="fas fa-cog"></i> 设置
-          </a>
-          <a href="#" class="user-dropdown-item danger">
-            <i class="fas fa-sign-out-alt"></i> 退出登录
-          </a>
+    <div class="nav-area">
+      <div class="nav-links">
+        <a href="../index.html" class="nav-link">首页</a>
+
+        <div class="dropdown">
+          <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-module="必修一" style="color: #90b2e6;">🔬必修一：分子与细胞</a>
+            <a href="#" class="dropdown-item" data-module="必修二" style="color: #a194e3;">🧬必修二：遗传与进化</a>
+            <a href="#" class="dropdown-item" data-module="选修一" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+            <a href="#" class="dropdown-item" data-module="选修二" style="color: burlywood;">🌿选修二：生物与环境</a>
+            <a href="#" class="dropdown-item" data-module="选修三" style="color: #6bd3b1;">🧫选修三：生物技术与工程</a>
+          </div>
+        </div>
+
+        <a href="#" class="nav-link">PPT快搭</a>
+        <a href="../practice/main.html" class="nav-link">每日训练</a>
+        <a href="../3D model/main.html" class="nav-link">可视学习</a>
+        <a href="main.html" class="nav-link active">论坛</a>
+        <a href="make-post.html" class="btn-primary">
+          <i class="fas fa-plus"></i> 发帖
+        </a>
+      </div>
+
+      <div class="user-actions">
+        <div class="avatar-wrapper" id="userAvatarBtn">
+          <div class="avatar">👤</div>
+          <div class="upload-overlay">+</div>
+
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <a href="#" class="user-dropdown-item">
+              <i class="fas fa-user"></i> 个人中心
+            </a>
+            <a href="#" class="user-dropdown-item">
+              <i class="fas fa-file-alt"></i> 我的帖子
+            </a>
+            <a href="#" class="user-dropdown-item">
+              <i class="fas fa-cog"></i> 设置
+            </a>
+            <a href="../login/login-main.html" class="user-dropdown-item danger">
+              <i class="fas fa-sign-out-alt"></i> 退出登录
+            </a>
+          </div>
         </div>
       </div>
     </div>
-  </nav>
+  </div>
 
-  <!-- 主容器 -->
   <div class="main-container">
     <div class="content-layout">
-      <!-- 左侧内容区 -->
       <div class="main-content">
-        <!-- 帖子列表标题 -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <h2 style="font-size: 18px; font-weight: 600; color: #1e293b;">
             <i class="fas fa-fire post-main-name" style="color: #F59E0B;"></i> 最新帖子
@@ -646,120 +754,49 @@
           </div>
         </div>
 
-        <!-- 加载动画 -->
         <div class="loading-spinner" id="loading">
           <div class="spinner"></div>
         </div>
       </div>
 
-      <!-- 右侧边栏 -->
       <div class="sidebar">
-        <!-- 论坛板块 -->
         <div class="card" style="margin-bottom: 16px;">
           <div class="card-title">
             <i class="fas fa-th-large"></i> 论坛板块
           </div>
           <div class="forum-sections">
-          <a href="#" class="section-box active">
-    <div class="section-title">全部帖子</div>
-    <div class="section-count" id="totalNum">加载中...</div>
-</a>
+            <a href="#" class="section-box active">
+              <div class="section-title">全部帖子</div>
+              <div class="section-count" id="totalNum">加载中...</div>
+            </a>
 
-<script>
-fetch("http://127.0.0.1:8000/api/posts?page=1")
-.then(res => res.json())
-.then(data => {
-    document.getElementById("totalNum").innerText = data.data.total + " 个帖子";
-})
-.catch(err => {
-    document.getElementById("totalNum").innerText = "加载失败";
-});
-</script>
-
-<a href="#" class="section-box">
-  <div class="section-title">学习交流</div>
-  <div class="section-count" id="xuexiCount">加载中...</div>
-</a>
-
-<script>
-fetch("http://127.0.0.1:8000/api/posts?tag=Question_discussion&page=1")
-.then(res => res.json())
-.then(data => {
-  const count = data.data.total || 0;
-  document.getElementById("xuexiCount").innerText = count + " 个帖子";
-})
-.catch(err => {
-  document.getElementById("xuexiCount").innerText = "0 个帖子";
-});
-</script>
-           <a href="#" class="section-box">
-  <div class="section-title">课程讨论</div>
-  <div class="section-count" id="kechengCount">加载中...</div>
-</a>
-
-<script>
-fetch("http://127.0.0.1:8000/api/posts?tag=Course_discussion&page=1")
-.then(res => res.json())
-.then(data => {
-  const count = data.data.total || 0;
-  document.getElementById("kechengCount").innerText = count + " 个帖子";
-})
-.catch(err => {
-  document.getElementById("kechengCount").innerText = "0 个帖子";
-});
-</script>
             <a href="#" class="section-box">
-  <div class="section-title">可视化模型</div>
-  <div class="section-count" id="visualCount">加载中...</div>
-</a>
+              <div class="section-title">学习交流</div>
+              <div class="section-count" id="xuexiCount">加载中...</div>
+            </a>
 
-<script>
-fetch("http://127.0.0.1:8000/api/posts?tag=Visualization_model&page=1")
-.then(res => res.json())
-.then(data => {
-  const count = data.data.total || 0;
-  document.getElementById("visualCount").innerText = count + " 个帖子";
-})
-.catch(err => {
-  document.getElementById("visualCount").innerText = "0 个帖子";
-});
-</script>
             <a href="#" class="section-box">
-  <div class="section-title">备考经验</div>
-  <div class="section-count" id="kaoshiCount">加载中...</div>
-</a>
+              <div class="section-title">课程讨论</div>
+              <div class="section-count" id="kechengCount">加载中...</div>
+            </a>
 
-<script>
-fetch("http://127.0.0.1:8000/api/posts?tag=Examination_experience&page=1")
-.then(res => res.json())
-.then(data => {
-  const count = data.data.total || 0;
-  document.getElementById("kaoshiCount").innerText = count + " 个帖子";
-})
-.catch(err => {
-  document.getElementById("kaoshiCount").innerText = "0 个帖子";
-});
-</script>
-           <a href="#" class="section-box">
-  <div class="section-title">生活分享</div>
-  <div class="section-count" id="lifeCount">加载中...</div>
-</a>
+            <a href="#" class="section-box">
+              <div class="section-title">可视化模型</div>
+              <div class="section-count" id="visualCount">加载中...</div>
+            </a>
 
-<script>
-fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
-.then(res => res.json())
-.then(data => {
-  const count = data.data.total || 0;
-  document.getElementById("lifeCount").innerText = count + " 个帖子";
-})
-.catch(err => {
-  document.getElementById("lifeCount").innerText = "0 个帖子";
-});
-</script>
+            <a href="#" class="section-box">
+              <div class="section-title">备考经验</div>
+              <div class="section-count" id="kaoshiCount">加载中...</div>
+            </a>
+
+            <a href="#" class="section-box">
+              <div class="section-title">生活分享</div>
+              <div class="section-count" id="lifeCount">加载中...</div>
+            </a>
           </div>
         </div>
 
-        <!-- 论坛统计 -->
         <div class="card" style="margin-bottom: 16px;">
           <div class="card-title">
             <i class="fas fa-chart-bar"></i> 论坛统计
@@ -783,14 +820,12 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
             </div>
           </div>
 
-          <!-- 活跃度图表 -->
           <div class="activity-chart">
             <div class="activity-title">近7天活跃度</div>
             <canvas id="activityChart" height="150"></canvas>
           </div>
         </div>
 
-        <!-- 热门标签 -->
         <div class="card">
           <div class="card-title">
             <i class="fas fa-tags"></i> 热门标签
@@ -810,36 +845,32 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
     </div>
   </div>
 
-  <!-- 页脚 -->
-  <footer style="text-align: center; padding: 24px; color: #94a3b8; font-size: 14px;">
+  <footer>
     © 2026 生物论坛. All rights reserved.
   </footer>
 
-  <!-- 回顶部按钮 -->
   <button class="back-to-top" id="backToTop">
     <i class="fas fa-arrow-up"></i>
   </button>
 
   <script>
-    // 帖子显示模式，默认为最新
     let currentTab = 'Latest';
-
-    // 后端 API 地址（FastAPI 默认端口 8000）
     const API_BASE = 'http://127.0.0.1:8000';
-
-    // 分页 / 加载状态
     const PAGE_SIZE = 10;
     let currentPage = 1;
     let hasMore = true;
     let isLoading = false;
+    let activityChart = null;
 
-    // 获取所有排序按钮
     const sortBtns = document.querySelectorAll('.sort-btn');
     const titleElement = document.querySelector('h2 .post-main-name').parentElement;
-    // 为排序按钮绑定点击事件
+
+    const LatestBtn = document.querySelector('.new-btn');
+    const HotBtn = document.querySelector('.hot-btn');
+    const CreamBtn = document.querySelector('.cream-btn');
+
     sortBtns.forEach(button => {
       button.addEventListener('click', function () {
-        // 切换激活样式
         sortBtns.forEach(btn => btn.classList.remove('active'));
         this.classList.add('active');
 
@@ -853,29 +884,23 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
       });
     });
 
-    // 获取功能按钮
-    const LatestBtn = document.querySelector('.new-btn');
-    const HotBtn = document.querySelector('.hot-btn');
-    const CreamBtn = document.querySelector('.cream-btn');
-
-    // 为功能按钮绑定点击事件
     LatestBtn.onclick = function () {
       currentTab = 'Latest';
       titleElement.innerHTML = '<i class="fas fa-clock post-main-name" style="color: #3B82F6;"></i> 最新帖子';
       loadPosts();
-    }
+    };
 
     HotBtn.onclick = function () {
       currentTab = 'Hot';
       titleElement.innerHTML = '<i class="fas fa-fire post-main-name" style="color: #F59E0B;"></i> 热门帖子';
       loadPosts();
-    }
+    };
 
     CreamBtn.onclick = function () {
       currentTab = 'Cream';
       titleElement.innerHTML = '<i class="fas fa-crown post-main-name" style="color: #8B5CF6;"></i> 精华帖子';
       loadPosts();
-    }
+    };
 
     function resolveImageUrl(url) {
       if (!url) return '';
@@ -905,7 +930,7 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
     function clearRenderedPosts() {
       const main = getMainContentEl();
       if (!main) return;
-      main.querySelectorAll('a.post-card-link').forEach(el => el.remove());
+      main.querySelectorAll('.post-card').forEach(el => el.remove());
     }
 
     function renderPosts(posts, { append = false } = {}) {
@@ -926,12 +951,11 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
 
         const avatarChar = (username.trim()[0] || '匿');
 
-        const a = document.createElement('a');
-        a.href = 'post-detail.html';
-        a.className = 'post-card-link';
-
         const card = document.createElement('div');
         card.className = 'post-card';
+        card.addEventListener('click', () => {
+          window.location.href = 'post-detail.html';
+        });
 
         const header = document.createElement('div');
         header.className = 'post-header';
@@ -939,7 +963,7 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
         const avatarLink = document.createElement('a');
         avatarLink.href = 'user-profile.html';
         avatarLink.className = 'post-avatar-link';
-        avatarLink.onclick = function (e) { e.stopPropagation(); };
+        avatarLink.addEventListener('click', (e) => e.stopPropagation());
 
         const avatar = document.createElement('div');
         avatar.className = 'post-avatar';
@@ -952,7 +976,7 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
         const usernameLink = document.createElement('a');
         usernameLink.href = 'user-profile.html';
         usernameLink.className = 'post-username-link';
-        usernameLink.onclick = function (e) { e.stopPropagation(); };
+        usernameLink.addEventListener('click', (e) => e.stopPropagation());
         usernameLink.textContent = username;
 
         const timeEl = document.createElement('div');
@@ -967,6 +991,7 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
 
         const tagsEl = document.createElement('div');
         tagsEl.className = 'post-tags';
+
         if (tag) {
           const tags = String(tag).split(/[，,\s]+/).filter(Boolean);
           (tags.length ? tags : [tag]).slice(0, 3).forEach(t => {
@@ -979,7 +1004,7 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
 
         const contentEl = document.createElement('div');
         contentEl.className = 'post-content';
-        contentEl.innerHTML = escapeHtml(content);
+        contentEl.textContent = content;
 
         if (images.length) {
           const imgWrap = document.createElement('div');
@@ -1008,15 +1033,15 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
         const actions = document.createElement('div');
         actions.className = 'post-actions';
         actions.innerHTML = `
-                <button class="action-btn" onclick="event.stopPropagation();">
-                  <i class="far fa-heart"></i> 0
-                </button>
-                <button class="action-btn" onclick="event.stopPropagation();">
-                  <i class="far fa-comment"></i> 0
-                </button>
-                <button class="action-btn" onclick="event.stopPropagation();">
-                  <i class="far fa-eye"></i> 0
-                </button>
+          <button class="action-btn" onclick="event.stopPropagation();">
+            <i class="far fa-heart"></i> 0
+          </button>
+          <button class="action-btn" onclick="event.stopPropagation();">
+            <i class="far fa-comment"></i> 0
+          </button>
+          <button class="action-btn" onclick="event.stopPropagation();">
+            <i class="far fa-eye"></i> 0
+          </button>
         `;
 
         card.appendChild(header);
@@ -1024,8 +1049,7 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
         card.appendChild(contentEl);
         card.appendChild(actions);
 
-        a.appendChild(card);
-        frag.appendChild(a);
+        frag.appendChild(card);
       });
 
       main.insertBefore(frag, loadingEl);
@@ -1039,7 +1063,6 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
       if (!json || json.success !== true) throw new Error((json && json.msg) || '获取帖子失败');
       const posts = (json.data && json.data.posts) ? json.data.posts : [];
 
-      // 前端兜底：按时间倒序排序（避免后端接口未排序的情况）
       posts.sort((a, b) => {
         const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
         const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
@@ -1061,12 +1084,9 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
       if (loadingEl) loadingEl.classList.add('show');
 
       try {
-        if (currentTab === 'Latest' || currentTab === 'Hot' || currentTab === 'Cream') {
-          // 目前后端只提供“按时间倒序”的帖子列表接口：/api/posts
-          const posts = await fetchLatestPosts(currentPage);
-          renderPosts(posts, { append: false });
-          hasMore = posts.length >= PAGE_SIZE;
-        }
+        const posts = await fetchLatestPosts(currentPage);
+        renderPosts(posts, { append: false });
+        hasMore = posts.length >= PAGE_SIZE;
       } catch (e) {
         console.error(e);
       } finally {
@@ -1075,8 +1095,64 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
       }
     }
 
+    async function loadMorePosts() {
+      if (isLoading || !hasMore) return;
+      isLoading = true;
+
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) loadingElement.classList.add('show');
+
+      try {
+        currentPage += 1;
+        const posts = await fetchLatestPosts(currentPage);
+        renderPosts(posts, { append: true });
+        if (posts.length < PAGE_SIZE) hasMore = false;
+      } catch (e) {
+        console.error(e);
+        hasMore = false;
+      } finally {
+        if (loadingElement) loadingElement.classList.remove('show');
+        isLoading = false;
+      }
+    }
+
+    async function updateForumStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/stats`);
+        const data = await res.json();
+
+        if (data.success === true) {
+          document.getElementById('stat-user').textContent = data.data.total_users;
+          document.getElementById('stat-post').textContent = data.data.total_posts;
+          document.getElementById('stat-comments').textContent = data.data.total_comments;
+          document.getElementById('stat-online').textContent = data.data.online_users;
+
+          if (window.activityChart) {
+            window.activityChart.data.datasets[0].data = data.data.activity;
+            window.activityChart.update();
+          }
+        }
+      } catch (e) {
+        console.log('统计数据更新失败');
+      }
+    }
+
+    async function updateSectionCount(elementId, url, fallbackText = '0 个帖子') {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const count = (data && data.data && typeof data.data.total === 'number') ? data.data.total : 0;
+        el.innerText = `${count} 个帖子`;
+      } catch (err) {
+        el.innerText = fallbackText;
+      }
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
+<<<<<<< HEAD
       // 初始化活跃度图表
 const ctx = document.getElementById('activityChart');
 if (ctx) {
@@ -1105,6 +1181,43 @@ if (ctx) {
           beginAtZero: true,
           grid: {
             display: false
+=======
+      const ctx = document.getElementById('activityChart');
+      if (ctx) {
+        window.activityChart = new Chart(ctx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+            datasets: [{
+              label: '帖子数',
+              data: [12, 19, 15, 22, 18, 25, 20],
+              borderColor: '#3B82F6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  display: false
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
+              }
+            }
+>>>>>>> 34f26129cae11b99ac119ef04d8a96d1e4e99f22
           }
         },
         x: {
@@ -1118,47 +1231,50 @@ if (ctx) {
 }
          
 
-      // 用户下拉菜单
       const userAvatarBtn = document.getElementById('userAvatarBtn');
-      const dropdown = document.getElementById('userDropdownMenu');
+      const userDropdownMenu = document.getElementById('userDropdownMenu');
 
-      if (userAvatarBtn && dropdown) {
+      if (userAvatarBtn && userDropdownMenu) {
         userAvatarBtn.addEventListener('click', function (e) {
           e.stopPropagation();
-          dropdown.classList.toggle('show');
+          userDropdownMenu.classList.toggle('show');
         });
 
         document.addEventListener('click', function (event) {
-          if (!dropdown.contains(event.target) && event.target !== userAvatarBtn) {
-            dropdown.classList.remove('show');
+          if (!userAvatarBtn.contains(event.target) && !userDropdownMenu.contains(event.target)) {
+            userDropdownMenu.classList.remove('show');
           }
         });
       }
 
-      // 初始化加载帖子
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const dropdown = this.closest('.dropdown');
+          dropdown.classList.toggle('show');
+        });
+      });
+
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+      });
+
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.addEventListener('click', e => e.stopPropagation());
+      });
+
       loadPosts();
+      updateForumStats();
 
-      // 滚动加载和回顶部按钮
-      async function loadMorePosts() {
-        if (isLoading || !hasMore) return;
-        isLoading = true;
+      updateSectionCount('totalNum', `${API_BASE}/api/posts?page=1`);
+      updateSectionCount('xuexiCount', `${API_BASE}/api/posts?tag=Question_discussion&page=1`);
+      updateSectionCount('kechengCount', `${API_BASE}/api/posts?tag=Course_discussion&page=1`);
+      updateSectionCount('visualCount', `${API_BASE}/api/posts?tag=Visualization_model&page=1`);
+      updateSectionCount('kaoshiCount', `${API_BASE}/api/posts?tag=Examination_experience&page=1`);
+      updateSectionCount('lifeCount', `${API_BASE}/api/posts?tag=Life_share&page=1`);
 
-        const loadingElement = document.getElementById('loading');
-        if (loadingElement) loadingElement.classList.add('show');
-
-        try {
-          currentPage += 1;
-          const posts = await fetchLatestPosts(currentPage);
-          renderPosts(posts, { append: true });
-          if (posts.length < PAGE_SIZE) hasMore = false;
-        } catch (e) {
-          console.error(e);
-          hasMore = false;
-        } finally {
-          if (loadingElement) loadingElement.classList.remove('show');
-          isLoading = false;
-        }
-      }
+      setInterval(updateForumStats, 15000);
 
       window.addEventListener('scroll', function () {
         const scrollHeight = document.documentElement.scrollHeight;
@@ -1179,7 +1295,6 @@ if (ctx) {
         }
       });
 
-      // 回顶部功能
       const backToTopButton = document.getElementById('backToTop');
       if (backToTopButton) {
         backToTopButton.addEventListener('click', function () {
@@ -1190,6 +1305,7 @@ if (ctx) {
         });
       }
     });
+<<<<<<< HEAD
 // 自动更新论坛统计数据 + 图表
 // 自动更新论坛统计数据 + 图表（显示星期几）
 async function updateForumStats() {
@@ -1229,7 +1345,8 @@ async function updateForumStats() {
 updateForumStats();
 // 每15秒自动刷新
 setInterval(updateForumStats, 15000);
+=======
+>>>>>>> 34f26129cae11b99ac119ef04d8a96d1e4e99f22
   </script>
 </body>
-
 </html>
