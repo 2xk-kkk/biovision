@@ -1078,44 +1078,45 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
 
     document.addEventListener('DOMContentLoaded', function () {
       // 初始化活跃度图表
-      const ctx = document.getElementById('activityChart');
-      if (ctx) {
-        window.activityChart = new Chart(ctx.getContext('2d'), {
-          type: 'line',
-          data: {
-            labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-            datasets: [{
-              label: '帖子数',
-              data: [12, 19, 15, 22, 18, 25, 20],
-              borderColor: '#3B82F6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4,
-              fill: true
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                display: false
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: {
-                  display: false
-                }
-              },
-              x: {
-                grid: {
-                  display: false
-                }
-              }
-            }
+const ctx = document.getElementById('activityChart');
+if (ctx) {
+  window.activityChart = new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: [], // 这里会被后端真实日期覆盖
+      datasets: [{
+        label: '帖子数',
+        data: [], // 这里会被后端数据覆盖
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            display: false
           }
-        });
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
       }
+    }
+  });
+}
+         
 
       // 用户下拉菜单
       const userAvatarBtn = document.getElementById('userAvatarBtn');
@@ -1189,9 +1190,16 @@ fetch("http://127.0.0.1:8000/api/posts?tag=Life_share&page=1")
         });
       }
     });
-    // 自动更新论坛统计数据
 // 自动更新论坛统计数据 + 图表
+// 自动更新论坛统计数据 + 图表（显示星期几）
 async function updateForumStats() {
+  // 日期转星期
+  function getWeekDay(dateStr) {
+    const weekArr = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const d = new Date(dateStr);
+    return weekArr[d.getDay()];
+  }
+
   try {
     const res = await fetch('http://127.0.0.1:8000/api/stats');
     const data = await res.json();
@@ -1203,8 +1211,10 @@ async function updateForumStats() {
       document.getElementById('stat-comments').textContent = data.data.total_comments;
       document.getElementById('stat-online').textContent = data.data.online_users;
 
-      // 更新图表（关键！）
+      // 更新图表（自动转成星期）
       if (window.activityChart) {
+        const weekLabels = data.data.activity_dates.map(item => getWeekDay(item));
+        window.activityChart.data.labels = weekLabels;
         window.activityChart.data.datasets[0].data = data.data.activity;
         window.activityChart.update();
       }
@@ -1213,6 +1223,7 @@ async function updateForumStats() {
     console.log('统计数据更新失败');
   }
 }
+
 
 // 立即执行一次
 updateForumStats();

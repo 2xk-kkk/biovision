@@ -50,6 +50,13 @@ def get_forum_stats():
         seven_days_ago = today - timedelta(days=6)
 
         activity_data = [0] * 7
+        date_labels = []  # 用来存真实日期
+
+        # 生成近7天日期列表 ['2026-05-12', '2026-05-13', ...]
+        for i in range(7):
+            date = seven_days_ago + timedelta(days=i)
+            date_labels.append(date.strftime("%Y-%m-%d"))
+
 
         try:
             cursor.execute("""
@@ -79,7 +86,8 @@ def get_forum_stats():
             "total_posts": total_posts,
             "total_comments": total_comments,
             "online_users": online_users,
-            "activity": activity_data 
+            "activity": activity_data,
+            "activity_dates": date_labels
         })
     except Exception as e:
         return ApiResponse.error(msg="获取统计失败")
