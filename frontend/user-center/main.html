@@ -462,10 +462,24 @@
             border-radius: 999px;
             font-size: 0.8rem;
             font-weight: 700;
-            background: rgba(134, 225, 216, 0.12);
+            background: rgba(62, 255, 242, 0.12);
             color: var(--brand-dark);
         }
 
+        /* 身份标签：老师时蓝底白字 */
+        .badge.role-teacher {
+            background: linear-gradient(135deg, #4f8df7, #6ba6ff);
+            color: #fff;
+        }
+
+        .badge2 {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(240, 166, 166, 0.12);
+            color: #ea1515;
+        }
         /* 个人简介文字 */
         .profile-meta {
             margin: 10px 0 0;
@@ -888,6 +902,95 @@
             overflow: hidden;
         }
 
+        /* =========================
+           资料编辑弹窗
+           结构和目标设置弹窗保持一致
+        ========================= */
+        .profile-form-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .profile-avatar-editor {
+            display: grid;
+            gap: 12px;
+            justify-items: center;
+        }
+
+        .profile-avatar-preview {
+            width: 108px;
+            height: 108px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea, #45f7f7);
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+            border: 4px solid rgba(255, 255, 255, 0.9);
+        }
+
+        .profile-upload-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(31, 182, 166, 0.18);
+            color: #0f766e;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .profile-upload-btn input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .profile-fields {
+            display: grid;
+            gap: 14px;
+        }
+
+        .profile-field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .profile-field label {
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .profile-input,
+        .profile-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(248, 250, 252, 0.96);
+            color: #0f172a;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .profile-input:focus,
+        .profile-select:focus {
+            border-color: rgba(31, 182, 166, 0.55);
+            box-shadow: 0 0 0 4px rgba(31, 182, 166, 0.08);
+        }
+
+        .profile-help {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
         /* 主体下半部分：左内容，右侧栏 */
        .layout {
             margin-top: 22px;
@@ -1290,7 +1393,7 @@
 
             <div class="user-actions">
                 <div class="avatar-wrapper" id="userAvatarBtn">
-                    <img src="../images/touxiang.png" alt="Avatar" class="avatar" />
+                    <img src="../images/touxiang.png" alt="Avatar" class="avatar" id="topbarAvatarImage" />
                     <div class="upload-overlay">+</div>
                     <div class="user-dropdown-menu" id="userDropdownMenu">
                         <a href="user-center/main.html" class="user-dropdown-item">
@@ -1316,20 +1419,20 @@
             <div class="hero-content">
                 <!-- 左侧：用户基础信息区 -->
                 <div class="profile-card">
-                    <img src="../images/touxiang.png" alt="Avatar" class="profile-avatar" />
+                    <img src="../images/touxiang.png" alt="Avatar" class="profile-avatar" id="profileAvatarImage" />
                     <div class="profile-main">
                         <div class="profile-head">
-                            <h1 class="profile-name">Lofrmin</h1>
+                            <h1 class="profile-name" id="profileNameText">Lofrmin</h1>
                             <span class="badge">Lv.2</span>
-                            <span class="badge">学生</span>
+                            <span class="badge" id="roleBadgeText">学生</span>
                         </div>
                         <p class="profile-meta">
                             <span style="font-weight: 600;">个人简介：</span>热爱生物学习，习惯用模型和题目巩固知识。<br>
                         </p>
                         <div class="meta-row">
-                            <span class="meta-chip">大一</span>
-                            <span class="meta-chip">成都东软学院</span>
-                            <span class="meta-chip">IP：四川</span>
+                            <span class="meta-chip" id="gradeChipText">高一</span>
+                            <span class="meta-chip" id="schoolChipText">🏫:成都东软学院</span>
+                            <span class="meta-chip">📍IP：四川</span>
                             <span class="meta-chip">已关注 0</span>
                         </div>
                     </div>
@@ -1358,7 +1461,7 @@
 
                     <div class="hero-buttons">
                         <button class="btn btn-secondary btn-goal" id="goalSettingsBtn" type="button">目标设置</button>
-                        <button class="btn btn-primary">编辑资料</button>
+                        <button class="btn btn-primary" id="editProfileBtn" type="button">编辑资料</button>
                     </div>
                 </div>
             </div>
@@ -1612,21 +1715,21 @@
                                         <strong>细胞膜运输</strong>
                                         <small>主动运输与协助扩散混淆</small>
                                     </div>
-                                    <span class="badge">今日</span>
+                                    <span class="badge2">今日</span>
                                 </div>
                                 <div class="summary-item">
                                     <div>
                                         <strong>DNA 复制</strong>
                                         <small>半保留复制概念不清</small>
                                     </div>
-                                    <span class="badge">待复习</span>
+                                    <span class="badge2">3天前</span>
                                 </div>
                                 <div class="summary-item">
                                     <div>
                                         <strong>生态系统能量流动</strong>
                                         <small>能量传递效率计算错误</small>
                                     </div>
-                                    <span class="badge">巩固</span>
+                                    <span class="badge2">4天前</span>
                                 </div>
                             </div>
                         </div>
@@ -1634,29 +1737,29 @@
                         <div class="sidebar-section">
                             <div class="panel-header" style="padding: 0 0 12px;">
                                 <div>
-                                    <h2 class="panel-title" style="font-size: 1rem;">推荐内容</h2>
-                                    <p class="panel-subtitle">根据当前学习情况为你推荐</p>
+                                    <h2 class="panel-title" style="font-size: 1rem;">好课推荐</h2>
+                                    <p class="panel-subtitle">B站优质up生物教学视频推荐</p>
                                 </div>
                             </div>
                             <div class="summary-list" style="padding: 0;">
-                                <a class="summary-item" href="#">
+                                <a class="summary-item" href="https://www.bilibili.com/video/BV1M3Lz6AEgj/?spm_id_from=333.337.search-card.all.click">
                                     <div>
-                                        <strong>细胞结构 3D 模型</strong>
-                                        <small>适合复习细胞器与膜结构</small>
+                                        <strong>李林高三一轮复习</strong>
+                                        <small>适合高二升高三的学生准备复习</small>
                                     </div>
                                     <span>›</span>
                                 </a>
-                                <a class="summary-item" href="#">
+                                <a class="summary-item" href="https://www.bilibili.com/video/BV1tc41157TW/?spm_id_from=333.337.search-card.all.click">
                                     <div>
-                                        <strong>遗传规律专项 PPT</strong>
-                                        <small>帮助整理基因分离与自由组合</small>
+                                        <strong>DNA复制动画</strong>
+                                        <small>帮助理解DNA复制过程</small>
                                     </div>
                                     <span>›</span>
                                 </a>
-                                <a class="summary-item" href="#">
+                                <a class="summary-item" href="https://www.bilibili.com/video/BV1tVfPBTE8q/?spm_id_from=333.337.search-card.all.click">
                                     <div>
-                                        <strong>每日训练推荐题</strong>
-                                        <small>自动推送本周薄弱知识点题目</small>
+                                        <strong>高中生物必修二（一生儿）</strong>
+                                        <small>从基础到拔高</small>
                                     </div>
                                     <span>›</span>
                                 </a>
@@ -1779,6 +1882,62 @@
         </div>
     </div>
 
+    <!-- 资料编辑弹窗 -->
+    <div class="modal-overlay" id="profileModalOverlay" aria-hidden="true">
+        <div class="goal-modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+            <div class="goal-modal-header">
+                <h3 class="goal-modal-title" id="profileModalTitle">编辑资料</h3>
+                <button class="goal-modal-close" id="profileModalCloseBtn" type="button" aria-label="关闭弹窗">×</button>
+            </div>
+
+            <div class="goal-modal-body">
+                <div class="profile-form-grid">
+                    <div class="profile-avatar-editor">
+                        <img src="../images/touxiang.png" alt="头像预览" class="profile-avatar-preview" id="profileAvatarPreview">
+                        <label class="profile-upload-btn">
+                            上传头像
+                            <input type="file" id="profileAvatarInput" accept="image/*">
+                        </label>
+                    </div>
+
+                    <div class="profile-fields">
+                        <div class="profile-field">
+                            <label for="profileNicknameInput">昵称</label>
+                            <input class="profile-input" id="profileNicknameInput" type="text" value="Lofrmin" placeholder="请输入昵称">
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileSchoolInput">学校</label>
+                            <input class="profile-input" id="profileSchoolInput" type="text" value="成都东软学院" placeholder="请输入学校">
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileGradeSelect">年级</label>
+                            <select class="profile-select" id="profileGradeSelect">
+                                <option value="高一">高一</option>
+                                <option value="高二">高二</option>
+                                <option value="高三">高三</option>
+                            </select>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileRoleSelect">身份</label>
+                            <select class="profile-select" id="profileRoleSelect">
+                                <option value="学生">学生</option>
+                                <option value="老师">老师</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="goal-modal-footer">
+                <button class="btn btn-secondary" id="profileModalCancelBtn" type="button">取消</button>
+                <button class="btn btn-primary" id="profileModalSaveBtn" type="button">保存资料</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         /* =========================
            小导航切换逻辑
@@ -1839,10 +1998,21 @@
            点击按钮打开弹窗，外部区域变暗
         ========================= */
         const goalSettingsBtn = document.getElementById('goalSettingsBtn');
+        const editProfileBtn = document.getElementById('editProfileBtn');
         const goalModalOverlay = document.getElementById('goalModalOverlay');
         const goalModalCloseBtn = document.getElementById('goalModalCloseBtn');
         const goalModalCancelBtn = document.getElementById('goalModalCancelBtn');
         const goalModalSaveBtn = document.getElementById('goalModalSaveBtn');
+        const profileModalOverlay = document.getElementById('profileModalOverlay');
+        const profileModalCloseBtn = document.getElementById('profileModalCloseBtn');
+        const profileModalCancelBtn = document.getElementById('profileModalCancelBtn');
+        const profileModalSaveBtn = document.getElementById('profileModalSaveBtn');
+        const profileAvatarPreview = document.getElementById('profileAvatarPreview');
+        const profileAvatarInput = document.getElementById('profileAvatarInput');
+        const profileNicknameInput = document.getElementById('profileNicknameInput');
+        const profileSchoolInput = document.getElementById('profileSchoolInput');
+        const profileGradeSelect = document.getElementById('profileGradeSelect');
+        const profileRoleSelect = document.getElementById('profileRoleSelect');
         const studyHoursValue = document.getElementById('studyHoursValue');
         const studyHoursBar = document.getElementById('studyHoursBar');
         const studyHoursDesc = document.getElementById('studyHoursDesc');
@@ -1851,6 +2021,15 @@
         const questionCountDesc = document.getElementById('questionCountDesc');
         const doneStudyHoursInput = document.getElementById('doneStudyHoursInput');
         const doneQuestionCountInput = document.getElementById('doneQuestionCountInput');
+        const topbarAvatarImage = document.getElementById('topbarAvatarImage');
+        const profileAvatarImage = document.getElementById('profileAvatarImage');
+        const profileNameText = document.getElementById('profileNameText');
+        const roleBadgeText = document.getElementById('roleBadgeText');
+        const gradeChipText = document.getElementById('gradeChipText');
+        const schoolChipText = document.getElementById('schoolChipText');
+        const postAuthorNames = document.querySelectorAll('.post-card .post-top strong');
+        let savedAvatarDataUrl = '';
+        let pendingAvatarDataUrl = '';
 
         function openGoalModal() {
             if (!goalModalOverlay) return;
@@ -1864,6 +2043,76 @@
             goalModalOverlay.classList.remove('show');
             goalModalOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('modal-open');
+        }
+
+        function openProfileModal() {
+            if (!profileModalOverlay) return;
+            if (profileNicknameInput && profileNameText) {
+                profileNicknameInput.value = profileNameText.textContent.trim();
+            }
+            if (profileSchoolInput && schoolChipText) {
+                profileSchoolInput.value = schoolChipText.textContent.replace(/^🏫:?/, '').trim();
+            }
+            if (profileGradeSelect && gradeChipText) {
+                profileGradeSelect.value = gradeChipText.textContent.trim();
+            }
+            if (profileRoleSelect && roleBadgeText) {
+                profileRoleSelect.value = roleBadgeText.textContent.trim();
+            }
+            if (profileAvatarPreview) {
+                profileAvatarPreview.src = pendingAvatarDataUrl || savedAvatarDataUrl || (topbarAvatarImage ? topbarAvatarImage.src : '../images/touxiang.png');
+            }
+            profileModalOverlay.classList.add('show');
+            profileModalOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeProfileModal() {
+            if (!profileModalOverlay) return;
+            pendingAvatarDataUrl = '';
+            profileModalOverlay.classList.remove('show');
+            profileModalOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+        }
+
+        function applyProfileUpdates() {
+            const nickname = profileNicknameInput ? profileNicknameInput.value.trim() : '';
+            const school = profileSchoolInput ? profileSchoolInput.value.trim() : '';
+            const grade = profileGradeSelect ? profileGradeSelect.value : '';
+            const role = profileRoleSelect ? profileRoleSelect.value : '';
+            const avatarSrc = pendingAvatarDataUrl || savedAvatarDataUrl || (topbarAvatarImage ? topbarAvatarImage.src : '');
+
+            if (nickname && profileNameText) {
+                profileNameText.textContent = nickname;
+            }
+            if (nickname) {
+                postAuthorNames.forEach((name) => {
+                    name.textContent = nickname;
+                });
+            }
+            if (school && schoolChipText) {
+                schoolChipText.textContent = `🏫:${school}`;
+            }
+            if (grade && gradeChipText) {
+                gradeChipText.textContent = grade;
+            }
+            if (role && roleBadgeText) {
+                roleBadgeText.textContent = role;
+                roleBadgeText.classList.toggle('role-teacher', role === '老师');
+            }
+            if (avatarSrc) {
+                savedAvatarDataUrl = avatarSrc;
+                if (topbarAvatarImage) topbarAvatarImage.src = avatarSrc;
+                if (profileAvatarImage) profileAvatarImage.src = avatarSrc;
+                const postAvatars = document.querySelectorAll('.post-avatar');
+                postAvatars.forEach((img) => {
+                    img.src = avatarSrc;
+                });
+            }
+        }
+
+        if (roleBadgeText) {
+            roleBadgeText.classList.toggle('role-teacher', roleBadgeText.textContent.trim() === '老师');
         }
 
         function bindOptionGroup(selector) {
@@ -1933,6 +2182,9 @@
         if (goalSettingsBtn) {
             goalSettingsBtn.addEventListener('click', openGoalModal);
         }
+        if (editProfileBtn) {
+            editProfileBtn.addEventListener('click', openProfileModal);
+        }
         if (goalModalCloseBtn) {
             goalModalCloseBtn.addEventListener('click', closeGoalModal);
         }
@@ -1949,6 +2201,37 @@
             goalModalOverlay.addEventListener('click', (event) => {
                 if (event.target === goalModalOverlay) {
                     closeGoalModal();
+                }
+            });
+        }
+        if (profileAvatarInput && profileAvatarPreview) {
+            profileAvatarInput.addEventListener('change', () => {
+                const file = profileAvatarInput.files && profileAvatarInput.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    pendingAvatarDataUrl = String(reader.result || '');
+                    profileAvatarPreview.src = pendingAvatarDataUrl;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        if (profileModalCloseBtn) {
+            profileModalCloseBtn.addEventListener('click', closeProfileModal);
+        }
+        if (profileModalCancelBtn) {
+            profileModalCancelBtn.addEventListener('click', closeProfileModal);
+        }
+        if (profileModalSaveBtn) {
+            profileModalSaveBtn.addEventListener('click', () => {
+                applyProfileUpdates();
+                closeProfileModal();
+            });
+        }
+        if (profileModalOverlay) {
+            profileModalOverlay.addEventListener('click', (event) => {
+                if (event.target === profileModalOverlay) {
+                    closeProfileModal();
                 }
             });
         }
