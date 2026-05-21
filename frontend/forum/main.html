@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -869,38 +870,29 @@
     const HotBtn = document.querySelector('.hot-btn');
     const CreamBtn = document.querySelector('.cream-btn');
 
-    sortBtns.forEach(button => {
-      button.addEventListener('click', function () {
-        sortBtns.forEach(btn => btn.classList.remove('active'));
-        this.classList.add('active');
-
-        if (this.classList.contains('new-btn')) {
-          LatestBtn.onclick();
-        } else if (this.classList.contains('hot-btn')) {
-          HotBtn.onclick();
-        } else if (this.classList.contains('cream-btn')) {
-          CreamBtn.onclick();
-        }
-      });
-    });
-
-    LatestBtn.onclick = function () {
+    LatestBtn.addEventListener('click', function () {
+      sortBtns.forEach(btn => btn.classList.remove('active'));
+      LatestBtn.classList.add('active');
       currentTab = 'Latest';
       titleElement.innerHTML = '<i class="fas fa-clock post-main-name" style="color: #3B82F6;"></i> 最新帖子';
       loadPosts();
-    };
+    });
 
-    HotBtn.onclick = function () {
+    HotBtn.addEventListener('click', function () {
+      sortBtns.forEach(btn => btn.classList.remove('active'));
+      HotBtn.classList.add('active');
       currentTab = 'Hot';
       titleElement.innerHTML = '<i class="fas fa-fire post-main-name" style="color: #F59E0B;"></i> 热门帖子';
       loadPosts();
-    };
+    });
 
-    CreamBtn.onclick = function () {
+    CreamBtn.addEventListener('click', function () {
+      sortBtns.forEach(btn => btn.classList.remove('active'));
+      CreamBtn.classList.add('active');
       currentTab = 'Cream';
       titleElement.innerHTML = '<i class="fas fa-crown post-main-name" style="color: #8B5CF6;"></i> 精华帖子';
       loadPosts();
-    };
+    });
 
     function resolveImageUrl(url) {
       if (!url) return '';
@@ -1074,24 +1066,45 @@
       return posts;
     }
 
+    let lastLoadTime = 0;
+    const MIN_LOAD_INTERVAL = 2000; // 最小加载间隔（毫秒）
+
     async function loadPosts() {
-      if (isLoading) return;
+      const now = Date.now();
+      if (now - lastLoadTime < MIN_LOAD_INTERVAL) {
+        console.log('loadPosts: too soon, skipping');
+        return;
+      }
+      if (isLoading) {
+        console.log('loadPosts: already loading, skipping');
+        return;
+      }
+      console.log('loadPosts: starting...');
+      lastLoadTime = now;
       isLoading = true;
       currentPage = 1;
       hasMore = true;
 
       const loadingEl = getLoadingEl();
-      if (loadingEl) loadingEl.classList.add('show');
+      if (loadingEl) {
+        loadingEl.classList.add('show');
+        console.log('loadPosts: loading indicator shown');
+      }
 
       try {
         const posts = await fetchLatestPosts(currentPage);
+        console.log('loadPosts: fetched', posts.length, 'posts');
         renderPosts(posts, { append: false });
         hasMore = posts.length >= PAGE_SIZE;
       } catch (e) {
-        console.error(e);
+        console.error('loadPosts error:', e);
       } finally {
-        if (loadingEl) loadingEl.classList.remove('show');
+        if (loadingEl) {
+          loadingEl.classList.remove('show');
+          console.log('loadPosts: loading indicator hidden');
+        }
         isLoading = false;
+        console.log('loadPosts: done');
       }
     }
 
@@ -1128,7 +1141,9 @@
           document.getElementById('stat-online').textContent = data.data.online_users;
 
           if (window.activityChart) {
-            window.activityChart.data.datasets[0].data = data.data.activity;
+            // 更新图表数据和标签
+            window.activityChart.data.labels = data.data.activity_dates || ["周一", "周二", "周三", "周四", "周五"];
+            window.activityChart.data.datasets[0].data = data.data.activity || [0, 0, 0, 0, 0];
             window.activityChart.update();
           }
         }
@@ -1151,46 +1166,20 @@
       }
     }
 
+    console.log('=== Page loaded at:', new Date().toISOString());
+
     document.addEventListener('DOMContentLoaded', function () {
-<<<<<<< HEAD
+      console.log('=== DOMContentLoaded fired');
       // 初始化活跃度图表
-const ctx = document.getElementById('activityChart');
-if (ctx) {
-  window.activityChart = new Chart(ctx.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: [], // 这里会被后端真实日期覆盖
-      datasets: [{
-        label: '帖子数',
-        data: [], // 这里会被后端数据覆盖
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            display: false
-=======
       const ctx = document.getElementById('activityChart');
       if (ctx) {
         window.activityChart = new Chart(ctx.getContext('2d'), {
           type: 'line',
           data: {
-            labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+            labels: [], // 这里会被后端真实日期覆盖
             datasets: [{
               label: '帖子数',
-              data: [12, 19, 15, 22, 18, 25, 20],
+              data: [], // 这里会被后端数据覆盖
               borderColor: '#3B82F6',
               backgroundColor: 'rgba(59, 130, 246, 0.1)',
               tension: 0.4,
@@ -1217,19 +1206,10 @@ if (ctx) {
                 }
               }
             }
->>>>>>> 34f26129cae11b99ac119ef04d8a96d1e4e99f22
           }
-        },
-        x: {
-          grid: {
-            display: false
-          }
-        }
+        });
       }
-    }
-  });
-}
-         
+
 
       const userAvatarBtn = document.getElementById('userAvatarBtn');
       const userDropdownMenu = document.getElementById('userDropdownMenu');
@@ -1264,6 +1244,14 @@ if (ctx) {
         menu.addEventListener('click', e => e.stopPropagation());
       });
 
+      const searchForm = document.querySelector('.search-form');
+      if (searchForm) {
+        searchForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          console.log('Search form submitted, prevented default');
+        });
+      }
+
       loadPosts();
       updateForumStats();
 
@@ -1276,13 +1264,30 @@ if (ctx) {
 
       setInterval(updateForumStats, 15000);
 
+      let scrollTimeout = null;
+      let lastScrollTime = 0;
+      const MIN_SCROLL_INTERVAL = 1000;
       window.addEventListener('scroll', function () {
         const scrollHeight = document.documentElement.scrollHeight;
         const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
         const clientHeight = document.documentElement.clientHeight;
 
+        const now = Date.now();
+        if (now - lastScrollTime < MIN_SCROLL_INTERVAL) {
+          return;
+        }
+
+        if (scrollHeight <= clientHeight + 500) {
+          return;
+        }
+
         if (scrollTop + clientHeight >= scrollHeight - 100) {
-          loadMorePosts();
+          lastScrollTime = now;
+          if (scrollTimeout) clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(function () {
+            console.log('scroll: triggering loadMorePosts');
+            loadMorePosts();
+          }, 500);
         }
 
         const backToTopButton = document.getElementById('backToTop');
@@ -1305,48 +1310,7 @@ if (ctx) {
         });
       }
     });
-<<<<<<< HEAD
-// 自动更新论坛统计数据 + 图表
-// 自动更新论坛统计数据 + 图表（显示星期几）
-async function updateForumStats() {
-  // 日期转星期
-  function getWeekDay(dateStr) {
-    const weekArr = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-    const d = new Date(dateStr);
-    return weekArr[d.getDay()];
-  }
-
-  try {
-    const res = await fetch('http://127.0.0.1:8000/api/stats');
-    const data = await res.json();
-    
-    if (data.success === true) {
-      // 更新数字
-      document.getElementById('stat-user').textContent = data.data.total_users;
-      document.getElementById('stat-post').textContent = data.data.total_posts;
-      document.getElementById('stat-comments').textContent = data.data.total_comments;
-      document.getElementById('stat-online').textContent = data.data.online_users;
-
-      // 更新图表（自动转成星期）
-      if (window.activityChart) {
-        const weekLabels = data.data.activity_dates.map(item => getWeekDay(item));
-        window.activityChart.data.labels = weekLabels;
-        window.activityChart.data.datasets[0].data = data.data.activity;
-        window.activityChart.update();
-      }
-    }
-  } catch (e) {
-    console.log('统计数据更新失败');
-  }
-}
-
-
-// 立即执行一次
-updateForumStats();
-// 每15秒自动刷新
-setInterval(updateForumStats, 15000);
-=======
->>>>>>> 34f26129cae11b99ac119ef04d8a96d1e4e99f22
   </script>
 </body>
+
 </html>

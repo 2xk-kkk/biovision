@@ -44,19 +44,21 @@ def get_forum_stats():
         online_users = get_real_online_users()
 
 
-
-        
+        # 获取周一到周五（最近5个工作日）的数据
         today = datetime.now().date()
-        seven_days_ago = today - timedelta(days=6)
-
-        activity_data = [0] * 7
-        date_labels = []  # 用来存真实日期
-
-        # 生成近7天日期列表 ['2026-05-12', '2026-05-13', ...]
-        for i in range(7):
-            date = seven_days_ago + timedelta(days=i)
-            date_labels.append(date.strftime("%Y-%m-%d"))
-
+        
+        # 找到本周一
+        today_weekday = today.weekday()  # 0=Monday, 6=Sunday
+        monday = today - timedelta(days=today_weekday)
+        
+        # 生成周一到周五的日期
+        activity_data = [0] * 5
+        date_labels = ["周一", "周二", "周三", "周四", "周五"]
+        week_dates = []
+        
+        for i in range(5):
+            date = monday + timedelta(days=i)
+            week_dates.append(date.strftime("%Y-%m-%d"))
 
         try:
             cursor.execute("""
@@ -65,7 +67,7 @@ def get_forum_stats():
                 WHERE DATE(create_at) >= ?
                 GROUP BY DATE(create_at)
                 ORDER BY DATE(create_at)
-            """, (seven_days_ago,))
+            """, (monday,))
 
             rows = cursor.fetchall()
             for row in rows:
@@ -73,13 +75,13 @@ def get_forum_stats():
                 cnt = row[1]
                 try:
                     d = datetime.strptime(d_str, "%Y-%m-%d").date()
-                    idx = (d - seven_days_ago).days
-                    if 0 <= idx < 7:
+                    idx = (d - monday).days
+                    if 0 <= idx < 5:
                         activity_data[idx] = cnt
                 except:
                     pass
         except:
-            activity_data = [0, 0, 0, 0, 0, 0, 0]     
+            activity_data = [0, 0, 0, 0, 0]     
 
         return ApiResponse.success({
             "total_users": total_users,

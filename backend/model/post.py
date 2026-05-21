@@ -42,8 +42,7 @@ def get_posts(db, page=1, page_size=20):
     offset = (page - 1) * page_size
     
     cursor.execute("""
-        SELECT posts.id, posts.user_id, users.username, posts.content, posts.tag, posts.create_at,
-               posts.view_count, posts.like_count, posts.collect_count
+        SELECT posts.id, posts.user_id, users.username, posts.content, posts.tag, posts.create_at
         FROM posts
         JOIN users ON posts.user_id = users.id
         ORDER BY posts.create_at DESC
