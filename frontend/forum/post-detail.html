@@ -1155,22 +1155,297 @@
   </button>
 
   <script>
-    // 回顶部功能
-    const backToTopBtn = document.getElementById('backToTop');
+    const API_BASE = "http://127.0.0.1:8000";
+
+    // 获取 URL 参数
+    function getPostId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id") || 1;
+    }
+
+    const postId = getPostId();
+
+    // 当前用户（后面改成登录获取）
+    const currentUserId = 1;
+
+    // 页面加载
+    window.onload = () => {
+      loadPostDetail();
+      loadComments();
+    };
+
+    // =========================
+    // 获取帖子详情
+    // =========================
+    async function loadPostDetail() {
+      try {
+        const res = await fetch(`${API_BASE}/posts/${postId}`);
+        const result = await res.json();
+
+        if (result.code !== 200) {
+          alert("帖子不存在");
+          return;
+        }
+
+        const post = result.data;
+
+        // 标题
+        document.title = post.title;
+
+        // 作者
+        document.querySelector(".post-author-name").innerText =
+          post.username;
+
+        // 内容
+        document.querySelector(".post-content").innerHTML =
+          `<p>${post.content}</p>`;
+
+        // 浏览量
+        document.querySelector(".post-meta").innerHTML = `
+          <span>
+            <i class="far fa-clock"></i>
+            ${post.created_at}
+          </span>
+
+          <span>
+            <i class="far fa-eye"></i>
+            ${post.views} 次浏览
+          </span>
+        `;
+
+        // 点赞按钮
+        document.querySelector(".action-btn.liked").innerHTML = `
+          <i class="fas fa-heart"></i>
+          ${post.likes}
+        `;
+
+        // 评论数量
+        document.querySelector(".comments-count").innerText =
+          post.comments_count;
+
+      } catch (err) {
+        console.error(err);
+        alert("获取帖子失败");
+      }
+    }
+    // =========================
+    // 获取评论
+    // =========================
+    async function loadComments() {
+
+      try {
+
+        const res = await fetch(
+          `${API_BASE}/posts/${postId}/comments`
+        );
+
+        const result = await res.json();
+
+        const commentsList =
+          document.querySelector(".comments-list");
+
+        commentsList.innerHTML = "";
+
+        result.data.forEach(comment => {
+
+          const html = `
+            <div class="comment-item">
+
+              <a href="#" class="comment-avatar-small">
+                ${comment.username[0]}
+              </a>
+
+              <div class="comment-body">
+
+                <div class="comment-header">
+                  <a href="#" class="comment-author">
+                    ${comment.username}
+                  </a>
+
+                  <span class="comment-time">
+                    ${comment.created_at}
+                  </span>
+                </div>
+
+                <div class="comment-content">
+                  ${comment.content}
+                </div>
+
+                <div class="comment-actions-small">
+
+                  <button class="action-btn-small">
+                    <i class="far fa-thumbs-up"></i>
+                  </button>
+
+                  <button class="action-btn-small">
+                    <i class="far fa-comment"></i>
+                    回复
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+          commentsList.innerHTML += html;
+
+        });
+
+      } catch (err) {
+        console.error(err);
+        alert("获取评论失败");
+      }
+    }
+
+    // =========================
+    // 发布评论
+    // =========================
+    async function submitComment() {
+
+      const textarea =
+        document.querySelector(".comment-textarea");
+
+      const content = textarea.value.trim();
+
+      if (!content) {
+        alert("评论不能为空");
+        return;
+      }
+
+      try {
+
+        const res = await fetch(
+          `${API_BASE}/posts/${postId}/comments`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              user_id: currentUserId,
+              content: content
+            })
+          }
+        );
+
+        const result = await res.json();
+
+        if (result.code === 200) {
+
+          textarea.value = "";
+
+          loadComments();
+          loadPostDetail();
+
+        } else {
+
+          alert(result.msg);
+
+        }
+
+      } catch (err) {
+
+        console.error(err);
+        alert("评论失败");
+
+      }
+    }
+    // =========================
+    // 点赞帖子
+    // =========================
+    async function likePost() {
+
+      try {
+
+        const res = await fetch(
+          `${API_BASE}/posts/${postId}/like?user_id=${currentUserId}`,
+          {
+            method: "POST"
+          }
+        );
+
+        const result = await res.json();
+
+        alert(result.msg);
+
+        loadPostDetail();
+
+      } catch (err) {
+
+        console.error(err);
+
+      }
+    }
+
+    // =========================
+    // 收藏帖子
+    // =========================
+    async function favoritePost() {
+
+      try {
+
+        const res = await fetch(
+          `${API_BASE}/posts/${postId}/favorite?user_id=${currentUserId}`,
+          {
+            method: "POST"
+          }
+        );
+
+        const result = await res.json();
+
+        alert(result.msg);
+
+      } catch (err) {
+
+        console.error(err);
+
+      }
+    }
+
+    // =========================
+    // 绑定按钮事件
+    // =========================
+
+    // 发布评论
+    document.querySelector(".btn-primary")
+      .addEventListener("click", submitComment);
+
+    // 点赞按钮
+    document.querySelector(".action-btn.liked")
+      .addEventListener("click", likePost);
+
+    // 收藏按钮
+    document.querySelectorAll(".action-btn")[2]
+      .addEventListener("click", favoritePost);
+    // 回顶部
+    const backToTopBtn =
+      document.getElementById('backToTop');
 
     window.addEventListener('scroll', function () {
+
       if (window.pageYOffset > 300) {
+
         backToTopBtn.classList.add('show');
+
       } else {
+
         backToTopBtn.classList.remove('show');
+
       }
+
     });
 
     backToTopBtn.addEventListener('click', function () {
+
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
+
     });
   </script>
 </body>

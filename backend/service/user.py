@@ -106,3 +106,35 @@ def change_user_password(userid, old_password, new_password):
         return ApiResponse.error(msg=f"密码修改失败: {str(e)}")
     finally:
         db.close()
+
+# 新增：获取用户信息
+def get_user_profile(user_id):
+    db = get_db_connection()
+
+    try:
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT id, username, telephone FROM users WHERE id = ?",
+            (user_id,)
+        )
+
+        user = cursor.fetchone()
+
+        if not user:
+            return ApiResponse.error(msg="用户不存在")
+
+        return ApiResponse.success(
+            data={
+                "id": user[0],
+                "username": user[1],
+                "telephone": user[2]
+            },
+            msg="获取成功"
+        )
+
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取用户信息失败: {str(e)}")
+
+    finally:
+        db.close()

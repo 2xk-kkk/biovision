@@ -851,6 +851,183 @@
   </button>
 
   <script>
+    // 获取 URL 里的用户 id
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get("id");
+
+    页面加载
+    window.addEventListener("DOMContentLoaded", () => {
+      getUserProfile();
+      getUserPosts();
+    });
+    // =========================
+    // 获取用户主页信息
+    // =========================
+    async function getUserProfile() {
+
+      try {
+
+        const res = await fetch(`http://127.0.0.1:8000/users/${userId}`);
+
+        const result = await res.json();
+
+        const user = result.data;
+
+        // 用户名
+        document.querySelector(".profile-name").innerHTML = `
+          ${user.username}
+          <span class="profile-badge">用户</span>
+        `;
+
+        // 简介
+        document.querySelector(".profile-bio").textContent = user.bio || "这个人很懒，还没有简介";
+
+        // 地区 + 加入时间
+        document.querySelector(".profile-meta").innerHTML = `
+          <span>
+            <i class="fas fa-calendar"></i>
+            ${user.join_time}
+          </span>
+
+          <span>
+            <i class="fas fa-map-marker-alt"></i>
+            ${user.location || "未知"}
+          </span>
+        `;
+
+        // 统计信息
+        const stats = document.querySelectorAll(".profile-stat-value");
+
+        stats[0].textContent = user.post_count;
+        stats[1].textContent = user.fans_count;
+        stats[2].textContent = user.like_count;
+        stats[3].textContent = user.following_count;
+
+        // 头像
+        document.querySelector(".profile-avatar").textContent =
+          user.username.charAt(0);
+
+      } catch (err) {
+
+        console.error("获取用户信息失败", err);
+
+      }
+    }
+    // =========================
+    // 获取用户帖子
+    // =========================
+    async function getUserPosts() {
+
+      try {
+
+        const res = await fetch(`http://127.0.0.1:8000/users/${userId}/posts`);
+
+        const result = await res.json();
+
+        const posts = result.data;
+
+        const container = document.querySelector(".posts-list");
+
+        container.innerHTML = "";
+
+        posts.forEach(post => {
+
+          container.innerHTML += `
+
+          <div class="post-card" onclick="goPost(${post.id})">
+
+            <div class="post-header">
+
+              <div class="post-avatar">
+                ${post.title.charAt(0)}
+              </div>
+
+              <div class="post-user-info">
+                <div class="post-username">
+                  ${post.title}
+                </div>
+
+                <div class="post-time">
+                  ${post.created_at}
+                </div>
+              </div>
+
+            </div>
+
+            <div class="post-content">
+              ${post.content}
+            </div>
+
+            <div class="post-actions">
+
+              <span class="action-btn">
+                <i class="far fa-heart"></i>
+                ${post.like_count}
+              </span>
+
+              <span class="action-btn">
+                <i class="far fa-comment"></i>
+                ${post.comment_count}
+              </span>
+
+            </div>
+
+          </div>
+
+          `;
+
+        });
+
+      } catch (err) {
+
+        console.error("获取帖子失败", err);
+
+      }
+
+    }
+    // =========================
+    // 跳转帖子详情
+    // =========================
+    function goPost(postId) {
+
+      window.location.href = `post-detail.html?id=${postId}`;
+
+    }
+    // =========================
+    // 关注用户
+    // =========================
+    async function followUser() {
+
+      try {
+
+        const res = await fetch(
+          `http://127.0.0.1:8000/users/follow/${userId}`,
+          {
+            method: "POST"
+          }
+        );
+
+        const result = await res.json();
+
+        alert(result.message);
+
+      } catch (err) {
+
+        console.error("关注失败", err);
+
+      }
+
+    }
+    // =========================
+    // 绑定关注按钮
+    // =========================
+    const followBtn = document.querySelector(".profile-actions .btn-primary");
+
+    if (followBtn) {
+
+      followBtn.addEventListener("click", followUser);
+
+  }
     // 下拉菜单切换
     const userAvatarBtn = document.getElementById('userAvatarBtn');
     const dropdown = document.getElementById('userDropdownMenu');
