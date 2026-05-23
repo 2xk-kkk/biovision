@@ -281,6 +281,39 @@
       display: grid;
       grid-template-columns: 1fr 320px;
       gap: 24px;
+      align-items: start;
+    }
+
+    .main-content {
+      min-width: 0;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 84px;
+      align-self: start;
+      height: calc(100vh - 108px);
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
 
     .card {
@@ -659,6 +692,13 @@
     @media (max-width: 768px) {
       .content-layout {
         grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        overflow: visible;
+        padding-right: 0;
       }
 
       .nav-links {
@@ -1143,7 +1183,6 @@
           document.getElementById('stat-online').textContent = data.data.online_users;
 
           if (window.activityChart) {
-            // 更新图表数据和标签
             window.activityChart.data.labels = data.data.activity_dates || ["周一", "周二", "周三", "周四", "周五"];
             window.activityChart.data.datasets[0].data = data.data.activity || [0, 0, 0, 0, 0];
             window.activityChart.update();
@@ -1172,16 +1211,16 @@
 
     document.addEventListener('DOMContentLoaded', function () {
       console.log('=== DOMContentLoaded fired');
-      // 初始化活跃度图表
+
       const ctx = document.getElementById('activityChart');
       if (ctx) {
         window.activityChart = new Chart(ctx.getContext('2d'), {
           type: 'line',
           data: {
-            labels: [], // 这里会被后端真实日期覆盖
+            labels: [],
             datasets: [{
               label: '帖子数',
-              data: [], // 这里会被后端数据覆盖
+              data: [],
               borderColor: '#3B82F6',
               backgroundColor: 'rgba(59, 130, 246, 0.1)',
               tension: 0.4,
@@ -1211,7 +1250,6 @@
           }
         });
       }
-
 
       const userAvatarBtn = document.getElementById('userAvatarBtn');
       const userDropdownMenu = document.getElementById('userDropdownMenu');
@@ -1312,354 +1350,325 @@
         });
       }
     });
-    // 新增接口
+
     // ================= 1. 点赞 =================
     async function toggleLike(postId) {
+      try {
+        const token = localStorage.getItem('token');
 
-        try {
-
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                throw new Error("请先登录");
-            }
-
-            const resp = await fetch(
-                `${API_BASE}/api/post/${postId}/like`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'token': token
-                    }
-                }
-            );
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '点赞失败');
-            }
-
-            return result.data || {};
-
-        } catch (err) {
-
-            console.error('toggleLike error:', err);
-            throw err;
+        if (!token) {
+          throw new Error("请先登录");
         }
+
+        const resp = await fetch(
+          `${API_BASE}/api/post/${postId}/like`,
+          {
+            method: 'POST',
+            headers: {
+              'token': token
+            }
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '点赞失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('toggleLike error:', err);
+        throw err;
+      }
     }
+
     // ================= 2. 收藏 =================
     async function toggleFavorite(postId) {
+      try {
+        const token = localStorage.getItem('token');
 
-        try {
-
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                throw new Error("请先登录");
-            }
-            const resp = await fetch(
-                `${API_BASE}/api/post/${postId}/collect`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'token': token
-                    }
-                }
-            );
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '收藏失败');
-            }
-
-            return result.data || {};
-
-        } catch (err) {
-
-            console.error('toggleFavorite error:', err);
-            throw err;
+        if (!token) {
+          throw new Error("请先登录");
         }
+
+        const resp = await fetch(
+          `${API_BASE}/api/post/${postId}/collect`,
+          {
+            method: 'POST',
+            headers: {
+              'token': token
+            }
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '收藏失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('toggleFavorite error:', err);
+        throw err;
+      }
     }
+
     // ================= 3. 获取评论 =================
     async function getComments(postId, page = 1, pageSize = 10) {
+      try {
+        const url =
+          `${API_BASE}/api/post/${postId}/comments?page=${page}&page_size=${pageSize}`;
 
-        try {
+        const resp = await fetch(url);
 
-            const url =
-                `${API_BASE}/api/post/${postId}/comments?page=${page}&page_size=${pageSize}`;
-
-            const resp = await fetch(url);
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '获取评论失败');
-            }
-
-            return result.data || [];
-
-        } catch (err) {
-
-            console.error('getComments error:', err);
-            throw err;
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
         }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '获取评论失败');
+        }
+
+        return result.data || [];
+      } catch (err) {
+        console.error('getComments error:', err);
+        throw err;
+      }
     }
+
     // ================= 4. 发布评论 =================
     async function addComment(postId, content) {
+      try {
+        const token = localStorage.getItem('token');
 
-        try {
-
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                throw new Error("请先登录");
-            }
-
-            if (!content || !content.trim()) {
-                throw new Error("评论内容不能为空");
-            }
-
-            const resp = await fetch(
-                `${API_BASE}/api/post/${postId}/comment?content=${encodeURIComponent(content)}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'token': token
-                    }
-                }
-            );
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '评论失败');
-            }
-
-            return result.data || {};
-
-        } catch (err) {
-
-            console.error('addComment error:', err);
-            throw err;
+        if (!token) {
+          throw new Error("请先登录");
         }
+
+        if (!content || !content.trim()) {
+          throw new Error("评论内容不能为空");
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/api/post/${postId}/comment?content=${encodeURIComponent(content)}`,
+          {
+            method: 'POST',
+            headers: {
+              'token': token
+            }
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '评论失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('addComment error:', err);
+        throw err;
+      }
     }
+
     // ================= 5. 回复评论 =================
     async function replyComment(commentId, content) {
+      try {
+        const token = localStorage.getItem('token');
 
-        try {
-
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                throw new Error("请先登录");
-            }
-
-            if (!content || !content.trim()) {
-                throw new Error("回复内容不能为空");
-            }
-
-            const resp = await fetch(
-                `${API_BASE}/api/comment/${commentId}/reply?content=${encodeURIComponent(content)}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'token': token
-                    }
-                }
-            );
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '回复失败');
-            }
-
-            return result.data || {};
-
-        } catch (err) {
-
-            console.error('replyComment error:', err);
-            throw err;
+        if (!token) {
+          throw new Error("请先登录");
         }
+
+        if (!content || !content.trim()) {
+          throw new Error("回复内容不能为空");
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/api/comment/${commentId}/reply?content=${encodeURIComponent(content)}`,
+          {
+            method: 'POST',
+            headers: {
+              'token': token
+            }
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '回复失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('replyComment error:', err);
+        throw err;
+      }
     }
+
     // ================= 6. 上传图片 =================
     async function uploadImage(file) {
-
-        try {
-
-            if (!file) {
-                throw new Error("请选择图片");
-            }
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const resp = await fetch(
-                `${API_BASE}/api/upload_image`,
-                {
-                    method: 'POST',
-                    body: formData
-                }
-            );
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-            // 两种后端返回格式
-            if (result.success === false) {
-                throw new Error(result.msg || '上传失败');
-            }
-            if (result.image_url) {
-                return result.image_url;
-            }
-            return result.data?.image_url || '';
-
-        } catch (err) {
-
-            console.error('uploadImage error:', err);
-            throw err;
+      try {
+        if (!file) {
+          throw new Error("请选择图片");
         }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const resp = await fetch(
+          `${API_BASE}/api/upload_image`,
+          {
+            method: 'POST',
+            body: formData
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+        if (result.success === false) {
+          throw new Error(result.msg || '上传失败');
+        }
+        if (result.image_url) {
+          return result.image_url;
+        }
+        return result.data?.image_url || '';
+      } catch (err) {
+        console.error('uploadImage error:', err);
+        throw err;
+      }
     }
+
     // ================= 7. 发帖 =================
     async function createPost(content, imageUrls = [], tag = '') {
+      try {
+        const token = localStorage.getItem('token');
 
-        try {
-
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                throw new Error("请先登录");
-            }
-
-            if (!content || !content.trim()) {
-                throw new Error("帖子内容不能为空");
-            }
-
-            const resp = await fetch(
-                `${API_BASE}/api/create_post`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'token': token
-                    },
-                    body: JSON.stringify({
-                        content: content.trim(),
-                        image_urls: imageUrls,
-                        tag: tag
-                    })
-                }
-            );
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '发帖失败');
-            }
-
-            return result.data || {};
-
-        } catch (err) {
-
-            console.error('createPost error:', err);
-            throw err;
+        if (!token) {
+          throw new Error("请先登录");
         }
+
+        if (!content || !content.trim()) {
+          throw new Error("帖子内容不能为空");
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/api/create_post`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'token': token
+            },
+            body: JSON.stringify({
+              content: content.trim(),
+              image_urls: imageUrls,
+              tag: tag
+            })
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '发帖失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('createPost error:', err);
+        throw err;
+      }
     }
+
     // ================= 8. 获取用户信息 =================
     async function getUserProfile(userId) {
-
-        try {
-
-            if (!userId) {
-                throw new Error("用户ID不能为空");
-            }
-
-            const token = localStorage.getItem('token');
-
-            const headers = {};
-
-            if (token) {
-                headers['token'] = token;
-            }
-
-            const resp = await fetch(
-                `${API_BASE}/api/user/${userId}`,
-                {
-                    method: 'GET',
-                    headers
-                }
-            );
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '获取用户信息失败');
-            }
-
-            return result.data || {};
-
-        } catch (err) {
-
-            console.error('getUserProfile error:', err);
-            throw err;
+      try {
+        if (!userId) {
+          throw new Error("用户ID不能为空");
         }
+
+        const token = localStorage.getItem('token');
+        const headers = {};
+
+        if (token) {
+          headers['token'] = token;
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/api/user/${userId}`,
+          {
+            method: 'GET',
+            headers
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '获取用户信息失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('getUserProfile error:', err);
+        throw err;
+      }
     }
+
     // ================= 9. 获取论坛统计 =================
     async function getForumStats() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/stats`);
 
-        try {
-
-            const resp = await fetch(`${API_BASE}/api/stats`);
-
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-
-            const result = await resp.json();
-
-            if (!result.success) {
-                throw new Error(result.msg || '获取统计失败');
-            }
-
-            return result.data || {};
-
-        } catch (err) {
-
-            console.error('getForumStats error:', err);
-            throw err;
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
         }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '获取统计失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('getForumStats error:', err);
+        throw err;
+      }
     }
   </script>
 </body>
