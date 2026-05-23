@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>生物论坛 - 高中生物教学可视化与互动平台</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -987,8 +987,9 @@
 
         const card = document.createElement('div');
         card.className = 'post-card';
+        const postId = post.post_id || post.id;
         card.addEventListener('click', () => {
-          window.location.href = 'post-detail.html';
+          window.location.href = `post-detail.html?id=${postId}`;
         });
 
         const header = document.createElement('div');
@@ -1064,19 +1065,32 @@
           contentEl.appendChild(imgWrap);
         }
 
+        const likeCount = post.like_count || 0;
+        const commentCount = post.comment_count || 0;
+        const viewCount = post.view_count || 0;
+
         const actions = document.createElement('div');
         actions.className = 'post-actions';
         actions.innerHTML = `
-          <button class="action-btn" onclick="event.stopPropagation();">
-            <i class="far fa-heart"></i> 0
+          <button class="action-btn" id="likeBtn-${postId}">
+            <i class="far fa-heart"></i> <span>${likeCount}</span>
           </button>
-          <button class="action-btn" onclick="event.stopPropagation();">
-            <i class="far fa-comment"></i> 0
+          <button class="action-btn">
+            <i class="far fa-comment"></i> <span>${commentCount}</span>
           </button>
-          <button class="action-btn" onclick="event.stopPropagation();">
-            <i class="far fa-eye"></i> 0
+          <button class="action-btn">
+            <i class="far fa-eye"></i> <span>${viewCount}</span>
           </button>
         `;
+
+        // 绑定点赞事件
+        const likeBtn = actions.querySelector(`#likeBtn-${postId}`);
+        if (likeBtn) {
+          likeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleLike(postId, likeBtn);
+          });
+        }
 
         card.appendChild(header);
         if (tagsEl.childNodes.length) card.appendChild(tagsEl);
@@ -1295,6 +1309,18 @@
       loadPosts();
       updateForumStats();
 
+      // 发帖按钮登录检查
+      const postBtn = document.querySelector('a.btn-primary[href="make-post.html"]');
+      if (postBtn) {
+        postBtn.addEventListener('click', function (e) {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            e.preventDefault();
+            alert('请先登录');
+          }
+        });
+      }
+
       updateSectionCount('totalNum', `${API_BASE}/api/posts?page=1`);
       updateSectionCount('xuexiCount', `${API_BASE}/api/posts?tag=Question_discussion&page=1`);
       updateSectionCount('kechengCount', `${API_BASE}/api/posts?tag=Course_discussion&page=1`);
@@ -1352,12 +1378,13 @@
     });
 
     // ================= 1. 点赞 =================
-    async function toggleLike(postId) {
+    async function toggleLike(postId, button) {
       try {
         const token = localStorage.getItem('token');
 
         if (!token) {
-          throw new Error("请先登录");
+          alert("请先登录");
+          return;
         }
 
         const resp = await fetch(
@@ -1380,10 +1407,41 @@
           throw new Error(result.msg || '点赞失败');
         }
 
+        // 更新页面上的点赞数和评论数
+        if (button) {
+          const likeIcon = button.querySelector('i');
+          const likeCountSpan = button.querySelector('span') || button;
+
+          // 更新点赞数（假设后端返回了新的点赞数，如果没有则+1或-1）
+          let currentCount = parseInt(likeCountSpan.textContent) || 0;
+          const isLiked = likeIcon.classList.contains('fas');
+
+          if (isLiked) {
+            likeIcon.classList.remove('fas');
+            likeIcon.classList.add('far');
+            currentCount = Math.max(0, currentCount - 1);
+          } else {
+            likeIcon.classList.remove('far');
+            likeIcon.classList.add('fas');
+            currentCount += 1;
+          }
+
+          // 提取数字部分（如果有"收藏"等文字）
+          const countText = likeCountSpan.textContent;
+          if (countText.includes(' ')) {
+            // 如果有文字，保留文字
+            const parts = countText.split(' ');
+            parts[parts.length - 1] = currentCount;
+            likeCountSpan.textContent = parts.join(' ');
+          } else {
+            likeCountSpan.textContent = currentCount;
+          }
+        }
+
         return result.data || {};
       } catch (err) {
         console.error('toggleLike error:', err);
-        throw err;
+        alert(err.message);
       }
     }
 

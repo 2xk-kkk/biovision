@@ -1,7 +1,7 @@
-from fastapi import FastAPI, File, UploadFile, APIRouter, Header, Query, HTTPException
+from fastapi import FastAPI, File, UploadFile, APIRouter, Header, Query, HTTPException, Body
 import uuid
 import os
-from model.request import CreatePostRequest
+from model.request import CreatePostRequest, CreateCommentRequest
 from service.post import (
     create_post,
     get_all_posts,
@@ -14,7 +14,8 @@ from service.post import (
     share_post,
     create_comment,
     get_post_comments_service, 
-    get_user_posts_service     
+    get_user_posts_service,
+    get_user_statistics
 )
 
 router = APIRouter()
@@ -59,10 +60,10 @@ def get_post_detail_api(post_id: int):
 @router.post("/post/{post_id}/comment")
 def create_comment_api(
     post_id: int,
-    content: str,
+    request: CreateCommentRequest,
     token: str = Header(...)
 ):
-    return create_comment(token, post_id, content)
+    return create_comment(token, post_id, request.content)
 
 # 获取帖子的所有评论 
 @router.get("/post/{post_id}/comments")
@@ -115,3 +116,9 @@ def collect_post_api(
 @router.post("/post/{post_id}/share")
 def share_post_api(post_id: int):
     return share_post(post_id)
+
+
+# 获取用户统计数据（帖子数、获赞数、粉丝数）
+@router.get("/user/{user_id}/stats")
+def get_user_stats_api(user_id: int):
+    return get_user_statistics(user_id)

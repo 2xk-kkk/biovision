@@ -7,6 +7,7 @@ from model.post import (
     get_posts_by_tag_db,
     get_post_images,
     get_posts,
+    get_posts_with_counts,
     get_post_images_by_post_ids,
     #新增
     get_post_detail as get_post_detail_db,
@@ -19,10 +20,11 @@ from model.post import (
     toggle_collect,
     is_collected,
     add_share_count,
-    create_comment,
+    create_comment as create_comment_db,
     get_post_comments,
     get_user_posts,
-    delete_post_images
+    delete_post_images,
+    get_user_stats
 )
 
 def create_post(token, content, image_urls, tag):
@@ -68,9 +70,6 @@ def create_post(token, content, image_urls, tag):
 def get_posts_by_tag(tag, page=1, page_size=10):
     db = get_db_connection()
     try:
-        # ==============================================
-        # 🔥 修复：正确统计标签数量
-        # ==============================================
         cursor = db.cursor()
         if tag:
             cursor.execute("SELECT COUNT(*) FROM posts WHERE tag = ?", (tag,))
@@ -93,6 +92,8 @@ def get_posts_by_tag(tag, page=1, page_size=10):
         for row in post_data:
             post_id = row[0]
             post_ids.append(post_id)
+            cursor.execute("SELECT COUNT(*) FROM comments WHERE post_id = ?", (post_id,))
+            comment_count = cursor.fetchone()[0]
             posts_list.append({
                 "post_id": post_id,
                 "user_id": row[1],
@@ -100,6 +101,9 @@ def get_posts_by_tag(tag, page=1, page_size=10):
                 "content": row[3],
                 "create_at": row[4],
                 "tag": row[5],
+                "comment_count": comment_count,
+                "like_count": row[6] if len(row) > 6 else 0,
+                "view_count": row[7] if len(row) > 7 else 0,
                 "images": [] 
             })
         
@@ -124,7 +128,7 @@ def get_posts_by_tag(tag, page=1, page_size=10):
 def get_all_posts(page=1, page_size=20):
     db = get_db_connection()
     try:
-        posts_data = get_posts(db, page, page_size)
+        posts_data = get_posts_with_counts(db, page, page_size)
 
         cursor = db.cursor()
         cursor.execute("SELECT COUNT(*) FROM posts")
@@ -150,6 +154,9 @@ def get_all_posts(page=1, page_size=20):
                 "content": row[3],
                 "tag": row[4],
                 "create_at": row[5],
+                "comment_count": row[6] if len(row) > 6 else 0,
+                "like_count": row[7] if len(row) > 7 else 0,
+                "view_count": row[8] if len(row) > 8 else 0,
                 "images": []
             })
 
@@ -176,6 +183,9 @@ def get_post_detail(post_id):
         if not post:
             return ApiResponse.error(msg="帖子不存在")
         
+        comments = get_post_comments(db, post_id)
+        comment_count = len(comments)
+        
         images = get_post_images_by_post_ids(db, [post_id])
         return ApiResponse.success(data={
             "post_id": post[0],
@@ -184,9 +194,9 @@ def get_post_detail(post_id):
             "content": post[3],
             "tag": post[4],
             "create_at": post[5],
-            "view_count": post[6],
-            "like_count": post[7],
-            "collect_count": post[8],
+            "view_count": post[6] if len(post) > 6 else 0,
+            "like_count": post[7] if len(post) > 7 else 0,
+            "comment_count": comment_count,
             "images": images.get(post_id, [])
         })
     finally:
@@ -201,7 +211,7 @@ def create_comment(token, post_id, content):
     user_id = int(payload["msg"]["user_id"])
     
     try:
-        cid = create_comment(db, post_id, user_id, content)
+        cid = create_comment_db(db, post_id, user_id, content)
         return ApiResponse.success(data={"comment_id": cid}, msg="评论成功")
     except:
         return ApiResponse.error(msg="评论失败")
@@ -302,9 +312,18 @@ def like_post(token, post_id):
     user_id = int(payload["msg"]["user_id"])
     
     status = toggle_like(db, user_id, post_id)
-    count = get_post_detail(post_id)[7]
+    comment_count = len(get_post_comments(db, post_id))
+    
+    # 获取点赞数
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM user_interact WHERE post_id=? AND type='like'", (post_id,))
+        like_count = cursor.fetchone()[0]
+    except:
+        like_count = 0
+    
     db.close()
-    return ApiResponse.success(data={"liked": status, "like_count": count})
+    return ApiResponse.success(data={"liked": status, "like_count": like_count, "comment_count": comment_count})
 
 # 8. 收藏
 def collect_post(token, post_id):
@@ -325,3 +344,13 @@ def share_post(post_id):
     add_share_count(db, post_id)
     db.close()
     return ApiResponse.success(msg="分享成功")
+
+
+# 10. 获取用户统计数据
+def get_user_statistics(user_id):
+    db = get_db_connection()
+    try:
+        stats = get_user_stats(db, user_id)
+        return ApiResponse.success(data=stats)
+    finally:
+        db.close()

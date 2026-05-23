@@ -959,6 +959,16 @@
   <script>
     const API_BASE_URL = 'http://localhost:8000/api';
     console.log('make-post script loaded');
+    
+    // 页面加载时检查登录状态
+    (function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('请先登录');
+        window.location.replace('main.html');
+      }
+    })();
+    
     const uploadedImageUrls = [];
     const pendingImageFiles = [];
 

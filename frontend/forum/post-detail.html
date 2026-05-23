@@ -726,7 +726,48 @@
       justify-content: center;
     }
 
-    /* 相关帖子 */
+    /* 作者的帖子 */
+    .author-post {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--gray-100);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .author-post:hover {
+      margin-left: 4px;
+    }
+
+    .author-post:last-child {
+      border-bottom: none;
+    }
+
+    .author-post-title {
+      font-size: 14px;
+      color: var(--gray-700);
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .author-post:hover .author-post-title {
+      color: var(--primary);
+    }
+
+    .author-post-meta {
+      font-size: 12px;
+      color: var(--gray-400);
+      display: flex;
+      gap: 12px;
+    }
+
+    .author-post-empty {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--gray-400);
+      font-size: 14px;
+    }
+
+    /* 相关帖子 (保留样式用于兼容) */
     .related-post {
       display: flex;
       gap: 14px;
@@ -872,21 +913,21 @@
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 帖子卡片 -->
-      <div class="card">
+      <div class="card" id="postCard">
         <!-- 帖子头部 -->
         <div class="card-section">
           <div class="post-header">
-            <a href="user-profile.html" class="post-avatar" title="查看主页">生</a>
+            <a href="user-profile.html" class="post-avatar" id="postAvatar" title="查看主页">生</a>
             <div class="post-info">
               <div class="post-author">
-                <a href="user-profile.html" class="post-author-name">生物老师</a>
+                <a href="user-profile.html" class="post-author-name" id="postAuthor">生物老师</a>
                 <span class="post-badge">帖主</span>
               </div>
-              <div class="post-meta">
+              <div class="post-meta" id="postMeta">
                 <span><i class="far fa-clock"></i>2026-04-20 14:30</span>
                 <span><i class="far fa-eye"></i>256 次浏览</span>
               </div>
-              <div class="post-tags">
+              <div class="post-tags" id="postTags">
                 <span class="post-tag">可视化模型</span>
                 <span class="post-tag green">细胞呼吸</span>
                 <span class="post-tag purple">高中生物</span>
@@ -897,43 +938,21 @@
 
         <!-- 帖子内容 -->
         <div class="card-section">
-          <div class="post-content">
+          <div class="post-content" id="postContent">
             <p>分享一个我制作的细胞呼吸过程3D可视化模型，包含糖酵解（Glycolysis）、柠檬酸循环（Krebs Cycle）和电子传递链的详细步骤。</p>
-
-            <p>这个模型可以帮助学生更直观地理解细胞呼吸的各个阶段，包括能量产生的过程和关键酶的作用。通过交互式操作，学生可以观察不同条件下细胞呼吸的变化，加深对这一重要生理过程的理解。</p>
-
-            <h3>模型特点</h3>
-            <ul>
-              <li>3D可视化展示细胞呼吸全过程</li>
-              <li>可交互的酶促反应演示</li>
-              <li>能量分子ATP产生的动态展示</li>
-              <li>支持不同条件下的呼吸速率模拟</li>
-            </ul>
-
-            <p>欢迎各位老师和学生使用，有任何问题可以在评论区提出！</p>
-          </div>
-
-          <!-- 帖子图片 -->
-          <div class="post-images">
-            <div class="post-image">
-              <img src="https://via.placeholder.com/400x300/3B82F6/ffffff?text=模型截图1" alt="细胞呼吸模型">
-            </div>
-            <div class="post-image">
-              <img src="https://via.placeholder.com/400x300/10B981/ffffff?text=模型截图2" alt="细胞呼吸模型">
-            </div>
           </div>
         </div>
 
         <!-- 操作按钮 -->
         <div class="card-section">
           <div class="post-actions">
-            <button class="action-btn liked"> 
-              <i class="fas fa-heart"></i> 15
+            <button class="action-btn" id="likeBtn">
+              <i class="far fa-heart"></i> <span id="likeCount">15</span>
             </button>
-            <button class="action-btn">
-              <i class="far fa-comment"></i> 8
+            <button class="action-btn" id="commentBtn">
+              <i class="far fa-comment"></i> <span id="commentCount">8</span>
             </button>
-            <button class="action-btn">
+            <button class="action-btn" id="collectBtn">
               <i class="far fa-bookmark"></i> 收藏
             </button>
             <button class="action-btn">
@@ -950,7 +969,7 @@
             <div class="comments-title">
               <i class="fas fa-comments"></i>
               评论区
-              <span class="comments-count">8</span>
+              <span class="comments-count" id="commentsCount">8</span>
             </div>
           </div>
 
@@ -958,9 +977,9 @@
           <div class="comment-input-wrapper">
             <div class="comment-avatar">小</div>
             <div class="comment-input-box">
-              <textarea class="comment-textarea" placeholder="写下你的评论..."></textarea>
+              <textarea class="comment-textarea" id="commentTextarea" placeholder="写下你的评论..."></textarea>
               <div class="comment-actions">
-                <button class="btn-primary">
+                <button class="btn-primary" id="submitCommentBtn">
                   <i class="fas fa-paper-plane"></i> 发布评论
                 </button>
               </div>
@@ -968,102 +987,13 @@
           </div>
 
           <!-- 评论列表 -->
-          <div class="comments-list">
-            <!-- 评论1 -->
-            <div class="comment-item">
-              <a href="user-profile.html" class="comment-avatar-small" title="查看主页">高</a>
-              <div class="comment-body">
-                <div class="comment-header">
-                  <a href="#" class="comment-author">高三学生</a>
-                  <span class="comment-time">2026-04-20 15:30</span>
-                </div>
-                <div class="comment-content">
-                  老师您好，请问这个模型支持移动端查看吗？另外有没有配套的教学课件？
-                </div>
-                <div class="comment-actions-small">
-                  <button class="action-btn-small">
-                    <i class="far fa-thumbs-up"></i> 3
-                  </button>
-                  <button class="action-btn-small">
-                    <i class="far fa-comment"></i> 回复
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- 评论2 -->
-            <div class="comment-item">
-              <a href="#" class="comment-avatar-small purple" title="查看主页">生</a>
-              <div class="comment-body">
-                <div class="comment-header">
-                  <a href="#" class="comment-author">生物教研组长</a>
-                  <span class="comment-time">2026-04-20 16:45</span>
-                </div>
-                <div class="comment-content">
-                  这个模型制作得很精细，对于实验课的教学非常有帮助。已经收藏了！
-                </div>
-                <div class="comment-actions-small">
-                  <button class="action-btn-small">
-                    <i class="far fa-thumbs-up"></i> 5
-                  </button>
-                  <button class="action-btn-small">
-                    <i class="far fa-comment"></i> 回复
-                  </button>
-                </div>
-
-                <!-- 子评论 -->
-                <div class="child-comments">
-                  <div class="child-comment">
-                    <a href="#" class="comment-avatar-small blue" title="查看主页">生</a>
-                    <div class="comment-body">
-                      <div class="comment-header">
-                        <a href="user-profile.html" class="comment-author">生物老师 <span class="post-badge"
-                            style="font-size: 10px; padding: 2px 8px;">帖主</span></a>
-                        <span class="comment-time">2026-04-20 17:00</span>
-                      </div>
-                      <div class="comment-content">
-                        感谢肯定！后续会推出配套的教学课件，敬请期待~
-                      </div>
-                      <div class="comment-actions-small">
-                        <button class="action-btn-small">
-                          <i class="far fa-thumbs-up"></i> 2
-                        </button>
-                        <button class="action-btn-small">
-                          <i class="far fa-comment"></i> 回复
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 评论3 -->
-            <div class="comment-item">
-              <a href="#" class="comment-avatar-small orange" title="查看主页">高</a>
-              <div class="comment-body">
-                <div class="comment-header">
-                  <a href="#" class="comment-author">高二学生</a>
-                  <span class="comment-time">2026-04-21 09:15</span>
-                </div>
-                <div class="comment-content">
-                  这个模型真的很棒！看完之后对细胞呼吸过程清楚多了，感谢老师分享！
-                </div>
-                <div class="comment-actions-small">
-                  <button class="action-btn-small">
-                    <i class="far fa-thumbs-up"></i> 2
-                  </button>
-                  <button class="action-btn-small">
-                    <i class="far fa-comment"></i> 回复
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div class="comments-list" id="commentsList">
+            <!-- 评论会通过JS动态生成 -->
           </div>
 
           <!-- 加载更多 -->
           <div class="load-more">
-            <button class="load-more-btn">加载更多评论</button>
+            <button class="load-more-btn" id="loadMoreBtn">加载更多评论</button>
           </div>
         </div>
       </div>
@@ -1079,23 +1009,23 @@
         </div>
         <div class="sidebar-content">
           <div class="author-info">
-            <a href="user-profile.html" class="author-avatar" title="查看主页">生</a>
+            <a href="user-profile.html" class="author-avatar" id="authorAvatar" title="查看主页">生</a>
             <div>
-              <a href="user-profile.html" class="author-name">生物老师</a>
-              <div class="author-bio">高中生物教师 · 10年教龄</div>
+              <a href="user-profile.html" class="author-name" id="authorName">生物老师</a>
+              <div class="author-bio" id="authorBio">高中生物教师 · 10年教龄</div>
             </div>
           </div>
           <div class="author-stats">
             <div class="author-stat">
-              <div class="author-stat-value">128</div>
+              <div class="author-stat-value" id="authorPosts">128</div>
               <div class="author-stat-label">帖子</div>
             </div>
             <div class="author-stat">
-              <div class="author-stat-value">1.2k</div>
+              <div class="author-stat-value" id="authorFans">1.2k</div>
               <div class="author-stat-label">粉丝</div>
             </div>
             <div class="author-stat">
-              <div class="author-stat-value">356</div>
+              <div class="author-stat-value" id="authorLikes">356</div>
               <div class="author-stat-label">获赞</div>
             </div>
           </div>
@@ -1110,40 +1040,14 @@
         </div>
       </div>
 
-      <!-- 相关帖子 -->
+      <!-- 该作者的帖子 -->
       <div class="sidebar-card">
         <div class="sidebar-header">
-          <i class="fas fa-link"></i>
-          相关帖子
+          <i class="fas fa-file-alt"></i>
+          该作者的帖子
         </div>
-        <div class="sidebar-content">
-          <div class="related-post">
-            <div>
-              <div class="related-post-title">光合作用过程3D动画模型分享</div>
-              <div class="related-post-meta">
-                <span><i class="far fa-heart"></i> 8</span>
-                <span><i class="far fa-comment"></i> 5</span>
-              </div>
-            </div>
-          </div>
-          <div class="related-post">
-            <div>
-              <div class="related-post-title">DNA复制过程可视化动画详解</div>
-              <div class="related-post-meta">
-                <span><i class="far fa-heart"></i> 15</span>
-                <span><i class="far fa-comment"></i> 7</span>
-              </div>
-            </div>
-          </div>
-          <div class="related-post">
-            <div>
-              <div class="related-post-title">细胞分裂过程的动态演示</div>
-              <div class="related-post-meta">
-                <span><i class="far fa-heart"></i> 12</span>
-                <span><i class="far fa-comment"></i> 4</span>
-              </div>
-            </div>
-          </div>
+        <div class="sidebar-content" id="authorPostsList">
+          <div class="author-post-empty">加载中...</div>
         </div>
       </div>
     </div>
@@ -1155,298 +1059,341 @@
   </button>
 
   <script>
-    const API_BASE = "http://127.0.0.1:8000";
+    const API_BASE = "http://127.0.0.1:8000/api";
+    const postId = getPostId();
+    let currentPage = 1;
+    const pageSize = 10;
+    let currentUserId = null;
 
-    // 获取 URL 参数
     function getPostId() {
       const params = new URLSearchParams(window.location.search);
       return params.get("id") || 1;
     }
 
-    const postId = getPostId();
-
-    // 当前用户（后面改成登录获取）
-    const currentUserId = 1;
-
-    // 页面加载
     window.onload = () => {
       loadPostDetail();
       loadComments();
+      bindEvents();
     };
 
-    // =========================
-    // 获取帖子详情
-    // =========================
     async function loadPostDetail() {
       try {
-        const res = await fetch(`${API_BASE}/posts/${postId}`);
+        const res = await fetch(`${API_BASE}/post/${postId}`);
         const result = await res.json();
 
-        if (result.code !== 200) {
-          alert("帖子不存在");
+        if (!result.success) {
+          alert(result.msg || "帖子不存在");
           return;
         }
 
         const post = result.data;
+        currentUserId = post.user_id;
 
-        // 标题
-        document.title = post.title;
-
-        // 作者
-        document.querySelector(".post-author-name").innerText =
-          post.username;
-
-        // 内容
-        document.querySelector(".post-content").innerHTML =
-          `<p>${post.content}</p>`;
-
-        // 浏览量
-        document.querySelector(".post-meta").innerHTML = `
-          <span>
-            <i class="far fa-clock"></i>
-            ${post.created_at}
-          </span>
-
-          <span>
-            <i class="far fa-eye"></i>
-            ${post.views} 次浏览
-          </span>
+        document.title = post.content.substring(0, 30) + " - 帖子详情";
+        
+        // 构建用户主页链接
+        const userProfileUrl = `user-profile.html?user_id=${post.user_id}`;
+        
+        // 更新帖子头部的用户链接
+        const postAvatar = document.getElementById("postAvatar");
+        postAvatar.textContent = (post.username || "匿").charAt(0);
+        postAvatar.href = userProfileUrl;
+        
+        const postAuthor = document.getElementById("postAuthor");
+        postAuthor.textContent = post.username || "匿名用户";
+        postAuthor.href = userProfileUrl;
+        
+        // 更新右侧作者信息的链接
+        const authorAvatar = document.getElementById("authorAvatar");
+        authorAvatar.textContent = (post.username || "匿").charAt(0);
+        authorAvatar.href = userProfileUrl;
+        
+        const authorName = document.getElementById("authorName");
+        authorName.textContent = post.username || "匿名用户";
+        authorName.href = userProfileUrl;
+        
+        const viewProfileBtn = document.querySelector(".author-actions .btn-secondary");
+        viewProfileBtn.href = userProfileUrl;
+        
+        document.getElementById("postContent").innerHTML = `<p>${escapeHtml(post.content)}</p>`;
+        
+        document.getElementById("postMeta").innerHTML = `
+          <span><i class="far fa-clock"></i>${post.create_at || "未知时间"}</span>
+          <span><i class="far fa-eye"></i>${post.view_count || 0} 次浏览</span>
         `;
+        
+        document.getElementById("likeCount").textContent = post.like_count || 0;
+        document.getElementById("commentCount").textContent = post.comment_count || 0;
+        document.getElementById("commentsCount").textContent = post.comment_count || 0;
 
-        // 点赞按钮
-        document.querySelector(".action-btn.liked").innerHTML = `
-          <i class="fas fa-heart"></i>
-          ${post.likes}
-        `;
+        const tagLabels = {
+          'Question_discussion': '学习讨论',
+          'Course_discussion': '课程讨论',
+          'Visualization_model': '可视化模型',
+          'Examination_experience': '考试经验',
+          'Life_share': '生活分享'
+        };
+        
+        if (post.tag) {
+          const tagLabel = tagLabels[post.tag] || post.tag;
+          document.getElementById("postTags").innerHTML = `<span class="post-tag">${tagLabel}</span>`;
+        }
 
-        // 评论数量
-        document.querySelector(".comments-count").innerText =
-          post.comments_count;
+        // 加载该作者的帖子
+        loadAuthorPosts(post.user_id);
+        
+        // 加载用户统计数据
+        loadUserStats(post.user_id);
 
       } catch (err) {
-        console.error(err);
+        console.error("获取帖子失败:", err);
         alert("获取帖子失败");
       }
     }
-    // =========================
-    // 获取评论
-    // =========================
-    async function loadComments() {
 
+    async function loadUserStats(userId) {
       try {
-
-        const res = await fetch(
-          `${API_BASE}/posts/${postId}/comments`
-        );
-
+        const res = await fetch(`${API_BASE}/user/${userId}/stats`);
         const result = await res.json();
 
-        const commentsList =
-          document.querySelector(".comments-list");
-
-        commentsList.innerHTML = "";
-
-        result.data.forEach(comment => {
-
-          const html = `
-            <div class="comment-item">
-
-              <a href="#" class="comment-avatar-small">
-                ${comment.username[0]}
-              </a>
-
-              <div class="comment-body">
-
-                <div class="comment-header">
-                  <a href="#" class="comment-author">
-                    ${comment.username}
-                  </a>
-
-                  <span class="comment-time">
-                    ${comment.created_at}
-                  </span>
-                </div>
-
-                <div class="comment-content">
-                  ${comment.content}
-                </div>
-
-                <div class="comment-actions-small">
-
-                  <button class="action-btn-small">
-                    <i class="far fa-thumbs-up"></i>
-                  </button>
-
-                  <button class="action-btn-small">
-                    <i class="far fa-comment"></i>
-                    回复
-                  </button>
-
-                </div>
-
-              </div>
-
-            </div>
-          `;
-
-          commentsList.innerHTML += html;
-
-        });
-
+        if (result.success && result.data) {
+          const stats = result.data;
+          document.getElementById("authorPosts").textContent = stats.post_count || 0;
+          document.getElementById("authorLikes").textContent = stats.total_likes || 0;
+          document.getElementById("authorFans").textContent = stats.follower_count || 0;
+        }
       } catch (err) {
-        console.error(err);
-        alert("获取评论失败");
+        console.error("获取用户统计失败:", err);
       }
     }
 
-    // =========================
-    // 发布评论
-    // =========================
+    async function loadAuthorPosts(userId) {
+      try {
+        const res = await fetch(`${API_BASE}/user/${userId}/posts?page_size=5`);
+        const result = await res.json();
+
+        if (!result.success || !result.data) {
+          document.getElementById("authorPostsList").innerHTML = '<div class="author-post-empty">暂无其他帖子</div>';
+          return;
+        }
+
+        const posts = result.data;
+        const authorPostsList = document.getElementById("authorPostsList");
+        
+        if (posts.length === 0) {
+          authorPostsList.innerHTML = '<div class="author-post-empty">暂无其他帖子</div>';
+          return;
+        }
+
+        let html = '';
+        posts.forEach((post, index) => {
+          if (post.post_id == postId) return; // 跳过当前帖子
+          
+          const tagLabels = {
+            'Question_discussion': '学习讨论',
+            'Course_discussion': '课程讨论',
+            'Visualization_model': '可视化模型',
+            'Examination_experience': '考试经验',
+            'Life_share': '生活分享'
+          };
+          
+          html += `
+            <div class="author-post" onclick="window.location.href='post-detail.html?id=${post.post_id}'">
+              <div class="author-post-title">${escapeHtml(post.content.substring(0, 50))}${post.content.length > 50 ? '...' : ''}</div>
+              <div class="author-post-meta">
+                <span><i class="far fa-heart"></i> ${post.like_count || 0}</span>
+                <span><i class="far fa-comment"></i> ${post.comment_count || 0}</span>
+                <span><i class="far fa-eye"></i> ${post.view_count || 0}</span>
+              </div>
+            </div>
+          `;
+        });
+        
+        if (!html) {
+          html = '<div class="author-post-empty">暂无其他帖子</div>';
+        }
+        
+        authorPostsList.innerHTML = html;
+
+      } catch (err) {
+        console.error("获取作者帖子失败:", err);
+        document.getElementById("authorPostsList").innerHTML = '<div class="author-post-empty">加载失败</div>';
+      }
+    }
+
+    async function loadComments(page = 1) {
+      try {
+        const res = await fetch(`${API_BASE}/post/${postId}/comments`);
+        const result = await res.json();
+
+        if (!result.success) {
+          console.log("暂无评论");
+          return;
+        }
+
+        const comments = result.data || [];
+        const commentsList = document.getElementById("commentsList");
+        
+        if (page === 1) {
+          commentsList.innerHTML = "";
+        }
+
+        comments.forEach(comment => {
+          const userProfileUrl = `user-profile.html?user_id=${comment.user_id}`;
+          const html = `
+            <div class="comment-item">
+              <a href="${userProfileUrl}" class="comment-avatar-small" title="查看主页">${(comment.username || "匿").charAt(0)}</a>
+              <div class="comment-body">
+                <div class="comment-header">
+                  <a href="${userProfileUrl}" class="comment-author">${comment.username || "匿名用户"}</a>
+                  <span class="comment-time">${comment.create_at || "未知时间"}</span>
+                </div>
+                <div class="comment-content">${escapeHtml(comment.content)}</div>
+                <div class="comment-actions-small">
+                  <button class="action-btn-small">
+                    <i class="far fa-thumbs-up"></i> ${comment.like_count || 0}
+                  </button>
+                  <button class="action-btn-small">
+                    <i class="far fa-comment"></i> 回复
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+          commentsList.innerHTML += html;
+        });
+
+        if (comments.length < pageSize) {
+          document.getElementById("loadMoreBtn").style.display = "none";
+        }
+
+      } catch (err) {
+        console.error("获取评论失败:", err);
+      }
+    }
+
     async function submitComment() {
-
-      const textarea =
-        document.querySelector(".comment-textarea");
-
+      const textarea = document.getElementById('commentTextarea');
       const content = textarea.value.trim();
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        alert('请先登录');
+        return;
+      }
 
       if (!content) {
-        alert("评论不能为空");
+        alert('评论不能为空');
         return;
       }
 
       try {
-
-        const res = await fetch(
-          `${API_BASE}/posts/${postId}/comments`,
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-              user_id: currentUserId,
-              content: content
-            })
-          }
-        );
+        const res = await fetch(`${API_BASE}/post/${postId}/comment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({ content })
+        });
 
         const result = await res.json();
 
-        if (result.code === 200) {
-
+        if (result.success) {
           textarea.value = "";
-
           loadComments();
           loadPostDetail();
-
         } else {
-
-          alert(result.msg);
-
+          alert(result.msg || "评论失败");
         }
 
       } catch (err) {
-
-        console.error(err);
+        console.error("评论失败:", err);
         alert("评论失败");
-
       }
     }
-    // =========================
-    // 点赞帖子
-    // =========================
+
     async function likePost() {
-
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert("请先登录");
+          return;
+        }
 
-        const res = await fetch(
-          `${API_BASE}/posts/${postId}/like?user_id=${currentUserId}`,
-          {
-            method: "POST"
-          }
-        );
+        const res = await fetch(`${API_BASE}/post/${postId}/like`, {
+          method: "POST",
+          headers: { "token": token }
+        });
 
         const result = await res.json();
 
-        alert(result.msg);
-
-        loadPostDetail();
-
-      } catch (err) {
-
-        console.error(err);
-
-      }
-    }
-
-    // =========================
-    // 收藏帖子
-    // =========================
-    async function favoritePost() {
-
-      try {
-
-        const res = await fetch(
-          `${API_BASE}/posts/${postId}/favorite?user_id=${currentUserId}`,
-          {
-            method: "POST"
+        if (result.success) {
+          // 更新点赞数和评论数
+          const likeCountEl = document.getElementById("likeCount");
+          const commentCountEl = document.getElementById("commentCount");
+          
+          if (likeCountEl && result.data) {
+            // 从红色变为灰色（取消点赞）或者从灰色变为红色（点赞）
+            const likeIcon = document.querySelector("#likeBtn i");
+            if (likeIcon) {
+              if (likeIcon.classList.contains('fas')) {
+                // 当前是点赞状态，取消点赞
+                likeIcon.classList.remove('fas');
+                likeIcon.classList.add('far');
+              } else {
+                // 当前是未点赞状态，点赞
+                likeIcon.classList.remove('far');
+                likeIcon.classList.add('fas');
+              }
+            }
+            
+            // 使用后端返回的真实点赞数
+            if (result.data.like_count !== undefined) {
+              likeCountEl.textContent = result.data.like_count;
+            }
           }
-        );
-
-        const result = await res.json();
-
-        alert(result.msg);
+          
+          // 更新评论数（如果有返回）
+          if (result.data && result.data.comment_count !== undefined && commentCountEl) {
+            commentCountEl.textContent = result.data.comment_count;
+            const commentsCountEl = document.getElementById("commentsCount");
+            if (commentsCountEl) {
+              commentsCountEl.textContent = result.data.comment_count;
+            }
+          }
+        } else {
+          alert(result.msg || "点赞失败");
+        }
 
       } catch (err) {
-
-        console.error(err);
-
+        console.error("点赞失败:", err);
+        alert("点赞失败，请稍后重试");
       }
     }
 
-    // =========================
-    // 绑定按钮事件
-    // =========================
-
-    // 发布评论
-    document.querySelector(".btn-primary")
-      .addEventListener("click", submitComment);
-
-    // 点赞按钮
-    document.querySelector(".action-btn.liked")
-      .addEventListener("click", likePost);
-
-    // 收藏按钮
-    document.querySelectorAll(".action-btn")[2]
-      .addEventListener("click", favoritePost);
-    // 回顶部
-    const backToTopBtn =
-      document.getElementById('backToTop');
-
-    window.addEventListener('scroll', function () {
-
-      if (window.pageYOffset > 300) {
-
-        backToTopBtn.classList.add('show');
-
-      } else {
-
-        backToTopBtn.classList.remove('show');
-
-      }
-
-    });
-
-    backToTopBtn.addEventListener('click', function () {
-
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
+    function bindEvents() {
+      document.getElementById("submitCommentBtn").addEventListener("click", submitComment);
+      document.getElementById("likeBtn").addEventListener("click", likePost);
+      document.getElementById("loadMoreBtn").addEventListener("click", () => {
+        currentPage++;
+        loadComments(currentPage);
       });
 
-    });
+      const backToTopBtn = document.getElementById('backToTop');
+      window.addEventListener('scroll', function () {
+        backToTopBtn.classList.toggle('show', window.pageYOffset > 300);
+      });
+      backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
   </script>
 </body>
 

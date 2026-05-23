@@ -29,10 +29,10 @@ def get_posts_by_tag_db(db, tag, page=1, page_size=10):
     offset = (page-1) * page_size
     
     if tag:
-        cursor.execute('''select posts.id, posts.user_id, users.username, posts.content, posts.create_at, posts.tag from posts 
+        cursor.execute('''select posts.id, posts.user_id, users.username, posts.content, posts.create_at, posts.tag, posts.like_count, posts.view_count from posts 
                        join users on posts.user_id = users.id where posts.tag = ? order by posts.create_at desc limit ? offset ?''', (tag, page_size, offset))
     else:
-        cursor.execute('''select posts.id, posts.user_id, users.username, posts.content, posts.create_at, posts.tag from posts 
+        cursor.execute('''select posts.id, posts.user_id, users.username, posts.content, posts.create_at, posts.tag, posts.like_count, posts.view_count from posts 
                        join users on posts.user_id = users.id order by posts.create_at desc limit ? offset ?''', (page_size, offset))
     
     return cursor.fetchall()
@@ -43,6 +43,28 @@ def get_posts(db, page=1, page_size=20):
     
     cursor.execute("""
         SELECT posts.id, posts.user_id, users.username, posts.content, posts.tag, posts.create_at
+        FROM posts
+        JOIN users ON posts.user_id = users.id
+        ORDER BY posts.create_at DESC
+        LIMIT ? OFFSET ?
+    """, (page_size, offset))
+    return cursor.fetchall()
+
+def get_posts_with_counts(db, page=1, page_size=20):
+    cursor = db.cursor()
+    offset = (page - 1) * page_size
+    
+    cursor.execute("""
+        SELECT 
+            posts.id, 
+            posts.user_id, 
+            users.username, 
+            posts.content, 
+            posts.tag, 
+            posts.create_at,
+            COALESCE((SELECT COUNT(*) FROM comments WHERE post_id = posts.id), 0) as comment_count,
+            posts.like_count,
+            posts.view_count
         FROM posts
         JOIN users ON posts.user_id = users.id
         ORDER BY posts.create_at DESC
@@ -84,7 +106,7 @@ def get_post_detail(db, post_id):
         SELECT 
             posts.id, posts.user_id, users.username,
             posts.content, posts.tag, posts.create_at,
-            posts.view_count, posts.like_count, posts.collect_count
+            posts.view_count, posts.like_count, posts.collect_count, posts.share_count
         FROM posts
         JOIN users ON posts.user_id = users.id
         WHERE posts.id = ?
@@ -119,8 +141,11 @@ def delete_post(db, post_id):
 # 5. 浏览量 +1
 def add_view_count(db, post_id):
     cursor = db.cursor()
-    cursor.execute("UPDATE posts SET view_count = view_count + 1 WHERE id = ?", (post_id,))
-    db.commit()
+    try:
+        cursor.execute("UPDATE posts SET view_count = view_count + 1 WHERE id = ?", (post_id,))
+        db.commit()
+    except:
+        pass
 
 
 # 6. 分享数 +1
@@ -151,20 +176,27 @@ def get_posts_count(db, tag=None):
 # 点赞
 def toggle_like(db, user_id, post_id):
     cursor = db.cursor()
-    cursor.execute("SELECT 1 FROM user_interact WHERE user_id=? AND post_id=? AND type='like'", 
-                   (user_id, post_id))
+    cursor.execute("SELECT 1 FROM user_interact WHERE user_id=? AND post_id=? AND type=?", 
+                   (user_id, post_id, 'like'))
     exists = cursor.fetchone()
 
     if exists:
-        cursor.execute("DELETE FROM user_interact WHERE user_id=? AND post_id=? AND type='like'", 
-                       (user_id, post_id))
-        cursor.execute("UPDATE posts SET like_count = like_count - 1 WHERE id=?", (post_id,))
-        return False
+        cursor.execute("DELETE FROM user_interact WHERE user_id=? AND post_id=? AND type=?", 
+                       (user_id, post_id, 'like'))
+        try:
+            cursor.execute("UPDATE posts SET like_count = like_count - 1 WHERE id=?", (post_id,))
+        except:
+            pass
     else:
-        cursor.execute("INSERT INTO user_interact(user_id, post_id, type) VALUES(?,?,'like')", 
-                       (user_id, post_id))
-        cursor.execute("UPDATE posts SET like_count = like_count + 1 WHERE id=?", (post_id,))
-        return True
+        cursor.execute("INSERT INTO user_interact(user_id, post_id, type) VALUES(?,?,?)", 
+                       (user_id, post_id, 'like'))
+        try:
+            cursor.execute("UPDATE posts SET like_count = like_count + 1 WHERE id=?", (post_id,))
+        except:
+            pass
+    
+    db.commit()
+    return not exists
 
 
 def is_liked(db, user_id, post_id):
@@ -255,3 +287,30 @@ def get_user_posts(db, user_id, page=1, page_size=10):
         LIMIT ? OFFSET ?
     ''', (user_id, page_size, offset))
     return cursor.fetchall()
+
+
+# 获取用户统计数据（帖子数、获赞数、粉丝数）
+def get_user_stats(db, user_id):
+    cursor = db.cursor()
+    
+    # 获取帖子数
+    cursor.execute('''
+        SELECT COUNT(*) FROM posts WHERE user_id = ?
+    ''', (user_id,))
+    post_count = cursor.fetchone()[0] or 0
+    
+    # 获取总获赞数
+    cursor.execute('''
+        SELECT COALESCE(SUM(like_count), 0) FROM posts WHERE user_id = ?
+    ''', (user_id,))
+    total_likes = cursor.fetchone()[0] or 0
+    
+    # 获取粉丝数（这里暂时返回0，因为还没有粉丝功能的数据库设计）
+    # 我们可以预留这个字段，后续完善
+    follower_count = 0
+    
+    return {
+        'post_count': post_count,
+        'total_likes': total_likes,
+        'follower_count': follower_count
+    }
