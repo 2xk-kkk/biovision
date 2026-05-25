@@ -845,7 +845,7 @@
     @media (max-width: 1200px) {
       .main-container {
         grid-template-columns: 1fr;
-        padding: 24px;
+        padding: 24px 24px;
       }
 
       .sidebar {
@@ -859,11 +859,11 @@
       }
 
       .main-container {
-        padding: 16px;
+        padding: 16px 16px;
       }
 
       .card-section {
-        padding: 20px;
+        padding: 20px 20px;
       }
 
       .post-header {
@@ -1077,6 +1077,7 @@
       loadPostDetail();
       loadComments();
       bindEvents();
+      initLikeStatus();
     };
 
     async function loadPostDetail() {
@@ -1338,6 +1339,25 @@
       }
     }
 
+    // 初始化点赞状态
+    function initLikeStatus() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const liked = localStorage.getItem('liked_' + postId);
+      const likeBtn = document.getElementById('likeBtn');
+      const likeIcon = likeBtn.querySelector('i');
+      if (liked === 'true') {
+        likeIcon.classList.remove('far');
+        likeIcon.classList.add('fas');
+        likeBtn.classList.add('liked');
+      } else {
+        likeIcon.classList.remove('fas');
+        likeIcon.classList.add('far');
+        likeBtn.classList.remove('liked');
+      }
+    }
+
+    // 点赞 / 取消点赞（已修改，无重复提示）
     async function likePost() {
       try {
         const token = localStorage.getItem('token');
@@ -1354,53 +1374,45 @@
         const result = await res.json();
 
         if (result.success) {
+          const likeBtn = document.getElementById("likeBtn");
+          const likeIcon = likeBtn.querySelector("i");
           const likeCountEl = document.getElementById("likeCount");
-          const commentCountEl = document.getElementById("commentCount");
-          
-          if (likeCountEl && result.data) {
-            const likeIcon = document.querySelector("#likeBtn i");
-            if (likeIcon) {
-              if (likeIcon.classList.contains('fas')) {
-                likeIcon.classList.remove('fas');
-                likeIcon.classList.add('far');
-              } else {
-                likeIcon.classList.remove('far');
-                likeIcon.classList.add('fas');
-              }
-            }
-            
-            if (result.data.like_count !== undefined) {
-              likeCountEl.textContent = result.data.like_count;
-            }
+
+          // 根据后端返回的状态切换图标和样式
+          if (result.data.liked) {
+            likeIcon.classList.remove('far');
+            likeIcon.classList.add('fas');
+            likeBtn.classList.add('liked');
+            localStorage.setItem('liked_' + postId, 'true');
+          } else {
+            likeIcon.classList.remove('fas');
+            likeIcon.classList.add('far');
+            likeBtn.classList.remove('liked');
+            localStorage.removeItem('liked_' + postId);
           }
-          
-          if (result.data && result.data.comment_count !== undefined && commentCountEl) {
-            commentCountEl.textContent = result.data.comment_count;
-            const commentsCountEl = document.getElementById("commentsCount");
-            if (commentsCountEl) {
-              commentsCountEl.textContent = result.data.comment_count;
-            }
+
+          // 更新数量
+          if (result.data.like_count !== undefined) {
+            likeCountEl.textContent = result.data.like_count;
           }
-        } else {
-          alert(result.msg || "点赞失败");
         }
 
       } catch (err) {
         console.error("点赞失败:", err);
-        alert("点赞失败，请稍后重试");
       }
     }
 
     // ==================== 评论点赞功能 ====================
     function likeComment(btn, commentId) {
-      if (btn.classList.contains('active')) {
-        alert('你已经点赞过啦！');
-        return;
-      }
-      btn.classList.add('active');
       const numSpan = btn.querySelector('.like-num');
       let num = parseInt(numSpan.textContent);
-      numSpan.textContent = num + 1;
+      if (btn.classList.contains('active')) {
+        numSpan.textContent = num - 1;
+        btn.classList.remove('active');
+      } else {
+        numSpan.textContent = num + 1;
+        btn.classList.add('active');
+      }
     }
 
     function bindEvents() {
@@ -1428,7 +1440,7 @@
   </script>
 
   <script>
-// ==================== 收藏功能=====================
+// ==================== 收藏功能（支持收藏/取消）=====================
 const token = localStorage.getItem('token');
 const collectBtn = document.getElementById('collectBtn');
 
