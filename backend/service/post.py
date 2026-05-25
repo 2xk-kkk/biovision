@@ -24,8 +24,9 @@ from model.post import (
     get_post_comments,
     get_user_posts,
     delete_post_images,
-    get_user_stats
+    get_user_collect_posts
 )
+from model.user import get_user_stats
 
 def create_post(token, content, image_urls, tag):
     print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}")
@@ -151,13 +152,14 @@ def get_all_posts(page=1, page_size=20):
                 "post_id": post_id,
                 "user_id": row[1],
                 "username": row[2],
-                "content": row[3],
-                "tag": row[4],
-                "create_at": row[5],
-                "comment_count": row[6] if len(row) > 6 else 0,
-                "like_count": row[7] if len(row) > 7 else 0,
-                "view_count": row[8] if len(row) > 8 else 0,
-                "collect_count": row[9] if len(row) > 9 else 0,
+                "avatar": row[3] if len(row) > 3 else None,
+                "content": row[4] if len(row) > 4 else '',
+                "tag": row[5] if len(row) > 5 else '',
+                "create_at": row[6] if len(row) > 6 else '',
+                "comment_count": row[7] if len(row) > 7 else 0,
+                "like_count": row[8] if len(row) > 8 else 0,
+                "view_count": row[9] if len(row) > 9 else 0,
+                "collect_count": row[10] if len(row) > 10 else 0,
                 "images": []
             })
 
@@ -199,7 +201,8 @@ def get_post_detail(post_id):
             "like_count": post[7] if len(post) > 7 else 0,
             "collect_count": post[8] if len(post) > 8 else 0,
             "comment_count": comment_count,
-            "images": images.get(post_id, [])
+            "images": images.get(post_id, []),
+            "avatar": post[10] if len(post) > 10 else None
         })
     finally:
         db.close()
@@ -252,12 +255,13 @@ def get_user_posts_service(user_id, page=1, page_size=10):
                 "post_id": p[0],
                 "user_id": p[1],
                 "username": p[2],
-                "content": p[3],
-                "tag": p[4],
-                "create_at": p[5],
-                "view_count": p[6],
-                "like_count": p[7],
-                "collect_count": p[8],
+                "avatar": p[3] if len(p) > 3 else None,
+                "content": p[4] if len(p) > 4 else '',
+                "tag": p[5] if len(p) > 5 else '',
+                "create_at": p[6] if len(p) > 6 else '',
+                "view_count": p[7] if len(p) > 7 else 0,
+                "like_count": p[8] if len(p) > 8 else 0,
+                "collect_count": p[9] if len(p) > 9 else 0,
                 "images": images.get(p[0], [])
             })
         return ApiResponse.success(data=res)
@@ -377,3 +381,29 @@ def is_collected_post(token, post_id):
     collected = is_collected(db, user_id, post_id)
     db.close()
     return ApiResponse.success(data={"is_collected": collected})
+
+# 12. 获取用户收藏的帖子
+def get_user_collect_posts_service(user_id, page=1, page_size=10):
+    db = get_db_connection()
+    try:
+        posts = get_user_collect_posts(db, user_id, page, page_size)
+        post_ids = [p[0] for p in posts]
+        images = get_post_images_by_post_ids(db, post_ids)
+        res = []
+        for p in posts:
+            res.append({
+                "post_id": p[0],
+                "user_id": p[1],
+                "username": p[2],
+                "avatar": p[3] if len(p) > 3 else None,
+                "content": p[4] if len(p) > 4 else '',
+                "tag": p[5] if len(p) > 5 else '',
+                "create_at": p[6] if len(p) > 6 else '',
+                "view_count": p[7] if len(p) > 7 else 0,
+                "like_count": p[8] if len(p) > 8 else 0,
+                "collect_count": p[9] if len(p) > 9 else 0,
+                "images": images.get(p[0], [])
+            })
+        return ApiResponse.success(data=res)
+    finally:
+        db.close()

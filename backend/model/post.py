@@ -59,6 +59,7 @@ def get_posts_with_counts(db, page=1, page_size=20):
             posts.id, 
             posts.user_id, 
             users.username, 
+            users.avatar,
             posts.content, 
             posts.tag, 
             posts.create_at,
@@ -107,7 +108,8 @@ def get_post_detail(db, post_id):
         SELECT 
             posts.id, posts.user_id, users.username,
             posts.content, posts.tag, posts.create_at,
-            posts.view_count, posts.like_count, posts.collect_count, posts.share_count
+            posts.view_count, posts.like_count, posts.collect_count, posts.share_count,
+            users.avatar
         FROM posts
         JOIN users ON posts.user_id = users.id
         WHERE posts.id = ?
@@ -239,7 +241,7 @@ def get_user_collect_posts(db, user_id, page=1, page_size=10):
     offset = (page-1)*page_size
     cursor = db.cursor()
     sql = '''
-        SELECT p.id, p.user_id, u.username, p.content, p.tag, p.create_at,
+        SELECT p.id, p.user_id, u.username, u.avatar, p.content, p.tag, p.create_at,
                p.view_count, p.like_count, p.collect_count
         FROM user_interact c
         JOIN posts p ON c.post_id = p.id
@@ -280,7 +282,7 @@ def get_user_posts(db, user_id, page=1, page_size=10):
     offset = (page-1)*page_size
     cursor = db.cursor()
     cursor.execute('''
-        SELECT p.id, p.user_id, u.username, p.content, p.tag, p.create_at,
+        SELECT p.id, p.user_id, u.username, u.avatar, p.content, p.tag, p.create_at,
                p.view_count, p.like_count, p.collect_count
         FROM posts p
         JOIN users u ON p.user_id = u.id
@@ -291,28 +293,3 @@ def get_user_posts(db, user_id, page=1, page_size=10):
     return cursor.fetchall()
 
 
-# 获取用户统计数据（帖子数、获赞数、粉丝数）
-def get_user_stats(db, user_id):
-    cursor = db.cursor()
-    
-    # 获取帖子数
-    cursor.execute('''
-        SELECT COUNT(*) FROM posts WHERE user_id = ?
-    ''', (user_id,))
-    post_count = cursor.fetchone()[0] or 0
-    
-    # 获取总获赞数
-    cursor.execute('''
-        SELECT COALESCE(SUM(like_count), 0) FROM posts WHERE user_id = ?
-    ''', (user_id,))
-    total_likes = cursor.fetchone()[0] or 0
-    
-    # 获取粉丝数（这里暂时返回0，因为还没有粉丝功能的数据库设计）
-    # 我们可以预留这个字段，后续完善
-    follower_count = 0
-    
-    return {
-        'post_count': post_count,
-        'total_likes': total_likes,
-        'follower_count': follower_count
-    }

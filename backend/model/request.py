@@ -11,6 +11,15 @@ class userRegisterRequest(userLoginRequest):
 class changePasswordRequest(BaseModel):
     new_password: str=Field(min_length=6, max_length=20, example="a123456", description="新密码,长度为6-20个字符,必须包含字母和数字")
 
+class changeUsernameRequest(BaseModel):
+    new_username: str=Field(min_length=2, max_length=20, example="新用户名", description="新用户名,长度为2-20个字符")
+
+class changeAvatarRequest(BaseModel):
+    avatar_data: str=Field(example="data:image/png;base64,iVBORw0KGgo...", description="头像数据(Base64编码)")
+
+class changeIntroductionRequest(BaseModel):
+    introduction: str=Field(example="这是我的个人简介...", description="个人简介")
+
 from pydantic import BaseModel
 class CreatePostRequest(BaseModel):
     content: str

@@ -15,7 +15,8 @@ from service.post import (
     create_comment,
     get_post_comments_service, 
     get_user_posts_service,
-    get_user_statistics
+    get_user_statistics,
+    get_user_collect_posts_service
 )
 
 router = APIRouter()
@@ -122,3 +123,12 @@ def share_post_api(post_id: int):
 @router.get("/user/{user_id}/stats")
 def get_user_stats_api(user_id: int):
     return get_user_statistics(user_id)
+
+# 获取用户收藏的帖子
+@router.get("/user/{user_id}/collects")
+def get_user_collects_api(
+    user_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1)
+):
+    return get_user_collect_posts_service(user_id, page, page_size)

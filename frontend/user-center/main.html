@@ -52,7 +52,7 @@
            顶部导航栏
            这里控制导航栏高度、透明度和阴影
         ========================= */
-       .top {
+        .top {
             background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
             height: 60px;
             padding: 0 20px;
@@ -480,6 +480,7 @@
             background: rgba(240, 166, 166, 0.12);
             color: #ea1515;
         }
+
         /* 个人简介文字 */
         .profile-meta {
             margin: 10px 0 0;
@@ -544,13 +545,14 @@
             font-weight: 800;
         }
 
-              /* 右侧按钮组 */
+        /* 右侧按钮组 */
         .hero-buttons {
             display: flex;
             gap: 12px;
             justify-content: flex-end;
             flex-wrap: wrap;
         }
+
         /* =========================
            右侧区域 CSS
            这一组专门控制右边学习中心的布局和卡片样式
@@ -704,7 +706,7 @@
         }
 
         /* 分区之间的分隔线 */
-        .sidebar-section + .sidebar-section {
+        .sidebar-section+.sidebar-section {
             border-top: 1px solid rgba(148, 163, 184, 0.12);
             padding-top: 16px;
         }
@@ -992,7 +994,7 @@
         }
 
         /* 主体下半部分：左内容，右侧栏 */
-       .layout {
+        .layout {
             margin-top: 22px;
             display: grid;
             grid-template-columns: minmax(0, 2.25fr) minmax(280px, 0.65fr);
@@ -1139,8 +1141,8 @@
             gap: 6px;
         }
 
-         /* 模型 / PPT / 错题本使用的网格卡片 */
-       .tag-grid {
+        /* 模型 / PPT / 错题本使用的网格卡片 */
+        .tag-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 12px;
@@ -1422,17 +1424,17 @@
                     <img src="../images/touxiang.png" alt="Avatar" class="profile-avatar" id="profileAvatarImage" />
                     <div class="profile-main">
                         <div class="profile-head">
-                            <h1 class="profile-name" id="profileNameText">Lofrmin</h1>
-                            <span class="badge">Lv.2</span>
-                            <span class="badge" id="roleBadgeText">学生</span>
+                            <h1 class="profile-name" id="profileNameText">未登录</h1>
+                            <span class="badge">Lv.0</span>
+                            <span class="badge" id="roleBadgeText">未登录</span>
                         </div>
-                        <p class="profile-meta">
-                            <span style="font-weight: 600;">个人简介：</span>热爱生物学习，习惯用模型和题目巩固知识。<br>
+                        <p class="profile-meta" id="profileIntroduction">
+                            <span style="font-weight: 600;">个人简介：</span>请先登录以查看个人信息。<br>
                         </p>
                         <div class="meta-row">
-                            <span class="meta-chip" id="gradeChipText">高一</span>
-                            <span class="meta-chip" id="schoolChipText">🏫:成都东软学院</span>
-                            <span class="meta-chip">📍IP：四川</span>
+                            <span class="meta-chip" id="gradeChipText">-</span>
+                            <span class="meta-chip" id="schoolChipText">🏫:-</span>
+                            <span class="meta-chip">📍IP：-</span>
                             <span class="meta-chip">已关注 0</span>
                         </div>
                     </div>
@@ -1443,19 +1445,19 @@
                     <div class="stat-strip">
                         <div class="stat-box">
                             <div class="label">获赞</div>
-                            <div class="value">0</div>
+                            <div class="value" id="likeCount">0</div>
                         </div>
                         <div class="stat-box">
                             <div class="label">粉丝</div>
-                            <div class="value">0</div>
+                            <div class="value" id="followerCount">0</div>
                         </div>
                         <div class="stat-box">
                             <div class="label">关注</div>
-                            <div class="value">0</div>
+                            <div class="value" id="followingCount">0</div>
                         </div>
                         <div class="stat-box">
                             <div class="label">看过我</div>
-                            <div class="value">0</div>
+                            <div class="value" id="viewCount">0</div>
                         </div>
                     </div>
 
@@ -1487,104 +1489,20 @@
                 </div>
 
                 <!-- 近期发帖：默认展示的内容模块 -->
-               <div class="content-box active" id="post">
-                    <div class="post-card">
-                        <div class="post-top">
-                            <img src="../images/touxiang.png" alt="Avatar" class="post-avatar" />
-                            <div>
-                                <strong style="font-size: 1.02rem;">Lofrmin</strong>
-                                <div class="post-meta">2026-05-19 10:58 · 发布于论坛</div>
-                            </div>
-                        </div>
-                        <p class="post-text">
-                            刚整理完“细胞膜结构与物质运输”这一节的知识图谱，搭配 3D 模型一起记忆后，
-                            发现主动运输和协助扩散的区别更容易理解了。后面准备把遗传题的常错点也整理一下。
-                        </p>
-                        <div class="post-actions">
-                            <div class="post-tools">
-                                <span>👁 26</span>
-                                <span>👍 点赞</span>
-                                <span>💬 评论</span>
-                                <span>⭐ 收藏</span>
-                            </div>
-                            <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">删除</a>
-                        </div>
-                    </div>
-                </div>
                 <div class="content-box active" id="post">
-                    <div class="post-card">
-                        <div class="post-top">
-                            <img src="../images/touxiang.png" alt="Avatar" class="post-avatar" />
-                            <div>
-                                <strong style="font-size: 1.02rem;">Lofrmin</strong>
-                                <div class="post-meta">2026-05-19 19:41 · 发布于论坛</div>
-                            </div>
-                        </div>
-                        <p class="post-text">
-                           光合作用与呼吸作用
-                            <br>光合作用：绿色植物在叶绿体中利用光能将 CO₂ 和 H₂O 转化为有机物（如葡萄糖）并释放 O₂。
-                            <br>总反应式：6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂（需光、叶绿体）
-                            <br>有氧呼吸：细胞在线粒体中分解有机物释放能量，生成 CO₂ 和 H₂O。
-                            <br>总反应式：C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 能量
-                        </p>
-                        <div class="post-actions">
-                            <div class="post-tools">
-                                <span>👁 26</span>
-                                <span>👍 点赞</span>
-                                <span>💬 评论</span>
-                                <span>⭐ 收藏</span>
-                            </div>
-                            <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">删除</a>
+                    <div id="postsContainer">
+                        <div class="loading" style="text-align: center; padding: 40px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
+                            <div style="color: #64748b;">加载中...</div>
                         </div>
                     </div>
                 </div>
                 <!-- 帖子收藏：默认展示的内容模块 -->
-               <div class="content-box" id="favorite">
-                    <div class="post-card">
-                        <div class="post-top">
-                            <img src="../images/touxiang.png" alt="Avatar" class="post-avatar" />
-                            <div>
-                                <strong style="font-size: 1.02rem;">Lofrmin</strong>
-                                <div class="post-meta">2026-05-19 10:58 · 发布于论坛</div>
-                            </div>
-                        </div>
-                        <p class="post-text">
-                            刚整理完“细胞膜结构与物质运输”这一节的知识图谱，搭配 3D 模型一起记忆后，
-                            发现主动运输和协助扩散的区别更容易理解了。后面准备把遗传题的常错点也整理一下。
-                        </p>
-                        <div class="post-actions">
-                            <div class="post-tools">
-                                <span>👁 26</span>
-                                <span>👍 点赞</span>
-                                <span>💬 评论</span>
-                            </div>
-                            <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">取消收藏</a>
-                        </div>
-                    </div>
-                </div>
                 <div class="content-box" id="favorite">
-                    <div class="post-card">
-                        <div class="post-top">
-                            <img src="../images/touxiang.png" alt="Avatar" class="post-avatar" />
-                            <div>
-                                <strong style="font-size: 1.02rem;">Lofrmin</strong>
-                                <div class="post-meta">2026-05-19 19:41 · 发布于论坛</div>
-                            </div>
-                        </div>
-                        <p class="post-text">
-                           光合作用与呼吸作用
-                            <br>光合作用：绿色植物在叶绿体中利用光能将 CO₂ 和 H₂O 转化为有机物（如葡萄糖）并释放 O₂。
-                            <br>总反应式：6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂（需光、叶绿体）
-                            <br>有氧呼吸：细胞在线粒体中分解有机物释放能量，生成 CO₂ 和 H₂O。
-                            <br>总反应式：C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 能量
-                        </p>
-                        <div class="post-actions">
-                            <div class="post-tools">
-                                <span>👁 26</span>
-                                <span>👍 点赞</span>
-                                <span>💬 评论</span>
-                            </div>
-                            <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">取消收藏</a>
+                    <div id="collectsContainer">
+                        <div class="loading" style="text-align: center; padding: 40px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
+                            <div style="color: #64748b;">加载中...</div>
                         </div>
                     </div>
                 </div>
@@ -1597,7 +1515,8 @@
                                     <h3 class="tag-title">动物细胞</h3>
                                     <p class="tag-desc">无细胞壁，含线粒体、内质网等细胞器，以有丝分裂方式增殖</p>
                                 </div>
-                                <div class="tag-icon"><img src="../images/animal-cell.png" alt="动物细胞" width="30" height="30"></div>
+                                <div class="tag-icon"><img src="../images/animal-cell.png" alt="动物细胞" width="30"
+                                        height="30"></div>
                             </div>
                         </div>
                         <div class="tag-card">
@@ -1606,7 +1525,8 @@
                                     <h3 class="tag-title">DNA的复制</h3>
                                     <p class="tag-desc">在细胞分裂前，DNA双链解开，以每条链为模板，按碱基互补配对原则合成新链，形成两个完全相同的DNA分子。</p>
                                 </div>
-                                <div class="tag-icon"><img src="../images/dna.png" alt="DNA" width="30" height="30"></div>
+                                <div class="tag-icon"><img src="../images/dna.png" alt="DNA" width="30" height="30">
+                                </div>
                             </div>
                         </div>
                         <div class="tag-card">
@@ -1615,7 +1535,8 @@
                                     <h3 class="tag-title">哺乳动物受精过程</h3>
                                     <p class="tag-desc">精子与卵子融合，形成受精卵。</p>
                                 </div>
-                                <div class="tag-icon"><img src="../images/reproduction.png" alt="精子细胞" width="30" height="30"></div>
+                                <div class="tag-icon"><img src="../images/reproduction.png" alt="精子细胞" width="30"
+                                        height="30"></div>
                             </div>
                         </div>
                         <div class="tag-card">
@@ -1791,21 +1712,27 @@
                                 </div>
                             </div>
                             <div class="summary-list" style="padding: 0;">
-                                <a class="summary-item" href="https://www.bilibili.com/video/BV1M3Lz6AEgj/?spm_id_from=333.337.search-card.all.click" target="_blank">
+                                <a class="summary-item"
+                                    href="https://www.bilibili.com/video/BV1M3Lz6AEgj/?spm_id_from=333.337.search-card.all.click"
+                                    target="_blank">
                                     <div>
                                         <strong>李林高三一轮复习</strong>
                                         <small>适合高二升高三的学生准备复习</small>
                                     </div>
                                     <span>›</span>
                                 </a>
-                                <a class="summary-item" href="https://www.bilibili.com/video/BV1tc41157TW/?spm_id_from=333.337.search-card.all.click" target="_blank">
+                                <a class="summary-item"
+                                    href="https://www.bilibili.com/video/BV1tc41157TW/?spm_id_from=333.337.search-card.all.click"
+                                    target="_blank">
                                     <div>
                                         <strong>DNA复制动画</strong>
                                         <small>帮助理解DNA复制过程</small>
                                     </div>
                                     <span>›</span>
                                 </a>
-                                <a class="summary-item" href="https://www.bilibili.com/video/BV1tVfPBTE8q/?spm_id_from=333.337.search-card.all.click" target="_blank">
+                                <a class="summary-item"
+                                    href="https://www.bilibili.com/video/BV1tVfPBTE8q/?spm_id_from=333.337.search-card.all.click"
+                                    target="_blank">
                                     <div>
                                         <strong>高中生物必修二（一生儿）</strong>
                                         <small>从基础到拔高</small>
@@ -1866,7 +1793,8 @@
                 <div class="goal-group">
                     <span class="goal-label">已完成学习时长</span>
                     <div class="goal-input-row">
-                        <input class="goal-input" id="doneStudyHoursInput" type="number" min="0" step="0.5" value="2" placeholder="请输入已完成的学习时长（小时）">
+                        <input class="goal-input" id="doneStudyHoursInput" type="number" min="0" step="0.5" value="2"
+                            placeholder="请输入已完成的学习时长（小时）">
                         <div class="goal-help">保存后会更新右侧“累计学习时长”数值和进度条。</div>
                     </div>
                 </div>
@@ -1896,7 +1824,8 @@
                 <div class="goal-group">
                     <span class="goal-label">已完成做题数量</span>
                     <div class="goal-input-row">
-                        <input class="goal-input" id="doneQuestionCountInput" type="number" min="0" step="1" value="0" placeholder="请输入已完成的做题数量">
+                        <input class="goal-input" id="doneQuestionCountInput" type="number" min="0" step="1" value="0"
+                            placeholder="请输入已完成的做题数量">
                         <div class="goal-help">保存后会更新右侧“做题数量”数值和进度条。</div>
                     </div>
                 </div>
@@ -1942,7 +1871,8 @@
             <div class="goal-modal-body">
                 <div class="profile-form-grid">
                     <div class="profile-avatar-editor">
-                        <img src="../images/touxiang.png" alt="头像预览" class="profile-avatar-preview" id="profileAvatarPreview">
+                        <img src="../images/touxiang.png" alt="头像预览" class="profile-avatar-preview"
+                            id="profileAvatarPreview">
                         <label class="profile-upload-btn">
                             上传头像
                             <input type="file" id="profileAvatarInput" accept="image/*">
@@ -1951,13 +1881,24 @@
 
                     <div class="profile-fields">
                         <div class="profile-field">
-                            <label for="profileNicknameInput">昵称</label>
-                            <input class="profile-input" id="profileNicknameInput" type="text" value="Lofrmin" placeholder="请输入昵称">
+                            <label for="profileUsernameInput">用户名 <span
+                                    style="color: #ef4444; font-size: 0.8rem;">(点击下方按钮可更改)</span></label>
+                            <input class="profile-input" id="profileUsernameInput" type="text" value=""
+                                placeholder="请输入新用户名" disabled>
+                            <button class="btn btn-secondary" id="changeUsernameBtn" type="button"
+                                style="margin-top: 8px;">更改用户名</button>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileIntroductionInput">个人简介</label>
+                            <textarea class="profile-input" id="profileIntroductionInput" rows="3"
+                                placeholder="请输入个人简介"></textarea>
                         </div>
 
                         <div class="profile-field">
                             <label for="profileSchoolInput">学校</label>
-                            <input class="profile-input" id="profileSchoolInput" type="text" value="成都东软学院" placeholder="请输入学校">
+                            <input class="profile-input" id="profileSchoolInput" type="text" value="成都东软学院"
+                                placeholder="请输入学校">
                         </div>
 
                         <div class="profile-field">
@@ -1988,6 +1929,471 @@
     </div>
 
     <script>
+        /* =========================
+           后端API配置
+        ========================= */
+        const API_BASE_URL = 'http://localhost:8000/api';
+
+        /* =========================
+           全局状态管理
+        ========================= */
+        let currentUser = null;
+        let currentToken = null;
+
+        /* =========================
+           工具函数
+        ========================= */
+        function getTokenFromStorage() {
+            return localStorage.getItem('token') || sessionStorage.getItem('token');
+        }
+
+        function parseToken(token) {
+            try {
+                const payload = token.split('.')[1];
+                return JSON.parse(atob(payload));
+            } catch {
+                return null;
+            }
+        }
+
+        async function fetchWithToken(url, options = {}) {
+            const token = getTokenFromStorage();
+            if (!token) {
+                return { success: false, data: null, msg: '未登录' };
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'token': token,
+                ...options.headers
+            };
+
+            try {
+                const response = await fetch(url, { ...options, headers });
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API请求失败:', error);
+                return { success: false, data: null, msg: '网络错误' };
+            }
+        }
+
+        /* =========================
+           用户信息获取
+        ========================= */
+        async function loadUserStats(userId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/stats`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    document.getElementById('likeCount').textContent = result.data.like_count || 0;
+                    document.getElementById('followerCount').textContent = result.data.follower_count || 0;
+                    document.getElementById('followingCount').textContent = result.data.following_count || 0;
+                    document.getElementById('viewCount').textContent = result.data.view_count || 0;
+                }
+            } catch (error) {
+                console.error('加载用户统计数据失败:', error);
+            }
+        }
+
+        async function incrementProfileView(userId) {
+            try {
+                const token = localStorage.getItem('token');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    headers['token'] = token;
+                }
+                await fetch(`${API_BASE_URL}/user/${userId}/view`, {
+                    method: 'POST',
+                    headers: headers
+                });
+            } catch (error) {
+                console.error('增加浏览量失败:', error);
+            }
+        }
+
+        async function loadUserInfo() {
+            // 清除之前存储的头像缓存，确保刷新时不会看到旧头像
+            localStorage.removeItem('user_avatar');
+
+            currentToken = getTokenFromStorage();
+
+            if (!currentToken) {
+                console.log('未登录：没有找到token');
+                showNotLoggedIn();
+                return;
+            }
+
+            const payload = parseToken(currentToken);
+            if (!payload || !payload.user_id) {
+                console.log('未登录：token无效');
+                showNotLoggedIn();
+                return;
+            }
+
+            const userId = payload.user_id;
+            const response = await fetchWithToken(`${API_BASE_URL}/user/${userId}/info`);
+
+            if (response.success && response.data) {
+                currentUser = response.data;
+                updateUserInfo(response.data);
+                await loadUserStats(userId);
+                await loadUserPosts(userId);
+                await loadUserCollects(userId);
+            } else {
+                console.log('未登录：API调用失败或返回错误');
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                showNotLoggedIn();
+            }
+        }
+
+        function showNotLoggedIn() {
+            document.getElementById('profileNameText').textContent = '未登录';
+            document.getElementById('roleBadgeText').textContent = '未登录';
+            document.getElementById('roleBadgeText').classList.remove('role-teacher');
+            document.getElementById('gradeChipText').textContent = '-';
+            document.getElementById('schoolChipText').textContent = '🏫:-';
+            document.getElementById('profileIntroduction').innerHTML = '<span style="font-weight: 600;">个人简介：</span>请先登录以查看个人信息。<br>';
+
+            const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d1d5db'/%3E%3Ccircle cx='50' cy='35' r='12' fill='%239ca3af'/%3E%3Cpath d='M30 60 Q50 85 70 60' fill='none' stroke='%239ca3af' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E`;
+            const profileAvatarImage = document.getElementById('profileAvatarImage');
+            const topbarAvatarImage = document.getElementById('topbarAvatarImage');
+            if (profileAvatarImage) {
+                profileAvatarImage.src = defaultAvatar;
+            }
+            if (topbarAvatarImage) {
+                topbarAvatarImage.src = defaultAvatar;
+            }
+            savedAvatarDataUrl = defaultAvatar;
+
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            if (editProfileBtn) {
+                editProfileBtn.textContent = '请先登录后再编辑';
+                editProfileBtn.style.opacity = '0.7';
+                editProfileBtn.style.cursor = 'not-allowed';
+                editProfileBtn.disabled = true;
+            }
+
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+                    <h3 style="color: #374151; margin-bottom: 8px;">请先登录</h3>
+                    <p style="color: #64748b;">登录后才能查看和管理您的帖子</p>
+                    <a href="../login/login-main.html" class="btn btn-primary" style="margin-top: 20px;">立即登录</a>
+                </div>
+            `;
+
+            const collectsContainer = document.getElementById('collectsContainer');
+            collectsContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+                    <h3 style="color: #374151; margin-bottom: 8px;">请先登录</h3>
+                    <p style="color: #64748b;">登录后才能查看您收藏的帖子</p>
+                    <a href="../login/login-main.html" class="btn btn-primary" style="margin-top: 20px;">立即登录</a>
+                </div>
+            `;
+        }
+
+        function updateUserInfo(user) {
+            const profileNameText = document.getElementById('profileNameText');
+            const roleBadgeText = document.getElementById('roleBadgeText');
+            const gradeChipText = document.getElementById('gradeChipText');
+            const schoolChipText = document.getElementById('schoolChipText');
+            const profileAvatarImage = document.getElementById('profileAvatarImage');
+            const topbarAvatarImage = document.getElementById('topbarAvatarImage');
+            const editProfileBtn = document.getElementById('editProfileBtn');
+
+            if (profileNameText) {
+                profileNameText.textContent = user.username || '未设置';
+            }
+            if (roleBadgeText) {
+                roleBadgeText.textContent = '学生';
+                roleBadgeText.classList.remove('role-teacher');
+            }
+            if (gradeChipText) {
+                gradeChipText.textContent = '高一';
+            }
+            if (schoolChipText) {
+                schoolChipText.textContent = '🏫:成都东软学院';
+            }
+
+            const profileIntroduction = document.getElementById('profileIntroduction');
+            if (profileIntroduction) {
+                const intro = user.introduction;
+                if (intro && intro.trim()) {
+                    profileIntroduction.innerHTML = `<span style="font-weight: 600;">个人简介：</span>${intro.replace(/\n/g, '<br>')}`;
+                } else {
+                    profileIntroduction.innerHTML = '<span style="font-weight: 600;">个人简介：</span>还没写个人简介<br>';
+                }
+            }
+
+            if (editProfileBtn) {
+                editProfileBtn.textContent = '编辑资料';
+                editProfileBtn.style.opacity = '1';
+                editProfileBtn.style.cursor = 'pointer';
+                editProfileBtn.disabled = false;
+            }
+
+            const avatarFromDb = user.avatar;
+            const username = user.username || '用户';
+            const avatarChar = username.trim()[0] || '用';
+
+            const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23667eea'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='40' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+
+            let avatarToUse;
+            if (avatarFromDb) {
+                // 优先使用后端返回的用户头像
+                avatarToUse = avatarFromDb;
+            } else {
+                // 用户没有上传头像，显示首字母头像
+                avatarToUse = defaultAvatar;
+            }
+
+            if (avatarToUse && avatarToUse.startsWith('http')) {
+                // 如果是远程图片，添加时间戳防止浏览器缓存
+                avatarToUse = avatarToUse + '?t=' + Date.now();
+            }
+
+            if (profileAvatarImage) {
+                profileAvatarImage.src = avatarToUse;
+            }
+            if (topbarAvatarImage) {
+                topbarAvatarImage.src = avatarToUse;
+            }
+            savedAvatarDataUrl = avatarToUse;
+        }
+
+        /* =========================
+           用户帖子加载
+        ========================= */
+        async function loadUserPosts(userId) {
+            const postsContainer = document.getElementById('postsContainer');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/posts`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    postsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">该用户还未发布帖子</h3>
+                            <p style="color: #64748b;">成为第一个分享知识的人吧！</p>
+                            <a href="../forum/make-post.html" class="btn btn-primary" style="margin-top: 20px;">去发帖</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const posts = result.data || [];
+
+                if (!posts || posts.length === 0) {
+                    postsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">该用户还未发布帖子</h3>
+                            <p style="color: #64748b;">成为第一个分享知识的人吧！</p>
+                            <a href="../forum/make-post.html" class="btn btn-primary" style="margin-top: 20px;">去发帖</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderPosts(posts);
+            } catch (error) {
+                console.error('加载用户帖子失败:', error);
+                postsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">加载失败</h3>
+                        <p style="color: #64748b;">网络错误，请稍后重试</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getDefaultAvatar(username) {
+            const avatarChar = (username || '用').trim()[0] || '用';
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23667eea'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='40' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function renderPosts(posts) {
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = posts.map(post => {
+                const username = post.username || currentUser?.username || '用户';
+                const avatar = post.avatar || savedAvatarDataUrl || getDefaultAvatar(username);
+                return `
+                <div class="post-card">
+                    <div class="post-top">
+                        <img src="${avatar}" alt="Avatar" class="post-avatar" />
+                        <div>
+                            <strong style="font-size: 1.02rem;">${username}</strong>
+                            <div class="post-meta">${post.create_at || '未知时间'} · 发布于论坛</div>
+                        </div>
+                    </div>
+                    <p class="post-text">${post.content || ''}</p>
+                    <div class="post-actions">
+                        <div class="post-tools">
+                            <span>👁 ${post.view_count || 0}</span>
+                            <span>👍 ${post.like_count || 0}</span>
+                            <span>💬 评论</span>
+                            <span>⭐ 收藏</span>
+                        </div>
+                        <button class="btn btn-secondary delete-post-btn" style="padding: 10px 14px;" data-post-id="${post.post_id}">删除</button>
+                    </div>
+                </div>
+            `}).join('');
+
+            bindDeletePostEvents();
+        }
+
+        function bindDeletePostEvents() {
+            document.querySelectorAll('.delete-post-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const postId = this.dataset.postId;
+                    if (!confirm('确定要删除这篇帖子吗？')) return;
+
+                    const response = await fetchWithToken(`${API_BASE_URL}/post/${postId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.success) {
+                        this.closest('.post-card').remove();
+                        if (document.querySelectorAll('.post-card').length === 0) {
+                            document.getElementById('postsContainer').innerHTML = `
+                                <div style="text-align: center; padding: 60px 20px;">
+                                    <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                                    <h3 style="color: #374151; margin-bottom: 8px;">该用户还未发布帖子</h3>
+                                    <p style="color: #64748b;">成为第一个分享知识的人吧！</p>
+                                    <a href="../forum/make-post.html" class="btn btn-primary" style="margin-top: 20px;">去发帖</a>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        alert(response.msg || '删除失败');
+                    }
+                });
+            });
+        }
+
+        /* =========================
+           用户收藏帖子加载
+        ========================= */
+        async function loadUserCollects(userId) {
+            const collectsContainer = document.getElementById('collectsContainer');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/collects`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    collectsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📌</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">还没有收藏任何帖子</h3>
+                            <p style="color: #64748b;">去论坛看看有什么有趣的内容吧！</p>
+                            <a href="../forum/main.html" class="btn btn-primary" style="margin-top: 20px;">去逛逛</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const posts = result.data || [];
+
+                if (!posts || posts.length === 0) {
+                    collectsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📌</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">还没有收藏任何帖子</h3>
+                            <p style="color: #64748b;">去论坛看看有什么有趣的内容吧！</p>
+                            <a href="../forum/main.html" class="btn btn-primary" style="margin-top: 20px;">去逛逛</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderCollects(posts);
+            } catch (error) {
+                console.error('加载用户收藏失败:', error);
+                collectsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">加载失败</h3>
+                        <p style="color: #64748b;">网络错误，请稍后重试</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCollects(posts) {
+            const collectsContainer = document.getElementById('collectsContainer');
+            collectsContainer.innerHTML = posts.map(post => {
+                const username = post.username || '用户';
+                const avatar = post.avatar || getDefaultAvatar(username);
+                return `
+                <div class="post-card">
+                    <div class="post-top">
+                        <img src="${avatar}" alt="Avatar" class="post-avatar" />
+                        <div>
+                            <strong style="font-size: 1.02rem;">${username}</strong>
+                            <div class="post-meta">${post.create_at || '未知时间'} · 发布于论坛</div>
+                        </div>
+                    </div>
+                    <p class="post-text">${post.content || ''}</p>
+                    <div class="post-actions">
+                        <div class="post-tools">
+                            <span>👁 ${post.view_count || 0}</span>
+                            <span>👍 ${post.like_count || 0}</span>
+                            <span>💬 评论</span>
+                        </div>
+                        <button class="btn btn-secondary cancel-collect-btn" style="padding: 10px 14px;" data-post-id="${post.post_id}">取消收藏</button>
+                    </div>
+                </div>
+            `}).join('');
+
+            bindCancelCollectEvents();
+        }
+
+        function bindCancelCollectEvents() {
+            document.querySelectorAll('.cancel-collect-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const postId = this.dataset.postId;
+                    if (!confirm('确定要取消收藏这篇帖子吗？')) return;
+
+                    const response = await fetchWithToken(`${API_BASE_URL}/post/${postId}/collect`, {
+                        method: 'POST'
+                    });
+
+                    if (response.success) {
+                        this.closest('.post-card').remove();
+                        if (document.querySelectorAll('.post-card').length === 0) {
+                            document.getElementById('collectsContainer').innerHTML = `
+                                <div style="text-align: center; padding: 60px 20px;">
+                                    <div style="font-size: 3rem; margin-bottom: 16px;">📌</div>
+                                    <h3 style="color: #374151; margin-bottom: 8px;">还没有收藏任何帖子</h3>
+                                    <p style="color: #64748b;">去论坛看看有什么有趣的内容吧！</p>
+                                    <a href="../forum/main.html" class="btn btn-primary" style="margin-top: 20px;">去逛逛</a>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        alert(response.msg || '取消收藏失败');
+                    }
+                });
+            });
+        }
+
+        /* =========================
+           页面加载时初始化
+        ========================= */
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+        });
+
         /* =========================
            小导航切换逻辑
            点击上方按钮，显示对应内容模块
@@ -2058,7 +2464,9 @@
         const profileModalSaveBtn = document.getElementById('profileModalSaveBtn');
         const profileAvatarPreview = document.getElementById('profileAvatarPreview');
         const profileAvatarInput = document.getElementById('profileAvatarInput');
-        const profileNicknameInput = document.getElementById('profileNicknameInput');
+        const profileUsernameInput = document.getElementById('profileUsernameInput');
+        const changeUsernameBtn = document.getElementById('changeUsernameBtn');
+        const profileIntroductionInput = document.getElementById('profileIntroductionInput');
         const profileSchoolInput = document.getElementById('profileSchoolInput');
         const profileGradeSelect = document.getElementById('profileGradeSelect');
         const profileRoleSelect = document.getElementById('profileRoleSelect');
@@ -2095,9 +2503,20 @@
         }
 
         function openProfileModal() {
+            if (!currentToken) {
+                alert('请先登录后再编辑资料');
+                window.location.href = '../login/login-main.html';
+                return;
+            }
+
             if (!profileModalOverlay) return;
-            if (profileNicknameInput && profileNameText) {
-                profileNicknameInput.value = profileNameText.textContent.trim();
+            if (profileUsernameInput && profileNameText) {
+                profileUsernameInput.value = profileNameText.textContent.trim();
+                profileUsernameInput.disabled = false;
+            }
+            if (profileIntroductionInput && profileIntroduction) {
+                const introText = profileIntroduction.textContent.replace(/^个人简介：/, '').trim();
+                profileIntroductionInput.value = introText === '还没写个人简介' ? '' : introText;
             }
             if (profileSchoolInput && schoolChipText) {
                 profileSchoolInput.value = schoolChipText.textContent.replace(/^🏫:?/, '').trim();
@@ -2124,21 +2543,13 @@
             document.body.classList.remove('modal-open');
         }
 
-        function applyProfileUpdates() {
-            const nickname = profileNicknameInput ? profileNicknameInput.value.trim() : '';
+        async function applyProfileUpdates() {
             const school = profileSchoolInput ? profileSchoolInput.value.trim() : '';
             const grade = profileGradeSelect ? profileGradeSelect.value : '';
             const role = profileRoleSelect ? profileRoleSelect.value : '';
+            const introduction = profileIntroductionInput ? profileIntroductionInput.value.trim() : '';
             const avatarSrc = pendingAvatarDataUrl || savedAvatarDataUrl || (topbarAvatarImage ? topbarAvatarImage.src : '');
 
-            if (nickname && profileNameText) {
-                profileNameText.textContent = nickname;
-            }
-            if (nickname) {
-                postAuthorNames.forEach((name) => {
-                    name.textContent = nickname;
-                });
-            }
             if (school && schoolChipText) {
                 schoolChipText.textContent = `🏫:${school}`;
             }
@@ -2149,7 +2560,31 @@
                 roleBadgeText.textContent = role;
                 roleBadgeText.classList.toggle('role-teacher', role === '老师');
             }
-            if (avatarSrc) {
+            if (profileIntroduction) {
+                if (introduction) {
+                    profileIntroduction.innerHTML = `<span style="font-weight: 600;">个人简介：</span>${introduction.replace(/\n/g, '<br>')}`;
+                } else {
+                    profileIntroduction.innerHTML = '<span style="font-weight: 600;">个人简介：</span>还没写个人简介<br>';
+                }
+            }
+            if (avatarSrc && pendingAvatarDataUrl) {
+                const payload = parseToken(currentToken);
+                if (payload && payload.user_id) {
+                    const response = await fetch(`${API_BASE_URL}/user/${payload.user_id}/avatar`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'token': currentToken
+                        },
+                        body: JSON.stringify({ avatar_data: avatarSrc })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('头像上传成功');
+                    } else {
+                        console.error('头像上传失败:', result.msg);
+                    }
+                }
                 savedAvatarDataUrl = avatarSrc;
                 if (topbarAvatarImage) topbarAvatarImage.src = avatarSrc;
                 if (profileAvatarImage) profileAvatarImage.src = avatarSrc;
@@ -2157,6 +2592,27 @@
                 postAvatars.forEach((img) => {
                     img.src = avatarSrc;
                 });
+                pendingAvatarDataUrl = null;
+            }
+
+            if (profileIntroductionInput) {
+                const payload = parseToken(currentToken);
+                if (payload && payload.user_id) {
+                    const introResponse = await fetch(`${API_BASE_URL}/user/${payload.user_id}/introduction`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'token': currentToken
+                        },
+                        body: JSON.stringify({ introduction: introduction })
+                    });
+                    const introResult = await introResponse.json();
+                    if (introResult.success) {
+                        console.log('个人简介保存成功');
+                    } else {
+                        console.error('个人简介保存失败:', introResult.msg);
+                    }
+                }
             }
         }
 
@@ -2263,6 +2719,65 @@
                     profileAvatarPreview.src = pendingAvatarDataUrl;
                 };
                 reader.readAsDataURL(file);
+            });
+        }
+
+        if (changeUsernameBtn && profileUsernameInput) {
+            changeUsernameBtn.addEventListener('click', async () => {
+                const newUsername = profileUsernameInput.value.trim();
+                if (!newUsername) {
+                    alert('请输入新用户名');
+                    return;
+                }
+
+                if (newUsername.length < 2 || newUsername.length > 20) {
+                    alert('用户名长度必须在2到20个字符之间');
+                    return;
+                }
+
+                const payload = parseToken(currentToken);
+                if (!payload || !payload.user_id) {
+                    alert('请先登录');
+                    return;
+                }
+
+                const userId = payload.user_id;
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/username`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': currentToken
+                    },
+                    body: JSON.stringify({ new_username: newUsername })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('用户名修改成功');
+                    localStorage.setItem('token', result.data.token);
+                    sessionStorage.setItem('token', result.data.token);
+                    currentToken = result.data.token;
+                    profileUsernameInput.value = '';
+                    profileUsernameInput.disabled = true;
+
+                    if (profileNameText) {
+                        profileNameText.textContent = result.data.username;
+                    }
+
+                    const postAuthorNames = document.querySelectorAll('.post-card .post-top strong');
+                    postAuthorNames.forEach((name) => {
+                        name.textContent = result.data.username;
+                    });
+                } else {
+                    alert(result.msg || '修改失败');
+                }
+            });
+
+            profileUsernameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    changeUsernameBtn.click();
+                }
             });
         }
         if (profileModalCloseBtn) {

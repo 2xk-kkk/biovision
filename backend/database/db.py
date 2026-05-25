@@ -12,6 +12,17 @@ def get_db_connection():
     return conn
 
 
+def add_column_if_not_exists(conn, table_name, column_name, column_def):
+    cursor = conn.cursor()
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    columns = [col[1] for col in cursor.fetchall()]
+    if column_name not in columns:
+        try:
+            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_def}")
+            conn.commit()
+        except Exception as e:
+            print(f"添加列 {column_name} 失败: {e}")
+
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -24,10 +35,21 @@ def init_db():
             password TEXT NOT NULL,
             telephone TEXT,
             avatar TEXT,
-            bio TEXT,
+            introduction TEXT,
+            like_count INTEGER DEFAULT 0,
+            follower_count INTEGER DEFAULT 0,
+            following_count INTEGER DEFAULT 0,
+            view_count INTEGER DEFAULT 0,
             create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
+    # 迁移：添加缺失的用户表字段
+    add_column_if_not_exists(conn, 'users', 'introduction', 'TEXT')
+    add_column_if_not_exists(conn, 'users', 'like_count', 'INTEGER DEFAULT 0')
+    add_column_if_not_exists(conn, 'users', 'follower_count', 'INTEGER DEFAULT 0')
+    add_column_if_not_exists(conn, 'users', 'following_count', 'INTEGER DEFAULT 0')
+    add_column_if_not_exists(conn, 'users', 'view_count', 'INTEGER DEFAULT 0')
 
     # 用户在线状态表（新增！用于登录时记录 last_active）
     cursor.execute('''
@@ -35,6 +57,19 @@ def init_db():
             user_id INTEGER PRIMARY KEY,
             last_active INTEGER NOT NULL,
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ''')
+
+    # 关注关系表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_follow (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            follower_id INTEGER NOT NULL,
+            following_id INTEGER NOT NULL,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(follower_id, following_id),
+            FOREIGN KEY(follower_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(following_id) REFERENCES users(id) ON DELETE CASCADE
         )
     ''')
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
@@ -208,6 +208,7 @@
       color: white;
       overflow: hidden;
       transition: transform 0.2s;
+      object-fit: cover;
     }
 
     .avatar:hover {
@@ -759,11 +760,11 @@
 
       <div class="user-actions">
         <div class="avatar-wrapper" id="userAvatarBtn">
-          <div class="avatar">👤</div>
+          <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
           <div class="upload-overlay">+</div>
 
           <div class="user-dropdown-menu" id="userDropdownMenu">
-            <a href="#" class="user-dropdown-item">
+            <a href="../user-center/main.html" class="user-dropdown-item">
               <i class="fas fa-user"></i> 个人中心
             </a>
             <a href="#" class="user-dropdown-item">
@@ -895,6 +896,41 @@
   </button>
 
   <script>
+    // 通用头像处理函数
+    function getDefaultAvatarSVG(username, size = 40) {
+      const avatarChar = (username || '用').trim()[0] || '用';
+      const viewBox = `${size} ${size}`;
+      const radius = Math.floor(size * 0.45);
+      const centerX = Math.floor(size / 2);
+      const centerY = Math.floor(size / 2);
+      const fontSize = Math.floor(size * 0.45);
+      const textY = Math.floor(size * 0.65);
+
+      return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23667eea'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+    }
+
+    function getGuestAvatarSVG(size = 40) {
+      const viewBox = `${size} ${size}`;
+      const radius = Math.floor(size * 0.45);
+      const centerX = Math.floor(size / 2);
+      const centerY = Math.floor(size / 2);
+      const headRadius = Math.floor(size * 0.12);
+      const headY = Math.floor(size * 0.35);
+      const bodyStroke = Math.floor(size * 0.1);
+      const bodyY1 = Math.floor(size * 0.6);
+      const bodyY2 = Math.floor(size * 0.85);
+
+      return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23d1d5db'/%3E%3Ccircle cx='${centerX}' cy='${headY}' r='${headRadius}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(size * 0.3)} ${bodyY1} Q${centerX} ${bodyY2} ${Math.floor(size * 0.7)} ${bodyY1}' fill='none' stroke='%239ca3af' stroke-width='${bodyStroke}' stroke-linecap='round'/%3E%3C/svg%3E`;
+    }
+
+    function getUserAvatar(avatarData, username, isCurrentUser = false) {
+      if (avatarData) {
+        return avatarData;
+      }
+      // 不使用localStorage缓存，始终返回首字母头像
+      return getDefaultAvatarSVG(username, 40);
+    }
+
     let currentTab = 'Latest';
     const API_BASE = 'http://127.0.0.1:8000';
     // 图片地址
@@ -976,6 +1012,9 @@
 
       const frag = document.createDocumentFragment();
 
+      // 在函数内部获取token
+      const token = localStorage.getItem('token');
+
       posts.forEach(post => {
         const username = post.username || '匿名用户';
         const content = post.content || '';
@@ -983,7 +1022,11 @@
         const tag = post.tag || '';
         const images = Array.isArray(post.images) ? post.images : [];
 
-        const avatarChar = (username.trim()[0] || '匿');
+        // 检查是否是当前登录用户，确保使用一致的头像逻辑
+        const payload = token ? parseJwt(token) : null;
+        const isCurrentUser = payload && post.user_id === payload.user_id;
+
+        const avatar = getUserAvatar(post.avatar, username, isCurrentUser);
 
         const card = document.createElement('div');
         card.className = 'post-card';
@@ -1000,10 +1043,11 @@
         avatarLink.className = 'post-avatar-link';
         avatarLink.addEventListener('click', (e) => e.stopPropagation());
 
-        const avatar = document.createElement('div');
-        avatar.className = 'post-avatar';
-        avatar.textContent = avatarChar;
-        avatarLink.appendChild(avatar);
+        const avatarEl = document.createElement('img');
+        avatarEl.className = 'post-avatar';
+        avatarEl.src = avatar;
+        avatarEl.alt = username;
+        avatarLink.appendChild(avatarEl);
 
         const userInfo = document.createElement('div');
         userInfo.className = 'post-user-info';
@@ -1234,26 +1278,125 @@
       }
     }
 
+
+    async function loadUserAvatar() {
+      const token = localStorage.getItem('token');
+      const avatarImg = document.getElementById('userAvatarImg');
+      if (!avatarImg) return;
+
+      // 清除之前存储的头像缓存，确保刷新时不会看到旧头像
+      localStorage.removeItem('user_avatar');
+
+      // 未登录显示默认灰色图标
+      const guestAvatar = getGuestAvatarSVG(40);
+
+      if (!token) {
+        avatarImg.src = guestAvatar;
+        return;
+      }
+
+      try {
+        const payload = parseJwt(token);
+        if (!payload || !payload.user_id) {
+          avatarImg.src = guestAvatar;
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/api/user/${payload.user_id}/info`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const username = result.data.username || '用户';
+          const userAvatar = result.data.avatar;
+
+          if (userAvatar) {
+            // 优先使用后端返回的用户头像，添加时间戳防止浏览器缓存
+            avatarImg.src = userAvatar + '?t=' + Date.now();
+          } else {
+            // 用户没有上传头像，显示首字母头像
+            avatarImg.src = getDefaultAvatarSVG(username, 40);
+          }
+        } else {
+          // 获取失败时显示默认首字母头像
+          avatarImg.src = getDefaultAvatarSVG('用户', 40);
+        }
+      } catch (error) {
+        console.error('加载用户头像失败:', error);
+        // 出错时显示默认首字母头像
+        avatarImg.src = getDefaultAvatarSVG('用户', 40);
+      }
+    }
+
+    async function loadUserAvatarOld() {
+
+      const token = localStorage.getItem('token');
+      const avatarImg = document.getElementById('userAvatarImg');
+      if (!avatarImg) return;
+
+      // 未登录显示默认灰色图标
+      const guestAvatar = getGuestAvatarSVG(40);
+
+      if (!token) {
+        avatarImg.src = guestAvatar;
+        return;
+      }
+
+      try {
+        const payload = parseJwt(token);
+        if (!payload || !payload.user_id) {
+          avatarImg.src = guestAvatar;
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/api/user/${payload.user_id}/info`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const username = result.data.username || '用户';
+          const avatar = getUserAvatar(result.data.avatar, username, true);
+          avatarImg.src = avatar;
+        } else {
+          avatarImg.src = guestAvatar;
+        }
+      } catch (error) {
+        console.error('加载用户头像失败:', error);
+        avatarImg.src = guestAvatar;
+      }
+    }
+
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
+      }
+    }
+
     console.log('=== Page loaded at:', new Date().toISOString());
 
     document.addEventListener('DOMContentLoaded', function () {
       console.log('=== DOMContentLoaded fired');
 
       const ctx = document.getElementById('activityChart');
-if (ctx) {
-    window.activityChart = new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
+      if (ctx) {
+        window.activityChart = new Chart(ctx.getContext('2d'), {
+          type: 'line',
+          data: {
             labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
             datasets: [{
-                label: '帖子数',
-                data: [0, 0, 0, 0, 0, 0, 0],
-                borderColor: '#3B82F6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                tension: 0.4,
-                fill: true
+              label: '帖子数',
+              data: [0, 0, 0, 0, 0, 0, 0],
+              borderColor: '#3B82F6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
             }]
-        },
+          },
           options: {
             responsive: true,
             plugins: {
@@ -1321,6 +1464,7 @@ if (ctx) {
 
       loadPosts();
       updateForumStats();
+      loadUserAvatar();
 
       // 发帖按钮登录检查
       const postBtn = document.querySelector('a.btn-primary[href="make-post.html"]');
@@ -1391,98 +1535,98 @@ if (ctx) {
     });
 
     // ================= 1. 点赞 =================
-let likingLock = {};
-async function toggleLike(postId, button) {
-  if (likingLock[postId]) return;
-  likingLock[postId] = true;
+    let likingLock = {};
+    async function toggleLike(postId, button) {
+      if (likingLock[postId]) return;
+      likingLock[postId] = true;
 
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert("请先登录");
-      return;
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert("请先登录");
+          return;
+        }
+
+        const resp = await fetch(`${API_BASE}/api/post/${postId}/like`, {
+          method: 'POST',
+          headers: { token }
+        });
+
+        const result = await resp.json();
+        if (!result.success) {
+          throw new Error(result.msg || '点赞失败');
+        }
+
+        const likeIcon = button.querySelector('i');
+        const likeCountSpan = button.querySelector('span');
+        let currentCount = parseInt(likeCountSpan.textContent) || 0;
+        const isLiked = likeIcon.classList.contains('fas');
+
+        if (isLiked) {
+          likeIcon.classList.remove('fas');
+          likeIcon.classList.add('far');
+          currentCount = Math.max(0, currentCount - 1);
+        } else {
+          likeIcon.classList.remove('far');
+          likeIcon.classList.add('fas');
+          currentCount += 1;
+        }
+
+        likeCountSpan.textContent = currentCount;
+      } catch (err) {
+        console.error('toggleLike error:', err);
+        alert(err.message);
+      } finally {
+        setTimeout(() => {
+          likingLock[postId] = false;
+        }, 800);
+      }
     }
-
-    const resp = await fetch(`${API_BASE}/api/post/${postId}/like`, {
-      method: 'POST',
-      headers: { token }
-    });
-
-    const result = await resp.json();
-    if (!result.success) {
-      throw new Error(result.msg || '点赞失败');
-    }
-
-    const likeIcon = button.querySelector('i');
-    const likeCountSpan = button.querySelector('span');
-    let currentCount = parseInt(likeCountSpan.textContent) || 0;
-    const isLiked = likeIcon.classList.contains('fas');
-
-    if (isLiked) {
-      likeIcon.classList.remove('fas');
-      likeIcon.classList.add('far');
-      currentCount = Math.max(0, currentCount - 1);
-    } else {
-      likeIcon.classList.remove('far');
-      likeIcon.classList.add('fas');
-      currentCount += 1;
-    }
-
-    likeCountSpan.textContent = currentCount;
-  } catch (err) {
-    console.error('toggleLike error:', err);
-    alert(err.message);
-  } finally {
-    setTimeout(() => {
-      likingLock[postId] = false;
-    }, 800);
-  }
-}
     // ================= 2. 收藏 =================
-let collectingLock = {};
-async function toggleCollect(postId, button) {
-  if (collectingLock[postId]) return;
-  collectingLock[postId] = true;
+    let collectingLock = {};
+    async function toggleCollect(postId, button) {
+      if (collectingLock[postId]) return;
+      collectingLock[postId] = true;
 
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert("请先登录");
-      return;
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert("请先登录");
+          return;
+        }
+
+        const res = await fetch(`${API_BASE}/api/post/${postId}/collect`, {
+          method: 'POST',
+          headers: { token }
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          alert(data.msg);
+          return;
+        }
+
+        const icon = button.querySelector('i');
+        const span = button.querySelector('span');
+        let num = parseInt(span.textContent) || 0;
+
+        if (icon.classList.contains('far')) {
+          icon.classList.replace('far', 'fas');
+          span.textContent = num + 1;
+        } else {
+          icon.classList.replace('fas', 'far');
+          span.textContent = num - 1;
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setTimeout(() => {
+          collectingLock[postId] = false;
+        }, 800);
+      }
     }
 
-    const res = await fetch(`${API_BASE}/api/post/${postId}/collect`, {
-      method: 'POST',
-      headers: { token }
-    });
-
-    const data = await res.json();
-    if (!data.success) {
-      alert(data.msg);
-      return;
-    }
-
-    const icon = button.querySelector('i');
-    const span = button.querySelector('span');
-    let num = parseInt(span.textContent) || 0;
-
-    if (icon.classList.contains('far')) {
-      icon.classList.replace('far', 'fas');
-      span.textContent = num + 1;
-    } else {
-      icon.classList.replace('fas', 'far');
-      span.textContent = num - 1;
-    }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setTimeout(() => {
-      collectingLock[postId] = false;
-    }, 800);
-  }
-}
-
-// ================= 3. 获取评论 =================
+    // ================= 3. 获取评论 =================
     async function getComments(postId, page = 1, pageSize = 10) {
       try {
         const url =

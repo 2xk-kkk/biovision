@@ -1097,15 +1097,43 @@
         const userProfileUrl = `user-profile.html?user_id=${post.user_id}`;
         
         const postAvatar = document.getElementById("postAvatar");
-        postAvatar.textContent = (post.username || "匿").charAt(0);
+        const postAvatarImg = document.createElement("img");
+        const username = post.username || "匿";
+        const avatarChar = username.charAt(0);
+        const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23667eea'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='28' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+        
+        if (post.avatar) {
+          postAvatarImg.src = post.avatar;
+        } else {
+          postAvatarImg.src = defaultAvatar;
+        }
+        postAvatarImg.alt = username;
+        postAvatarImg.style.width = "100%";
+        postAvatarImg.style.height = "100%";
+        postAvatarImg.style.borderRadius = "50%";
+        postAvatarImg.style.objectFit = "cover";
+        postAvatar.innerHTML = "";
+        postAvatar.appendChild(postAvatarImg);
         postAvatar.href = userProfileUrl;
         
         const postAuthor = document.getElementById("postAuthor");
-        postAuthor.textContent = post.username || "匿名用户";
+        postAuthor.textContent = username;
         postAuthor.href = userProfileUrl;
         
         const authorAvatar = document.getElementById("authorAvatar");
-        authorAvatar.textContent = (post.username || "匿").charAt(0);
+        const authorAvatarImg = document.createElement("img");
+        if (post.avatar) {
+          authorAvatarImg.src = post.avatar;
+        } else {
+          authorAvatarImg.src = defaultAvatar;
+        }
+        authorAvatarImg.alt = username;
+        authorAvatarImg.style.width = "100%";
+        authorAvatarImg.style.height = "100%";
+        authorAvatarImg.style.borderRadius = "50%";
+        authorAvatarImg.style.objectFit = "cover";
+        authorAvatar.innerHTML = "";
+        authorAvatar.appendChild(authorAvatarImg);
         authorAvatar.href = userProfileUrl;
         
         const authorName = document.getElementById("authorName");
