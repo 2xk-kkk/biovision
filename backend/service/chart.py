@@ -24,7 +24,7 @@ def get_forum_stats():
         except:
             total_comments = 0
 
-        # 在线用户（暂时固定）
+        # 在线用户
 
         def get_real_online_users():
             try:
@@ -44,19 +44,19 @@ def get_forum_stats():
         online_users = get_real_online_users()
 
 
-        # 获取周一到周五（最近5个工作日）的数据
+        # 获取周一到周日的数据
         today = datetime.now().date()
         
         # 找到本周一
         today_weekday = today.weekday()  # 0=Monday, 6=Sunday
         monday = today - timedelta(days=today_weekday)
         
-        # 生成周一到周五的日期
-        activity_data = [0] * 5
-        date_labels = ["周一", "周二", "周三", "周四", "周五"]
+        # 生成周一到周日的日期
+        activity_data = [0] * 7
+        date_labels = ["周一", "周二", "周三", "周四", "周五","周六", "周日"]
         week_dates = []
         
-        for i in range(5):
+        for i in range(7):
             date = monday + timedelta(days=i)
             week_dates.append(date.strftime("%Y-%m-%d"))
 
@@ -76,12 +76,12 @@ def get_forum_stats():
                 try:
                     d = datetime.strptime(d_str, "%Y-%m-%d").date()
                     idx = (d - monday).days
-                    if 0 <= idx < 5:
+                    if 0 <= idx < 7:
                         activity_data[idx] = cnt
                 except:
                     pass
         except:
-            activity_data = [0, 0, 0, 0, 0]     
+            activity_data = [0, 0, 0, 0, 0, 0, 0]     
 
         return ApiResponse.success({
             "total_users": total_users,

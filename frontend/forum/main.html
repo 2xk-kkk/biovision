@@ -1068,6 +1068,7 @@
         const likeCount = post.like_count || 0;
         const commentCount = post.comment_count || 0;
         const viewCount = post.view_count || 0;
+        const collectCount = post.collect_count || 0;
 
         const actions = document.createElement('div');
         actions.className = 'post-actions';
@@ -1081,6 +1082,9 @@
           <button class="action-btn">
             <i class="far fa-eye"></i> <span>${viewCount}</span>
           </button>
+          <button class="action-btn" id="collectBtn-${postId}">
+          <i class="far fa-bookmark"></i> <span>${collectCount}</span>
+          </button>
         `;
 
         // 绑定点赞事件
@@ -1089,6 +1093,15 @@
           likeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleLike(postId, likeBtn);
+          });
+        }
+
+        // 绑定收藏事件
+        const collectBtn = actions.querySelector(`#collectBtn-${postId}`);
+        if (collectBtn) {
+          collectBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleCollect(postId, collectBtn);
           });
         }
 
@@ -1197,8 +1210,8 @@
           document.getElementById('stat-online').textContent = data.data.online_users;
 
           if (window.activityChart) {
-            window.activityChart.data.labels = data.data.activity_dates || ["周一", "周二", "周三", "周四", "周五"];
-            window.activityChart.data.datasets[0].data = data.data.activity || [0, 0, 0, 0, 0];
+            window.activityChart.data.labels = data.data.activity_dates || ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+            window.activityChart.data.datasets[0].data = data.data.activity || [0, 0, 0, 0, 0, 0, 0];
             window.activityChart.update();
           }
         }
@@ -1227,20 +1240,20 @@
       console.log('=== DOMContentLoaded fired');
 
       const ctx = document.getElementById('activityChart');
-      if (ctx) {
-        window.activityChart = new Chart(ctx.getContext('2d'), {
-          type: 'line',
-          data: {
-            labels: [],
+if (ctx) {
+    window.activityChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
             datasets: [{
-              label: '帖子数',
-              data: [],
-              borderColor: '#3B82F6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4,
-              fill: true
+                label: '帖子数',
+                data: [0, 0, 0, 0, 0, 0, 0],
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4,
+                fill: true
             }]
-          },
+        },
           options: {
             responsive: true,
             plugins: {
@@ -1378,110 +1391,98 @@
     });
 
     // ================= 1. 点赞 =================
-    async function toggleLike(postId, button) {
-      try {
-        const token = localStorage.getItem('token');
+let likingLock = {};
+async function toggleLike(postId, button) {
+  if (likingLock[postId]) return;
+  likingLock[postId] = true;
 
-        if (!token) {
-          alert("请先登录");
-          return;
-        }
-
-        const resp = await fetch(
-          `${API_BASE}/api/post/${postId}/like`,
-          {
-            method: 'POST',
-            headers: {
-              'token': token
-            }
-          }
-        );
-
-        if (!resp.ok) {
-          throw new Error(`HTTP ${resp.status}`);
-        }
-
-        const result = await resp.json();
-
-        if (!result.success) {
-          throw new Error(result.msg || '点赞失败');
-        }
-
-        // 更新页面上的点赞数和评论数
-        if (button) {
-          const likeIcon = button.querySelector('i');
-          const likeCountSpan = button.querySelector('span') || button;
-
-          // 更新点赞数（假设后端返回了新的点赞数，如果没有则+1或-1）
-          let currentCount = parseInt(likeCountSpan.textContent) || 0;
-          const isLiked = likeIcon.classList.contains('fas');
-
-          if (isLiked) {
-            likeIcon.classList.remove('fas');
-            likeIcon.classList.add('far');
-            currentCount = Math.max(0, currentCount - 1);
-          } else {
-            likeIcon.classList.remove('far');
-            likeIcon.classList.add('fas');
-            currentCount += 1;
-          }
-
-          // 提取数字部分（如果有"收藏"等文字）
-          const countText = likeCountSpan.textContent;
-          if (countText.includes(' ')) {
-            // 如果有文字，保留文字
-            const parts = countText.split(' ');
-            parts[parts.length - 1] = currentCount;
-            likeCountSpan.textContent = parts.join(' ');
-          } else {
-            likeCountSpan.textContent = currentCount;
-          }
-        }
-
-        return result.data || {};
-      } catch (err) {
-        console.error('toggleLike error:', err);
-        alert(err.message);
-      }
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("请先登录");
+      return;
     }
 
+    const resp = await fetch(`${API_BASE}/api/post/${postId}/like`, {
+      method: 'POST',
+      headers: { token }
+    });
+
+    const result = await resp.json();
+    if (!result.success) {
+      throw new Error(result.msg || '点赞失败');
+    }
+
+    const likeIcon = button.querySelector('i');
+    const likeCountSpan = button.querySelector('span');
+    let currentCount = parseInt(likeCountSpan.textContent) || 0;
+    const isLiked = likeIcon.classList.contains('fas');
+
+    if (isLiked) {
+      likeIcon.classList.remove('fas');
+      likeIcon.classList.add('far');
+      currentCount = Math.max(0, currentCount - 1);
+    } else {
+      likeIcon.classList.remove('far');
+      likeIcon.classList.add('fas');
+      currentCount += 1;
+    }
+
+    likeCountSpan.textContent = currentCount;
+  } catch (err) {
+    console.error('toggleLike error:', err);
+    alert(err.message);
+  } finally {
+    setTimeout(() => {
+      likingLock[postId] = false;
+    }, 800);
+  }
+}
     // ================= 2. 收藏 =================
-    async function toggleFavorite(postId) {
-      try {
-        const token = localStorage.getItem('token');
+let collectingLock = {};
+async function toggleCollect(postId, button) {
+  if (collectingLock[postId]) return;
+  collectingLock[postId] = true;
 
-        if (!token) {
-          throw new Error("请先登录");
-        }
-
-        const resp = await fetch(
-          `${API_BASE}/api/post/${postId}/collect`,
-          {
-            method: 'POST',
-            headers: {
-              'token': token
-            }
-          }
-        );
-
-        if (!resp.ok) {
-          throw new Error(`HTTP ${resp.status}`);
-        }
-
-        const result = await resp.json();
-
-        if (!result.success) {
-          throw new Error(result.msg || '收藏失败');
-        }
-
-        return result.data || {};
-      } catch (err) {
-        console.error('toggleFavorite error:', err);
-        throw err;
-      }
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("请先登录");
+      return;
     }
 
-    // ================= 3. 获取评论 =================
+    const res = await fetch(`${API_BASE}/api/post/${postId}/collect`, {
+      method: 'POST',
+      headers: { token }
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.msg);
+      return;
+    }
+
+    const icon = button.querySelector('i');
+    const span = button.querySelector('span');
+    let num = parseInt(span.textContent) || 0;
+
+    if (icon.classList.contains('far')) {
+      icon.classList.replace('far', 'fas');
+      span.textContent = num + 1;
+    } else {
+      icon.classList.replace('fas', 'far');
+      span.textContent = num - 1;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setTimeout(() => {
+      collectingLock[postId] = false;
+    }, 800);
+  }
+}
+
+// ================= 3. 获取评论 =================
     async function getComments(postId, page = 1, pageSize = 10) {
       try {
         const url =

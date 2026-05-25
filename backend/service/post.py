@@ -157,6 +157,7 @@ def get_all_posts(page=1, page_size=20):
                 "comment_count": row[6] if len(row) > 6 else 0,
                 "like_count": row[7] if len(row) > 7 else 0,
                 "view_count": row[8] if len(row) > 8 else 0,
+                "collect_count": row[9] if len(row) > 9 else 0,
                 "images": []
             })
 
@@ -196,6 +197,7 @@ def get_post_detail(post_id):
             "create_at": post[5],
             "view_count": post[6] if len(post) > 6 else 0,
             "like_count": post[7] if len(post) > 7 else 0,
+            "collect_count": post[8] if len(post) > 8 else 0,
             "comment_count": comment_count,
             "images": images.get(post_id, [])
         })
@@ -333,11 +335,20 @@ def collect_post(token, post_id):
         return ApiResponse.error(msg="请先登录")
     user_id = int(payload["msg"]["user_id"])
     
+    # 收藏/取消收藏
     status = toggle_collect(db, user_id, post_id)
-    count = get_post_detail(db, post_id)[8]
-    db.close()
-    return ApiResponse.success(data={"collected": status, "collect_count": count})
 
+    # 获取最新收藏数
+    post = get_post_detail_db(db, post_id)
+    count = post[8] if (post and len(post) > 8) else 0
+    
+    db.close()
+    
+    # 返回前端需要的格式
+    return ApiResponse.success(data={
+        "is_collected": status,
+        "collect_count": count
+    })
 # 9. 分享
 def share_post(post_id):
     db = get_db_connection()
@@ -354,3 +365,15 @@ def get_user_statistics(user_id):
         return ApiResponse.success(data=stats)
     finally:
         db.close()
+
+# 11. 查询是否已收藏 
+def is_collected_post(token, post_id):
+    db = get_db_connection()
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+    user_id = int(payload["msg"]["user_id"])
+    
+    collected = is_collected(db, user_id, post_id)
+    db.close()
+    return ApiResponse.success(data={"is_collected": collected})

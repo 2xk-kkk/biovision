@@ -1395,6 +1395,57 @@
       return div.innerHTML;
     }
   </script>
+
+  <script>
+// ==================== 收藏功能=====================
+const token = localStorage.getItem('token');
+const collectBtn = document.getElementById('collectBtn');
+
+function initCollectStatus() {
+  if (!token || !postId) return;
+  const saved = localStorage.getItem('collected_' + postId);
+  if (saved === 'true') {
+    collectBtn.innerHTML = '<i class="fas fa-bookmark"></i> 已收藏';
+    collectBtn.style.color = '#3B82F6';
+  }
+}
+
+async function doCollect() {
+  if (!token) {
+    alert('请先登录');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/post/${postId}/collect`, {
+      method: 'POST',
+      headers: { token }
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const isCollected = data.data.is_collected;
+
+      if (isCollected) {
+        collectBtn.innerHTML = '<i class="fas fa-bookmark"></i> 已收藏';
+        collectBtn.style.color = '#3B82F6';
+        localStorage.setItem('collected_' + postId, 'true');
+      } else {
+        collectBtn.innerHTML = '<i class="far fa-bookmark"></i> 收藏';
+        collectBtn.style.color = '';
+        localStorage.removeItem('collected_' + postId);
+      }
+    } else {
+      alert(data.msg || '收藏失败');
+    }
+  } catch (err) {
+    alert('收藏失败，请重试');
+  }
+}
+
+collectBtn.addEventListener('click', doCollect);
+window.addEventListener('load', initCollectStatus);
+</script>
 </body>
 
 </html>

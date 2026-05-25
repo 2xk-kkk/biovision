@@ -64,7 +64,8 @@ def get_posts_with_counts(db, page=1, page_size=20):
             posts.create_at,
             COALESCE((SELECT COUNT(*) FROM comments WHERE post_id = posts.id), 0) as comment_count,
             posts.like_count,
-            posts.view_count
+            posts.view_count,
+            posts.collect_count
         FROM posts
         JOIN users ON posts.user_id = users.id
         ORDER BY posts.create_at DESC
@@ -217,13 +218,14 @@ def toggle_collect(db, user_id, post_id):
         cursor.execute("DELETE FROM user_interact WHERE user_id=? AND post_id=? AND type='collect'", 
                        (user_id, post_id))
         cursor.execute("UPDATE posts SET collect_count = collect_count - 1 WHERE id=?", (post_id,))
+        db.commit()  
         return False
     else:
         cursor.execute("INSERT INTO user_interact(user_id, post_id, type) VALUES(?,?,'collect')", 
                        (user_id, post_id))
         cursor.execute("UPDATE posts SET collect_count = collect_count + 1 WHERE id=?", (post_id,))
+        db.commit()  
         return True
-
 
 def is_collected(db, user_id, post_id):
     cursor = db.cursor()
