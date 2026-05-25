@@ -1002,163 +1002,167 @@
       if (!main) return;
       main.querySelectorAll('.post-card').forEach(el => el.remove());
     }
-
+// 修改：论坛接真实个人信息
     function renderPosts(posts, { append = false } = {}) {
-      const main = getMainContentEl();
-      const loadingEl = getLoadingEl();
-      if (!main || !loadingEl) return;
-
-      if (!append) clearRenderedPosts();
-
-      const frag = document.createDocumentFragment();
-
-      // 在函数内部获取token
-      const token = localStorage.getItem('token');
-
-      posts.forEach(post => {
+    const main = getMainContentEl();
+    const loadingEl = getLoadingEl();
+    if (!main || !loadingEl) return;
+    if (!append) clearRenderedPosts();
+    
+    const frag = document.createDocumentFragment();
+    
+    // 在函数内部获取token
+    const token = localStorage.getItem('token');
+    
+    posts.forEach(post => {
         const username = post.username || '匿名用户';
         const content = post.content || '';
         const createAt = post.create_at || '';
         const tag = post.tag || '';
         const images = Array.isArray(post.images) ? post.images : [];
-
+        
+        // ✅ 1. 提取帖子作者的用户ID（用于跳转个人主页）
+        const postUserId = post.user_id || '';
+        
         // 检查是否是当前登录用户，确保使用一致的头像逻辑
         const payload = token ? parseJwt(token) : null;
         const isCurrentUser = payload && post.user_id === payload.user_id;
-
         const avatar = getUserAvatar(post.avatar, username, isCurrentUser);
-
+        
         const card = document.createElement('div');
         card.className = 'post-card';
         const postId = post.post_id || post.id;
         card.addEventListener('click', () => {
-          window.location.href = `post-detail.html?id=${postId}`;
+            window.location.href = `post-detail.html?id=${postId}`;
         });
-
+        
         const header = document.createElement('div');
         header.className = 'post-header';
-
+        
         const avatarLink = document.createElement('a');
-        avatarLink.href = 'user-profile.html';
+        // ✅ 2. 头像链接加上用户ID参数
+        avatarLink.href = postUserId ? `user-profile.html?id=${postUserId}` : 'javascript:void(0)';
         avatarLink.className = 'post-avatar-link';
         avatarLink.addEventListener('click', (e) => e.stopPropagation());
-
+        
         const avatarEl = document.createElement('img');
         avatarEl.className = 'post-avatar';
         avatarEl.src = avatar;
         avatarEl.alt = username;
         avatarLink.appendChild(avatarEl);
-
+        
         const userInfo = document.createElement('div');
         userInfo.className = 'post-user-info';
-
+        
         const usernameLink = document.createElement('a');
-        usernameLink.href = 'user-profile.html';
+        // ✅ 3. 用户名链接也加上用户ID参数
+        usernameLink.href = postUserId ? `user-profile.html?id=${postUserId}` : 'javascript:void(0)';
         usernameLink.className = 'post-username-link';
         usernameLink.addEventListener('click', (e) => e.stopPropagation());
         usernameLink.textContent = username;
-
+        
         const timeEl = document.createElement('div');
         timeEl.className = 'post-time';
         timeEl.textContent = createAt;
-
+        
         userInfo.appendChild(usernameLink);
         userInfo.appendChild(timeEl);
-
         header.appendChild(avatarLink);
         header.appendChild(userInfo);
-
+        
         const tagsEl = document.createElement('div');
         tagsEl.className = 'post-tags';
-
         if (tag) {
-          const tags = String(tag).split(/[，,\s]+/).filter(Boolean);
-          (tags.length ? tags : [tag]).slice(0, 3).forEach(t => {
-            const span = document.createElement('span');
-            span.className = 'post-tag';
-            span.textContent = t;
-            tagsEl.appendChild(span);
-          });
+            const tags = String(tag).split(/[，,\s]+/).filter(Boolean);
+            (tags.length ? tags : [tag]).slice(0, 3).forEach(t => {
+                const span = document.createElement('span');
+                span.className = 'post-tag';
+                span.textContent = t;
+                tagsEl.appendChild(span);
+            });
         }
-
+        
         const contentEl = document.createElement('div');
         contentEl.className = 'post-content';
         contentEl.textContent = content;
-
+        
         if (images.length) {
-          const imgWrap = document.createElement('div');
-          imgWrap.style.marginTop = '12px';
-          imgWrap.style.display = 'flex';
-          imgWrap.style.gap = '10px';
-          imgWrap.style.flexWrap = 'wrap';
-
-          images.slice(0, 3).forEach(u => {
-            const img = document.createElement('img');
-            img.src = resolveImageUrl(u);
-            img.alt = '帖子图片';
-            img.loading = 'lazy';
-            img.style.width = '180px';
-            img.style.maxWidth = '100%';
-            img.style.height = '120px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '10px';
-            img.style.border = '1px solid #e2e8f0';
-            imgWrap.appendChild(img);
-          });
-
-          contentEl.appendChild(imgWrap);
+            const imgWrap = document.createElement('div');
+            imgWrap.style.marginTop = '12px';
+            imgWrap.style.display = 'flex';
+            imgWrap.style.gap = '10px';
+            imgWrap.style.flexWrap = 'wrap';
+            
+            images.slice(0, 3).forEach(u => {
+                const img = document.createElement('img');
+                img.src = resolveImageUrl(u);
+                img.alt = '帖子图片';
+                img.loading = 'lazy';
+                img.style.width = '180px';
+                img.style.maxWidth = '100%';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '10px';
+                img.style.border = '1px solid #e2e8f0';
+                imgWrap.appendChild(img);
+            });
+            contentEl.appendChild(imgWrap);
         }
-
+        
         const likeCount = post.like_count || 0;
         const commentCount = post.comment_count || 0;
         const viewCount = post.view_count || 0;
         const collectCount = post.collect_count || 0;
-
+        
         const actions = document.createElement('div');
         actions.className = 'post-actions';
         actions.innerHTML = `
-          <button class="action-btn" id="likeBtn-${postId}">
-            <i class="far fa-heart"></i> <span>${likeCount}</span>
-          </button>
-          <button class="action-btn">
-            <i class="far fa-comment"></i> <span>${commentCount}</span>
-          </button>
-          <button class="action-btn">
-            <i class="far fa-eye"></i> <span>${viewCount}</span>
-          </button>
-          <button class="action-btn" id="collectBtn-${postId}">
-          <i class="far fa-bookmark"></i> <span>${collectCount}</span>
-          </button>
+            <button class="action-btn" id="likeBtn-${postId}">
+                <i class="far fa-heart"></i>
+                <span>${likeCount}</span>
+            </button>
+            <button class="action-btn">
+                <i class="far fa-comment"></i>
+                <span>${commentCount}</span>
+            </button>
+            <button class="action-btn">
+                <i class="far fa-eye"></i>
+                <span>${viewCount}</span>
+            </button>
+            <button class="action-btn" id="collectBtn-${postId}">
+                <i class="far fa-bookmark"></i>
+                <span>${collectCount}</span>
+            </button>
         `;
-
+        
         // 绑定点赞事件
         const likeBtn = actions.querySelector(`#likeBtn-${postId}`);
         if (likeBtn) {
-          likeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleLike(postId, likeBtn);
-          });
+            likeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleLike(postId, likeBtn);
+            });
         }
-
+        
         // 绑定收藏事件
         const collectBtn = actions.querySelector(`#collectBtn-${postId}`);
         if (collectBtn) {
-          collectBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleCollect(postId, collectBtn);
-          });
+            collectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleCollect(postId, collectBtn);
+            });
         }
-
+        
         card.appendChild(header);
         if (tagsEl.childNodes.length) card.appendChild(tagsEl);
         card.appendChild(contentEl);
         card.appendChild(actions);
-
+        
         frag.appendChild(card);
-      });
-
-      main.insertBefore(frag, loadingEl);
-    }
+    });
+    
+    main.insertBefore(frag, loadingEl);
+}
 
     async function fetchLatestPosts(page) {
       const url = `${API_BASE}/api/posts?page=${page}&page_size=${PAGE_SIZE}`;
