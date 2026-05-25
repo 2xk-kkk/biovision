@@ -1480,6 +1480,7 @@
                 <div class="mini-nav" id="miniNav">
                     <!-- data-target 对应下面的 content-box 的 id -->
                     <button class="mini-nav-item active" data-target="post">近期发帖</button>
+                    <button class="mini-nav-item" data-target="favorite">帖子收藏</button>
                     <button class="mini-nav-item" data-target="model">收藏模型</button>
                     <button class="mini-nav-item" data-target="ppt">已下载PPT</button>
                     <button class="mini-nav-item" data-target="wrong">错题本</button>
@@ -1505,7 +1506,6 @@
                                 <span>👍 点赞</span>
                                 <span>💬 评论</span>
                                 <span>⭐ 收藏</span>
-                                <span>↗ 分享</span>
                             </div>
                             <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">删除</a>
                         </div>
@@ -1533,9 +1533,58 @@
                                 <span>👍 点赞</span>
                                 <span>💬 评论</span>
                                 <span>⭐ 收藏</span>
-                                <span>↗ 分享</span>
                             </div>
                             <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">删除</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- 帖子收藏：默认展示的内容模块 -->
+               <div class="content-box" id="favorite">
+                    <div class="post-card">
+                        <div class="post-top">
+                            <img src="../images/touxiang.png" alt="Avatar" class="post-avatar" />
+                            <div>
+                                <strong style="font-size: 1.02rem;">Lofrmin</strong>
+                                <div class="post-meta">2026-05-19 10:58 · 发布于论坛</div>
+                            </div>
+                        </div>
+                        <p class="post-text">
+                            刚整理完“细胞膜结构与物质运输”这一节的知识图谱，搭配 3D 模型一起记忆后，
+                            发现主动运输和协助扩散的区别更容易理解了。后面准备把遗传题的常错点也整理一下。
+                        </p>
+                        <div class="post-actions">
+                            <div class="post-tools">
+                                <span>👁 26</span>
+                                <span>👍 点赞</span>
+                                <span>💬 评论</span>
+                            </div>
+                            <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">取消收藏</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-box" id="favorite">
+                    <div class="post-card">
+                        <div class="post-top">
+                            <img src="../images/touxiang.png" alt="Avatar" class="post-avatar" />
+                            <div>
+                                <strong style="font-size: 1.02rem;">Lofrmin</strong>
+                                <div class="post-meta">2026-05-19 19:41 · 发布于论坛</div>
+                            </div>
+                        </div>
+                        <p class="post-text">
+                           光合作用与呼吸作用
+                            <br>光合作用：绿色植物在叶绿体中利用光能将 CO₂ 和 H₂O 转化为有机物（如葡萄糖）并释放 O₂。
+                            <br>总反应式：6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂（需光、叶绿体）
+                            <br>有氧呼吸：细胞在线粒体中分解有机物释放能量，生成 CO₂ 和 H₂O。
+                            <br>总反应式：C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 能量
+                        </p>
+                        <div class="post-actions">
+                            <div class="post-tools">
+                                <span>👁 26</span>
+                                <span>👍 点赞</span>
+                                <span>💬 评论</span>
+                            </div>
+                            <a href="#" class="btn btn-secondary" style="padding: 10px 14px;">取消收藏</a>
                         </div>
                     </div>
                 </div>
