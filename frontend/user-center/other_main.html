@@ -1340,7 +1340,7 @@
 
     <script>
         const API_BASE_URL = 'http://localhost:8000/api';
-        const VIEW_USER_ID = new URLSearchParams(window.location.search).get('user_id') || 'demo-user';
+        const VIEW_USER_ID = new URLSearchParams(window.location.search).get('userId') || 'demo-user';
 
         let currentUser = null;
         let currentToken = null;
@@ -1600,33 +1600,51 @@
         }
 
         async function loadProfileData() {
-            currentToken = getTokenFromStorage();
-            const payload = getViewedUserIdPayload();
+    currentToken = getTokenFromStorage();
+    const payload = getViewedUserIdPayload();
 
-            if (payload && payload.user_id) {
-                currentUser = payload;
-            }
+    if (payload && payload.user_id) {
+        currentUser = payload;
+    }
 
-            try {
-                const response = await fetchWithToken(`${API_BASE_URL}/user/${VIEW_USER_ID}/public-info`);
-                if (response && response.success && response.data) {
-                    renderProfile(response.data);
-                    renderPosts(response.data.posts || []);
-                    renderCollects(response.data.collects || []);
-                    isFollowing = !!response.data.is_following;
-                    updateFollowUI();
-                    return;
-                }
-            } catch (error) {
-                console.warn('公共资料接口不可用，使用本地示例数据。', error);
-            }
-
-            renderProfile(mockProfile);
-            renderPosts(mockProfile.posts);
-            renderCollects(mockProfile.collects);
-            isFollowing = false;
+    try {
+        // 调用你真实的用户信息接口
+        const response = await fetchWithToken(`${API_BASE_URL}/user/${VIEW_USER_ID}/info`);
+        if (response && response.success && response.data) {
+            const user = response.data;
+            renderProfile({
+                user_id: VIEW_USER_ID,
+                username: user.username,
+                avatar: user.avatar,
+                introduction: user.introduction,
+                grade: user.grade,
+                school: user.school,
+                role: user.role || '学生',
+                like_count: user.like_count || 0,
+                follower_count: user.follower_count || 0,
+                following_count: user.following_count || 0,
+                view_count: user.view_count || 0,
+                mutual_count: 0,
+                study_hours: 0,
+                study_goal: 8,
+                question_count: 0,
+                question_goal: 100,
+                posts: [],
+                collects: []
+            });
+            isFollowing = !!user.is_following;
             updateFollowUI();
+            return;
         }
+    } catch (error) {
+        console.warn('加载失败', error);
+    }
+
+    // 失败才显示假数据
+    renderProfile(mockProfile);
+    isFollowing = false;
+    updateFollowUI();
+}
 
         async function toggleFollow() {
             const followBtn = document.getElementById('followBtn');
