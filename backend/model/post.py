@@ -253,6 +253,23 @@ def get_user_collect_posts(db, user_id, page=1, page_size=10):
     cursor.execute(sql, (user_id, page_size, offset))
     return cursor.fetchall()
 
+# 获取用户点赞的帖子列表
+def get_user_liked_posts(db, user_id, page=1, page_size=10):
+    offset = (page-1)*page_size
+    cursor = db.cursor()
+    sql = '''
+        SELECT p.id, p.user_id, u.username, u.avatar, p.content, p.tag, p.create_at,
+               p.view_count, p.like_count, p.collect_count
+        FROM user_interact c
+        JOIN posts p ON c.post_id = p.id
+        JOIN users u ON p.user_id = u.id
+        WHERE c.user_id = ? AND c.type='like'
+        ORDER BY c.create_at DESC
+        LIMIT ? OFFSET ?
+    '''
+    cursor.execute(sql, (user_id, page_size, offset))
+    return cursor.fetchall()
+
 
 # 评论功能（新增）
 def create_comment(db, post_id, user_id, content, parent_id=None):

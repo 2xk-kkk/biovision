@@ -290,14 +290,17 @@
     }
 
     .sidebar {
+      /* 固定定位：滚动页面时侧边栏保持不动 */
       position: sticky;
       top: 84px;
-      align-self: start;
+      align-self: flex-start;
       height: calc(100vh - 108px);
       overflow-y: auto;
       padding-right: 4px;
       scrollbar-width: thin;
       scrollbar-color: #cbd5e1 transparent;
+      /* 确保侧边栏在滚动时不跟随移动 */
+      will-change: transform;
     }
 
     .sidebar::-webkit-scrollbar {
@@ -807,32 +810,32 @@
             <i class="fas fa-th-large"></i> 论坛板块
           </div>
           <div class="forum-sections">
-            <a href="#" class="section-box active">
+            <a href="#" class="section-box active" data-category="all">
               <div class="section-title">全部帖子</div>
               <div class="section-count" id="totalNum">加载中...</div>
             </a>
 
-            <a href="#" class="section-box">
+            <a href="#" class="section-box" data-category="study">
               <div class="section-title">学习交流</div>
               <div class="section-count" id="xuexiCount">加载中...</div>
             </a>
 
-            <a href="#" class="section-box">
+            <a href="#" class="section-box" data-category="course">
               <div class="section-title">课程讨论</div>
               <div class="section-count" id="kechengCount">加载中...</div>
             </a>
 
-            <a href="#" class="section-box">
+            <a href="#" class="section-box" data-category="visual">
               <div class="section-title">可视化模型</div>
               <div class="section-count" id="visualCount">加载中...</div>
             </a>
 
-            <a href="#" class="section-box">
+            <a href="#" class="section-box" data-category="exam">
               <div class="section-title">备考经验</div>
               <div class="section-count" id="kaoshiCount">加载中...</div>
             </a>
 
-            <a href="#" class="section-box">
+            <a href="#" class="section-box" data-category="life">
               <div class="section-title">生活分享</div>
               <div class="section-count" id="lifeCount">加载中...</div>
             </a>
@@ -931,45 +934,93 @@
       return getDefaultAvatarSVG(username, 40);
     }
 
-    let currentTab = 'Latest';
-    const API_BASE = 'http://localhost:8000/api';
-    // 图片地址
-    const IMAGE_BASE = 'http://127.0.0.1:8000';
-    const PAGE_SIZE = 10;
-    let currentPage = 1;
-    let hasMore = true;
-    let isLoading = false;
-    let activityChart = null;
+    // ===== 全局状态变量 =====
+    let currentTab = 'Latest';          // 当前排序标签：Latest(最新)/Hot(热门)/Cream(精华)
+    let currentCategory = 'all';        // 当前分类：all(全部)/study(学习交流)/course(课程讨论)/visual(可视化)/exam(备考)/life(生活)
+    const API_BASE = 'http://localhost:8000/api';  // 后端API地址
+    const IMAGE_BASE = 'http://127.0.0.1:8000'; // 图片服务器地址
+    const PAGE_SIZE = 10;               // 每页显示帖子数量
+    let currentPage = 1;                // 当前页码
+    let hasMore = true;                 // 是否还有更多数据
+    let isLoading = false;              // 是否正在加载中
+    let activityChart = null;           // 活跃度图表实例
 
-    const sortBtns = document.querySelectorAll('.sort-btn');
-    const titleElement = document.querySelector('h2 .post-main-name').parentElement;
+    // ===== 获取DOM元素 =====
+    const sortBtns = document.querySelectorAll('.sort-btn');  // 排序按钮组
+    const titleElement = document.querySelector('h2 .post-main-name').parentElement; // 标题元素
 
+    // ===== 排序按钮点击事件处理 =====
+    // 最新帖子按钮 - 按发布时间倒序
     const LatestBtn = document.querySelector('.new-btn');
-    const HotBtn = document.querySelector('.hot-btn');
-    const CreamBtn = document.querySelector('.cream-btn');
-
     LatestBtn.addEventListener('click', function () {
       sortBtns.forEach(btn => btn.classList.remove('active'));
       LatestBtn.classList.add('active');
       currentTab = 'Latest';
       titleElement.innerHTML = '<i class="fas fa-clock post-main-name" style="color: #3B82F6;"></i> 最新帖子';
-      loadPosts();
+      loadPosts(true);  // 传入true表示强制刷新，不限制点击间隔
     });
 
+    // 热门帖子按钮 - 按浏览量倒序
+    const HotBtn = document.querySelector('.hot-btn');
     HotBtn.addEventListener('click', function () {
       sortBtns.forEach(btn => btn.classList.remove('active'));
       HotBtn.classList.add('active');
       currentTab = 'Hot';
       titleElement.innerHTML = '<i class="fas fa-fire post-main-name" style="color: #F59E0B;"></i> 热门帖子';
-      loadPosts();
+      loadPosts(true);  // 传入true表示强制刷新
     });
 
+    // 精华帖子按钮 - 按点赞数倒序
+    const CreamBtn = document.querySelector('.cream-btn');
     CreamBtn.addEventListener('click', function () {
       sortBtns.forEach(btn => btn.classList.remove('active'));
       CreamBtn.classList.add('active');
       currentTab = 'Cream';
       titleElement.innerHTML = '<i class="fas fa-crown post-main-name" style="color: #8B5CF6;"></i> 精华帖子';
-      loadPosts();
+      loadPosts(true);  // 传入true表示强制刷新
+    });
+
+    // ===== 侧边栏分类配置映射 =====
+    // 分类ID → 显示名称 → 后端标签
+    const categoryConfig = {
+      'all': { name: '全部帖子', tag: null },
+      'study': { name: '学习交流', tag: 'Question_discussion' },
+      'course': { name: '课程讨论', tag: 'Course_discussion' },
+      'visual': { name: '可视化模型', tag: 'Visualization_model' },
+      'exam': { name: '备考经验', tag: 'Examination_experience' },
+      'life': { name: '生活分享', tag: 'Life_share' }
+    };
+
+    // ===== 侧边栏分类点击事件 =====
+    // 点击分类后筛选对应标签的帖子，按发布时间从晚到早排序
+    document.querySelectorAll('.section-box').forEach(box => {
+      box.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // 获取当前点击的分类ID
+        const categoryId = this.dataset.category || 'all';
+
+        // 更新分类选中状态
+        document.querySelectorAll('.section-box').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        // 更新全局分类状态
+        currentCategory = categoryId;
+
+        // 点击分类时，默认切换到"最新"排序（按发布时间从晚到早）
+        currentTab = 'Latest';
+
+        // 更新排序按钮状态
+        sortBtns.forEach(btn => btn.classList.remove('active'));
+        LatestBtn.classList.add('active');
+
+        // 更新页面标题为当前分类名称
+        const categoryName = categoryConfig[categoryId]?.name || '全部帖子';
+        titleElement.innerHTML = `<i class="fas fa-clock post-main-name" style="color: #3B82F6;"></i> ${categoryName}`;
+
+        // 强制刷新加载帖子
+        loadPosts(true);
+      });
     });
 
     function resolveImageUrl(url) {
@@ -997,18 +1048,63 @@
       return document.getElementById('loading');
     }
 
+    /**
+     * 清除已渲染的帖子和空状态提示
+     */
     function clearRenderedPosts() {
       const main = getMainContentEl();
       if (!main) return;
+      // 清除所有帖子卡片
       main.querySelectorAll('.post-card').forEach(el => el.remove());
+      // 清除空状态提示
+      main.querySelectorAll('.empty-state').forEach(el => el.remove());
     }
-
+    /**
+     * 渲染帖子列表
+     * @param {Array} posts - 帖子数组
+     * @param {Object} options - 选项
+     * @param {boolean} options.append - 是否追加模式（true=加载更多，false=重新渲染）
+     */
+    // 修改：论坛接真实个人信息，并添加空数据提示
     function renderPosts(posts, { append = false } = {}) {
       const main = getMainContentEl();
       const loadingEl = getLoadingEl();
       if (!main || !loadingEl) return;
 
+      // 非追加模式时，清除现有帖子
       if (!append) clearRenderedPosts();
+
+      // ===== 处理空数据情况 =====
+      if (!posts || posts.length === 0) {
+        // 从统一配置中获取当前分类名称，用于友好提示
+        const categoryName = categoryConfig[currentCategory]?.name || '该板块';
+
+        // 创建空状态提示元素（添加 empty-state 类以便后续清除）
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        // 样式：居中展示、无边框、无阴影、占据主内容区域
+        emptyState.style.cssText = `
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          min-height: 400px;
+          text-align: center;
+          padding: 20px;
+          background: transparent;
+        `;
+        emptyState.innerHTML = `
+          <div style="font-size: 56px; margin-bottom: 20px;">📭</div>
+          <div style="font-size: 18px; color: #64748b; margin-bottom: 10px; font-weight: 500;">
+            该主题还没有人参与讨论
+          </div>
+          <div style="font-size: 14px; color: #94a3b8;">
+            快来成为第一个讨论的人吧~
+          </div>
+        `;
+        main.insertBefore(emptyState, loadingEl);
+        return;
+      }
 
       const frag = document.createDocumentFragment();
 
@@ -1022,10 +1118,12 @@
         const tag = post.tag || '';
         const images = Array.isArray(post.images) ? post.images : [];
 
+        // ✅ 1. 提取帖子作者的用户ID（用于跳转个人主页）
+        const postUserId = post.user_id || '';
+
         // 检查是否是当前登录用户，确保使用一致的头像逻辑
         const payload = token ? parseJwt(token) : null;
         const isCurrentUser = payload && post.user_id === payload.user_id;
-
         const avatar = getUserAvatar(post.avatar, username, isCurrentUser);
 
         const card = document.createElement('div');
@@ -1039,7 +1137,8 @@
         header.className = 'post-header';
 
         const avatarLink = document.createElement('a');
-        avatarLink.href = 'user-profile.html';
+        // ✅ 2. 头像链接加上用户ID参数
+        avatarLink.href = postUserId ? `user-profile.html?id=${postUserId}` : 'javascript:void(0)';
         avatarLink.className = 'post-avatar-link';
         avatarLink.addEventListener('click', (e) => e.stopPropagation());
 
@@ -1053,7 +1152,8 @@
         userInfo.className = 'post-user-info';
 
         const usernameLink = document.createElement('a');
-        usernameLink.href = 'user-profile.html';
+        // ✅ 3. 用户名链接也加上用户ID参数
+        usernameLink.href = postUserId ? `user-profile.html?id=${postUserId}` : 'javascript:void(0)';
         usernameLink.className = 'post-username-link';
         usernameLink.addEventListener('click', (e) => e.stopPropagation());
         usernameLink.textContent = username;
@@ -1064,13 +1164,11 @@
 
         userInfo.appendChild(usernameLink);
         userInfo.appendChild(timeEl);
-
         header.appendChild(avatarLink);
         header.appendChild(userInfo);
 
         const tagsEl = document.createElement('div');
         tagsEl.className = 'post-tags';
-
         if (tag) {
           const tags = String(tag).split(/[，,\s]+/).filter(Boolean);
           (tags.length ? tags : [tag]).slice(0, 3).forEach(t => {
@@ -1105,30 +1203,46 @@
             img.style.border = '1px solid #e2e8f0';
             imgWrap.appendChild(img);
           });
-
           contentEl.appendChild(imgWrap);
         }
 
-        const likeCount = post.like_count || 0;
         const commentCount = post.comment_count || 0;
         const viewCount = post.view_count || 0;
-        const collectCount = post.collect_count || 0;
+
+        // ===== 获取用户之前的互动状态（持久化恢复）=====
+        const interactions = getUserInteractions();
+
+        // 从 localStorage 获取持久化的点赞状态和数量
+        const likeData = interactions.likes[postId];
+        const isLiked = likeData ? likeData.liked : false;
+        // 确保点赞数不为 undefined，默认为 0
+        const likeCount = likeData && likeData.count != null ? likeData.count : (post.like_count || 0);
+
+        // 从 localStorage 获取持久化的收藏状态和数量
+        const collectData = interactions.collects[postId];
+        const isCollected = collectData ? collectData.collected : false;
+        // 确保收藏数不为 undefined，默认为 0
+        const collectCount = collectData && collectData.count != null ? collectData.count : (post.collect_count || 0);
 
         const actions = document.createElement('div');
         actions.className = 'post-actions';
         actions.innerHTML = `
-          <button class="action-btn" id="likeBtn-${postId}">
-            <i class="far fa-heart"></i> <span>${likeCount}</span>
-          </button>
-          <button class="action-btn">
-            <i class="far fa-comment"></i> <span>${commentCount}</span>
-          </button>
-          <button class="action-btn">
-            <i class="far fa-eye"></i> <span>${viewCount}</span>
-          </button>
-          <button class="action-btn" id="collectBtn-${postId}">
-          <i class="far fa-bookmark"></i> <span>${collectCount}</span>
-          </button>
+            <button class="action-btn" id="likeBtn-${postId}">
+                <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                <span>${likeCount}</span>
+            </button>
+            <button class="action-btn">
+                <i class="far fa-comment"></i>
+                <span>${commentCount}</span>
+            </button>
+            <button class="action-btn">
+                <i class="far fa-eye"></i>
+                <span>${viewCount}</span>
+            </button>
+            <button class="action-btn" id="collectBtn-${postId}">
+                <i class="${isCollected ? 'fas' : 'far'} fa-bookmark"></i>
+                <span>${collectCount}</span>
+            </button>
         `;
 
         // 绑定点赞事件
@@ -1160,44 +1274,154 @@
       main.insertBefore(frag, loadingEl);
     }
 
+    /**
+     * 获取帖子列表（支持排序和分类筛选）
+     * @param {number} page - 页码
+     * @returns {Array} 帖子数组
+     * 
+     * 排序规则：
+     * - Latest(最新): 按发布时间倒序 (create_at)
+     * - Hot(热门): 按点赞数倒序 (like_count)，点赞相同时按发布时间倒序
+     * - Cream(精华): 按收藏数倒序 (collect_count)，收藏相同时按发布时间倒序
+     * 
+     * 分类映射（从 categoryConfig 获取）：
+     * - all: 全部帖子
+     * - study: 学习交流 (Question_discussion)
+     * - course: 课程讨论 (Course_discussion)
+     * - visual: 可视化模型 (Visualization_model)
+     * - exam: 备考经验 (Examination_experience)
+     * - life: 生活分享 (Life_share)
+     */
     async function fetchLatestPosts(page) {
-      const url = `${API_BASE}/posts?page=${page}&page_size=${PAGE_SIZE}`;
+      // 构建基础请求URL
+      let url = `${API_BASE}/posts?page=${page}&page_size=${PAGE_SIZE}`;
+
+      // ===== 1. 添加排序参数 =====
+      if (currentTab === 'Hot') {
+        // 热门：按点赞数倒序，点赞相同时按发布时间倒序
+        url += '&sort_by=like_count&sort_order=desc';
+      } else if (currentTab === 'Cream') {
+        // 精华：按收藏数倒序，收藏相同时按发布时间倒序
+        url += '&sort_by=collect_count&sort_order=desc';
+      } else {
+        // 最新：按发布时间倒序（从晚到早）
+        url += '&sort_by=create_at&sort_order=desc';
+      }
+
+      // ===== 2. 添加分类筛选参数（根据侧边栏点击的分类获取对应标签） =====
+      const currentCategoryTag = categoryConfig[currentCategory]?.tag;
+      if (currentCategoryTag) {
+        // 使用 encodeURIComponent 确保标签参数正确编码
+        url += `&tag=${encodeURIComponent(currentCategoryTag)}`;
+      }
+
+      // 调试日志：输出当前状态和请求 URL
+      console.log('===== fetchLatestPosts 调试信息 =====');
+      console.log('currentCategory:', currentCategory);
+      console.log('currentTab:', currentTab);
+      console.log('currentCategoryTag:', currentCategoryTag);
+      console.log('请求 URL:', url);
+      console.log('=====================================');
+
+      // ===== 3. 发送请求并处理响应 =====
       const resp = await fetch(url, { method: 'GET' });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
       if (!json || json.success !== true) throw new Error((json && json.msg) || '获取帖子失败');
       const posts = (json.data && json.data.posts) ? json.data.posts : [];
 
-      posts.sort((a, b) => {
-        const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
-        const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
-        const ta = Date.parse(sa) || 0;
-        const tb = Date.parse(sb) || 0;
-        return tb - ta;
+      // 调试：输出获取到的帖子信息
+      console.log('获取到的帖子数量:', posts.length);
+      if (posts.length > 0) {
+        console.log('第一篇文章的标签:', posts[0].tag);
+      }
+
+      // ===== 4. 先从 localStorage 恢复点赞/收藏数量（用于正确排序）=====
+      const interactions = getUserInteractions();
+      posts.forEach(post => {
+        const postId = post.post_id || post.id;
+        if (postId) {
+          // 从 localStorage 恢复点赞数量
+          const likeData = interactions.likes[postId];
+          if (likeData && likeData.count != null) {
+            post.like_count = likeData.count;
+          }
+          // 从 localStorage 恢复收藏数量
+          const collectData = interactions.collects[postId];
+          if (collectData && collectData.count != null) {
+            post.collect_count = collectData.count;
+          }
+          // 更新内存缓存
+          cachedPosts[postId] = post;
+        }
       });
+
+      // ===== 5. 前端兜底排序（使用恢复后的数量进行排序）=====
+      if (currentTab === 'Hot') {
+        // 热门：按点赞数倒序，点赞相同时按发布时间倒序
+        posts.sort((a, b) => {
+          const likeDiff = (b.like_count || 0) - (a.like_count || 0);
+          if (likeDiff !== 0) return likeDiff;
+          // 点赞数相同时，按发布时间排序
+          const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
+          const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
+          return Date.parse(sb) - Date.parse(sa);
+        });
+      } else if (currentTab === 'Cream') {
+        // 精华：按收藏数倒序，收藏相同时按发布时间倒序
+        posts.sort((a, b) => {
+          const collectDiff = (b.collect_count || 0) - (a.collect_count || 0);
+          if (collectDiff !== 0) return collectDiff;
+          // 收藏数相同时，按发布时间排序
+          const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
+          const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
+          return Date.parse(sb) - Date.parse(sa);
+        });
+      } else {
+        // 最新：按发布时间从晚到早
+        posts.sort((a, b) => {
+          const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
+          const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
+          const ta = Date.parse(sa) || 0;
+          const tb = Date.parse(sb) || 0;
+          return tb - ta;
+        });
+      }
 
       return posts;
     }
 
+    // ===== 帖子加载控制 =====
     let lastLoadTime = 0;
-    const MIN_LOAD_INTERVAL = 2000; // 最小加载间隔（毫秒）
+    const MIN_LOAD_INTERVAL = 2000; // 最小加载间隔（毫秒），用于滚动加载防重复
 
-    async function loadPosts() {
-      const now = Date.now();
-      if (now - lastLoadTime < MIN_LOAD_INTERVAL) {
-        console.log('loadPosts: too soon, skipping');
-        return;
+    /**
+     * 加载帖子列表
+     * @param {boolean} force - 是否强制刷新（跳过间隔限制），用于点击排序/分类按钮时
+     */
+    async function loadPosts(force = false) {
+      // 非强制刷新时，检查点击间隔限制
+      if (!force) {
+        const now = Date.now();
+        if (now - lastLoadTime < MIN_LOAD_INTERVAL) {
+          console.log('loadPosts: too soon, skipping');
+          return;
+        }
       }
+
+      // 检查是否正在加载中
       if (isLoading) {
         console.log('loadPosts: already loading, skipping');
         return;
       }
-      console.log('loadPosts: starting...');
-      lastLoadTime = now;
-      isLoading = true;
-      currentPage = 1;
-      hasMore = true;
 
+      console.log('loadPosts: starting...');
+      lastLoadTime = Date.now();
+      isLoading = true;
+      currentPage = 1;      // 重新加载时重置页码
+      hasMore = true;       // 重置加载状态
+
+      // 显示加载指示器
       const loadingEl = getLoadingEl();
       if (loadingEl) {
         loadingEl.classList.add('show');
@@ -1205,13 +1429,17 @@
       }
 
       try {
+        // 根据当前标签和分类获取帖子
         const posts = await fetchLatestPosts(currentPage);
         console.log('loadPosts: fetched', posts.length, 'posts');
+        // 渲染帖子（覆盖模式，不追加）
         renderPosts(posts, { append: false });
+        // 判断是否还有更多数据
         hasMore = posts.length >= PAGE_SIZE;
       } catch (e) {
         console.error('loadPosts error:', e);
       } finally {
+        // 隐藏加载指示器
         if (loadingEl) {
           loadingEl.classList.remove('show');
           console.log('loadPosts: loading indicator hidden');
@@ -1497,10 +1725,48 @@
 
       setInterval(updateForumStats, 15000);
 
+      // ===== 滚动事件处理 =====
+      // 鼠标悬停区域检测：悬停在左侧主内容区时滚动页面，悬停在右侧边栏时滚动边栏
+      let currentHoverArea = 'main'; // 'main' | 'sidebar'
       let scrollTimeout = null;
       let lastScrollTime = 0;
-      const MIN_SCROLL_INTERVAL = 1000;
-      window.addEventListener('scroll', function () {
+      const MIN_SCROLL_INTERVAL = 500; // 减小间隔，提高响应速度
+
+      // 检测鼠标悬停区域
+      const mainContent = document.querySelector('.main-content');
+      const sidebar = document.querySelector('.sidebar');
+
+      if (mainContent) {
+        mainContent.addEventListener('mouseenter', () => {
+          currentHoverArea = 'main';
+        });
+        mainContent.addEventListener('mouseleave', () => {
+          // 鼠标离开主内容区时，如果不在侧边栏上，默认滚动主页面
+          if (!sidebar?.contains(document.elementFromPoint(event?.clientX, event?.clientY))) {
+            currentHoverArea = 'main';
+          }
+        });
+      }
+
+      if (sidebar) {
+        sidebar.addEventListener('mouseenter', () => {
+          currentHoverArea = 'sidebar';
+        });
+        sidebar.addEventListener('mouseleave', () => {
+          currentHoverArea = 'main';
+        });
+      }
+
+      // 自定义滚动处理
+      window.addEventListener('wheel', function (e) {
+        // 只在侧边栏区域滚动时阻止默认行为
+        if (currentHoverArea === 'sidebar' && sidebar) {
+          e.preventDefault();
+          sidebar.scrollTop += e.deltaY;
+          return; // 侧边栏滚动，不触发页面滚动和加载更多
+        }
+
+        // 主内容区滚动逻辑
         const scrollHeight = document.documentElement.scrollHeight;
         const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
         const clientHeight = document.documentElement.clientHeight;
@@ -1520,9 +1786,13 @@
           scrollTimeout = setTimeout(function () {
             console.log('scroll: triggering loadMorePosts');
             loadMorePosts();
-          }, 500);
+          }, 300); // 缩短延迟，提高响应速度
         }
+      }, { passive: false });
 
+      // 页面滚动事件（用于显示/隐藏返回顶部按钮）
+      window.addEventListener('scroll', function () {
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
         const backToTopButton = document.getElementById('backToTop');
         if (backToTopButton) {
           if (scrollTop > 300) {
@@ -1544,7 +1814,69 @@
       }
     });
 
-    // ================= 1. 点赞 =================
+    // ================= 帖子数据缓存（用于持久化后恢复）=================
+    let cachedPosts = {};
+
+    /**
+     * 更新帖子点赞数据（同时更新内存缓存和localStorage）
+     * @param {string} postId - 帖子ID
+     * @param {number} likeCount - 点赞数
+     * @param {boolean} isLiked - 是否已点赞
+     */
+    function updatePostLikeCount(postId, likeCount, isLiked) {
+      // 1. 更新内存缓存
+      if (cachedPosts[postId]) {
+        cachedPosts[postId].like_count = likeCount;
+        cachedPosts[postId].is_liked = isLiked;
+      }
+      // 2. 更新localStorage
+      const interactions = getUserInteractions();
+      interactions.likes[postId] = { liked: isLiked, count: likeCount };
+      saveUserInteractions(interactions);
+      console.log('点赞数据已保存:', postId, isLiked, likeCount);
+    }
+
+    /**
+     * 更新帖子收藏数据（同时更新内存缓存和localStorage）
+     * @param {string} postId - 帖子ID
+     * @param {number} collectCount - 收藏数
+     * @param {boolean} isCollected - 是否已收藏
+     */
+    function updatePostCollectCount(postId, collectCount, isCollected) {
+      // 1. 更新内存缓存
+      if (cachedPosts[postId]) {
+        cachedPosts[postId].collect_count = collectCount;
+        cachedPosts[postId].is_collected = isCollected;
+      }
+      // 2. 更新localStorage
+      const interactions = getUserInteractions();
+      interactions.collects[postId] = { collected: isCollected, count: collectCount };
+      saveUserInteractions(interactions);
+      console.log('收藏数据已保存:', postId, isCollected, collectCount);
+    }
+
+    // ================= 1. 点赞（支持持久化）=================
+    /**
+     * 获取用户互动状态（点赞、收藏）
+     * @returns {Object} 用户互动状态对象
+     */
+    function getUserInteractions() {
+      try {
+        const data = localStorage.getItem('user_interactions');
+        return data ? JSON.parse(data) : { likes: {}, collects: {} };
+      } catch {
+        return { likes: {}, collects: {} };
+      }
+    }
+
+    /**
+     * 保存用户互动状态
+     * @param {Object} interactions - 用户互动状态对象
+     */
+    function saveUserInteractions(interactions) {
+      localStorage.setItem('user_interactions', JSON.stringify(interactions));
+    }
+
     let likingLock = {};
     async function toggleLike(postId, button) {
       if (likingLock[postId]) return;
@@ -1583,6 +1915,10 @@
         }
 
         likeCountSpan.textContent = currentCount;
+
+        // ===== 持久化点赞状态和数量 =====
+        // 通过统一的函数保存，确保数据结构一致
+        updatePostLikeCount(postId, currentCount, !isLiked);
       } catch (err) {
         console.error('toggleLike error:', err);
         alert(err.message);
@@ -1592,7 +1928,7 @@
         }, 800);
       }
     }
-    // ================= 2. 收藏 =================
+    // ================= 2. 收藏（支持持久化）=================
     let collectingLock = {};
     async function toggleCollect(postId, button) {
       if (collectingLock[postId]) return;
@@ -1619,14 +1955,25 @@
         const icon = button.querySelector('i');
         const span = button.querySelector('span');
         let num = parseInt(span.textContent) || 0;
+        const isCollected = icon.classList.contains('fas');
 
-        if (icon.classList.contains('far')) {
+        // 计算新状态和新数量
+        const newCollected = !isCollected;
+        const newCount = newCollected ? num + 1 : Math.max(0, num - 1);
+
+        // 更新图标状态
+        if (newCollected) {
           icon.classList.replace('far', 'fas');
-          span.textContent = num + 1;
         } else {
           icon.classList.replace('fas', 'far');
-          span.textContent = num - 1;
         }
+
+        // 更新显示数量
+        span.textContent = newCount;
+
+        // ===== 持久化收藏状态和数量 =====
+        // 通过统一的函数保存，确保数据结构一致
+        updatePostCollectCount(postId, newCount, newCollected);
       } catch (err) {
         console.error(err);
       } finally {

@@ -16,7 +16,8 @@ from service.post import (
     get_post_comments_service, 
     get_user_posts_service,
     get_user_statistics,
-    get_user_collect_posts_service
+    get_user_collect_posts_service,
+    get_user_liked_posts_service
 )
 
 router = APIRouter()
@@ -133,3 +134,12 @@ def get_user_collects_api(
     page_size: int = Query(20, ge=1)
 ):
     return get_user_collect_posts_service(user_id, page, page_size)
+
+# 获取用户点赞的帖子
+@router.get("/user/{user_id}/likes")
+def get_user_likes_api(
+    user_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1)
+):
+    return get_user_liked_posts_service(user_id, page, page_size)

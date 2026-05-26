@@ -115,6 +115,17 @@
       background: var(--primary-hover);
     }
 
+    /* 已关注样式：灰色 */
+    .btn-followed {
+      background: var(--gray-300) !important;
+      color: var(--gray-600) !important;
+      cursor: pointer;
+    }
+
+    .btn-followed:hover {
+      background: var(--gray-400) !important;
+    }
+
     .navbar-right {
       display: flex;
       align-items: center;
@@ -867,7 +878,7 @@
     @media (max-width: 1200px) {
       .main-container {
         grid-template-columns: 1fr;
-        padding: 24px;
+        padding: 24px 24px;
       }
 
       .sidebar {
@@ -881,11 +892,11 @@
       }
 
       .main-container {
-        padding: 16px;
+        padding: 16px 16px;
       }
 
       .card-section {
-        padding: 20px;
+        padding: 20px 20px;
       }
 
       .post-header {
@@ -1045,7 +1056,7 @@
               <div class="author-stat-label">获赞</div>
             </div>
           </div>
-          <div class="author-actions">
+          <div class="author-actions" id="authorActions">
             <button class="btn-primary">
               <i class="fas fa-plus"></i> 关注
             </button>
@@ -1076,10 +1087,11 @@
 
   <script>
     const API_BASE = "http://127.0.0.1:8000/api";
-    const postId = getPostId();
     let currentPage = 1;
     const pageSize = 10;
     let currentUserId = null;
+    let postUserId = null;
+    let isFollowed = false; // 是否已关注
 
     function parseJwt(token) {
       try {
@@ -1100,11 +1112,14 @@
       return params.get("id") || 1;
     }
 
+    const postId = getPostId();
+
     window.onload = () => {
       loadPostDetail();
       loadComments();
       loadCurrentUserAvatar();
       bindEvents();
+      initLikeStatus();
     };
 
     async function loadPostDetail() {
@@ -1118,7 +1133,8 @@
         }
 
         const post = result.data;
-        currentUserId = post.user_id;
+        postUserId = post.user_id;
+        currentUserId = getLoginUserId();
 
         document.title = post.content.substring(0, 30) + " - 帖子详情";
 
@@ -1195,12 +1211,96 @@
           document.getElementById("postTags").innerHTML = `<span class="post-tag">${tagLabel}</span>`;
         }
 
+        // 先检查是否已关注，再渲染按钮
+        await checkFollowStatus();
+        renderFollowButton();
+
         loadAuthorPosts(post.user_id);
         loadUserStats(post.user_id);
 
       } catch (err) {
         console.error("获取帖子失败:", err);
         alert("获取帖子失败");
+      }
+    }
+
+    // 检查关注状态
+    async function checkFollowStatus() {
+      if (!currentUserId || !postUserId) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/user/${postUserId}/follow/status`, {
+          headers: { token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          isFollowed = data.data.followed;
+        }
+      } catch (e) {
+        isFollowed = false;
+      }
+    }
+
+    // 从token获取当前登录用户ID
+    function getLoginUserId() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub || payload.user_id || null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // 渲染关注按钮（自己不显示，已关注显示灰色）
+    function renderFollowButton() {
+      const actions = document.getElementById('authorActions');
+      if (!currentUserId || !postUserId) return;
+
+      // 自己的帖子不显示
+      if (currentUserId == postUserId) return;
+
+      const followBtn = document.createElement('button');
+      followBtn.className = isFollowed ? 'btn-primary btn-followed' : 'btn-primary';
+      followBtn.innerHTML = isFollowed ? '<i class="fas fa-check"></i> 已关注' : '<i class="fas fa-plus"></i> 关注';
+      followBtn.onclick = toggleFollow;
+      actions.insertBefore(followBtn, actions.firstChild);
+    }
+
+    // 切换 关注/取消关注
+    async function toggleFollow() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('请先登录');
+        return;
+      }
+
+      try {
+        let url = '';
+        if (isFollowed) {
+          // 取消关注
+          url = `${API_BASE}/user/${postUserId}/unfollow`;
+        } else {
+          // 关注
+          url = `${API_BASE}/user/${postUserId}/follow`;
+        }
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { token }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          isFollowed = !isFollowed;
+          location.reload();
+        } else {
+          alert(data.msg || '操作失败');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('操作失败，请重试');
       }
     }
 
@@ -1443,6 +1543,25 @@
       }
     }
 
+    // 初始化点赞状态
+    function initLikeStatus() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const liked = localStorage.getItem('liked_' + postId);
+      const likeBtn = document.getElementById('likeBtn');
+      const likeIcon = likeBtn.querySelector('i');
+      if (liked === 'true') {
+        likeIcon.classList.remove('far');
+        likeIcon.classList.add('fas');
+        likeBtn.classList.add('liked');
+      } else {
+        likeIcon.classList.remove('fas');
+        likeIcon.classList.add('far');
+        likeBtn.classList.remove('liked');
+      }
+    }
+
+    // 点赞 / 取消点赞
     async function likePost() {
       try {
         const token = localStorage.getItem('token');
@@ -1459,11 +1578,12 @@
         const result = await res.json();
 
         if (result.success) {
+          const likeBtn = document.getElementById("likeBtn");
+          const likeIcon = likeBtn.querySelector("i");
           const likeCountEl = document.getElementById("likeCount");
           const commentCountEl = document.getElementById("commentCount");
 
           if (likeCountEl && result.data) {
-            const likeIcon = document.querySelector("#likeBtn i");
             if (likeIcon) {
               if (likeIcon.classList.contains('fas')) {
                 likeIcon.classList.remove('fas');
@@ -1474,38 +1594,48 @@
               }
             }
 
+            if (result.data.liked) {
+              likeIcon.classList.remove('far');
+              likeIcon.classList.add('fas');
+              likeBtn.classList.add('liked');
+              localStorage.setItem('liked_' + postId, 'true');
+            } else {
+              likeIcon.classList.remove('fas');
+              likeIcon.classList.add('far');
+              likeBtn.classList.remove('liked');
+              localStorage.removeItem('liked_' + postId);
+            }
+
             if (result.data.like_count !== undefined) {
               likeCountEl.textContent = result.data.like_count;
             }
-          }
 
-          if (result.data && result.data.comment_count !== undefined && commentCountEl) {
-            commentCountEl.textContent = result.data.comment_count;
-            const commentsCountEl = document.getElementById("commentsCount");
-            if (commentsCountEl) {
-              commentsCountEl.textContent = result.data.comment_count;
+            if (result.data && result.data.comment_count !== undefined && commentCountEl) {
+              commentCountEl.textContent = result.data.comment_count;
+              const commentsCountEl = document.getElementById("commentsCount");
+              if (commentsCountEl) {
+                commentsCountEl.textContent = result.data.comment_count;
+              }
             }
           }
-        } else {
-          alert(result.msg || "点赞失败");
         }
 
       } catch (err) {
         console.error("点赞失败:", err);
-        alert("点赞失败，请稍后重试");
       }
     }
 
-    // ==================== 评论点赞功能 ====================
+    // 评论点赞
     function likeComment(btn, commentId) {
-      if (btn.classList.contains('active')) {
-        alert('你已经点赞过啦！');
-        return;
-      }
-      btn.classList.add('active');
       const numSpan = btn.querySelector('.like-num');
       let num = parseInt(numSpan.textContent);
-      numSpan.textContent = num + 1;
+      if (btn.classList.contains('active')) {
+        numSpan.textContent = num - 1;
+        btn.classList.remove('active');
+      } else {
+        numSpan.textContent = num + 1;
+        btn.classList.add('active');
+      }
     }
 
     // ==================== 回复评论功能 ====================
@@ -1595,10 +1725,8 @@
       div.textContent = text;
       return div.innerHTML;
     }
-  </script>
 
-  <script>
-    // ==================== 收藏功能=====================
+    // ==================== 收藏功能 =====================
     const token = localStorage.getItem('token');
     const collectBtn = document.getElementById('collectBtn');
 

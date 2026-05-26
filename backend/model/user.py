@@ -121,11 +121,16 @@ def get_user_stats(db, user_id):
     cursor.execute("select COALESCE(SUM(like_count), 0) from posts where user_id=?",(user_id,))
     total_likes = cursor.fetchone()[0] or 0
     
+    # 统计用户发布的帖子数
+    cursor.execute("select COALESCE(COUNT(*), 0) from posts where user_id=?",(user_id,))
+    post_count = cursor.fetchone()[0] or 0
+    
     return {
         "like_count": total_likes,
         "follower_count": user_result[0] or 0,
         "following_count": user_result[1] or 0,
-        "view_count": user_result[2] or 0
+        "view_count": user_result[2] or 0,
+        "post_count": post_count
     }
 
 #关注用户
