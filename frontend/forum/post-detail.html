@@ -1180,9 +1180,9 @@
           document.getElementById("postTags").innerHTML = `<span class="post-tag">${tagLabel}</span>`;
         }
 
-        // 先检查是否已关注，再渲染按钮
+        // 先检查是否已关注，再渲染按钮（只渲染一次）
         await checkFollowStatus();
-        renderFollowButton();
+        renderFollowButtonOnce();
 
         loadAuthorPosts(post.user_id);
         loadUserStats(post.user_id);
@@ -1222,13 +1222,17 @@
       }
     }
 
-    // 渲染关注按钮（自己不显示，已关注显示灰色）
-    function renderFollowButton() {
+    // 渲染关注按钮（只渲染一次，防止重复）
+    function renderFollowButtonOnce() {
       const actions = document.getElementById('authorActions');
       if (!currentUserId || !postUserId) return;
       
       // 自己的帖子不显示
       if (currentUserId == postUserId) return;
+
+      // 先清空旧按钮，再添加
+      const oldBtn = actions.querySelector('.btn-primary');
+      if (oldBtn) oldBtn.remove();
 
       const followBtn = document.createElement('button');
       followBtn.className = isFollowed ? 'btn-primary btn-followed' : 'btn-primary';
@@ -1263,7 +1267,9 @@
 
         if (data.success) {
           isFollowed = !isFollowed;
-          location.reload();
+          renderFollowButtonOnce();
+          // 关键：刷新粉丝数
+          await loadUserStats(postUserId);
         } else {
           alert(data.msg || '操作失败');
         }
