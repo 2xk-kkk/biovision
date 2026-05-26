@@ -1443,6 +1443,50 @@
       }
     }
 
+    function renderComment(comment, parentComments) {
+      const userProfileUrl = `user-profile.html?user_id=${comment.user_id}`;
+      const childComments = parentComments.filter(c => c.parent_id === comment.id);
+
+      let childHtml = '';
+      if (childComments.length > 0) {
+        childHtml = `
+          <div class="child-comments">
+            ${childComments.map(c => renderComment(c, parentComments)).join('')}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="comment-item" data-comment-id="${comment.id}">
+          <a href="${userProfileUrl}" class="comment-avatar-small" title="查看主页">${(comment.username || "匿").charAt(0)}</a>
+          <div class="comment-body">
+            <div class="comment-header">
+              <a href="${userProfileUrl}" class="comment-author">${comment.username || "匿名用户"}</a>
+              <span class="comment-time">${comment.create_at || "未知时间"}</span>
+            </div>
+            <div class="comment-content">${escapeHtml(comment.content)}</div>
+            <div class="comment-actions-small">
+              <button class="action-btn-small" onclick="likeComment(this, ${comment.id})">
+                <i class="far fa-thumbs-up"></i> <span class="like-num">${comment.like_count || 0}</span>
+              </button>
+              <button class="action-btn-small" onclick="showReplyBox(${comment.id})">
+                <i class="far fa-comment"></i> 回复
+              </button>
+            </div>
+            <!-- 回复输入框 -->
+            <div class="reply-box" id="reply-box-${comment.id}" style="display: none; margin-top: 12px;">
+              <textarea class="reply-textarea" placeholder="写下你的回复..." rows="3"></textarea>
+              <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+                <button class="btn-secondary" style="padding: 6px 14px; font-size: 13px;" onclick="hideReplyBox(${comment.id})">取消</button>
+                <button class="btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="submitReply(${comment.id})">回复</button>
+              </div>
+            </div>
+            ${childHtml}
+          </div>
+        </div>
+      `;
+    }
+
     async function loadComments(page = 1) {
       try {
         const res = await fetch(`${API_BASE}/post/${postId}/comments`);
@@ -1460,36 +1504,10 @@
           commentsList.innerHTML = "";
         }
 
-        comments.forEach(comment => {
-          const userProfileUrl = `user-profile.html?user_id=${comment.user_id}`;
-          const html = `
-            <div class="comment-item" data-comment-id="${comment.id}">
-              <a href="${userProfileUrl}" class="comment-avatar-small" title="查看主页">${(comment.username || "匿").charAt(0)}</a>
-              <div class="comment-body">
-                <div class="comment-header">
-                  <a href="${userProfileUrl}" class="comment-author">${comment.username || "匿名用户"}</a>
-                  <span class="comment-time">${comment.create_at || "未知时间"}</span>
-                </div>
-                <div class="comment-content">${escapeHtml(comment.content)}</div>
-                <div class="comment-actions-small">
-                  <button class="action-btn-small" onclick="likeComment(this, ${comment.id})">
-                    <i class="far fa-thumbs-up"></i> <span class="like-num">${comment.like_count || 0}</span>
-                  </button>
-                  <button class="action-btn-small" onclick="showReplyBox(${comment.id})">
-                    <i class="far fa-comment"></i> 回复
-                  </button>
-                </div>
-                <!-- 回复输入框 -->
-                <div class="reply-box" id="reply-box-${comment.id}" style="display: none; margin-top: 12px;">
-                  <textarea class="reply-textarea" placeholder="写下你的回复..." rows="3"></textarea>
-                  <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
-                    <button class="btn-secondary" style="padding: 6px 14px; font-size: 13px;" onclick="hideReplyBox(${comment.id})">取消</button>
-                    <button class="btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="submitReply(${comment.id})">回复</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
+        const parentComments = comments.filter(c => !c.parent_id || c.parent_id === 0);
+
+        parentComments.forEach(comment => {
+          const html = renderComment(comment, comments);
           commentsList.innerHTML += html;
         });
 

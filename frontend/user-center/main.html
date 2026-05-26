@@ -2524,6 +2524,7 @@
             if (cropModal) {
                 cropModal.classList.remove('show');
                 cropModal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
             }
         }
 
@@ -2556,11 +2557,13 @@
             ctx.save();
             ctx.translate(size / 2, size / 2);
             ctx.rotate((cropRotate * Math.PI) / 180);
-            ctx.scale(cropScale, cropScale);
+            
+            const cropAreaSize = 150;
+            const sourceX = (img.width / 2) - (cropAreaSize / (2 * cropScale)) + (cropOffsetX / cropScale);
+            const sourceY = (img.height / 2) - (cropAreaSize / (2 * cropScale)) + (cropOffsetY / cropScale);
+            const sourceSize = cropAreaSize / cropScale;
 
-            const centerX = img.width / 2 + cropOffsetX;
-            const centerY = img.height / 2 + cropOffsetY;
-            ctx.drawImage(img, centerX - size / 2, centerY - size / 2, size, size, -size / 2, -size / 2, size, size);
+            ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, -size / 2, -size / 2, size, size);
             ctx.restore();
 
             const croppedDataUrl = canvas.toDataURL('image/png');
@@ -2636,11 +2639,9 @@
             // 拖拽功能
             if (cropArea && cropImg) {
                 cropArea.addEventListener('mousedown', (e) => {
-                    if (e.target === cropImg) {
-                        isDragging = true;
-                        dragStartX = e.clientX - cropOffsetX;
-                        dragStartY = e.clientY - cropOffsetY;
-                    }
+                    isDragging = true;
+                    dragStartX = e.clientX - cropOffsetX;
+                    dragStartY = e.clientY - cropOffsetY;
                 });
 
                 document.addEventListener('mousemove', (e) => {
@@ -2652,6 +2653,27 @@
                 });
 
                 document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 触摸拖拽支持
+                cropArea.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    dragStartX = touch.clientX - cropOffsetX;
+                    dragStartY = touch.clientY - cropOffsetY;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        const touch = e.touches[0];
+                        cropOffsetX = touch.clientX - dragStartX;
+                        cropOffsetY = touch.clientY - dragStartY;
+                        updateCropImage();
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
                     isDragging = false;
                 });
             }
