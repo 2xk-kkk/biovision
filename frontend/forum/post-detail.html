@@ -1258,12 +1258,19 @@
       const actions = document.getElementById('authorActions');
       if (!currentUserId || !postUserId) return;
 
-      // 自己的帖子不显示
-      if (currentUserId == postUserId) return;
-
-      // 先清空旧按钮，再添加
+      // 先清空旧按钮
       const oldBtn = actions.querySelector('.btn-primary');
       if (oldBtn) oldBtn.remove();
+
+      // 自己的帖子显示“自己”禁用按钮
+      if (currentUserId == postUserId) {
+        const selfBtn = document.createElement('button');
+        selfBtn.className = 'btn-primary btn-followed';
+        selfBtn.innerHTML = '<i class="fas fa-user"></i> 自己';
+        selfBtn.disabled = true;
+        actions.insertBefore(selfBtn, actions.firstChild);
+        return;
+      }
 
       const followBtn = document.createElement('button');
       followBtn.className = isFollowed ? 'btn-primary btn-followed' : 'btn-primary';
