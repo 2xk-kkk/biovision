@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -57,7 +58,215 @@
       box-sizing: border-box;
     }
 
-    html, body {
+   .top {
+      background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+      height: 60px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 999;
+    }
+
+
+    /* ===== Logo 区域 ===== */
+    .logo1 {
+      width: 120px;
+      height: 40px;
+      background-image: url(../images/logo.png);
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      flex-shrink: 0;
+    }
+
+    /* ===== 搜索框区域 ===== */
+    .search {
+      flex: 1;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-form {
+      display: flex;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #f9fafb;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      outline: none;
+      background: transparent;
+    }
+
+    .search-btn {
+      background: #667eea;
+      border: none;
+      padding: 0 16px;
+      cursor: pointer;
+      font-size: 16px;
+      color: white;
+    }
+
+    /* ===== 导航链接区域 ===== */
+    .nav-area {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      padding: 4px 8px;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: #667eea;
+      background-color: #f3f4f6;
+    }
+
+    .nav-link.active {
+      color: #667eea;
+      background-color: #f0f6fd;
+    }
+
+    /* ===== 下拉菜单 ===== */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      min-width: 200px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f3f4f6;
+      color: #667eea;
+    }
+
+    .dropdown.show .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-toggle::after {
+      content: '';
+      display: inline-block;
+      width: 0;
+      height: 0;
+      margin-left: 6px;
+      vertical-align: middle;
+      border-top: 4px solid;
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+    }
+
+    /* ===== 用户头像区域 ===== */
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+
+    .avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .upload-overlay {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background: #667eea;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: white;
+      border: 2px solid white;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .avatar-wrapper:hover .upload-overlay {
+      opacity: 1;
+    }
+
+    /* 主体布局 */
+    .main-container {
+      display: flex;
+      padding-top: 20px;
+      flex: 1;
+      /* 占据剩余空间 */
+    }
+
+
+    html,
+    body {
       margin: 0;
       min-height: 100%;
       font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -117,15 +326,22 @@
     }
 
     @keyframes drift {
-      0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
-      50% { transform: translateY(-18px) translateX(12px) scale(1.04); }
+
+      0%,
+      100% {
+        transform: translateY(0px) translateX(0px) scale(1);
+      }
+
+      50% {
+        transform: translateY(-18px) translateX(12px) scale(1.04);
+      }
     }
 
     .app {
       position: relative;
       z-index: 1;
       min-height: 100vh;
-      padding: 28px;
+      padding: 68px 28px 28px;
     }
 
     .shell {
@@ -181,9 +397,9 @@
       height: 52px;
       border-radius: 16px;
       background:
-        linear-gradient(145deg, rgba(255,255,255,0.9), rgba(210, 233, 255, 0.9)),
-        radial-gradient(circle at 30% 30%, rgba(110,168,255,0.9), transparent 45%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 10px 24px rgba(110,168,255,0.18);
+        linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(210, 233, 255, 0.9)),
+        radial-gradient(circle at 30% 30%, rgba(110, 168, 255, 0.9), transparent 45%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 10px 24px rgba(110, 168, 255, 0.18);
       display: grid;
       place-items: center;
       color: var(--blue-strong);
@@ -239,7 +455,7 @@
     }
 
     .btn-ghost {
-      background: rgba(255,255,255,0.7);
+      background: rgba(255, 255, 255, 0.7);
       color: var(--text);
       border: 1px solid rgba(145, 181, 223, 0.35);
     }
@@ -261,8 +477,8 @@
     .card {
       border: 1px solid var(--line);
       border-radius: var(--radius-lg);
-      background: rgba(255,255,255,0.82);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
     }
 
     body[data-theme="dark"] .hero,
@@ -319,7 +535,7 @@
       outline: none;
       color: var(--text);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,252,255,0.92));
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 255, 0.92));
       font: inherit;
       line-height: 1.8;
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -338,7 +554,7 @@
     .mini-item {
       padding: 14px 15px;
       border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(244,249,255,0.9));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(244, 249, 255, 0.9));
       border: 1px solid rgba(145, 181, 223, 0.24);
       display: flex;
       align-items: center;
@@ -371,7 +587,7 @@
       margin-top: 16px;
       border-radius: 22px;
       border: 1px solid rgba(145, 181, 223, 0.25);
-      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(244,249,255,0.94));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 249, 255, 0.94));
       overflow: hidden;
       display: none;
       animation: cardPop 0.24s ease;
@@ -382,8 +598,15 @@
     }
 
     @keyframes cardPop {
-      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .config-panel .panel-head {
@@ -414,7 +637,7 @@
       border: 1px solid rgba(145, 181, 223, 0.3);
       border-radius: 14px;
       padding: 12px 13px;
-      background: rgba(255,255,255,0.96);
+      background: rgba(255, 255, 255, 0.96);
       color: var(--text);
       font: inherit;
       outline: none;
@@ -483,8 +706,8 @@
       max-height: min(78vh, 760px);
       overflow: hidden;
       border-radius: 26px;
-      border: 1px solid rgba(255,255,255,0.75);
-      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,249,255,0.96));
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 249, 255, 0.96));
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
       display: flex;
       flex-direction: column;
@@ -521,7 +744,7 @@
     .book-item {
       border: 1px solid rgba(145, 181, 223, 0.24);
       border-radius: 18px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,250,255,0.92));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.92));
       padding: 14px 14px 12px;
       cursor: pointer;
       transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
@@ -566,7 +789,7 @@
     .chapter-pane {
       border: 1px solid rgba(145, 181, 223, 0.22);
       border-radius: 22px;
-      background: rgba(255,255,255,0.82);
+      background: rgba(255, 255, 255, 0.82);
       padding: 14px;
       min-height: 0;
       display: grid;
@@ -589,7 +812,7 @@
     .chapter-item {
       border: 1px solid rgba(145, 181, 223, 0.22);
       border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,250,255,0.92));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.92));
       padding: 12px 12px 11px;
       cursor: pointer;
       transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
@@ -618,7 +841,7 @@
     .knowledge-item {
       border: 1px solid rgba(145, 181, 223, 0.22);
       border-radius: 14px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,250,255,0.92));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.92));
       padding: 12px 12px;
       display: flex;
       align-items: flex-start;
@@ -660,7 +883,7 @@
 
     .knowledge-modal__close {
       border: 1px solid rgba(145, 181, 223, 0.24);
-      background: rgba(255,255,255,0.92);
+      background: rgba(255, 255, 255, 0.92);
       color: var(--text);
       border-radius: 999px;
       padding: 11px 16px;
@@ -749,7 +972,7 @@
       background: rgba(110, 168, 255, 0.11);
       border: 1px solid rgba(110, 168, 255, 0.16);
       overflow: hidden;
-      box-shadow: inset 0 1px 2px rgba(255,255,255,0.7);
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.7);
     }
 
     .progress-fill {
@@ -767,14 +990,19 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.42) 50%, transparent 100%);
+      background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.42) 50%, transparent 100%);
       transform: translateX(-100%);
       animation: shimmer 1.8s linear infinite;
     }
 
     @keyframes shimmer {
-      from { transform: translateX(-100%); }
-      to { transform: translateX(200%); }
+      from {
+        transform: translateX(-100%);
+      }
+
+      to {
+        transform: translateX(200%);
+      }
     }
 
     .segmented {
@@ -786,7 +1014,7 @@
     .seg-btn,
     .chip-btn {
       border: 1px solid rgba(145, 181, 223, 0.24);
-      background: rgba(255,255,255,0.86);
+      background: rgba(255, 255, 255, 0.86);
       color: var(--text);
       border-radius: 14px;
       padding: 11px 12px;
@@ -803,7 +1031,7 @@
 
     .seg-btn.active,
     .chip-btn.active {
-      background: linear-gradient(135deg, rgba(110,168,255,0.16), rgba(76,141,255,0.12));
+      background: linear-gradient(135deg, rgba(110, 168, 255, 0.16), rgba(76, 141, 255, 0.12));
       border-color: var(--theme-accent-strong);
       box-shadow: 0 10px 22px rgba(110, 168, 255, 0.1);
       color: var(--blue-strong);
@@ -836,12 +1064,12 @@
       outline: none;
       border: 1px solid rgba(145, 181, 223, 0.24);
       background: linear-gradient(90deg,
-        #54c8ff 0%,
-        #6ea8ff 20%,
-        #8a8dff 45%,
-        #b07dff 65%,
-        #ff8a9f 82%,
-        #ffb26f 100%);
+          #54c8ff 0%,
+          #6ea8ff 20%,
+          #8a8dff 45%,
+          #b07dff 65%,
+          #ff8a9f 82%,
+          #ffb26f 100%);
     }
 
     .range-track::-webkit-slider-thumb {
@@ -877,7 +1105,7 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.85);
+      border: 2px solid rgba(255, 255, 255, 0.85);
       box-shadow: 0 8px 18px rgba(76, 141, 255, 0.18);
       background: var(--theme-accent);
       position: relative;
@@ -889,7 +1117,7 @@
       position: absolute;
       inset: 5px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.28);
+      background: rgba(255, 255, 255, 0.28);
       mix-blend-mode: screen;
     }
 
@@ -905,8 +1133,8 @@
       padding: 16px;
       border-radius: 18px;
       border: 1px solid rgba(145, 181, 223, 0.22);
-      background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(246,250,255,0.92));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 255, 0.92));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
       text-decoration: none;
       color: var(--text);
       transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
@@ -975,15 +1203,22 @@
       height: 120px;
       border-radius: 36px;
       background:
-        radial-gradient(circle at 32% 28%, rgba(255,255,255,0.9), rgba(110, 168, 255, 0.18) 46%, rgba(110, 168, 255, 0.08) 72%, transparent 74%);
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.9), rgba(110, 168, 255, 0.18) 46%, rgba(110, 168, 255, 0.08) 72%, transparent 74%);
       filter: drop-shadow(0 14px 30px rgba(110, 168, 255, 0.12));
       animation: float 6s ease-in-out infinite;
       pointer-events: none;
     }
 
     @keyframes float {
-      0%,100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-      50% { transform: translateY(-12px) translateX(-8px) rotate(4deg); }
+
+      0%,
+      100% {
+        transform: translateY(0px) translateX(0px) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-12px) translateX(-8px) rotate(4deg);
+      }
     }
 
     @media (max-width: 1100px) {
@@ -1002,7 +1237,8 @@
         padding: 14px;
       }
 
-      .hero, .side {
+      .hero,
+      .side {
         border-radius: 22px;
       }
 
@@ -1061,7 +1297,47 @@
     }
   </style>
 </head>
+
 <body>
+  <!-- 顶部导航栏 -->
+  <div class="top">
+    <div class="logo1"></div>
+    <div class="search">
+      <form class="search-form">
+        <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+        <button type="submit" class="search-btn">🔍</button>
+      </form>
+    </div>
+
+    <div class="nav-area">
+      <div class="nav-links">
+        <a href="../index.html" class="nav-link" target="_blank">首页</a>
+
+        <div class="dropdown">
+          <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+            <a href="#" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+            <a href="#" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+            <a href="#" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+            <a href="#" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+          </div>
+        </div>
+
+        <a href="#" class="nav-link" target="_blank">PPT快搭</a>
+        <a href="../practice/main.html" class="nav-link" target="_blank">每日训练</a>
+        <a href="../3D model/main.html" class="nav-link active" target="_blank">可视学习</a>
+        <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
+      </div>
+
+      <div class="user-actions">
+        <div class="avatar-wrapper">
+          <div class="avatar">👤</div>
+          <div class="upload-overlay">+</div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="app">
     <div class="shell">
       <main class="hero">
@@ -1085,12 +1361,13 @@
         <section class="card">
           <div class="card-head">
             <div>
-              <p class="card-title">主页面内容撰写</p>
-              <p class="card-sub">在这里输入 PPT 的主要内容、教学目标、核心叙述和章节结构。</p>
+              <p class="card-title">您的需求</p>
+              <p class="card-sub">在这里输入 PPT 的需求（例如：教学目标、核心内容、学生群体等）</p>
             </div>
           </div>
           <div class="card-body">
-            <textarea class="editor" id="mainContent" placeholder="例如：以“细胞结构与功能”为核心，面向高一学生，重点突出细胞膜、细胞核、线粒体和叶绿体的作用，并结合实验观察和课堂提问。"></textarea>
+            <textarea class="editor" id="mainContent"
+              placeholder="例如：以“细胞结构与功能”为核心，面向高一学生，重点突出细胞膜、细胞核、线粒体和叶绿体的作用，并结合实验观察和课堂提问。"></textarea>
           </div>
         </section>
 
@@ -1116,13 +1393,13 @@
 
         <div style="margin-top: 18px;">
           <div class="module-grid">
-            <a class="module-card" href="./generated.html">
+            <a class="module-card" href="my_PPT.html">
               <div class="module-kicker">Workspace</div>
               <h3 class="module-title">我生成的 PPT</h3>
               <p class="module-desc">查看最近生成的生物教学 PPT，方便继续编辑和复用。</p>
               <div class="module-action">进入查看 <span aria-hidden="true">→</span></div>
             </a>
-            <a class="module-card" href="./templates.html">
+            <a class="module-card" href="moban.html">
               <div class="module-kicker">Library</div>
               <h3 class="module-title">本地模板库</h3>
               <p class="module-desc">浏览本地模板卡片，快速挑选适合课堂的版式与结构。</p>
@@ -1136,7 +1413,7 @@
         <section class="card">
           <div class="card-head">
             <div>
-              <p class="card-title">配置按钮</p>
+              <p class="card-title">配置</p>
               <p class="card-sub">点开后是一个单独的小卡片，可随时收起。</p>
             </div>
             <button class="btn btn-ghost" id="toggleConfig" style="padding: 10px 16px;">配置</button>
@@ -1212,7 +1489,8 @@
                   <span>上传本地文件</span>
                   <span class="chev">选择文件</span>
                 </button>
-                <input id="templateUploadInput" type="file" accept=".ppt,.pptx,.pdf,.doc,.docx,.txt,.md,.zip" multiple hidden />
+                <input id="templateUploadInput" type="file" accept=".ppt,.pptx,.pdf,.doc,.docx,.txt,.md,.zip" multiple
+                  hidden />
                 <div class="upload-summary" id="templateUploadSummary">
                   <span class="card-sub">尚未选择文件。</span>
                 </div>
@@ -1303,59 +1581,59 @@
         name: '分子与细胞',
         desc: '细胞与生命活动基础',
         chapters: [
-          { key: 'book1-ch1', title: '第1章 细胞的发现', desc: '显微镜下的细胞观察与基本概念。' },
-          { key: 'book1-ch2', title: '第2章 细胞的结构', desc: '细胞膜、细胞核、细胞质等。' },
-          { key: 'book1-ch3', title: '第3章 细胞器功能', desc: '线粒体、叶绿体、液泡等。' },
-          { key: 'book1-ch4', title: '第4章 物质进出细胞', desc: '扩散、渗透与膜运输。' },
-          { key: 'book1-ch5', title: '第5章 细胞分裂', desc: '有丝分裂与细胞周期入门。' }
+          { key: 'book1-ch1', title: '第1章 走进细胞', desc: '认识细胞的基本形态、类型及其在生命系统中的地位。' },
+          { key: 'book1-ch2', title: '第2章 组成细胞的分子', desc: '水、无机盐、糖类、脂质、蛋白质和核酸等生物分子的结构与功能。' },
+          { key: 'book1-ch3', title: '第3章 细胞的基本结构', desc: '细胞膜、细胞质、细胞核及各种细胞器的结构与功能。' },
+          { key: 'book1-ch4', title: '第4章 细胞的物质输入与输出', desc: '被动运输（扩散、渗透）、主动运输及胞吞胞吐等跨膜运输方式。' },
+          { key: 'book1-ch5', title: '第5章 细胞的能量供应与应用', desc: 'ATP的作用、细胞呼吸与光合作用的基本过程与能量转换。' },
+          { key: 'book1-ch6', title: '第6章 细胞的生命历程', desc: '细胞的增殖、分化、衰老与凋亡等生命活动过程。' }
         ]
       },
       {
         key: 'book2',
-        name: '第二本书',
-        desc: '遗传与变异基础',
+        name: '遗传与进化',
+        desc: '从基因到物种演化的生命规律',
         chapters: [
-          { key: 'book2-ch1', title: '第1章 遗传的基本规律', desc: '基因分离与自由组合。' },
-          { key: 'book2-ch2', title: '第2章 染色体与基因', desc: '遗传信息的载体与位置。' },
-          { key: 'book2-ch3', title: '第3章 DNA 结构', desc: '双螺旋模型与复制。' },
-          { key: 'book2-ch4', title: '第4章 性状与变异', desc: '显隐性、变异类型和表现。' },
-          { key: 'book2-ch5', title: '第5章 遗传应用', desc: '育种、家系图与实践案例。' }
+          { key: 'book2-ch1', title: '第1章 遗传因子的发现', desc: '孟德尔豌豆实验、分离定律与自由组合定律的提出与验证。' },
+          { key: 'book2-ch2', title: '第2章 基因和染色体的关系', desc: '萨顿-鲍维里假说、摩尔根果蝇实验及基因在染色体上的定位。' },
+          { key: 'book2-ch3', title: '第3章 基因的本质', desc: 'DNA是遗传物质的证据、双螺旋结构模型及其半保留复制机制。' },
+          { key: 'book2-ch4', title: '第4章 基因的表达', desc: '遗传信息的转录与翻译过程，以及基因如何控制性状表现。' },
+          { key: 'book2-ch5', title: '第5章 基因突变及其他变异', desc: '基因突变、染色体变异的类型、成因及其在育种与遗传病中的应用。' },
+          { key: 'book2-ch6', title: '第6章 生物的进化', desc: '现代生物进化理论、自然选择、种群基因频率变化与物种形成机制。' }
         ]
       },
       {
         key: 'book3',
-        name: '第三本书',
-        desc: '生物进化与多样性',
+        name: '稳态与调节',
+        desc: '生命系统通过神经、体液与免疫机制维持内环境稳定',
         chapters: [
-          { key: 'book3-ch1', title: '第1章 生命的起源', desc: '地球环境与生命起源假说。' },
-          { key: 'book3-ch2', title: '第2章 自然选择', desc: '适应、生存与选择压力。' },
-          { key: 'book3-ch3', title: '第3章 物种形成', desc: '隔离与进化路径。' },
-          { key: 'book3-ch4', title: '第4章 生物分类', desc: '门纲目科属种基础分类。' },
-          { key: 'book3-ch5', title: '第5章 生物多样性保护', desc: '保护策略与案例。' }
+          { key: 'book3-ch1', title: '第1章 人体的内环境与稳态', desc: '细胞外液的组成、理化性质及机体维持pH、温度、渗透压等稳态的机制。' },
+          { key: 'book3-ch2', title: '第2章 神经调节', desc: '神经元结构、反射弧、兴奋的产生与传导、突触传递及神经系统的分级调节。' },
+          { key: 'book3-ch3', title: '第3章 体液调节', desc: '激素的种类、作用机制，以及下丘脑-垂体-靶腺轴对代谢、生长和应激的调控。' },
+          { key: 'book3-ch4', title: '第4章 免疫调节', desc: '免疫系统的组成、非特异性与特异性免疫、体液免疫与细胞免疫及免疫失调疾病。' },
+          { key: 'book3-ch5', title: '第5章 植物生命活动的调节', desc: '植物激素（如生长素、赤霉素等）的合成、作用及在向性运动与发育中的调控功能。' }
         ]
       },
       {
         key: 'book4',
-        name: '第四本书',
-        desc: '生态系统与环境',
+        name: '生物与环境',
+        desc: '从种群、群落到生态系统，理解生命与环境的相互作用及可持续发展',
         chapters: [
-          { key: 'book4-ch1', title: '第1章 生态系统组成', desc: '生物群落、非生物因素。' },
-          { key: 'book4-ch2', title: '第2章 能量流动', desc: '食物链、食物网和能量金字塔。' },
-          { key: 'book4-ch3', title: '第3章 物质循环', desc: '碳循环、氮循环等。' },
-          { key: 'book4-ch4', title: '第4章 种群与群落', desc: '数量变化与群落关系。' },
-          { key: 'book4-ch5', title: '第5章 生态保护', desc: '污染治理与生态修复。' }
+          { key: 'book4-ch1', title: '第1章 种群及其动态', desc: '种群的特征（密度、出生率、死亡率等）、增长模型（J型与S型曲线）及影响种群数量变化的因素。' },
+          { key: 'book4-ch2', title: '第2章 群落及其演替', desc: '群落的物种组成、种间关系（竞争、捕食、共生等）、空间结构及初生/次生演替过程。' },
+          { key: 'book4-ch3', title: '第3章 生态系统及其稳定性', desc: '群落的物种组成、种间关系（竞争、捕食、共生等）、空间结构及初生/次生演替过程。' },
+          { key: 'book4-ch4', title: '第4章 人与环境', desc: '人类活动对生态环境的影响、生物多样性保护、生态工程及可持续发展理念与实践' }
         ]
       },
       {
         key: 'book5',
-        name: '第五本书',
-        desc: '实验探究与综合应用',
+        name: '生物技术与工程',
+        desc: '现代生物技术的原理、操作及其在生产与社会中的应用与挑战',
         chapters: [
-          { key: 'book5-ch1', title: '第1章 科学探究方法', desc: '问题、假设、实验设计。' },
-          { key: 'book5-ch2', title: '第2章 变量控制', desc: '对照、重复与误差分析。' },
-          { key: 'book5-ch3', title: '第3章 显微实验', desc: '制作装片与观察记录。' },
-          { key: 'book5-ch4', title: '第4章 数据表达', desc: '图表、结论与展示。' },
-          { key: 'book5-ch5', title: '第5章 课堂综合复习', desc: '整合知识点与专题训练。' }
+          { key: 'book5-ch1', title: '第1章 发酵工程', desc: '微生物培养、发酵条件控制、发酵罐操作及传统与现代发酵产品（如酒精、抗生素、酸奶）的工业化生产流程。' },
+          { key: 'book5-ch2', title: '第2章 细胞工程', desc: '植物组织培养、动物细胞培养、细胞融合（杂交瘤技术）、核移植及克隆技术的原理与应用。' },
+          { key: 'book5-ch3', title: '第3章 基因工程', desc: '目的基因获取、载体构建、导入受体细胞、筛选与表达，以及PCR、限制酶、DNA连接酶等核心工具的应用。' },
+          { key: 'book5-ch4', title: '第4章 生物技术的安全性与伦理问题', desc: '转基因生物的生态与健康风险、基因编辑伦理、克隆人争议、生物武器防范及相关法律法规与公众参与。' }
         ]
       }
     ];
@@ -1601,10 +1879,20 @@
     setTheme('light');
     setStylePreset('clean');
     setAccentHue(accentRange.value);
-    selectedKnowledge = ['book1-ch2', 'book1-ch3', 'book1-ch4'];
+    selectedKnowledge = [];
     renderKnowledge();
     renderTemplateSummary();
     configPanel.classList.add('open');
+
+    // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
   </script>
 </body>
+
 </html>
