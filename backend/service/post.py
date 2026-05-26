@@ -209,7 +209,7 @@ def get_post_detail(post_id):
         db.close()
 
 # 2. 发布评论
-def create_comment(token, post_id, content):
+def create_comment(token, post_id, content, parent_id=None):
     db = get_db_connection()
     payload = verify_jwt(token)
     if not payload["success"]:
@@ -217,9 +217,10 @@ def create_comment(token, post_id, content):
     user_id = int(payload["msg"]["user_id"])
     
     try:
-        cid = create_comment_db(db, post_id, user_id, content)
+        cid = create_comment_db(db, post_id, user_id, content, parent_id)
         return ApiResponse.success(data={"comment_id": cid}, msg="评论成功")
-    except:
+    except Exception as e:
+        print(f"[DEBUG] 创建评论失败: {e}")
         return ApiResponse.error(msg="评论失败")
     finally:
         db.close()

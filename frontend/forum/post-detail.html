@@ -564,8 +564,30 @@
     .action-btn-small:hover {
       color: var(--primary);
     }
+
     .action-btn-small.active {
       color: #EF4444;
+    }
+
+    /* 回复输入框 */
+    .reply-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 60px;
+      outline: none;
+      transition: all 0.2s;
+      background: var(--gray-50);
+    }
+
+    .reply-textarea:focus {
+      border-color: var(--primary);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     /* 子评论 */
@@ -931,30 +953,21 @@
         <!-- 帖子头部 -->
         <div class="card-section">
           <div class="post-header">
-            <a href="user-profile.html" class="post-avatar" id="postAvatar" title="查看主页">生</a>
+            <a href="user-profile.html" class="post-avatar" id="postAvatar" title="查看主页"></a>
             <div class="post-info">
               <div class="post-author">
-                <a href="user-profile.html" class="post-author-name" id="postAuthor">生物老师</a>
+                <a href="user-profile.html" class="post-author-name" id="postAuthor"></a>
                 <span class="post-badge">帖主</span>
               </div>
-              <div class="post-meta" id="postMeta">
-                <span><i class="far fa-clock"></i>2026-04-20 14:30</span>
-                <span><i class="far fa-eye"></i>256 次浏览</span>
-              </div>
-              <div class="post-tags" id="postTags">
-                <span class="post-tag">可视化模型</span>
-                <span class="post-tag green">细胞呼吸</span>
-                <span class="post-tag purple">高中生物</span>
-              </div>
+              <div class="post-meta" id="postMeta"></div>
+              <div class="post-tags" id="postTags"></div>
             </div>
           </div>
         </div>
 
         <!-- 帖子内容 -->
         <div class="card-section">
-          <div class="post-content" id="postContent">
-            <p>分享一个我制作的细胞呼吸过程3D可视化模型，包含糖酵解（Glycolysis）、柠檬酸循环（Krebs Cycle）和电子传递链的详细步骤。</p>
-          </div>
+          <div class="post-content" id="postContent"></div>
         </div>
 
         <!-- 操作按钮 -->
@@ -969,7 +982,7 @@
             <button class="action-btn" id="collectBtn">
               <i class="far fa-bookmark"></i> 收藏
             </button>
-            <button class="action-btn">
+            <button class="action-btn" id="shareBtn">
               <i class="fas fa-share-alt"></i> 分享
             </button>
           </div>
@@ -989,7 +1002,7 @@
 
           <!-- 评论输入 -->
           <div class="comment-input-wrapper">
-            <div class="comment-avatar">小</div>
+            <div class="comment-avatar" id="currentUserAvatar"></div>
             <div class="comment-input-box">
               <textarea class="comment-textarea" id="commentTextarea" placeholder="写下你的评论..."></textarea>
               <div class="comment-actions">
@@ -1023,29 +1036,31 @@
         </div>
         <div class="sidebar-content">
           <div class="author-info">
-            <a href="user-profile.html" class="author-avatar" id="authorAvatar" title="查看主页">生</a>
+            <a href="user-profile.html" class="author-avatar" id="authorAvatar" title="查看主页"></a>
             <div>
-              <a href="user-profile.html" class="author-name" id="authorName">生物老师</a>
-              <div class="author-bio" id="authorBio">高中生物教师 · 10年教龄</div>
+              <a href="user-profile.html" class="author-name" id="authorName"></a>
+              <div class="author-bio" id="authorBio"></div>
             </div>
           </div>
           <div class="author-stats">
             <div class="author-stat">
-              <div class="author-stat-value" id="authorPosts">128</div>
+              <div class="author-stat-value" id="authorPosts">0</div>
               <div class="author-stat-label">帖子</div>
             </div>
             <div class="author-stat">
-              <div class="author-stat-value" id="authorFans">1.2k</div>
+              <div class="author-stat-value" id="authorFans">0</div>
               <div class="author-stat-label">粉丝</div>
             </div>
             <div class="author-stat">
-              <div class="author-stat-value" id="authorLikes">356</div>
+              <div class="author-stat-value" id="authorLikes">0</div>
               <div class="author-stat-label">获赞</div>
             </div>
           </div>
           <div class="author-actions" id="authorActions">
-            <!-- 关注按钮动态生成 -->
-            <a href="user-profile.html" class="btn-secondary">
+            <button class="btn-primary">
+              <i class="fas fa-plus"></i> 关注
+            </button>
+            <a href="user-profile.html" class="btn-secondary" id="viewProfileBtn">
               <i class="fas fa-user"></i> 查看主页
             </a>
           </div>
@@ -1072,21 +1087,37 @@
 
   <script>
     const API_BASE = "http://127.0.0.1:8000/api";
-    const postId = getPostId();
     let currentPage = 1;
     const pageSize = 10;
     let currentUserId = null;
     let postUserId = null;
     let isFollowed = false; // 是否已关注
 
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (error) {
+        console.error("解析JWT失败:", error);
+        return null;
+      }
+    }
+
     function getPostId() {
       const params = new URLSearchParams(window.location.search);
       return params.get("id") || 1;
     }
 
+    const postId = getPostId();
+
     window.onload = () => {
       loadPostDetail();
       loadComments();
+      loadCurrentUserAvatar();
       bindEvents();
       initLikeStatus();
     };
@@ -1106,15 +1137,15 @@
         currentUserId = getLoginUserId();
 
         document.title = post.content.substring(0, 30) + " - 帖子详情";
-        
+
         const userProfileUrl = `user-profile.html?user_id=${post.user_id}`;
-        
+
         const postAvatar = document.getElementById("postAvatar");
         const postAvatarImg = document.createElement("img");
         const username = post.username || "匿";
         const avatarChar = username.charAt(0);
         const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23667eea'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='28' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
-        
+
         if (post.avatar) {
           postAvatarImg.src = post.avatar;
         } else {
@@ -1128,11 +1159,11 @@
         postAvatar.innerHTML = "";
         postAvatar.appendChild(postAvatarImg);
         postAvatar.href = userProfileUrl;
-        
+
         const postAuthor = document.getElementById("postAuthor");
         postAuthor.textContent = username;
         postAuthor.href = userProfileUrl;
-        
+
         const authorAvatar = document.getElementById("authorAvatar");
         const authorAvatarImg = document.createElement("img");
         if (post.avatar) {
@@ -1148,21 +1179,21 @@
         authorAvatar.innerHTML = "";
         authorAvatar.appendChild(authorAvatarImg);
         authorAvatar.href = userProfileUrl;
-        
+
         const authorName = document.getElementById("authorName");
         authorName.textContent = post.username || "匿名用户";
         authorName.href = userProfileUrl;
-        
+
         const viewProfileBtn = document.querySelector(".author-actions .btn-secondary");
         viewProfileBtn.href = userProfileUrl;
-        
+
         document.getElementById("postContent").innerHTML = `<p>${escapeHtml(post.content)}</p>`;
-        
+
         document.getElementById("postMeta").innerHTML = `
           <span><i class="far fa-clock"></i>${post.create_at || "未知时间"}</span>
           <span><i class="far fa-eye"></i>${post.view_count || 0} 次浏览</span>
         `;
-        
+
         document.getElementById("likeCount").textContent = post.like_count || 0;
         document.getElementById("commentCount").textContent = post.comment_count || 0;
         document.getElementById("commentsCount").textContent = post.comment_count || 0;
@@ -1174,7 +1205,7 @@
           'Examination_experience': '考试经验',
           'Life_share': '生活分享'
         };
-        
+
         if (post.tag) {
           const tagLabel = tagLabels[post.tag] || post.tag;
           document.getElementById("postTags").innerHTML = `<span class="post-tag">${tagLabel}</span>`;
@@ -1226,7 +1257,7 @@
     function renderFollowButtonOnce() {
       const actions = document.getElementById('authorActions');
       if (!currentUserId || !postUserId) return;
-      
+
       // 自己的帖子不显示
       if (currentUserId == postUserId) return;
 
@@ -1295,6 +1326,75 @@
       }
     }
 
+    async function loadCurrentUserAvatar() {
+      const token = localStorage.getItem('token');
+      const avatarEl = document.getElementById("currentUserAvatar");
+
+      const guestAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Ccircle cx='22' cy='22' r='20' fill='%23d1d5db'/%3E%3Ccircle cx='22' cy='16' r='6' fill='%239ca3af'/%3E%3Cpath d='M13 26 Q22 36 31 26' fill='none' stroke='%239ca3af' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E`;
+
+      if (!token) {
+        avatarEl.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = guestAvatar;
+        img.alt = '访客';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.borderRadius = '50%';
+        avatarEl.appendChild(img);
+        return;
+      }
+
+      try {
+        const payload = parseJwt(token);
+        if (!payload || !payload.user_id) {
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`, {
+          headers: {
+            'token': token
+          }
+        });
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const user = result.data;
+          const avatarEl = document.getElementById("currentUserAvatar");
+          const username = user.username || '用户';
+          const avatarChar = username.trim()[0] || '用';
+
+          const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Ccircle cx='22' cy='22' r='20' fill='%23667eea'/%3E%3Ctext x='22' y='30' text-anchor='middle' font-size='18' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+
+          let avatarToUse;
+          if (user.avatar) {
+            avatarToUse = user.avatar;
+          } else {
+            avatarToUse = defaultAvatar;
+          }
+
+          if (avatarToUse && avatarToUse.startsWith('http')) {
+            avatarToUse = avatarToUse + '?t=' + Date.now();
+          }
+
+          if (user.avatar) {
+            const img = document.createElement('img');
+            img.src = avatarToUse;
+            img.alt = username;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
+            avatarEl.innerHTML = '';
+            avatarEl.appendChild(img);
+          } else {
+            avatarEl.innerHTML = avatarChar;
+          }
+        }
+      } catch (err) {
+        console.error("获取当前用户头像失败:", err);
+      }
+    }
+
     async function loadAuthorPosts(userId) {
       try {
         const res = await fetch(`${API_BASE}/user/${userId}/posts?page_size=5`);
@@ -1307,7 +1407,7 @@
 
         const posts = result.data;
         const authorPostsList = document.getElementById("authorPostsList");
-        
+
         if (posts.length === 0) {
           authorPostsList.innerHTML = '<div class="author-post-empty">暂无其他帖子</div>';
           return;
@@ -1316,7 +1416,7 @@
         let html = '';
         posts.forEach((post, index) => {
           if (post.post_id == postId) return;
-          
+
           const tagLabels = {
             'Question_discussion': '学习讨论',
             'Course_discussion': '课程讨论',
@@ -1324,7 +1424,7 @@
             'Examination_experience': '考试经验',
             'Life_share': '生活分享'
           };
-          
+
           html += `
             <div class="author-post" onclick="window.location.href='post-detail.html?id=${post.post_id}'">
               <div class="author-post-title">${escapeHtml(post.content.substring(0, 50))}${post.content.length > 50 ? '...' : ''}</div>
@@ -1336,17 +1436,61 @@
             </div>
           `;
         });
-        
+
         if (!html) {
           html = '<div class="author-post-empty">暂无其他帖子</div>';
         }
-        
+
         authorPostsList.innerHTML = html;
 
       } catch (err) {
         console.error("获取作者帖子失败:", err);
         document.getElementById("authorPostsList").innerHTML = '<div class="author-post-empty">加载失败</div>';
       }
+    }
+
+    function renderComment(comment, parentComments) {
+      const userProfileUrl = `user-profile.html?user_id=${comment.user_id}`;
+      const childComments = parentComments.filter(c => c.parent_id === comment.id);
+
+      let childHtml = '';
+      if (childComments.length > 0) {
+        childHtml = `
+          <div class="child-comments">
+            ${childComments.map(c => renderComment(c, parentComments)).join('')}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="comment-item" data-comment-id="${comment.id}">
+          <a href="${userProfileUrl}" class="comment-avatar-small" title="查看主页">${(comment.username || "匿").charAt(0)}</a>
+          <div class="comment-body">
+            <div class="comment-header">
+              <a href="${userProfileUrl}" class="comment-author">${comment.username || "匿名用户"}</a>
+              <span class="comment-time">${comment.create_at || "未知时间"}</span>
+            </div>
+            <div class="comment-content">${escapeHtml(comment.content)}</div>
+            <div class="comment-actions-small">
+              <button class="action-btn-small" onclick="likeComment(this, ${comment.id})">
+                <i class="far fa-thumbs-up"></i> <span class="like-num">${comment.like_count || 0}</span>
+              </button>
+              <button class="action-btn-small" onclick="showReplyBox(${comment.id})">
+                <i class="far fa-comment"></i> 回复
+              </button>
+            </div>
+            <!-- 回复输入框 -->
+            <div class="reply-box" id="reply-box-${comment.id}" style="display: none; margin-top: 12px;">
+              <textarea class="reply-textarea" placeholder="写下你的回复..." rows="3"></textarea>
+              <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+                <button class="btn-secondary" style="padding: 6px 14px; font-size: 13px;" onclick="hideReplyBox(${comment.id})">取消</button>
+                <button class="btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="submitReply(${comment.id})">回复</button>
+              </div>
+            </div>
+            ${childHtml}
+          </div>
+        </div>
+      `;
     }
 
     async function loadComments(page = 1) {
@@ -1361,33 +1505,15 @@
 
         const comments = result.data || [];
         const commentsList = document.getElementById("commentsList");
-        
+
         if (page === 1) {
           commentsList.innerHTML = "";
         }
 
-        comments.forEach(comment => {
-          const userProfileUrl = `user-profile.html?user_id=${comment.user_id}`;
-          const html = `
-            <div class="comment-item">
-              <a href="${userProfileUrl}" class="comment-avatar-small" title="查看主页">${(comment.username || "匿").charAt(0)}</a>
-              <div class="comment-body">
-                <div class="comment-header">
-                  <a href="${userProfileUrl}" class="comment-author">${comment.username || "匿名用户"}</a>
-                  <span class="comment-time">${comment.create_at || "未知时间"}</span>
-                </div>
-                <div class="comment-content">${escapeHtml(comment.content)}</div>
-                <div class="comment-actions-small">
-                  <button class="action-btn-small" onclick="likeComment(this, ${comment.id})">
-                    <i class="far fa-thumbs-up"></i> <span class="like-num">${comment.like_count || 0}</span>
-                  </button>
-                  <button class="action-btn-small">
-                    <i class="far fa-comment"></i> 回复
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
+        const parentComments = comments.filter(c => !c.parent_id || c.parent_id === 0);
+
+        parentComments.forEach(comment => {
+          const html = renderComment(comment, comments);
           commentsList.innerHTML += html;
         });
 
@@ -1479,21 +1605,42 @@
           const likeBtn = document.getElementById("likeBtn");
           const likeIcon = likeBtn.querySelector("i");
           const likeCountEl = document.getElementById("likeCount");
+          const commentCountEl = document.getElementById("commentCount");
 
-          if (result.data.liked) {
-            likeIcon.classList.remove('far');
-            likeIcon.classList.add('fas');
-            likeBtn.classList.add('liked');
-            localStorage.setItem('liked_' + postId, 'true');
-          } else {
-            likeIcon.classList.remove('fas');
-            likeIcon.classList.add('far');
-            likeBtn.classList.remove('liked');
-            localStorage.removeItem('liked_' + postId);
-          }
+          if (likeCountEl && result.data) {
+            if (likeIcon) {
+              if (likeIcon.classList.contains('fas')) {
+                likeIcon.classList.remove('fas');
+                likeIcon.classList.add('far');
+              } else {
+                likeIcon.classList.remove('far');
+                likeIcon.classList.add('fas');
+              }
+            }
 
-          if (result.data.like_count !== undefined) {
-            likeCountEl.textContent = result.data.like_count;
+            if (result.data.liked) {
+              likeIcon.classList.remove('far');
+              likeIcon.classList.add('fas');
+              likeBtn.classList.add('liked');
+              localStorage.setItem('liked_' + postId, 'true');
+            } else {
+              likeIcon.classList.remove('fas');
+              likeIcon.classList.add('far');
+              likeBtn.classList.remove('liked');
+              localStorage.removeItem('liked_' + postId);
+            }
+
+            if (result.data.like_count !== undefined) {
+              likeCountEl.textContent = result.data.like_count;
+            }
+
+            if (result.data && result.data.comment_count !== undefined && commentCountEl) {
+              commentCountEl.textContent = result.data.comment_count;
+              const commentsCountEl = document.getElementById("commentsCount");
+              if (commentsCountEl) {
+                commentsCountEl.textContent = result.data.comment_count;
+              }
+            }
           }
         }
 
@@ -1512,6 +1659,71 @@
       } else {
         numSpan.textContent = num + 1;
         btn.classList.add('active');
+      }
+    }
+
+    // ==================== 回复评论功能 ====================
+    function showReplyBox(commentId) {
+      // 隐藏其他回复框
+      document.querySelectorAll('.reply-box').forEach(box => {
+        box.style.display = 'none';
+      });
+      // 显示当前回复框
+      const replyBox = document.getElementById(`reply-box-${commentId}`);
+      if (replyBox) {
+        replyBox.style.display = 'block';
+        replyBox.querySelector('textarea').focus();
+      }
+    }
+
+    function hideReplyBox(commentId) {
+      const replyBox = document.getElementById(`reply-box-${commentId}`);
+      if (replyBox) {
+        replyBox.style.display = 'none';
+        replyBox.querySelector('textarea').value = '';
+      }
+    }
+
+    async function submitReply(commentId) {
+      const replyBox = document.getElementById(`reply-box-${commentId}`);
+      const textarea = replyBox.querySelector('textarea');
+      const content = textarea.value.trim();
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        alert('请先登录');
+        return;
+      }
+
+      if (!content) {
+        alert('回复不能为空');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/post/${postId}/comment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({ content, parent_id: commentId })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          textarea.value = "";
+          hideReplyBox(commentId);
+          loadComments();
+          loadPostDetail();
+        } else {
+          alert(result.msg || "回复失败");
+        }
+
+      } catch (err) {
+        console.error("回复失败:", err);
+        alert("回复失败");
       }
     }
 
@@ -1537,58 +1749,76 @@
       div.textContent = text;
       return div.innerHTML;
     }
-  </script>
 
-  <script>
-// ==================== 收藏功能 =====================
-const token = localStorage.getItem('token');
-const collectBtn = document.getElementById('collectBtn');
+    // ==================== 收藏功能 =====================
+    const token = localStorage.getItem('token');
+    const collectBtn = document.getElementById('collectBtn');
 
-function initCollectStatus() {
-  if (!token || !postId) return;
-  const saved = localStorage.getItem('collected_' + postId);
-  if (saved === 'true') {
-    collectBtn.innerHTML = '<i class="fas fa-bookmark"></i> 已收藏';
-    collectBtn.style.color = '#3B82F6';
-  }
-}
-
-async function doCollect() {
-  if (!token) {
-    alert('请先登录');
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/post/${postId}/collect`, {
-      method: 'POST',
-      headers: { token }
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      const isCollected = data.data.is_collected;
-
-      if (isCollected) {
+    function initCollectStatus() {
+      if (!token || !postId) return;
+      const saved = localStorage.getItem('collected_' + postId);
+      if (saved === 'true') {
         collectBtn.innerHTML = '<i class="fas fa-bookmark"></i> 已收藏';
         collectBtn.style.color = '#3B82F6';
-        localStorage.setItem('collected_' + postId, 'true');
-      } else {
-        collectBtn.innerHTML = '<i class="far fa-bookmark"></i> 收藏';
-        collectBtn.style.color = '';
-        localStorage.removeItem('collected_' + postId);
       }
-    } else {
-      alert(data.msg || '收藏失败');
     }
-  } catch (err) {
-    alert('收藏失败，请重试');
-  }
-}
 
-collectBtn.addEventListener('click', doCollect);
-window.addEventListener('load', initCollectStatus);
-</script>
+    async function doCollect() {
+      if (!token) {
+        alert('请先登录');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/post/${postId}/collect`, {
+          method: 'POST',
+          headers: { token }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          const isCollected = data.data.is_collected;
+
+          if (isCollected) {
+            collectBtn.innerHTML = '<i class="fas fa-bookmark"></i> 已收藏';
+            collectBtn.style.color = '#3B82F6';
+            localStorage.setItem('collected_' + postId, 'true');
+          } else {
+            collectBtn.innerHTML = '<i class="far fa-bookmark"></i> 收藏';
+            collectBtn.style.color = '';
+            localStorage.removeItem('collected_' + postId);
+          }
+        } else {
+          alert(data.msg || '收藏失败');
+        }
+      } catch (err) {
+        alert('收藏失败，请重试');
+      }
+    }
+
+    // ==================== 分享功能 =====================
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+      const shareUrl = window.location.href;
+      const shareTitle = document.title || '生物视界帖子分享';
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: shareTitle,
+            url: shareUrl
+          });
+        } else {
+          await navigator.clipboard.writeText(shareUrl);
+          alert('帖子链接已复制，可直接分享！');
+        }
+      } catch (err) {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('链接已复制！');
+      }
+    });
+
+    collectBtn.addEventListener('click', doCollect);
+    window.addEventListener('load', initCollectStatus);
+  </script>
 </body>
 
 </html>
