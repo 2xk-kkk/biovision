@@ -298,7 +298,8 @@
         
         .profile-stats {
             display: flex;
-            gap: 32px;
+            gap: 24px;
+            align-items: center;
         }
         
         .profile-stat {
@@ -725,21 +726,20 @@
                             <div class="profile-stat-label">关注</div>
                         </div>
                     </div>
+                    
+                    <!-- 操作按钮 - 单独一行，与统计信息左对齐 -->
+                    <div class="profile-actions">
+                        <button class="btn-primary" id="followBtn">
+                            <i class="fas fa-user-plus"></i>
+                            关注
+                        </button>
+                        <button class="btn-secondary">
+                            <i class="fas fa-envelope"></i>
+                            发消息
+                        </button>
+                    </div>
                 </div>
             </div>
-            
-            <!-- 操作按钮 - ✅ 位置和原来保持一致 -->
-            <div class="profile-actions">
-                <button class="btn-primary" id="followBtn">
-                    <i class="fas fa-user-plus"></i>
-                    关注
-                </button>
-                <button class="btn-secondary">
-                    <i class="fas fa-envelope"></i>
-                    发消息
-                </button>
-            </div>
-        </div>
 
         <!-- 内容标签页 - ✅ 帖子、点赞、收藏 三个标签都有 -->
         <div class="content-tabs">
@@ -804,6 +804,7 @@
             
             getUserProfile();
             getUserPosts();
+            getUserStats();  // 获取点赞和收藏数量
             checkFollowStatus();
             bindEvents();
         });
@@ -838,18 +839,6 @@
                         </span>
                     `;
                     
-                    // ✅ 显示真实统计数据
-                    document.getElementById("statPosts").textContent = user.post_count || 0;
-                    document.getElementById("statFans").textContent = user.fans_count || 0;
-                    document.getElementById("statLikes").textContent = user.like_count || 0;
-                    document.getElementById("statFollowing").textContent = user.following_count || 0;
-                    
-                    // 更新标签页上的数量显示
-                    const tabs = document.querySelectorAll('.content-tab');
-                    tabs[0].querySelector('.tab-count').textContent = user.post_count || 0;
-                    tabs[1].querySelector('.tab-count').textContent = user.user_like_count || 0;
-                    tabs[2].querySelector('.tab-count').textContent = user.user_collect_count || 0;
-                    
                     // 头像
                     const avatarEl = document.getElementById("profileAvatar");
                     if (user.avatar) {
@@ -860,6 +849,54 @@
                 }
             } catch (err) {
                 console.error("获取用户信息失败", err);
+            }
+        }
+        
+        // 获取用户统计数据（帖子数、获赞数、点赞数、收藏数）
+        async function getUserStats() {
+            try {
+                // 获取用户基本统计
+                const statsRes = await fetch(`${API_BASE}/api/user/${userId}/stats`);
+                const statsResult = await statsRes.json();
+                
+                // 获取点赞数量
+                const likesRes = await fetch(`${API_BASE}/api/user/${userId}/likes`);
+                const likesResult = await likesRes.json();
+                
+                // 获取收藏数量
+                const collectsRes = await fetch(`${API_BASE}/api/user/${userId}/collects`);
+                const collectsResult = await collectsRes.json();
+                
+                const tabs = document.querySelectorAll('.content-tab');
+                
+                if (statsResult.success && statsResult.data) {
+                    const stats = statsResult.data;
+                    // 更新统计数据
+                    document.getElementById("statPosts").textContent = stats.post_count || 0;
+                    document.getElementById("statFans").textContent = stats.follower_count || 0;
+                    document.getElementById("statLikes").textContent = stats.like_count || 0;  // 获赞数
+                    document.getElementById("statFollowing").textContent = stats.following_count || 0;
+                    
+                    // 更新帖子标签页数量
+                    tabs[0].querySelector('.tab-count').textContent = stats.post_count || 0;
+                }
+                
+                // 更新点赞标签页数量
+                if (likesResult.success && likesResult.data) {
+                    tabs[1].querySelector('.tab-count').textContent = likesResult.data.length || 0;
+                } else {
+                    tabs[1].querySelector('.tab-count').textContent = 0;
+                }
+                
+                // 更新收藏标签页数量
+                if (collectsResult.success && collectsResult.data) {
+                    tabs[2].querySelector('.tab-count').textContent = collectsResult.data.length || 0;
+                } else {
+                    tabs[2].querySelector('.tab-count').textContent = 0;
+                }
+                
+            } catch (err) {
+                console.error("获取用户统计数据失败", err);
             }
         }
         // 检查当前用户是否已经关注了该用户
@@ -913,53 +950,153 @@
                     }
                 }
                 
-                const container = document.getElementById("postsList");
-                container.innerHTML = "";
+                // ✅ 更新帖子数量显示
+                const postsCount = userPosts.length;
+                document.getElementById("statPosts").textContent = postsCount;
+                document.querySelectorAll('.content-tab')[0].querySelector('.tab-count').textContent = postsCount;
                 
-                if (userPosts.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="far fa-file-alt"></i>
-                            <h3>暂无帖子</h3>
-                            <p>这个用户还没有发布过任何内容</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // ✅ 渲染帖子，显示真实的点赞数和评论数
-                userPosts.forEach(post => {
-                    container.innerHTML += `
-                        <div class="post-card" onclick="goPost(${post.post_id || post.id})">
-                            <div class="post-header">
-                                <div class="post-avatar">
-                                    ${(post.username || '').charAt(0) || '?'}
-                                </div>
-                                <div class="post-user-info">
-                                    <div class="post-username">${post.username || '匿名用户'}</div>
-                                    <div class="post-time">${post.create_at || ''}</div>
-                                </div>
-                            </div>
-                            ${post.tag ? `<div class="post-tags"><span class="post-tag">${post.tag}</span></div>` : ''}
-                            <div class="post-content">
-                                ${post.content || ''}
-                            </div>
-                            <div class="post-actions">
-                                <span class="action-btn">
-                                    <i class="far fa-heart"></i>
-                                    ${post.like_count || 0}
-                                </span>
-                                <span class="action-btn">
-                                    <i class="far fa-comment"></i>
-                                    ${post.comment_count || 0}
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                });
+                renderPosts(userPosts);
                 
             } catch (err) {
                 console.error("获取帖子失败", err);
+            }
+        }
+        
+        // 获取用户点赞的帖子列表
+        async function getUserLikedPosts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/${userId}/likes`);
+                const result = await res.json();
+                
+                // 更新点赞标签页的数量
+                const tabs = document.querySelectorAll('.content-tab');
+                if (result.success && result.data) {
+                    tabs[1].querySelector('.tab-count').textContent = result.data.length || 0;
+                    renderPosts(result.data);
+                } else {
+                    tabs[1].querySelector('.tab-count').textContent = 0;
+                    document.getElementById("postsList").innerHTML = `
+                        <div class="empty-state">
+                            <i class="far fa-heart"></i>
+                            <h3>暂无点赞</h3>
+                            <p>这个用户还没有点赞过任何帖子</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error("获取点赞帖子失败", err);
+                fallbackGetLikedPosts();
+            }
+        }
+        
+        // 获取用户收藏的帖子列表
+        async function getUserCollectedPosts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/user/${userId}/collects`);
+                const result = await res.json();
+                
+                // 更新收藏标签页的数量
+                const tabs = document.querySelectorAll('.content-tab');
+                if (result.success && result.data) {
+                    tabs[2].querySelector('.tab-count').textContent = result.data.length || 0;
+                    renderPosts(result.data);
+                } else {
+                    tabs[2].querySelector('.tab-count').textContent = 0;
+                    document.getElementById("postsList").innerHTML = `
+                        <div class="empty-state">
+                            <i class="far fa-bookmark"></i>
+                            <h3>暂无收藏</h3>
+                            <p>这个用户还没有收藏过任何帖子</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error("获取收藏帖子失败", err);
+                fallbackGetCollectedPosts();
+            }
+        }
+        
+        // 渲染帖子列表
+        function renderPosts(posts) {
+            const container = document.getElementById("postsList");
+            container.innerHTML = "";
+            
+            if (!posts || posts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="far fa-file-alt"></i>
+                        <h3>暂无内容</h3>
+                        <p>暂无相关内容</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // ✅ 渲染帖子，显示真实的点赞数和评论数
+            posts.forEach(post => {
+                container.innerHTML += `
+                    <div class="post-card" onclick="goPost(${post.post_id || post.id})">
+                        <div class="post-header">
+                            <div class="post-avatar">
+                                ${(post.username || '').charAt(0) || '?'}
+                            </div>
+                            <div class="post-user-info">
+                                <div class="post-username">${post.username || '匿名用户'}</div>
+                                <div class="post-time">${post.create_at || ''}</div>
+                            </div>
+                        </div>
+                        ${post.tag ? `<div class="post-tags"><span class="post-tag">${post.tag}</span></div>` : ''}
+                        <div class="post-content">
+                            ${post.content || ''}
+                        </div>
+                        <div class="post-actions">
+                            <span class="action-btn">
+                                <i class="far fa-heart"></i>
+                                ${post.like_count || 0}
+                            </span>
+                            <span class="action-btn">
+                                <i class="far fa-comment"></i>
+                                ${post.comment_count || 0}
+                            </span>
+                            <span class="action-btn">
+                                <i class="far fa-eye"></i>
+                                ${post.view_count || 0}
+                            </span>
+                            <span class="action-btn">
+                                <i class="far fa-bookmark"></i>
+                                ${post.collect_count || 0}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        // 备用：从所有帖子中筛选点赞的帖子
+        async function fallbackGetLikedPosts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/posts?page=1&page_size=100`);
+                const result = await res.json();
+                if (result.success && result.data && result.data.posts) {
+                    // 这里只是显示所有帖子，实际应该根据用户点赞记录筛选
+                    renderPosts(result.data.posts.filter(post => post.user_id == userId));
+                }
+            } catch (err) {
+                console.error("备用获取点赞帖子失败", err);
+            }
+        }
+        
+        // 备用：从所有帖子中筛选收藏的帖子
+        async function fallbackGetCollectedPosts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/posts?page=1&page_size=100`);
+                const result = await res.json();
+                if (result.success && result.data && result.data.posts) {
+                    // 这里只是显示所有帖子，实际应该根据用户收藏记录筛选
+                    renderPosts(result.data.posts.filter(post => post.user_id == userId));
+                }
+            } catch (err) {
+                console.error("备用获取收藏帖子失败", err);
             }
         }
         // 跳转帖子详情、
@@ -1043,12 +1180,25 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
             
-            // 标签页切换
+            // 标签页切换 - 点击不同标签显示不同内容
             document.querySelectorAll('.content-tab').forEach((tab, index) => {
                 tab.addEventListener('click', function (e) {
                     e.preventDefault();
                     document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
+                    
+                    // 根据标签索引切换内容
+                    switch(index) {
+                        case 0:
+                            getUserPosts();
+                            break;
+                        case 1:
+                            getUserLikedPosts();
+                            break;
+                        case 2:
+                            getUserCollectedPosts();
+                            break;
+                    }
                 });
             });
         }

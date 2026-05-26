@@ -24,7 +24,8 @@ from model.post import (
     get_post_comments,
     get_user_posts,
     delete_post_images,
-    get_user_collect_posts
+    get_user_collect_posts,
+    get_user_liked_posts
 )
 from model.user import get_user_stats
 
@@ -387,6 +388,32 @@ def get_user_collect_posts_service(user_id, page=1, page_size=10):
     db = get_db_connection()
     try:
         posts = get_user_collect_posts(db, user_id, page, page_size)
+        post_ids = [p[0] for p in posts]
+        images = get_post_images_by_post_ids(db, post_ids)
+        res = []
+        for p in posts:
+            res.append({
+                "post_id": p[0],
+                "user_id": p[1],
+                "username": p[2],
+                "avatar": p[3] if len(p) > 3 else None,
+                "content": p[4] if len(p) > 4 else '',
+                "tag": p[5] if len(p) > 5 else '',
+                "create_at": p[6] if len(p) > 6 else '',
+                "view_count": p[7] if len(p) > 7 else 0,
+                "like_count": p[8] if len(p) > 8 else 0,
+                "collect_count": p[9] if len(p) > 9 else 0,
+                "images": images.get(p[0], [])
+            })
+        return ApiResponse.success(data=res)
+    finally:
+        db.close()
+
+# 13. 获取用户点赞的帖子
+def get_user_liked_posts_service(user_id, page=1, page_size=10):
+    db = get_db_connection()
+    try:
+        posts = get_user_liked_posts(db, user_id, page, page_size)
         post_ids = [p[0] for p in posts]
         images = get_post_images_by_post_ids(db, post_ids)
         res = []
