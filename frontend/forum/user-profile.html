@@ -851,9 +851,9 @@
   </button>
 
   <script>
-    // 获取 URL 里的用户 id
+    // 获取 URL 里的用户 id（支持 id 和 user_id 两种参数名）
     const params = new URLSearchParams(window.location.search);
-    const userId = params.get("id");
+    const userId = params.get("id") || params.get("user_id");
 
     页面加载
     window.addEventListener("DOMContentLoaded", () => {

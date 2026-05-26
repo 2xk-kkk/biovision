@@ -932,7 +932,7 @@
     }
 
     let currentTab = 'Latest';
-    const API_BASE = 'http://127.0.0.1:8000';
+    const API_BASE = 'http://localhost:8000/api';
     // 图片地址
     const IMAGE_BASE = 'http://127.0.0.1:8000';
     const PAGE_SIZE = 10;
@@ -1161,7 +1161,7 @@
     }
 
     async function fetchLatestPosts(page) {
-      const url = `${API_BASE}/api/posts?page=${page}&page_size=${PAGE_SIZE}`;
+      const url = `${API_BASE}/posts?page=${page}&page_size=${PAGE_SIZE}`;
       const resp = await fetch(url, { method: 'GET' });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
@@ -1244,7 +1244,7 @@
 
     async function updateForumStats() {
       try {
-        const res = await fetch(`${API_BASE}/api/stats`);
+        const res = await fetch(`${API_BASE}/stats`);
         const data = await res.json();
 
         if (data.success === true) {
@@ -1302,7 +1302,12 @@
           return;
         }
 
-        const response = await fetch(`${API_BASE}/api/user/${payload.user_id}/info`);
+        // 添加token到请求头，确保后端能正确识别用户
+        const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`, {
+          headers: {
+            'token': token
+          }
+        });
         const result = await response.json();
 
         if (result.success && result.data) {
@@ -1310,8 +1315,13 @@
           const userAvatar = result.data.avatar;
 
           if (userAvatar) {
-            // 优先使用后端返回的用户头像，添加时间戳防止浏览器缓存
-            avatarImg.src = userAvatar + '?t=' + Date.now();
+            // 优先使用后端返回的用户头像
+            let avatarToUse = userAvatar;
+            // 如果是远程图片，添加时间戳防止浏览器缓存
+            if (userAvatar.startsWith('http')) {
+              avatarToUse = userAvatar + '?t=' + Date.now();
+            }
+            avatarImg.src = avatarToUse;
           } else {
             // 用户没有上传头像，显示首字母头像
             avatarImg.src = getDefaultAvatarSVG(username, 40);
@@ -1348,7 +1358,7 @@
           return;
         }
 
-        const response = await fetch(`${API_BASE}/api/user/${payload.user_id}/info`);
+        const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`);
         const result = await response.json();
 
         if (result.success && result.data) {
@@ -1478,12 +1488,12 @@
         });
       }
 
-      updateSectionCount('totalNum', `${API_BASE}/api/posts?page=1`);
-      updateSectionCount('xuexiCount', `${API_BASE}/api/posts?tag=Question_discussion&page=1`);
-      updateSectionCount('kechengCount', `${API_BASE}/api/posts?tag=Course_discussion&page=1`);
-      updateSectionCount('visualCount', `${API_BASE}/api/posts?tag=Visualization_model&page=1`);
-      updateSectionCount('kaoshiCount', `${API_BASE}/api/posts?tag=Examination_experience&page=1`);
-      updateSectionCount('lifeCount', `${API_BASE}/api/posts?tag=Life_share&page=1`);
+      updateSectionCount('totalNum', `${API_BASE}/posts?page=1`);
+      updateSectionCount('xuexiCount', `${API_BASE}/posts?tag=Question_discussion&page=1`);
+      updateSectionCount('kechengCount', `${API_BASE}/posts?tag=Course_discussion&page=1`);
+      updateSectionCount('visualCount', `${API_BASE}/posts?tag=Visualization_model&page=1`);
+      updateSectionCount('kaoshiCount', `${API_BASE}/posts?tag=Examination_experience&page=1`);
+      updateSectionCount('lifeCount', `${API_BASE}/posts?tag=Life_share&page=1`);
 
       setInterval(updateForumStats, 15000);
 
@@ -1547,7 +1557,7 @@
           return;
         }
 
-        const resp = await fetch(`${API_BASE}/api/post/${postId}/like`, {
+        const resp = await fetch(`${API_BASE}/post/${postId}/like`, {
           method: 'POST',
           headers: { token }
         });
@@ -1595,7 +1605,7 @@
           return;
         }
 
-        const res = await fetch(`${API_BASE}/api/post/${postId}/collect`, {
+        const res = await fetch(`${API_BASE}/post/${postId}/collect`, {
           method: 'POST',
           headers: { token }
         });
@@ -1630,7 +1640,7 @@
     async function getComments(postId, page = 1, pageSize = 10) {
       try {
         const url =
-          `${API_BASE}/api/post/${postId}/comments?page=${page}&page_size=${pageSize}`;
+          `${API_BASE}/post/${postId}/comments?page=${page}&page_size=${pageSize}`;
 
         const resp = await fetch(url);
 
@@ -1665,7 +1675,7 @@
         }
 
         const resp = await fetch(
-          `${API_BASE}/api/post/${postId}/comment?content=${encodeURIComponent(content)}`,
+          `${API_BASE}/post/${postId}/comment?content=${encodeURIComponent(content)}`,
           {
             method: 'POST',
             headers: {
@@ -1705,7 +1715,7 @@
         }
 
         const resp = await fetch(
-          `${API_BASE}/api/comment/${commentId}/reply?content=${encodeURIComponent(content)}`,
+          `${API_BASE}/comment/${commentId}/reply?content=${encodeURIComponent(content)}`,
           {
             method: 'POST',
             headers: {
@@ -1742,7 +1752,7 @@
         formData.append('file', file);
 
         const resp = await fetch(
-          `${API_BASE}/api/upload_image`,
+          `${API_BASE}/upload_image`,
           {
             method: 'POST',
             body: formData
@@ -1781,7 +1791,7 @@
         }
 
         const resp = await fetch(
-          `${API_BASE}/api/create_post`,
+          `${API_BASE}/create_post`,
           {
             method: 'POST',
             headers: {
@@ -1828,7 +1838,7 @@
         }
 
         const resp = await fetch(
-          `${API_BASE}/api/user/${userId}`,
+          `${API_BASE}/user/${userId}`,
           {
             method: 'GET',
             headers
@@ -1855,7 +1865,7 @@
     // ================= 9. 获取论坛统计 =================
     async function getForumStats() {
       try {
-        const resp = await fetch(`${API_BASE}/api/stats`);
+        const resp = await fetch(`${API_BASE}/stats`);
 
         if (!resp.ok) {
           throw new Error(`HTTP ${resp.status}`);

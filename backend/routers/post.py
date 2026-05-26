@@ -64,7 +64,8 @@ def create_comment_api(
     request: CreateCommentRequest,
     token: str = Header(...)
 ):
-    return create_comment(token, post_id, request.content)
+    parent_id = getattr(request, 'parent_id', None)
+    return create_comment(token, post_id, request.content, parent_id)
 
 # 获取帖子的所有评论 
 @router.get("/post/{post_id}/comments")

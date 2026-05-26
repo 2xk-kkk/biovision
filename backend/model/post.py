@@ -255,12 +255,18 @@ def get_user_collect_posts(db, user_id, page=1, page_size=10):
 
 
 # 评论功能（新增）
-def create_comment(db, post_id, user_id, content):
+def create_comment(db, post_id, user_id, content, parent_id=None):
     cursor = db.cursor()
-    cursor.execute(
-        "INSERT INTO comments(post_id, user_id, content) VALUES(?,?,?)",
-        (post_id, user_id, content)
-    )
+    if parent_id:
+        cursor.execute(
+            "INSERT INTO comments(post_id, user_id, content, parent_id) VALUES(?,?,?,?)",
+            (post_id, user_id, content, parent_id)
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO comments(post_id, user_id, content) VALUES(?,?,?)",
+            (post_id, user_id, content)
+        )
     db.commit()
     return cursor.lastrowid
 

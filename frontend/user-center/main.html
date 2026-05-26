@@ -905,6 +905,73 @@
         }
 
         /* =========================
+           图片裁剪功能
+        ========================= */
+        .crop-modal {
+            max-width: 600px;
+        }
+
+        .crop-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .crop-area {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f3f4f6;
+        }
+
+        .crop-area img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: move;
+        }
+
+        .crop-box {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 2px dashed #3b82f6;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .crop-box+.crop-overlay {
+            background: none;
+        }
+
+        .crop-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* =========================
            资料编辑弹窗
            结构和目标设置弹窗保持一致
         ========================= */
@@ -1867,8 +1934,42 @@
                 <h3 class="goal-modal-title" id="profileModalTitle">编辑资料</h3>
                 <button class="goal-modal-close" id="profileModalCloseBtn" type="button" aria-label="关闭弹窗">×</button>
             </div>
-
             <div class="goal-modal-body">
+
+                <!-- 头像裁剪弹窗 -->
+                <div class="modal-overlay" id="cropModalOverlay" aria-hidden="true">
+                    <div class="goal-modal crop-modal" role="dialog" aria-modal="true" aria-labelledby="cropModalTitle">
+                        <div class="goal-modal-header">
+                            <h3 class="goal-modal-title" id="cropModalTitle">裁剪头像</h3>
+                            <button class="goal-modal-close" id="cropModalCloseBtn" type="button"
+                                aria-label="关闭弹窗">×</button>
+                        </div>
+                        <div class="goal-modal-body">
+                            <div class="crop-container">
+                                <div class="crop-area">
+                                    <img id="cropImage" alt="裁剪图片" />
+                                    <div class="crop-box"></div>
+                                    <div class="crop-overlay"></div>
+                                </div>
+                                <div class="crop-controls">
+                                    <button class="btn btn-secondary" id="cropRotateBtn">
+                                        <i class="fas fa-rotate-right"></i> 旋转
+                                    </button>
+                                    <button class="btn btn-secondary" id="cropZoomInBtn">
+                                        <i class="fas fa-search-plus"></i> 放大
+                                    </button>
+                                    <button class="btn btn-secondary" id="cropZoomOutBtn">
+                                        <i class="fas fa-search-minus"></i> 缩小
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="goal-modal-footer">
+                            <button class="btn btn-secondary" id="cancelCropBtn">取消</button>
+                            <button class="btn btn-primary" id="confirmCropBtn">确认裁剪</button>
+                        </div>
+                    </div>
+                </div>
                 <div class="profile-form-grid">
                     <div class="profile-avatar-editor">
                         <img src="../images/touxiang.png" alt="头像预览" class="profile-avatar-preview"
@@ -2388,10 +2489,180 @@
         }
 
         /* =========================
+           图片裁剪功能
+        ========================= */
+        let cropImageSrc = '';
+        let cropScale = 1;
+        let cropRotate = 0;
+        let cropOffsetX = 0;
+        let cropOffsetY = 0;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+
+        function openCropModal(imageSrc) {
+            cropImageSrc = imageSrc;
+            cropScale = 1;
+            cropRotate = 0;
+            cropOffsetX = 0;
+            cropOffsetY = 0;
+
+            const cropModal = document.getElementById('cropModalOverlay');
+            const cropImg = document.getElementById('cropImage');
+
+            if (cropModal && cropImg) {
+                cropImg.src = imageSrc;
+                updateCropImage();
+                cropModal.classList.add('show');
+                cropModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function closeCropModal() {
+            const cropModal = document.getElementById('cropModalOverlay');
+            if (cropModal) {
+                cropModal.classList.remove('show');
+                cropModal.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        function updateCropImage() {
+            const cropImg = document.getElementById('cropImage');
+            if (cropImg) {
+                cropImg.style.transform = `translate(-50%, -50%) scale(${cropScale}) rotate(${cropRotate}deg) translate(${cropOffsetX}px, ${cropOffsetY}px)`;
+            }
+        }
+
+        async function applyCrop() {
+            const cropImg = document.getElementById('cropImage');
+            if (!cropImg || !cropImageSrc) return;
+
+            const canvas = document.createElement('canvas');
+            const size = 200; // 裁剪后的头像大小
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = cropImageSrc;
+            });
+
+            ctx.save();
+            ctx.translate(size / 2, size / 2);
+            ctx.rotate((cropRotate * Math.PI) / 180);
+            ctx.scale(cropScale, cropScale);
+
+            const centerX = img.width / 2 + cropOffsetX;
+            const centerY = img.height / 2 + cropOffsetY;
+            ctx.drawImage(img, centerX - size / 2, centerY - size / 2, size, size, -size / 2, -size / 2, size, size);
+            ctx.restore();
+
+            const croppedDataUrl = canvas.toDataURL('image/png');
+            pendingAvatarDataUrl = croppedDataUrl;
+
+            if (profileAvatarPreview) {
+                profileAvatarPreview.src = croppedDataUrl;
+            }
+
+            closeCropModal();
+        }
+
+        // 绑定裁剪相关事件
+        function bindCropEvents() {
+            const cropModal = document.getElementById('cropModalOverlay');
+            const cropCloseBtn = document.getElementById('cropModalCloseBtn');
+            const cancelBtn = document.getElementById('cancelCropBtn');
+            const confirmBtn = document.getElementById('confirmCropBtn');
+            const rotateBtn = document.getElementById('cropRotateBtn');
+            const zoomInBtn = document.getElementById('cropZoomInBtn');
+            const zoomOutBtn = document.getElementById('cropZoomOutBtn');
+            const cropArea = document.querySelector('.crop-area');
+            const cropImg = document.getElementById('cropImage');
+
+            // 点击遮罩关闭
+            if (cropModal) {
+                cropModal.addEventListener('click', (e) => {
+                    if (e.target === cropModal) {
+                        closeCropModal();
+                    }
+                });
+            }
+
+            // 关闭按钮
+            if (cropCloseBtn) {
+                cropCloseBtn.addEventListener('click', closeCropModal);
+            }
+
+            // 取消按钮
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeCropModal);
+            }
+
+            // 确认裁剪按钮
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', applyCrop);
+            }
+
+            // 旋转按钮
+            if (rotateBtn) {
+                rotateBtn.addEventListener('click', () => {
+                    cropRotate += 90;
+                    updateCropImage();
+                });
+            }
+
+            // 放大按钮
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                    cropScale = Math.min(cropScale + 0.2, 3);
+                    updateCropImage();
+                });
+            }
+
+            // 缩小按钮
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                    cropScale = Math.max(cropScale - 0.2, 0.5);
+                    updateCropImage();
+                });
+            }
+
+            // 拖拽功能
+            if (cropArea && cropImg) {
+                cropArea.addEventListener('mousedown', (e) => {
+                    if (e.target === cropImg) {
+                        isDragging = true;
+                        dragStartX = e.clientX - cropOffsetX;
+                        dragStartY = e.clientY - cropOffsetY;
+                    }
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        cropOffsetX = e.clientX - dragStartX;
+                        cropOffsetY = e.clientY - dragStartY;
+                        updateCropImage();
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+            }
+        }
+
+        /* =========================
            页面加载时初始化
         ========================= */
         document.addEventListener('DOMContentLoaded', function () {
             loadUserInfo();
+            bindCropEvents();
         });
 
         /* =========================
@@ -2581,17 +2852,12 @@
                     const result = await response.json();
                     if (result.success) {
                         console.log('头像上传成功');
+                        // 重新加载用户信息，确保头像正确显示
+                        await loadUserInfo();
                     } else {
                         console.error('头像上传失败:', result.msg);
                     }
                 }
-                savedAvatarDataUrl = avatarSrc;
-                if (topbarAvatarImage) topbarAvatarImage.src = avatarSrc;
-                if (profileAvatarImage) profileAvatarImage.src = avatarSrc;
-                const postAvatars = document.querySelectorAll('.post-avatar');
-                postAvatars.forEach((img) => {
-                    img.src = avatarSrc;
-                });
                 pendingAvatarDataUrl = null;
             }
 
@@ -2715,8 +2981,8 @@
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = () => {
-                    pendingAvatarDataUrl = String(reader.result || '');
-                    profileAvatarPreview.src = pendingAvatarDataUrl;
+                    // 先打开裁剪弹窗
+                    openCropModal(String(reader.result || ''));
                 };
                 reader.readAsDataURL(file);
             });
