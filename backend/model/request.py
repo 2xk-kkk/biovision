@@ -28,3 +28,4 @@ class CreatePostRequest(BaseModel):
 
 class CreateCommentRequest(BaseModel):
     content: str
+    parent_id: int = None

@@ -1015,13 +1015,34 @@
       localStorage.removeItem('user_avatar');
 
       const token = localStorage.getItem('token');
-      if (!token) return;
+      const avatarElement = document.querySelector('.user-avatar-large');
+      
+      if (!token) {
+        // 未登录用户显示访客头像
+        const guestAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d1d5db'/%3E%3Ccircle cx='50' cy='35' r='12' fill='%239ca3af'/%3E%3Cpath d='M30 60 Q50 85 70 60' fill='none' stroke='%239ca3af' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E`;
+        avatarElement.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = guestAvatar;
+        img.alt = '访客';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.borderRadius = '50%';
+        img.style.objectFit = 'cover';
+        avatarElement.style.background = 'none';
+        avatarElement.appendChild(img);
+        return;
+      }
 
       try {
         const payload = parseJwt(token);
         if (!payload || !payload.user_id) return;
 
-        const response = await fetch(`${API_BASE_URL}/user/${payload.user_id}/info`);
+        // 添加token到请求头，确保后端能正确识别用户
+        const response = await fetch(`${API_BASE_URL}/user/${payload.user_id}/info`, {
+          headers: {
+            'token': token
+          }
+        });
         const result = await response.json();
 
         if (result.success && result.data) {
@@ -1034,10 +1055,15 @@
           // 更新头像显示
           const avatarElement = document.querySelector('.user-avatar-large');
           if (userAvatar) {
-            // 优先使用后端返回的用户头像，添加时间戳防止浏览器缓存
+            // 优先使用后端返回的用户头像
             avatarElement.innerHTML = '';
             const img = document.createElement('img');
-            img.src = userAvatar + '?t=' + Date.now();
+            // 如果是远程图片，添加时间戳防止浏览器缓存
+            let avatarToUse = userAvatar;
+            if (userAvatar.startsWith('http')) {
+              avatarToUse = userAvatar + '?t=' + Date.now();
+            }
+            img.src = avatarToUse;
             img.alt = username;
             img.style.width = '100%';
             img.style.height = '100%';
