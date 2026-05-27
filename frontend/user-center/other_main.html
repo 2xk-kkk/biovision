@@ -1608,10 +1608,23 @@
     }
 
     try {
-        // 调用你真实的用户信息接口
+        // 调用用户信息接口
         const response = await fetchWithToken(`${API_BASE_URL}/user/${VIEW_USER_ID}/info`);
         if (response && response.success && response.data) {
             const user = response.data;
+            
+            // 同时获取用户统计数据
+            let stats = null;
+            try {
+                const statsResponse = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/stats`);
+                const statsResult = await statsResponse.json();
+                if (statsResult.success && statsResult.data) {
+                    stats = statsResult.data;
+                }
+            } catch (e) {
+                console.warn('获取统计数据失败:', e);
+            }
+
             renderProfile({
                 user_id: VIEW_USER_ID,
                 username: user.username,
@@ -1620,10 +1633,10 @@
                 grade: user.grade,
                 school: user.school,
                 role: user.role || '学生',
-                like_count: user.like_count || 0,
-                follower_count: user.follower_count || 0,
-                following_count: user.following_count || 0,
-                view_count: user.view_count || 0,
+                like_count: stats?.like_count || user.like_count || 0,
+                follower_count: stats?.follower_count || user.follower_count || 0,
+                following_count: stats?.following_count || user.following_count || 0,
+                view_count: stats?.view_count || user.view_count || 0,
                 mutual_count: 0,
                 study_hours: 0,
                 study_goal: 8,
@@ -1633,7 +1646,6 @@
                 collects: []
             });
             isFollowing = !!user.is_following;
-            updateFollowUI();
             await loadUserRealPosts();
             return;
         }
@@ -1644,6 +1656,68 @@
     // 失败才显示假数据
     renderProfile(mockProfile);
     isFollowing = false;
+}
+
+function getFollowCacheKey(userId) {
+    return `follow_status_${userId}`;
+}
+
+function getFollowStatusFromCache(userId) {
+    try {
+        const cached = localStorage.getItem(getFollowCacheKey(userId));
+        if (cached === 'true' || cached === 'false') {
+            return cached === 'true';
+        }
+    } catch (e) {
+        console.warn('读取缓存失败:', e);
+    }
+    return null;
+}
+
+function setFollowStatusToCache(userId, status) {
+    try {
+        localStorage.setItem(getFollowCacheKey(userId), String(status));
+    } catch (e) {
+        console.warn('写入缓存失败:', e);
+    }
+}
+
+async function checkFollowStatus() {
+    if (!currentToken || !VIEW_USER_ID) {
+        isFollowing = false;
+        updateFollowUI();
+        return;
+    }
+
+    // 先尝试从 API 获取状态
+    let apiSuccess = false;
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/follow/status`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'token': currentToken
+            }
+        });
+        const result = await response.json();
+        if (result.success && typeof result.data === 'boolean') {
+            isFollowing = result.data;
+            apiSuccess = true;
+            // 更新缓存
+            setFollowStatusToCache(VIEW_USER_ID, isFollowing);
+        }
+    } catch (error) {
+        console.warn('检查关注状态失败:', error);
+    }
+
+    // 如果 API 失败，从缓存读取
+    if (!apiSuccess) {
+        const cachedStatus = getFollowStatusFromCache(VIEW_USER_ID);
+        if (cachedStatus !== null) {
+            isFollowing = cachedStatus;
+            console.log('使用缓存的关注状态:', isFollowing);
+        }
+    }
     updateFollowUI();
 }
 
@@ -1687,14 +1761,18 @@
                 followBtn.disabled = false;
             }
 
+            // 更新缓存
+            setFollowStatusToCache(VIEW_USER_ID, isFollowing);
+
             const followerValue = document.getElementById('followerCount');
             const currentFollowers = parseInt(followerValue.textContent, 10) || 0;
             followerValue.textContent = isFollowing ? currentFollowers + 1 : Math.max(currentFollowers - 1, 0);
             updateFollowUI();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProfileData();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadProfileData();
+            await checkFollowStatus();
         });
 
         const miniNav = document.getElementById('miniNav');

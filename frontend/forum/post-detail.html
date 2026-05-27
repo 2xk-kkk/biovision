@@ -1138,7 +1138,10 @@
 
         document.title = post.content.substring(0, 30) + " - 帖子详情";
 
-        const userProfileUrl = `../user-center/other_main.html?userId=${post.user_id}`;
+        // 判断是自己还是他人的主页
+        const userProfileUrl = currentUserId == post.user_id 
+          ? '../user-center/main.html' 
+          : `../user-center/other_main.html?userId=${post.user_id}`;
 
         const postAvatar = document.getElementById("postAvatar");
         const postAvatarImg = document.createElement("img");
@@ -1325,7 +1328,7 @@
         if (result.success && result.data) {
           const stats = result.data;
           document.getElementById("authorPosts").textContent = stats.post_count || 0;
-          document.getElementById("authorLikes").textContent = stats.total_likes || 0;
+          document.getElementById("authorLikes").textContent = stats.like_count || 0;
           document.getElementById("authorFans").textContent = stats.follower_count || 0;
         }
       } catch (err) {
@@ -1456,8 +1459,16 @@
       }
     }
 
+    function getUserProfileUrl(userId) {
+      // 判断是否是当前登录用户
+      if (currentUserId == userId) {
+        return '../user-center/main.html';
+      }
+      return `../user-center/other_main.html?userId=${userId}`;
+    }
+
     function renderComment(comment, parentComments) {
-      const userProfileUrl = `user-profile.html?user_id=${comment.user_id}`;
+      const userProfileUrl = getUserProfileUrl(comment.user_id);
       const childComments = parentComments.filter(c => c.parent_id === comment.id);
 
       let childHtml = '';
