@@ -1600,8 +1600,8 @@
         }
 
         async function loadProfileData() {
-    currentToken = getTokenFromStorage();
-    const payload = getViewedUserIdPayload();
+            currentToken = getTokenFromStorage();
+            const payload = getViewedUserIdPayload();
 
     if (payload && payload.user_id) {
         currentUser = payload;
@@ -1634,6 +1634,7 @@
             });
             isFollowing = !!user.is_following;
             updateFollowUI();
+            await loadUserRealPosts();
             return;
         }
     } catch (error) {
@@ -1697,14 +1698,22 @@
         });
 
         const miniNav = document.getElementById('miniNav');
-        if (miniNav) {
-            miniNav.addEventListener('click', (event) => {
-                const button = event.target.closest('.mini-nav-item');
-                if (!button) return;
-                activateTab(button.dataset.target);
-            });
-        }
+if (miniNav) {
+    miniNav.addEventListener('click', async (event) => {
+        const button = event.target.closest('.mini-nav-item');
+        if (!button) return;
+        const target = button.dataset.target;
+        activateTab(target);
 
+        // 切换到对应页面自动加载真实数据
+        if (target === 'post') {
+            await loadUserRealPosts();
+        }
+        if (target === 'favorite') {
+            await loadUserRealCollects();
+        }
+    });
+}
         const userAvatarBtn = document.getElementById('userAvatarBtn');
         const dropdown = document.getElementById('userDropdownMenu');
         if (userAvatarBtn && dropdown) {
@@ -1736,6 +1745,57 @@
         document.querySelector('.search-form').addEventListener('submit', (e) => {
             e.preventDefault();
         });
+
+        // 加载真实发帖
+async function loadUserRealPosts() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/posts`);
+    const result = await res.json();
+    
+    if (result.success) {
+      renderPosts(result.data);
+    } else {
+      renderPosts([]);
+    }
+  } catch (err) {
+    console.error("获取帖子错误", err);
+    renderPosts([]);
+  }
+}
+
+// 加载真实收藏
+async function loadUserRealCollects() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/collects`);
+    const result = await res.json();
+    
+    if (result.success) {
+      renderCollects(result.data);
+    } else {
+      renderCollects([]);
+    }
+  } catch (err) {
+    console.error("获取收藏错误", err);
+    renderCollects([]);
+  }
+}
+
+// 加载真实收藏
+async function loadUserRealCollects() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/collects`);
+    const result = await res.json();
+    
+    if (result.success) {
+      renderCollects(result.data);
+    } else {
+      renderCollects([]);
+    }
+  } catch (err) {
+    console.error("获取收藏错误", err);
+    renderCollects([]);
+  }
+}
     </script>
 </body>
 
