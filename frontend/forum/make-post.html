@@ -522,30 +522,51 @@
       color: var(--gray-400);
     }
 
-    /* 已上传图片 */
-    .uploaded-images {
+    /* 已上传文件 */
+    .uploaded-files {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       margin-top: 16px;
     }
 
-    .uploaded-image {
+    .uploaded-file {
       position: relative;
       width: 120px;
       height: 120px;
       border-radius: 10px;
       overflow: hidden;
       border: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .uploaded-image img {
+    .uploaded-file img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .uploaded-image .remove-image {
+    .uploaded-file .file-icon {
+      font-size: 32px;
+      color: var(--gray-400);
+    }
+
+    .uploaded-file .file-name {
+      font-size: 10px;
+      color: var(--gray-500);
+      text-align: center;
+      padding: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    .uploaded-file .remove-file {
       position: absolute;
       top: 6px;
       right: 6px;
@@ -563,7 +584,7 @@
       transition: all 0.2s;
     }
 
-    .uploaded-image .remove-image:hover {
+    .uploaded-file .remove-file:hover {
       background: var(--danger);
     }
 
@@ -833,16 +854,16 @@
           </div>
         </div>
 
-        <!-- 图片上传 -->
+        <!-- 文件上传 -->
         <div class="card-section">
           <div class="form-group">
-            <label class="form-label">上传图片（可选）</label>
+            <label class="form-label">上传文件（可选）</label>
             <div class="upload-area" id="uploadArea">
               <i class="fas fa-cloud-upload-alt"></i>
-              <p>点击或拖拽图片到此处上传</p>
-              <div class="upload-hint">支持 JPG、PNG、GIF 格式，单张图片不超过 10MB</div>
+              <p>点击或拖拽文件到此处上传</p>
+              <div class="upload-hint">支持 JPG、PNG、GIF、PDF、DOC、DOCX、XLS、XLSX 等格式，单文件不超过 20MB</div>
             </div>
-            <div class="uploaded-images" id="uploadedImages"></div>
+            <div class="uploaded-files" id="uploadedFiles"></div>
           </div>
         </div>
 
@@ -1096,7 +1117,7 @@
     })();
     
     const uploadedImageUrls = [];
-    const pendingImageFiles = [];
+    const pendingFiles = [];
 
     function showAlert(type, message) {
       const existingAlert = document.querySelector('.global-alert');
@@ -1253,16 +1274,92 @@
       contentCount.textContent = this.value.length;
     });
 
-    // 图片上传
+    // 文件上传
     const uploadArea = document.getElementById('uploadArea');
-    const uploadedImages = document.getElementById('uploadedImages');
+    const uploadedFiles = document.getElementById('uploadedFiles');
+
+    // 支持的文件类型
+    const allowedExtensions = [
+      // 图片
+      '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg',
+      // Word文档
+      '.doc', '.docx',
+      // Excel表格
+      '.xls', '.xlsx', '.csv',
+      // PDF
+      '.pdf',
+      // 演示文稿
+      '.ppt', '.pptx',
+      // 压缩文件
+      '.zip', '.rar', '.7z', '.tar', '.gz',
+      // 文本文件
+      '.txt', '.rtf', '.md', '.json', '.xml',
+      // 视频文件
+      '.mp4', '.avi', '.mov', '.wmv', '.flv',
+      // 音频文件
+      '.mp3', '.wav', '.ogg', '.flac',
+      // 源代码文件
+      '.c', '.cpp', '.h', '.hpp', '.java', '.py', '.js', '.ts', '.html', '.css', '.go', '.rs', '.php', '.rb', '.swift', '.kt'
+    ];
+
+    // 获取文件图标
+    function getFileIcon(fileName) {
+      const ext = fileName.toLowerCase().split('.').pop();
+      const iconMap = {
+        // 图片
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        'bmp': 'fa-file-image',
+        'webp': 'fa-file-image',
+        'svg': 'fa-file-image',
+        // Word文档
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        // Excel表格
+        'xls': 'fa-file-excel',
+        'xlsx': 'fa-file-excel',
+        'csv': 'fa-file-excel',
+        // PDF
+        'pdf': 'fa-file-pdf',
+        // 演示文稿
+        'ppt': 'fa-file-powerpoint',
+        'pptx': 'fa-file-powerpoint',
+        // 压缩文件
+        'zip': 'fa-file-archive',
+        'rar': 'fa-file-archive',
+        '7z': 'fa-file-archive',
+        'tar': 'fa-file-archive',
+        'gz': 'fa-file-archive',
+        // 文本文件
+        'txt': 'fa-file-text',
+        'rtf': 'fa-file-alt',
+        'md': 'fa-file-code',
+        'json': 'fa-file-code',
+        'xml': 'fa-file-code',
+        // 视频文件
+        'mp4': 'fa-file-video',
+        'avi': 'fa-file-video',
+        'mov': 'fa-file-video',
+        'wmv': 'fa-file-video',
+        'flv': 'fa-file-video',
+        // 音频文件
+        'mp3': 'fa-file-audio',
+        'wav': 'fa-file-audio',
+        'ogg': 'fa-file-audio',
+        'flac': 'fa-file-audio'
+      };
+      return iconMap[ext] || 'fa-file';
+    }
 
     uploadArea.addEventListener('click', function (e) {
       e.preventDefault();
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = 'image/*';
+      input.accept = 'image/*,.doc,.docx,.xls,.xlsx,.pdf,.txt,.rtf,.ppt,.pptx,.zip,.rar,.7z,.csv,.md,.json,.xml,.mp4,.avi,.mov,.mp3,.wav';
       input.multiple = true;
+      input.webkitdirectory = true; // 支持选择文件夹
       input.onchange = function (e) {
         handleFiles(e.target.files);
       };
@@ -1295,60 +1392,104 @@
         return;
       }
 
-      Array.from(files).forEach(async (file, index) => {
-        if (!file.type.startsWith('image/')) {
-          showAlert('error', '只能上传图片文件');
+      Array.from(files).forEach((file, index) => {
+        // 跳过文件夹本身（上传文件夹时，浏览器可能会包含文件夹条目）
+        if (file.size === 0 && !file.name.includes('.')) {
+          return; // 跳过文件夹
+        }
+
+        // 检查文件扩展名
+        const fileName = file.name.toLowerCase();
+        const dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex === -1) {
+          showAlert('error', `不支持的文件类型（无扩展名）: ${file.name}`);
           return;
         }
-        if (file.size > 10 * 1024 * 1024) {
-          showAlert('error', '图片大小不能超过 10MB');
+        const ext = fileName.substring(dotIndex);
+        if (!allowedExtensions.includes(ext)) {
+          showAlert('error', `不支持的文件类型: ${file.name}`);
           return;
         }
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const imageDiv = document.createElement('div');
-          imageDiv.className = 'uploaded-image';
-          imageDiv.innerHTML = `
-            <img src="${e.target.result}" alt="预览">
-            <button class="remove-image" data-index="${index}"><i class="fas fa-times"></i></button>
-          `;
-          imageDiv.querySelector('.remove-image').onclick = function () {
-            const imgIndex = this.dataset.index;
-            uploadedImageUrls.splice(imgIndex, 1);
-            pendingImageFiles.splice(imgIndex, 1);
-            imageDiv.remove();
-            updateImageIndexes();
+        // 检查文件大小（20MB）
+        if (file.size > 20 * 1024 * 1024) {
+          showAlert('error', `文件大小不能超过 20MB: ${file.name}`);
+          return;
+        }
+
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'uploaded-file';
+        
+        if (file.type.startsWith('image/')) {
+          // 图片文件显示预览
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            fileDiv.innerHTML = `
+              <img src="${e.target.result}" alt="${file.name}">
+              <button class="remove-file" data-index="${index}"><i class="fas fa-times"></i></button>
+            `;
+            fileDiv.querySelector('.remove-file').onclick = function () {
+              const fileIndex = this.dataset.index;
+              pendingFiles.splice(fileIndex, 1);
+              fileDiv.remove();
+              updateFileIndexes();
+            };
+            uploadedFiles.appendChild(fileDiv);
           };
-          uploadedImages.appendChild(imageDiv);
-        };
-        reader.readAsDataURL(file);
+          reader.readAsDataURL(file);
+        } else {
+          // 非图片文件显示图标
+          const iconClass = getFileIcon(file.name);
+          fileDiv.innerHTML = `
+            <i class="fas ${iconClass} file-icon"></i>
+            <span class="file-name">${file.name}</span>
+            <button class="remove-file" data-index="${index}"><i class="fas fa-times"></i></button>
+          `;
+          fileDiv.querySelector('.remove-file').onclick = function () {
+            const fileIndex = this.dataset.index;
+            pendingFiles.splice(fileIndex, 1);
+            fileDiv.remove();
+            updateFileIndexes();
+          };
+          uploadedFiles.appendChild(fileDiv);
+        }
 
-        // defer upload until submit
-        pendingImageFiles.push(file);
+        pendingFiles.push(file);
       });
     }
 
-    function updateImageIndexes() {
-      document.querySelectorAll('.uploaded-image .remove-image').forEach((btn, index) => {
+    function updateFileIndexes() {
+      document.querySelectorAll('.uploaded-file .remove-file').forEach((btn, index) => {
         btn.dataset.index = index;
       });
     }
 
-    async function uploadPendingImages(token) {
-      const imageUrls = [];
-      for (const file of pendingImageFiles) {
+    async function uploadPendingFiles(token) {
+      const fileUrls = [];
+      for (const file of pendingFiles) {
         const formData = new FormData();
         formData.append('file', file);
-        const resp = await fetch(`${API_BASE_URL}/upload_image`, {
-          method: 'POST',
-          headers: { 'token': token },
-          body: formData
-        });
-        const data = await resp.json();
-        if (data && data.image_url) imageUrls.push(data.image_url);
+        try {
+          const resp = await fetch(`${API_BASE_URL}/upload_file`, {
+            method: 'POST',
+            headers: { 'token': token },
+            body: formData
+          });
+          const data = await resp.json();
+          if (resp.ok && data && data.file_url) {
+            fileUrls.push(data.file_url);
+          } else if (data && data.image_url) {
+            fileUrls.push(data.image_url);
+          } else {
+            console.error('文件上传失败:', data);
+            showAlert('error', `文件上传失败: ${file.name}`);
+          }
+        } catch (error) {
+          console.error('文件上传网络错误:', error);
+          showAlert('error', `文件上传失败（网络错误）: ${file.name}`);
+        }
       }
-      return imageUrls;
+      return fileUrls;
     }
 
     // 发布帖子

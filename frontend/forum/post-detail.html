@@ -1019,6 +1019,12 @@
           <div class="post-content" id="postContent"></div>
         </div>
 
+        <!-- 帖子图片 -->
+        <div class="card-section post-images" id="postImages"></div>
+
+        <!-- 帖子附件 -->
+        <div class="card-section post-files" id="postFiles"></div>
+
         <!-- 操作按钮 -->
         <div class="card-section">
           <div class="post-actions">
@@ -1136,6 +1142,7 @@
 
   <script>
     const API_BASE = "http://127.0.0.1:8000/api";
+    const IMAGE_BASE = "http://127.0.0.1:8000";
     let currentPage = 1;
     const pageSize = 10;
     let currentUserId = null;
@@ -1154,6 +1161,81 @@
         console.error("解析JWT失败:", error);
         return null;
       }
+    }
+
+    function resolveImageUrl(url) {
+      if (!url) return '';
+      if (/^https?:\/\//i.test(url)) return url;
+      if (url.startsWith('data:image')) return url;
+      if (url.startsWith('/')) return IMAGE_BASE + url;
+      return IMAGE_BASE + '/' + url;
+    }
+
+    function getFileIcon(fileName) {
+      const ext = fileName.toLowerCase().split('.').pop();
+      const iconMap = {
+        // 图片
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        'bmp': 'fa-file-image',
+        'webp': 'fa-file-image',
+        'svg': 'fa-file-image',
+        // Word文档
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        // Excel表格
+        'xls': 'fa-file-excel',
+        'xlsx': 'fa-file-excel',
+        'csv': 'fa-file-excel',
+        // PDF
+        'pdf': 'fa-file-pdf',
+        // 演示文稿
+        'ppt': 'fa-file-powerpoint',
+        'pptx': 'fa-file-powerpoint',
+        // 压缩文件
+        'zip': 'fa-file-archive',
+        'rar': 'fa-file-archive',
+        '7z': 'fa-file-archive',
+        'tar': 'fa-file-archive',
+        'gz': 'fa-file-archive',
+        // 文本文件
+        'txt': 'fa-file-text',
+        'rtf': 'fa-file-alt',
+        'md': 'fa-file-code',
+        'json': 'fa-file-code',
+        'xml': 'fa-file-code',
+        // 视频文件
+        'mp4': 'fa-file-video',
+        'avi': 'fa-file-video',
+        'mov': 'fa-file-video',
+        'wmv': 'fa-file-video',
+        'flv': 'fa-file-video',
+        // 音频文件
+        'mp3': 'fa-file-audio',
+        'wav': 'fa-file-audio',
+        'ogg': 'fa-file-audio',
+        'flac': 'fa-file-audio',
+        // 源代码文件
+        'c': 'fa-file-code',
+        'cpp': 'fa-file-code',
+        'h': 'fa-file-code',
+        'hpp': 'fa-file-code',
+        'java': 'fa-file-code',
+        'py': 'fa-file-code',
+        'js': 'fa-file-code',
+        'ts': 'fa-file-code',
+        'html': 'fa-file-code',
+        'css': 'fa-file-code',
+        'go': 'fa-file-code',
+        'rs': 'fa-file-code',
+        'php': 'fa-file-code',
+        'rb': 'fa-file-code',
+        'swift': 'fa-file-code',
+        'kt': 'fa-file-code'
+      };
+      return iconMap[ext] || 'fa-file';
     }
 
     function getPostId() {
@@ -1278,6 +1360,51 @@
         viewProfileBtn.href = userProfileUrl;
 
         document.getElementById("postContent").innerHTML = `<p>${escapeHtml(post.content)}</p>`;
+
+        // 渲染帖子图片
+        const postImagesContainer = document.getElementById("postImages");
+        const images = Array.isArray(post.images) ? post.images : [];
+        if (images.length > 0) {
+          postImagesContainer.innerHTML = '';
+          images.forEach(imgUrl => {
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'post-image';
+            const img = document.createElement('img');
+            img.src = resolveImageUrl(imgUrl);
+            img.alt = '帖子图片';
+            img.loading = 'lazy';
+            imgContainer.appendChild(img);
+            postImagesContainer.appendChild(imgContainer);
+          });
+        } else {
+          postImagesContainer.style.display = 'none';
+        }
+
+        // 渲染帖子附件
+        const postFilesContainer = document.getElementById("postFiles");
+        const files = Array.isArray(post.files) ? post.files : [];
+        if (files.length > 0) {
+          postFilesContainer.innerHTML = `
+            <h4 style="margin-bottom: 12px; font-size: 16px; font-weight: 600; color: var(--gray-800);">
+              <i class="fas fa-paperclip"></i> 附件
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${files.map(fileUrl => {
+                const fileName = fileUrl.split('/').pop();
+                const iconClass = getFileIcon(fileName);
+                return `
+                  <a href="${resolveImageUrl(fileUrl)}" target="_blank" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--gray-50); border-radius: 8px; text-decoration: none; color: var(--gray-700); transition: background 0.2s;">
+                    <i class="fas ${iconClass}" style="font-size: 20px; color: var(--primary);"></i>
+                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
+                    <i class="fas fa-download" style="font-size: 14px; color: var(--gray-400);"></i>
+                  </a>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else {
+          postFilesContainer.style.display = 'none';
+        }
 
         document.getElementById("postMeta").innerHTML = `
           <span><i class="far fa-clock"></i>${post.create_at || "未知时间"}</span>
