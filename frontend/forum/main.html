@@ -1311,6 +1311,11 @@
               img.style.objectFit = 'cover';
               img.style.borderRadius = '10px';
               img.style.border = '1px solid #e2e8f0';
+              // 处理图片加载失败的情况
+              img.onerror = function() {
+                img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120"%3E%3Crect fill="%23f3f4f6" width="180" height="120"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="12" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E图片加载失败%3C/text%3E%3C/svg%3E';
+                img.style.objectFit = 'contain';
+              };
               mediaWrap.appendChild(img);
             } else {
               const iconClass = getFileIcon(fileName);

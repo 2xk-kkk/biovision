@@ -2,6 +2,12 @@ from fastapi import FastAPI, File, UploadFile, APIRouter, Header, Query, HTTPExc
 import uuid
 import os
 from model.request import CreatePostRequest, CreateCommentRequest
+
+# 使用绝对路径确保所有用户访问同一目录
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_DIR = os.path.dirname(BASE_DIR)  # 项目根目录
+UPLOAD_DIR = os.path.join(PROJECT_DIR, "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 from service.post import (
     create_post,
     get_all_posts,
@@ -28,7 +34,7 @@ router = APIRouter()
 def upload_image(file: UploadFile = File(...)):
     ext = file.filename.split(".")[-1]
     new_filename = f"{uuid.uuid4()}.{ext}"
-    save_path = f"uploads/{new_filename}"
+    save_path = os.path.join(UPLOAD_DIR, new_filename)
     with open(save_path, "wb") as f:
         f.write(file.file.read())
     image_url = f"/uploads/{new_filename}"
@@ -40,7 +46,7 @@ def upload_image(file: UploadFile = File(...)):
 def upload_file(file: UploadFile = File(...)):
     ext = file.filename.split(".")[-1]
     new_filename = f"{uuid.uuid4()}.{ext}"
-    save_path = f"uploads/{new_filename}"
+    save_path = os.path.join(UPLOAD_DIR, new_filename)
     with open(save_path, "wb") as f:
         f.write(file.file.read())
     file_url = f"/uploads/{new_filename}"

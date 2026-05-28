@@ -1470,6 +1470,10 @@
     }
 
     // 修复：发布成功后清除草稿（通过修改原有的submitBtn点击处理）
+    const submitBtn = document.querySelector('.btn-primary.large');
+    console.log('submitBtn found', !!submitBtn);
+    if (!submitBtn) { console.warn('submitBtn not found'); }
+    
     // 移除原有的点击事件并重新添加，确保清除草稿在成功发布后执行
     const submitHandler = async function (e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -1883,69 +1887,6 @@
       return fileUrls;
     }
 
-    // 发布帖子
-    const submitBtn = document.querySelector('.btn-primary.large');
-    console.log('submitBtn found', !!submitBtn);
-    if (!submitBtn) { console.warn('submitBtn not found'); }
-    submitBtn.addEventListener('click', async function (e) {
-      if (e) { e.preventDefault(); e.stopPropagation(); }
-      const content = document.getElementById('postContent').value.trim();
-      const token = localStorage.getItem('token');
-
-      const selectedSection = document.querySelector('.section-option.selected');
-      const tag = selectedSection ? selectedSection.dataset.section : 'Question_discussion';
-
-      if (!token) {
-        showAlert('error', '请先登录');
-        return;
-      }
-
-      if (!content) {
-        showAlert('error', '请输入帖子内容');
-        return;
-      }
-
-      if (content.length > 10000) {
-        showAlert('error', '帖子内容不能超过10000字');
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发布中...';
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/create_post`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token
-          },
-          body: JSON.stringify({
-            content: content,
-            image_urls: await uploadPendingFiles(token),
-            tag: tag,
-            tags: selectedTags
-          })
-        });
-
-        let data = null;
-        try { data = await response.json(); } catch (_) { }
-
-        if (response.ok) {
-          showAlert('success', '发帖成功，正在跳转...');
-          console.log('redirecting to main.html');
-          window.location.replace('main.html');
-        } else {
-          showAlert('error', (data && data.msg) || '发帖失败');
-        }
-      } catch (error) {
-        console.error('发帖失败:', error);
-        showAlert('error', '网络错误，请稍后重试');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发布帖子';
-      }
-    });
   </script>
 </body>
 </html>
