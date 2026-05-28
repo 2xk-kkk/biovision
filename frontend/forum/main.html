@@ -721,6 +721,33 @@
         width: 96px;
       }
     }
+    /* 气泡提示样式，只对这三个按钮生效，不影响其他元素 */
+.sort-btn {
+  position: relative;
+}
+.sort-btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #333;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 999;
+}
+.sort-btn:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
   </style>
 </head>
 
@@ -792,11 +819,9 @@
           <h2 style="font-size: 18px; font-weight: 600; color: #1e293b;">
             <i class="fas fa-fire post-main-name" style="color: #F59E0B;"></i> 最新帖子
           </h2>
-          <div class="sort-buttons">
-            <button class="sort-btn new-btn active">最新</button>
-            <button class="sort-btn hot-btn">热门</button>
-            <button class="sort-btn cream-btn">精华</button>
-          </div>
+<div class="sort-buttons">
+<button class="sort-btn new-btn active" data-tip="按发布时间从新到旧排序">最新</button><button class="sort-btn hot-btn" data-tip="按互动热度从高到低排序">热门</button><button class="sort-btn cream-btn" data-tip="按精华/优质帖子优先排序">精华</button>
+</div>
         </div>
 
         <div class="loading-spinner" id="loading">
