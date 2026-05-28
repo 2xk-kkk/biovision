@@ -770,10 +770,10 @@
             <a href="../user-center/main.html" class="user-dropdown-item">
               <i class="fas fa-user"></i> 个人中心
             </a>
-            <a href="#" class="user-dropdown-item">
+            <a href="../user-center/main.html#posts" class="user-dropdown-item">
               <i class="fas fa-file-alt"></i> 我的帖子
             </a>
-            <a href="#" class="user-dropdown-item">
+            <a href="../user-center/main.html#settings" class="user-dropdown-item">
               <i class="fas fa-cog"></i> 设置
             </a>
             <a href="../login/login-main.html" class="user-dropdown-item danger">
@@ -1026,8 +1026,9 @@
     function resolveImageUrl(url) {
       if (!url) return '';
       if (/^https?:\/\//i.test(url)) return url;
-      if (url.startsWith('/')) return API_BASE + url;
-      return API_BASE + '/' + url;
+      if (url.startsWith('data:image')) return url;
+      if (url.startsWith('/')) return IMAGE_BASE + url;
+      return IMAGE_BASE + '/' + url;
     }
 
     function escapeHtml(text) {

@@ -168,3 +168,16 @@ def get_following(db, user_id):
     cursor = db.cursor()
     cursor.execute("select u.id, u.username, u.avatar from user_follow f join users u on f.following_id = u.id where f.follower_id=?",(user_id,))
     return cursor.fetchall()
+
+#获取给用户帖子点赞的用户列表
+def get_post_likers(db, user_id):
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT DISTINCT u.id, u.username, u.avatar 
+        FROM user_interact ui 
+        JOIN posts p ON ui.post_id = p.id 
+        JOIN users u ON ui.user_id = u.id 
+        WHERE p.user_id = ? AND ui.type = 'like'
+        ORDER BY ui.create_at DESC
+    ''', (user_id,))
+    return cursor.fetchall()

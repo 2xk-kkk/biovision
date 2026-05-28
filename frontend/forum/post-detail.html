@@ -503,6 +503,55 @@
       background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
     }
 
+    .comment-avatar-link {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .comment-avatar-link:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .comment-avatar-container {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    }
+
+    .comment-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .comment-avatar-fallback {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    }
+
     .comment-avatar-small.orange {
       background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
     }
@@ -1112,6 +1161,44 @@
       return params.get("id") || 1;
     }
 
+    // ================= 用户互动状态持久化（与论坛主页同步）=================
+    
+    /**
+     * 获取用户互动状态
+     */
+    function getUserInteractions() {
+      try {
+        const stored = localStorage.getItem('user_interactions');
+        if (stored) {
+          return JSON.parse(stored);
+        }
+      } catch (e) {
+        console.error('解析用户互动数据失败:', e);
+      }
+      return { likes: {}, collects: {} };
+    }
+
+    /**
+     * 保存用户互动状态
+     * @param {Object} interactions - 用户互动状态对象
+     */
+    function saveUserInteractions(interactions) {
+      localStorage.setItem('user_interactions', JSON.stringify(interactions));
+    }
+
+    /**
+     * 更新帖子点赞数据（与论坛主页同步）
+     * @param {string} postId - 帖子ID
+     * @param {number} likeCount - 点赞数
+     * @param {boolean} isLiked - 是否已点赞
+     */
+    function updatePostLikeCount(postId, likeCount, isLiked) {
+      const interactions = getUserInteractions();
+      interactions.likes[postId] = { liked: isLiked, count: likeCount };
+      saveUserInteractions(interactions);
+      console.log('点赞数据已保存:', postId, isLiked, likeCount);
+    }
+
     const postId = getPostId();
 
     window.onload = () => {
@@ -1197,9 +1284,33 @@
           <span><i class="far fa-eye"></i>${post.view_count || 0} 次浏览</span>
         `;
 
-        document.getElementById("likeCount").textContent = post.like_count || 0;
+        // 从localStorage读取点赞状态（与论坛主页同步）
+        const interactions = getUserInteractions();
+        const likeData = interactions.likes[postId];
+        
+        if (likeData && likeData.count !== undefined) {
+          document.getElementById("likeCount").textContent = likeData.count;
+        } else {
+          document.getElementById("likeCount").textContent = post.like_count || 0;
+        }
+        
         document.getElementById("commentCount").textContent = post.comment_count || 0;
         document.getElementById("commentsCount").textContent = post.comment_count || 0;
+
+        // 设置点赞按钮状态
+        const likeBtn = document.getElementById("likeBtn");
+        const likeIcon = likeBtn ? likeBtn.querySelector("i") : null;
+        if (likeIcon) {
+          if (likeData && likeData.liked) {
+            likeIcon.classList.remove('far');
+            likeIcon.classList.add('fas');
+            likeBtn.classList.add('liked');
+          } else {
+            likeIcon.classList.remove('fas');
+            likeIcon.classList.add('far');
+            likeBtn.classList.remove('liked');
+          }
+        }
 
         const tagLabels = {
           'Question_discussion': '学习讨论',
@@ -1227,9 +1338,41 @@
       }
     }
 
+    // 获取关注状态缓存键
+    function getFollowCacheKey(userId) {
+      return `follow_status_${userId}`;
+    }
+
+    // 从缓存获取关注状态
+    function getFollowStatusFromCache(userId) {
+      try {
+        const cached = localStorage.getItem(getFollowCacheKey(userId));
+        return cached === 'true';
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // 设置关注状态到缓存
+    function setFollowStatusToCache(userId, status) {
+      try {
+        localStorage.setItem(getFollowCacheKey(userId), String(status));
+      } catch (e) {
+        console.warn('写入关注状态缓存失败:', e);
+      }
+    }
+
     // 检查关注状态
     async function checkFollowStatus() {
       if (!currentUserId || !postUserId) return;
+      
+      // 先尝试从缓存读取
+      const cachedStatus = getFollowStatusFromCache(postUserId);
+      if (cachedStatus !== null) {
+        isFollowed = cachedStatus;
+      }
+      
+      // 再从API获取最新状态
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}/user/${postUserId}/follow/status`, {
@@ -1238,9 +1381,11 @@
         const data = await res.json();
         if (data.success) {
           isFollowed = data.data.followed;
+          setFollowStatusToCache(postUserId, isFollowed);
         }
       } catch (e) {
-        isFollowed = false;
+        console.warn('检查关注状态失败:', e);
+        // 如果API失败，保持缓存中的状态
       }
     }
 
@@ -1308,6 +1453,8 @@
 
         if (data.success) {
           isFollowed = !isFollowed;
+          // 更新缓存，确保两个页面同步
+          setFollowStatusToCache(postUserId, isFollowed);
           renderFollowButtonOnce();
           // 关键：刷新粉丝数
           await loadUserStats(postUserId);
@@ -1480,9 +1627,31 @@
         `;
       }
 
+      // 生成头像HTML（支持真实头像和首字母fallback）
+      let avatarHtml;
+      if (comment.avatar && comment.avatar !== 'null' && comment.avatar !== 'undefined') {
+        let avatarUrl = comment.avatar;
+        if (avatarUrl.startsWith('data:image')) {
+          avatarHtml = `<img src="${avatarUrl}" alt="${comment.username}" class="comment-avatar-img" />`;
+        } else {
+          if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+            avatarUrl = `/uploads/${avatarUrl}`;
+          }
+          avatarUrl = avatarUrl + '?t=' + Date.now();
+          avatarHtml = `
+            <div class="comment-avatar-container">
+              <img src="${avatarUrl}" alt="${comment.username}" class="comment-avatar-img" />
+              <div class="comment-avatar-fallback">${(comment.username || "匿").charAt(0)}</div>
+            </div>
+          `;
+        }
+      } else {
+        avatarHtml = `<div class="comment-avatar-small">${(comment.username || "匿").charAt(0)}</div>`;
+      }
+
       return `
         <div class="comment-item" data-comment-id="${comment.id}">
-          <a href="${userProfileUrl}" class="comment-avatar-small" title="查看主页">${(comment.username || "匿").charAt(0)}</a>
+          <a href="${userProfileUrl}" class="comment-avatar-link" title="查看主页">${avatarHtml}</a>
           <div class="comment-body">
             <div class="comment-header">
               <a href="${userProfileUrl}" class="comment-author">${comment.username || "匿名用户"}</a>
@@ -1626,31 +1795,22 @@
           const commentCountEl = document.getElementById("commentCount");
 
           if (likeCountEl && result.data) {
-            if (likeIcon) {
-              if (likeIcon.classList.contains('fas')) {
-                likeIcon.classList.remove('fas');
-                likeIcon.classList.add('far');
-              } else {
-                likeIcon.classList.remove('far');
-                likeIcon.classList.add('fas');
-              }
-            }
-
             if (result.data.liked) {
               likeIcon.classList.remove('far');
               likeIcon.classList.add('fas');
               likeBtn.classList.add('liked');
-              localStorage.setItem('liked_' + postId, 'true');
             } else {
               likeIcon.classList.remove('fas');
               likeIcon.classList.add('far');
               likeBtn.classList.remove('liked');
-              localStorage.removeItem('liked_' + postId);
             }
 
             if (result.data.like_count !== undefined) {
               likeCountEl.textContent = result.data.like_count;
             }
+
+            // ===== 持久化点赞状态和数量（与论坛主页同步）=====
+            updatePostLikeCount(postId, result.data.like_count || 0, result.data.liked);
 
             if (result.data && result.data.comment_count !== undefined && commentCountEl) {
               commentCountEl.textContent = result.data.comment_count;
@@ -1668,15 +1828,47 @@
     }
 
     // 评论点赞
-    function likeComment(btn, commentId) {
+    async function likeComment(btn, commentId) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('请先登录');
+        return;
+      }
+
       const numSpan = btn.querySelector('.like-num');
       let num = parseInt(numSpan.textContent);
-      if (btn.classList.contains('active')) {
-        numSpan.textContent = num - 1;
-        btn.classList.remove('active');
-      } else {
-        numSpan.textContent = num + 1;
-        btn.classList.add('active');
+
+      try {
+        const res = await fetch(`${API_BASE}/comment/${commentId}/like`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          }
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          numSpan.textContent = result.data.like_count;
+          if (result.data.liked) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        } else {
+          alert(result.msg || "点赞失败");
+        }
+      } catch (err) {
+        console.error("评论点赞失败:", err);
+        // 如果接口调用失败，至少保持前端显示正确
+        if (btn.classList.contains('active')) {
+          numSpan.textContent = num - 1;
+          btn.classList.remove('active');
+        } else {
+          numSpan.textContent = num + 1;
+          btn.classList.add('active');
+        }
       }
     }
 
@@ -1772,10 +1964,27 @@
     const token = localStorage.getItem('token');
     const collectBtn = document.getElementById('collectBtn');
 
+    // 获取用户互动状态（与 main.html 保持一致）
+    function getUserInteractions() {
+      try {
+        const data = localStorage.getItem('user_interactions');
+        return data ? JSON.parse(data) : { likes: {}, collects: {} };
+      } catch {
+        return { likes: {}, collects: {} };
+      }
+    }
+
+    // 保存用户互动状态（与 main.html 保持一致）
+    function saveUserInteractions(interactions) {
+      localStorage.setItem('user_interactions', JSON.stringify(interactions));
+    }
+
     function initCollectStatus() {
       if (!token || !postId) return;
-      const saved = localStorage.getItem('collected_' + postId);
-      if (saved === 'true') {
+      // 从统一的 user_interactions 对象中读取收藏状态
+      const interactions = getUserInteractions();
+      const collectData = interactions.collects[postId];
+      if (collectData && collectData.collected) {
         collectBtn.innerHTML = '<i class="fas fa-bookmark"></i> 已收藏';
         collectBtn.style.color = '#3B82F6';
       }
@@ -1796,16 +2005,20 @@
 
         if (data.success) {
           const isCollected = data.data.is_collected;
+          const collectCount = data.data.collect_count || 0;
 
           if (isCollected) {
             collectBtn.innerHTML = '<i class="fas fa-bookmark"></i> 已收藏';
             collectBtn.style.color = '#3B82F6';
-            localStorage.setItem('collected_' + postId, 'true');
           } else {
             collectBtn.innerHTML = '<i class="far fa-bookmark"></i> 收藏';
             collectBtn.style.color = '';
-            localStorage.removeItem('collected_' + postId);
           }
+
+          // 更新统一的 user_interactions 对象（与 main.html 同步）
+          const interactions = getUserInteractions();
+          interactions.collects[postId] = { collected: isCollected, count: collectCount };
+          saveUserInteractions(interactions);
         } else {
           alert(data.msg || '收藏失败');
         }

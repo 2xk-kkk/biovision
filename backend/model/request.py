@@ -20,6 +20,16 @@ class changeAvatarRequest(BaseModel):
 class changeIntroductionRequest(BaseModel):
     introduction: str=Field(example="这是我的个人简介...", description="个人简介")
 
+class changeIpAddressRequest(BaseModel):
+    ip_address: str=Field(example="北京", description="IP地址（城市名称）")
+
+class updateUserInfoRequest(BaseModel):
+    school: str = Field(None, example="成都东软学院", description="学校")
+    grade: str = Field(None, example="高一", description="年级")
+    role: str = Field(None, example="学生", description="身份")
+    introduction: str = Field(None, example="这是我的个人简介", description="个人简介")
+    ip_address: str = Field(None, example="北京", description="IP地址（城市名称）")
+
 from pydantic import BaseModel
 class CreatePostRequest(BaseModel):
     content: str

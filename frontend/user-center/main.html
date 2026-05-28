@@ -545,6 +545,174 @@
             font-weight: 800;
         }
 
+        /* 可点击的统计框 */
+        .stat-box-clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .stat-box-clickable:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        /* 模态框遮罩 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        /* 模态框内容 */
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 70vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 模态框头部 */
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1a1a2e;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #666;
+        }
+
+        /* 模态框列表 */
+        .modal-list {
+            padding: 12px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        /* 用户项 */
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-item:hover {
+            background: #f5f7fa;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .user-avatar-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-avatar-container {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        .user-avatar-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .user-info {
+            margin-left: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1a1a2e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-id {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
         /* 右侧按钮组 */
         .hero-buttons {
             display: flex;
@@ -1034,6 +1202,124 @@
             color: #334155;
         }
 
+        .custom-combobox {
+            position: relative;
+            width: 100%;
+        }
+
+        .combobox-input {
+            padding-right: 35px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .combobox-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: auto;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 0.7rem;
+            transition: color 0.2s;
+            user-select: none;
+        }
+
+        .combobox-arrow:hover {
+            color: #334155;
+        }
+
+        .combobox-dropdown {
+            position: fixed;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            max-height: 400px;
+            overflow: hidden;
+            display: none;
+            border: 1px solid #e2e8f0;
+            width: 320px;
+            max-width: calc(100vw - 20px);
+        }
+
+        .combobox-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 12px 16px;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .dropdown-search {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .dropdown-search input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .dropdown-search input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .dropdown-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .dropdown-group {
+            margin-bottom: 4px;
+        }
+
+        .group-label {
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .group-items {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0 8px;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #334155;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .dropdown-item:hover {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .dropdown-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
         .profile-input,
         .profile-select {
             width: 100%;
@@ -1465,7 +1751,7 @@
                     <img src="../images/touxiang.png" alt="Avatar" class="avatar" id="topbarAvatarImage" />
                     <div class="upload-overlay">+</div>
                     <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <a href="user-center/main.html" class="user-dropdown-item">
+                        <a href="main.html" class="user-dropdown-item">
                             <i class="fas fa-user"></i> 个人中心
                         </a>
                         <a href="#" class="user-dropdown-item">
@@ -1501,7 +1787,7 @@
                         <div class="meta-row">
                             <span class="meta-chip" id="gradeChipText">-</span>
                             <span class="meta-chip" id="schoolChipText">🏫:-</span>
-                            <span class="meta-chip">📍IP：-</span>
+                            <span class="meta-chip" id="ipChipText">📍IP：-</span>
                             <span class="meta-chip">已关注 0</span>
                         </div>
                     </div>
@@ -1510,15 +1796,15 @@
                 <!-- 右侧：统计数据和主操作按钮 -->
                 <div class="profile-actions">
                     <div class="stat-strip">
-                        <div class="stat-box">
+                        <div class="stat-box stat-box-clickable" id="likeBox">
                             <div class="label">获赞</div>
                             <div class="value" id="likeCount">0</div>
                         </div>
-                        <div class="stat-box">
+                        <div class="stat-box stat-box-clickable" id="followerBox">
                             <div class="label">粉丝</div>
                             <div class="value" id="followerCount">0</div>
                         </div>
-                        <div class="stat-box">
+                        <div class="stat-box stat-box-clickable" id="followingBox">
                             <div class="label">关注</div>
                             <div class="value" id="followingCount">0</div>
                         </div>
@@ -2018,6 +2304,431 @@
                                 <option value="老师">老师</option>
                             </select>
                         </div>
+
+                        <div class="profile-field">
+                            <label for="profileIpInput">IP地址 <span style="color: #6b7280; font-size: 0.8rem;">(可选择或手动输入)</span></label>
+                            <div class="custom-combobox">
+                                <input class="profile-input combobox-input" id="profileIpInput" type="text" 
+                                    placeholder="请输入或选择城市" autocomplete="off" />
+                                <span class="combobox-arrow" onclick="toggleIpDropdown()">▼</span>
+                                <div class="combobox-dropdown" id="ipDropdown">
+                                    <div class="dropdown-header">选择城市</div>
+                                    <div class="dropdown-search">
+                                        <input type="text" id="ipSearchInput" placeholder="搜索城市..." />
+                                    </div>
+                                    <div class="dropdown-content" id="ipDropdownContent">
+                                        <div class="dropdown-group">
+                                            <div class="group-label">热门城市</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="北京">北京</div>
+                                                <div class="dropdown-item" data-value="上海">上海</div>
+                                                <div class="dropdown-item" data-value="广州">广州</div>
+                                                <div class="dropdown-item" data-value="深圳">深圳</div>
+                                                <div class="dropdown-item" data-value="杭州">杭州</div>
+                                                <div class="dropdown-item" data-value="成都">成都</div>
+                                                <div class="dropdown-item" data-value="重庆">重庆</div>
+                                                <div class="dropdown-item" data-value="武汉">武汉</div>
+                                                <div class="dropdown-item" data-value="南京">南京</div>
+                                                <div class="dropdown-item" data-value="西安">西安</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华北地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="北京">北京</div>
+                                                <div class="dropdown-item" data-value="天津">天津</div>
+                                                <div class="dropdown-item" data-value="石家庄">石家庄</div>
+                                                <div class="dropdown-item" data-value="太原">太原</div>
+                                                <div class="dropdown-item" data-value="呼和浩特">呼和浩特</div>
+                                                <div class="dropdown-item" data-value="唐山">唐山</div>
+                                                <div class="dropdown-item" data-value="秦皇岛">秦皇岛</div>
+                                                <div class="dropdown-item" data-value="邯郸">邯郸</div>
+                                                <div class="dropdown-item" data-value="保定">保定</div>
+                                                <div class="dropdown-item" data-value="张家口">张家口</div>
+                                                <div class="dropdown-item" data-value="承德">承德</div>
+                                                <div class="dropdown-item" data-value="廊坊">廊坊</div>
+                                                <div class="dropdown-item" data-value="沧州">沧州</div>
+                                                <div class="dropdown-item" data-value="衡水">衡水</div>
+                                                <div class="dropdown-item" data-value="邢台">邢台</div>
+                                                <div class="dropdown-item" data-value="大同">大同</div>
+                                                <div class="dropdown-item" data-value="阳泉">阳泉</div>
+                                                <div class="dropdown-item" data-value="长治">长治</div>
+                                                <div class="dropdown-item" data-value="晋城">晋城</div>
+                                                <div class="dropdown-item" data-value="朔州">朔州</div>
+                                                <div class="dropdown-item" data-value="晋中">晋中</div>
+                                                <div class="dropdown-item" data-value="运城">运城</div>
+                                                <div class="dropdown-item" data-value="忻州">忻州</div>
+                                                <div class="dropdown-item" data-value="临汾">临汾</div>
+                                                <div class="dropdown-item" data-value="吕梁">吕梁</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">东北地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="沈阳">沈阳</div>
+                                                <div class="dropdown-item" data-value="大连">大连</div>
+                                                <div class="dropdown-item" data-value="长春">长春</div>
+                                                <div class="dropdown-item" data-value="哈尔滨">哈尔滨</div>
+                                                <div class="dropdown-item" data-value="鞍山">鞍山</div>
+                                                <div class="dropdown-item" data-value="抚顺">抚顺</div>
+                                                <div class="dropdown-item" data-value="本溪">本溪</div>
+                                                <div class="dropdown-item" data-value="丹东">丹东</div>
+                                                <div class="dropdown-item" data-value="锦州">锦州</div>
+                                                <div class="dropdown-item" data-value="营口">营口</div>
+                                                <div class="dropdown-item" data-value="阜新">阜新</div>
+                                                <div class="dropdown-item" data-value="辽阳">辽阳</div>
+                                                <div class="dropdown-item" data-value="盘锦">盘锦</div>
+                                                <div class="dropdown-item" data-value="铁岭">铁岭</div>
+                                                <div class="dropdown-item" data-value="朝阳">朝阳</div>
+                                                <div class="dropdown-item" data-value="葫芦岛">葫芦岛</div>
+                                                <div class="dropdown-item" data-value="吉林">吉林</div>
+                                                <div class="dropdown-item" data-value="四平">四平</div>
+                                                <div class="dropdown-item" data-value="辽源">辽源</div>
+                                                <div class="dropdown-item" data-value="通化">通化</div>
+                                                <div class="dropdown-item" data-value="白山">白山</div>
+                                                <div class="dropdown-item" data-value="松原">松原</div>
+                                                <div class="dropdown-item" data-value="白城">白城</div>
+                                                <div class="dropdown-item" data-value="齐齐哈尔">齐齐哈尔</div>
+                                                <div class="dropdown-item" data-value="鸡西">鸡西</div>
+                                                <div class="dropdown-item" data-value="鹤岗">鹤岗</div>
+                                                <div class="dropdown-item" data-value="双鸭山">双鸭山</div>
+                                                <div class="dropdown-item" data-value="大庆">大庆</div>
+                                                <div class="dropdown-item" data-value="伊春">伊春</div>
+                                                <div class="dropdown-item" data-value="佳木斯">佳木斯</div>
+                                                <div class="dropdown-item" data-value="七台河">七台河</div>
+                                                <div class="dropdown-item" data-value="牡丹江">牡丹江</div>
+                                                <div class="dropdown-item" data-value="黑河">黑河</div>
+                                                <div class="dropdown-item" data-value="绥化">绥化</div>
+                                                <div class="dropdown-item" data-value="大兴安岭">大兴安岭</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华东地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="上海">上海</div>
+                                                <div class="dropdown-item" data-value="南京">南京</div>
+                                                <div class="dropdown-item" data-value="苏州">苏州</div>
+                                                <div class="dropdown-item" data-value="无锡">无锡</div>
+                                                <div class="dropdown-item" data-value="常州">常州</div>
+                                                <div class="dropdown-item" data-value="镇江">镇江</div>
+                                                <div class="dropdown-item" data-value="扬州">扬州</div>
+                                                <div class="dropdown-item" data-value="泰州">泰州</div>
+                                                <div class="dropdown-item" data-value="南通">南通</div>
+                                                <div class="dropdown-item" data-value="盐城">盐城</div>
+                                                <div class="dropdown-item" data-value="淮安">淮安</div>
+                                                <div class="dropdown-item" data-value="连云港">连云港</div>
+                                                <div class="dropdown-item" data-value="宿迁">宿迁</div>
+                                                <div class="dropdown-item" data-value="杭州">杭州</div>
+                                                <div class="dropdown-item" data-value="宁波">宁波</div>
+                                                <div class="dropdown-item" data-value="温州">温州</div>
+                                                <div class="dropdown-item" data-value="嘉兴">嘉兴</div>
+                                                <div class="dropdown-item" data-value="湖州">湖州</div>
+                                                <div class="dropdown-item" data-value="绍兴">绍兴</div>
+                                                <div class="dropdown-item" data-value="金华">金华</div>
+                                                <div class="dropdown-item" data-value="衢州">衢州</div>
+                                                <div class="dropdown-item" data-value="舟山">舟山</div>
+                                                <div class="dropdown-item" data-value="台州">台州</div>
+                                                <div class="dropdown-item" data-value="丽水">丽水</div>
+                                                <div class="dropdown-item" data-value="合肥">合肥</div>
+                                                <div class="dropdown-item" data-value="芜湖">芜湖</div>
+                                                <div class="dropdown-item" data-value="蚌埠">蚌埠</div>
+                                                <div class="dropdown-item" data-value="淮南">淮南</div>
+                                                <div class="dropdown-item" data-value="马鞍山">马鞍山</div>
+                                                <div class="dropdown-item" data-value="淮北">淮北</div>
+                                                <div class="dropdown-item" data-value="铜陵">铜陵</div>
+                                                <div class="dropdown-item" data-value="安庆">安庆</div>
+                                                <div class="dropdown-item" data-value="黄山">黄山</div>
+                                                <div class="dropdown-item" data-value="滁州">滁州</div>
+                                                <div class="dropdown-item" data-value="阜阳">阜阳</div>
+                                                <div class="dropdown-item" data-value="宿州">宿州</div>
+                                                <div class="dropdown-item" data-value="六安">六安</div>
+                                                <div class="dropdown-item" data-value="亳州">亳州</div>
+                                                <div class="dropdown-item" data-value="池州">池州</div>
+                                                <div class="dropdown-item" data-value="宣城">宣城</div>
+                                                <div class="dropdown-item" data-value="福州">福州</div>
+                                                <div class="dropdown-item" data-value="厦门">厦门</div>
+                                                <div class="dropdown-item" data-value="莆田">莆田</div>
+                                                <div class="dropdown-item" data-value="三明">三明</div>
+                                                <div class="dropdown-item" data-value="泉州">泉州</div>
+                                                <div class="dropdown-item" data-value="漳州">漳州</div>
+                                                <div class="dropdown-item" data-value="南平">南平</div>
+                                                <div class="dropdown-item" data-value="龙岩">龙岩</div>
+                                                <div class="dropdown-item" data-value="宁德">宁德</div>
+                                                <div class="dropdown-item" data-value="济南">济南</div>
+                                                <div class="dropdown-item" data-value="青岛">青岛</div>
+                                                <div class="dropdown-item" data-value="淄博">淄博</div>
+                                                <div class="dropdown-item" data-value="枣庄">枣庄</div>
+                                                <div class="dropdown-item" data-value="东营">东营</div>
+                                                <div class="dropdown-item" data-value="烟台">烟台</div>
+                                                <div class="dropdown-item" data-value="潍坊">潍坊</div>
+                                                <div class="dropdown-item" data-value="济宁">济宁</div>
+                                                <div class="dropdown-item" data-value="泰安">泰安</div>
+                                                <div class="dropdown-item" data-value="威海">威海</div>
+                                                <div class="dropdown-item" data-value="日照">日照</div>
+                                                <div class="dropdown-item" data-value="莱芜">莱芜</div>
+                                                <div class="dropdown-item" data-value="临沂">临沂</div>
+                                                <div class="dropdown-item" data-value="德州">德州</div>
+                                                <div class="dropdown-item" data-value="聊城">聊城</div>
+                                                <div class="dropdown-item" data-value="滨州">滨州</div>
+                                                <div class="dropdown-item" data-value="菏泽">菏泽</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华中地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="武汉">武汉</div>
+                                                <div class="dropdown-item" data-value="黄石">黄石</div>
+                                                <div class="dropdown-item" data-value="十堰">十堰</div>
+                                                <div class="dropdown-item" data-value="宜昌">宜昌</div>
+                                                <div class="dropdown-item" data-value="襄阳">襄阳</div>
+                                                <div class="dropdown-item" data-value="鄂州">鄂州</div>
+                                                <div class="dropdown-item" data-value="荆门">荆门</div>
+                                                <div class="dropdown-item" data-value="孝感">孝感</div>
+                                                <div class="dropdown-item" data-value="荆州">荆州</div>
+                                                <div class="dropdown-item" data-value="黄冈">黄冈</div>
+                                                <div class="dropdown-item" data-value="咸宁">咸宁</div>
+                                                <div class="dropdown-item" data-value="随州">随州</div>
+                                                <div class="dropdown-item" data-value="恩施">恩施</div>
+                                                <div class="dropdown-item" data-value="仙桃">仙桃</div>
+                                                <div class="dropdown-item" data-value="天门">天门</div>
+                                                <div class="dropdown-item" data-value="潜江">潜江</div>
+                                                <div class="dropdown-item" data-value="神农架">神农架</div>
+                                                <div class="dropdown-item" data-value="郑州">郑州</div>
+                                                <div class="dropdown-item" data-value="开封">开封</div>
+                                                <div class="dropdown-item" data-value="洛阳">洛阳</div>
+                                                <div class="dropdown-item" data-value="平顶山">平顶山</div>
+                                                <div class="dropdown-item" data-value="安阳">安阳</div>
+                                                <div class="dropdown-item" data-value="鹤壁">鹤壁</div>
+                                                <div class="dropdown-item" data-value="新乡">新乡</div>
+                                                <div class="dropdown-item" data-value="焦作">焦作</div>
+                                                <div class="dropdown-item" data-value="濮阳">濮阳</div>
+                                                <div class="dropdown-item" data-value="许昌">许昌</div>
+                                                <div class="dropdown-item" data-value="漯河">漯河</div>
+                                                <div class="dropdown-item" data-value="三门峡">三门峡</div>
+                                                <div class="dropdown-item" data-value="商丘">商丘</div>
+                                                <div class="dropdown-item" data-value="周口">周口</div>
+                                                <div class="dropdown-item" data-value="驻马店">驻马店</div>
+                                                <div class="dropdown-item" data-value="南阳">南阳</div>
+                                                <div class="dropdown-item" data-value="信阳">信阳</div>
+                                                <div class="dropdown-item" data-value="济源">济源</div>
+                                                <div class="dropdown-item" data-value="长沙">长沙</div>
+                                                <div class="dropdown-item" data-value="株洲">株洲</div>
+                                                <div class="dropdown-item" data-value="湘潭">湘潭</div>
+                                                <div class="dropdown-item" data-value="衡阳">衡阳</div>
+                                                <div class="dropdown-item" data-value="邵阳">邵阳</div>
+                                                <div class="dropdown-item" data-value="岳阳">岳阳</div>
+                                                <div class="dropdown-item" data-value="常德">常德</div>
+                                                <div class="dropdown-item" data-value="张家界">张家界</div>
+                                                <div class="dropdown-item" data-value="益阳">益阳</div>
+                                                <div class="dropdown-item" data-value="郴州">郴州</div>
+                                                <div class="dropdown-item" data-value="永州">永州</div>
+                                                <div class="dropdown-item" data-value="怀化">怀化</div>
+                                                <div class="dropdown-item" data-value="娄底">娄底</div>
+                                                <div class="dropdown-item" data-value="湘西">湘西</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华南地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="广州">广州</div>
+                                                <div class="dropdown-item" data-value="深圳">深圳</div>
+                                                <div class="dropdown-item" data-value="珠海">珠海</div>
+                                                <div class="dropdown-item" data-value="汕头">汕头</div>
+                                                <div class="dropdown-item" data-value="佛山">佛山</div>
+                                                <div class="dropdown-item" data-value="韶关">韶关</div>
+                                                <div class="dropdown-item" data-value="湛江">湛江</div>
+                                                <div class="dropdown-item" data-value="肇庆">肇庆</div>
+                                                <div class="dropdown-item" data-value="江门">江门</div>
+                                                <div class="dropdown-item" data-value="茂名">茂名</div>
+                                                <div class="dropdown-item" data-value="惠州">惠州</div>
+                                                <div class="dropdown-item" data-value="梅州">梅州</div>
+                                                <div class="dropdown-item" data-value="汕尾">汕尾</div>
+                                                <div class="dropdown-item" data-value="河源">河源</div>
+                                                <div class="dropdown-item" data-value="阳江">阳江</div>
+                                                <div class="dropdown-item" data-value="清远">清远</div>
+                                                <div class="dropdown-item" data-value="东莞">东莞</div>
+                                                <div class="dropdown-item" data-value="中山">中山</div>
+                                                <div class="dropdown-item" data-value="潮州">潮州</div>
+                                                <div class="dropdown-item" data-value="揭阳">揭阳</div>
+                                                <div class="dropdown-item" data-value="云浮">云浮</div>
+                                                <div class="dropdown-item" data-value="南宁">南宁</div>
+                                                <div class="dropdown-item" data-value="柳州">柳州</div>
+                                                <div class="dropdown-item" data-value="桂林">桂林</div>
+                                                <div class="dropdown-item" data-value="梧州">梧州</div>
+                                                <div class="dropdown-item" data-value="北海">北海</div>
+                                                <div class="dropdown-item" data-value="防城港">防城港</div>
+                                                <div class="dropdown-item" data-value="钦州">钦州</div>
+                                                <div class="dropdown-item" data-value="贵港">贵港</div>
+                                                <div class="dropdown-item" data-value="玉林">玉林</div>
+                                                <div class="dropdown-item" data-value="百色">百色</div>
+                                                <div class="dropdown-item" data-value="贺州">贺州</div>
+                                                <div class="dropdown-item" data-value="河池">河池</div>
+                                                <div class="dropdown-item" data-value="来宾">来宾</div>
+                                                <div class="dropdown-item" data-value="崇左">崇左</div>
+                                                <div class="dropdown-item" data-value="海口">海口</div>
+                                                <div class="dropdown-item" data-value="三亚">三亚</div>
+                                                <div class="dropdown-item" data-value="三沙">三沙</div>
+                                                <div class="dropdown-item" data-value="儋州">儋州</div>
+                                                <div class="dropdown-item" data-value="五指山">五指山</div>
+                                                <div class="dropdown-item" data-value="琼海">琼海</div>
+                                                <div class="dropdown-item" data-value="文昌">文昌</div>
+                                                <div class="dropdown-item" data-value="万宁">万宁</div>
+                                                <div class="dropdown-item" data-value="东方">东方</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">西南地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="成都">成都</div>
+                                                <div class="dropdown-item" data-value="自贡">自贡</div>
+                                                <div class="dropdown-item" data-value="攀枝花">攀枝花</div>
+                                                <div class="dropdown-item" data-value="泸州">泸州</div>
+                                                <div class="dropdown-item" data-value="德阳">德阳</div>
+                                                <div class="dropdown-item" data-value="绵阳">绵阳</div>
+                                                <div class="dropdown-item" data-value="广元">广元</div>
+                                                <div class="dropdown-item" data-value="遂宁">遂宁</div>
+                                                <div class="dropdown-item" data-value="内江">内江</div>
+                                                <div class="dropdown-item" data-value="乐山">乐山</div>
+                                                <div class="dropdown-item" data-value="南充">南充</div>
+                                                <div class="dropdown-item" data-value="眉山">眉山</div>
+                                                <div class="dropdown-item" data-value="宜宾">宜宾</div>
+                                                <div class="dropdown-item" data-value="广安">广安</div>
+                                                <div class="dropdown-item" data-value="达州">达州</div>
+                                                <div class="dropdown-item" data-value="雅安">雅安</div>
+                                                <div class="dropdown-item" data-value="巴中">巴中</div>
+                                                <div class="dropdown-item" data-value="资阳">资阳</div>
+                                                <div class="dropdown-item" data-value="阿坝">阿坝</div>
+                                                <div class="dropdown-item" data-value="甘孜">甘孜</div>
+                                                <div class="dropdown-item" data-value="凉山">凉山</div>
+                                                <div class="dropdown-item" data-value="重庆">重庆</div>
+                                                <div class="dropdown-item" data-value="万州">万州</div>
+                                                <div class="dropdown-item" data-value="涪陵">涪陵</div>
+                                                <div class="dropdown-item" data-value="渝中">渝中</div>
+                                                <div class="dropdown-item" data-value="大渡口">大渡口</div>
+                                                <div class="dropdown-item" data-value="江北">江北</div>
+                                                <div class="dropdown-item" data-value="沙坪坝">沙坪坝</div>
+                                                <div class="dropdown-item" data-value="九龙坡">九龙坡</div>
+                                                <div class="dropdown-item" data-value="南岸">南岸</div>
+                                                <div class="dropdown-item" data-value="北碚">北碚</div>
+                                                <div class="dropdown-item" data-value="綦江">綦江</div>
+                                                <div class="dropdown-item" data-value="大足">大足</div>
+                                                <div class="dropdown-item" data-value="渝北">渝北</div>
+                                                <div class="dropdown-item" data-value="巴南">巴南</div>
+                                                <div class="dropdown-item" data-value="黔江">黔江</div>
+                                                <div class="dropdown-item" data-value="长寿">长寿</div>
+                                                <div class="dropdown-item" data-value="江津">江津</div>
+                                                <div class="dropdown-item" data-value="合川">合川</div>
+                                                <div class="dropdown-item" data-value="永川">永川</div>
+                                                <div class="dropdown-item" data-value="南川">南川</div>
+                                                <div class="dropdown-item" data-value="昆明">昆明</div>
+                                                <div class="dropdown-item" data-value="曲靖">曲靖</div>
+                                                <div class="dropdown-item" data-value="玉溪">玉溪</div>
+                                                <div class="dropdown-item" data-value="保山">保山</div>
+                                                <div class="dropdown-item" data-value="昭通">昭通</div>
+                                                <div class="dropdown-item" data-value="丽江">丽江</div>
+                                                <div class="dropdown-item" data-value="普洱">普洱</div>
+                                                <div class="dropdown-item" data-value="临沧">临沧</div>
+                                                <div class="dropdown-item" data-value="德宏">德宏</div>
+                                                <div class="dropdown-item" data-value="怒江">怒江</div>
+                                                <div class="dropdown-item" data-value="迪庆">迪庆</div>
+                                                <div class="dropdown-item" data-value="大理">大理</div>
+                                                <div class="dropdown-item" data-value="楚雄">楚雄</div>
+                                                <div class="dropdown-item" data-value="红河">红河</div>
+                                                <div class="dropdown-item" data-value="文山">文山</div>
+                                                <div class="dropdown-item" data-value="西双版纳">西双版纳</div>
+                                                <div class="dropdown-item" data-value="贵阳">贵阳</div>
+                                                <div class="dropdown-item" data-value="六盘水">六盘水</div>
+                                                <div class="dropdown-item" data-value="遵义">遵义</div>
+                                                <div class="dropdown-item" data-value="安顺">安顺</div>
+                                                <div class="dropdown-item" data-value="毕节">毕节</div>
+                                                <div class="dropdown-item" data-value="铜仁">铜仁</div>
+                                                <div class="dropdown-item" data-value="黔西南">黔西南</div>
+                                                <div class="dropdown-item" data-value="黔东南">黔东南</div>
+                                                <div class="dropdown-item" data-value="黔南">黔南</div>
+                                                <div class="dropdown-item" data-value="拉萨">拉萨</div>
+                                                <div class="dropdown-item" data-value="日喀则">日喀则</div>
+                                                <div class="dropdown-item" data-value="昌都">昌都</div>
+                                                <div class="dropdown-item" data-value="林芝">林芝</div>
+                                                <div class="dropdown-item" data-value="山南">山南</div>
+                                                <div class="dropdown-item" data-value="那曲">那曲</div>
+                                                <div class="dropdown-item" data-value="阿里">阿里</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">西北地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="西安">西安</div>
+                                                <div class="dropdown-item" data-value="铜川">铜川</div>
+                                                <div class="dropdown-item" data-value="宝鸡">宝鸡</div>
+                                                <div class="dropdown-item" data-value="咸阳">咸阳</div>
+                                                <div class="dropdown-item" data-value="渭南">渭南</div>
+                                                <div class="dropdown-item" data-value="延安">延安</div>
+                                                <div class="dropdown-item" data-value="汉中">汉中</div>
+                                                <div class="dropdown-item" data-value="榆林">榆林</div>
+                                                <div class="dropdown-item" data-value="安康">安康</div>
+                                                <div class="dropdown-item" data-value="商洛">商洛</div>
+                                                <div class="dropdown-item" data-value="兰州">兰州</div>
+                                                <div class="dropdown-item" data-value="嘉峪关">嘉峪关</div>
+                                                <div class="dropdown-item" data-value="金昌">金昌</div>
+                                                <div class="dropdown-item" data-value="白银">白银</div>
+                                                <div class="dropdown-item" data-value="天水">天水</div>
+                                                <div class="dropdown-item" data-value="武威">武威</div>
+                                                <div class="dropdown-item" data-value="张掖">张掖</div>
+                                                <div class="dropdown-item" data-value="平凉">平凉</div>
+                                                <div class="dropdown-item" data-value="酒泉">酒泉</div>
+                                                <div class="dropdown-item" data-value="庆阳">庆阳</div>
+                                                <div class="dropdown-item" data-value="定西">定西</div>
+                                                <div class="dropdown-item" data-value="陇南">陇南</div>
+                                                <div class="dropdown-item" data-value="临夏">临夏</div>
+                                                <div class="dropdown-item" data-value="甘南">甘南</div>
+                                                <div class="dropdown-item" data-value="西宁">西宁</div>
+                                                <div class="dropdown-item" data-value="海东">海东</div>
+                                                <div class="dropdown-item" data-value="海北">海北</div>
+                                                <div class="dropdown-item" data-value="黄南">黄南</div>
+                                                <div class="dropdown-item" data-value="海南">海南</div>
+                                                <div class="dropdown-item" data-value="果洛">果洛</div>
+                                                <div class="dropdown-item" data-value="玉树">玉树</div>
+                                                <div class="dropdown-item" data-value="海西">海西</div>
+                                                <div class="dropdown-item" data-value="银川">银川</div>
+                                                <div class="dropdown-item" data-value="石嘴山">石嘴山</div>
+                                                <div class="dropdown-item" data-value="吴忠">吴忠</div>
+                                                <div class="dropdown-item" data-value="固原">固原</div>
+                                                <div class="dropdown-item" data-value="中卫">中卫</div>
+                                                <div class="dropdown-item" data-value="乌鲁木齐">乌鲁木齐</div>
+                                                <div class="dropdown-item" data-value="克拉玛依">克拉玛依</div>
+                                                <div class="dropdown-item" data-value="吐鲁番">吐鲁番</div>
+                                                <div class="dropdown-item" data-value="哈密">哈密</div>
+                                                <div class="dropdown-item" data-value="昌吉">昌吉</div>
+                                                <div class="dropdown-item" data-value="博尔塔拉">博尔塔拉</div>
+                                                <div class="dropdown-item" data-value="巴音郭楞">巴音郭楞</div>
+                                                <div class="dropdown-item" data-value="阿克苏">阿克苏</div>
+                                                <div class="dropdown-item" data-value="克孜勒苏">克孜勒苏</div>
+                                                <div class="dropdown-item" data-value="喀什">喀什</div>
+                                                <div class="dropdown-item" data-value="和田">和田</div>
+                                                <div class="dropdown-item" data-value="伊犁">伊犁</div>
+                                                <div class="dropdown-item" data-value="塔城">塔城</div>
+                                                <div class="dropdown-item" data-value="阿勒泰">阿勒泰</div>
+                                                <div class="dropdown-item" data-value="石河子">石河子</div>
+                                                <div class="dropdown-item" data-value="阿拉尔">阿拉尔</div>
+                                                <div class="dropdown-item" data-value="图木舒克">图木舒克</div>
+                                                <div class="dropdown-item" data-value="五家渠">五家渠</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">港澳台及海外</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="香港">香港</div>
+                                                <div class="dropdown-item" data-value="澳门">澳门</div>
+                                                <div class="dropdown-item" data-value="台湾">台湾</div>
+                                                <div class="dropdown-item" data-value="台北">台北</div>
+                                                <div class="dropdown-item" data-value="高雄">高雄</div>
+                                                <div class="dropdown-item" data-value="海外">海外</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2157,6 +2868,7 @@
             document.getElementById('roleBadgeText').classList.remove('role-teacher');
             document.getElementById('gradeChipText').textContent = '-';
             document.getElementById('schoolChipText').textContent = '🏫:-';
+            document.getElementById('ipChipText').textContent = '📍IP：-';
             document.getElementById('profileIntroduction').innerHTML = '<span style="font-weight: 600;">个人简介：</span>请先登录以查看个人信息。<br>';
 
             const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d1d5db'/%3E%3Ccircle cx='50' cy='35' r='12' fill='%239ca3af'/%3E%3Cpath d='M30 60 Q50 85 70 60' fill='none' stroke='%239ca3af' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E`;
@@ -2199,27 +2911,107 @@
             `;
         }
 
+        function updateStudyData(user) {
+            // 更新学习时长
+            const studyHoursValue = document.getElementById('studyHoursValue');
+            const studyHoursBar = document.getElementById('studyHoursBar');
+            const studyHoursDesc = document.getElementById('studyHoursDesc');
+            
+            const studyHours = parseFloat(user.study_hours) || 0;
+            const studyGoal = 8; // 每周目标8小时
+            const hoursRate = studyGoal ? Math.min((studyHours / studyGoal) * 100, 100) : 0;
+            
+            if (studyHoursValue) {
+                studyHoursValue.textContent = `${studyHours} 小时`;
+            }
+            if (studyHoursBar) {
+                studyHoursBar.style.width = `${hoursRate}%`;
+            }
+            if (studyHoursDesc) {
+                studyHoursDesc.textContent = `已完成 ${studyHours} 小时 / 目标 ${studyGoal} 小时`;
+            }
+            
+            // 更新做题数量
+            const questionCountValue = document.getElementById('questionCountValue');
+            const questionCountBar = document.getElementById('questionCountBar');
+            const questionCountDesc = document.getElementById('questionCountDesc');
+            
+            const questionCount = parseInt(user.question_count) || 0;
+            const questionGoal = 100; // 每周目标100题
+            const questionRate = questionGoal ? Math.min((questionCount / questionGoal) * 100, 100) : 0;
+            
+            if (questionCountValue) {
+                questionCountValue.textContent = `${questionCount} 题`;
+            }
+            if (questionCountBar) {
+                questionCountBar.style.width = `${questionRate}%`;
+            }
+            if (questionCountDesc) {
+                questionCountDesc.textContent = `已完成 ${questionCount} 题 / 目标 ${questionGoal} 题`;
+            }
+            
+            // 更新错题比
+            const wrongRateValue = document.querySelector('.data-card .data-value:last-child');
+            const wrongRing = document.querySelector('.ring');
+            const wrongRingLabel = document.querySelector('.ring-label');
+            const wrongDesc = document.querySelector('.ring-wrap + p');
+            
+            const wrongCount = parseInt(user.wrong_count) || 0;
+            const wrongRate = questionCount > 0 ? Math.round((wrongCount / questionCount) * 100) : 18;
+            
+            if (wrongRateValue) {
+                wrongRateValue.textContent = `${wrongRate}%`;
+            }
+            if (wrongRing) {
+                wrongRing.style.setProperty('--value', `${wrongRate}%`);
+            }
+            if (wrongRingLabel) {
+                wrongRingLabel.textContent = `${wrongRate}%`;
+            }
+            if (wrongDesc) {
+                let advice = '';
+                if (wrongRate < 20) {
+                    advice = '错题占比较低，继续保持，建议优先复习最近一周错题。';
+                } else if (wrongRate < 40) {
+                    advice = '错题比例适中，建议加强薄弱知识点的复习。';
+                } else {
+                    advice = '错题占比较高，建议系统性地复习错题，找出薄弱环节。';
+                }
+                wrongDesc.textContent = advice;
+            }
+        }
+
         function updateUserInfo(user) {
             const profileNameText = document.getElementById('profileNameText');
             const roleBadgeText = document.getElementById('roleBadgeText');
             const gradeChipText = document.getElementById('gradeChipText');
             const schoolChipText = document.getElementById('schoolChipText');
+            const ipChipText = document.getElementById('ipChipText');
             const profileAvatarImage = document.getElementById('profileAvatarImage');
             const topbarAvatarImage = document.getElementById('topbarAvatarImage');
             const editProfileBtn = document.getElementById('editProfileBtn');
+            
+            // 更新学习数据
+            updateStudyData(user);
 
             if (profileNameText) {
                 profileNameText.textContent = user.username || '未设置';
             }
             if (roleBadgeText) {
-                roleBadgeText.textContent = '学生';
+                roleBadgeText.textContent = user.role || '学生';
                 roleBadgeText.classList.remove('role-teacher');
+                if (user.role === '老师') {
+                    roleBadgeText.classList.add('role-teacher');
+                }
             }
             if (gradeChipText) {
-                gradeChipText.textContent = '高一';
+                gradeChipText.textContent = user.grade || '未设置';
             }
             if (schoolChipText) {
-                schoolChipText.textContent = '🏫:成都东软学院';
+                schoolChipText.textContent = user.school ? `🏫:${user.school}` : '🏫:未设置';
+            }
+            if (ipChipText) {
+                ipChipText.textContent = user.ip_address ? `📍${user.ip_address}` : '📍:未设置';
             }
 
             const profileIntroduction = document.getElementById('profileIntroduction');
@@ -2341,8 +3133,8 @@
                         <div class="post-tools">
                             <span>👁 ${post.view_count || 0}</span>
                             <span>👍 ${post.like_count || 0}</span>
-                            <span>💬 评论</span>
-                            <span>⭐ 收藏</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
                         </div>
                         <button class="btn btn-secondary delete-post-btn" style="padding: 10px 14px;" data-post-id="${post.post_id}">删除</button>
                     </div>
@@ -2449,7 +3241,8 @@
                         <div class="post-tools">
                             <span>👁 ${post.view_count || 0}</span>
                             <span>👍 ${post.like_count || 0}</span>
-                            <span>💬 评论</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
                         </div>
                         <button class="btn btn-secondary cancel-collect-btn" style="padding: 10px 14px;" data-post-id="${post.post_id}">取消收藏</button>
                     </div>
@@ -2715,6 +3508,31 @@
                 activateTab(button.dataset.target);
             });
         }
+
+        // 页面加载时根据 URL hash 自动切换标签页或打开设置弹窗
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1); // 去掉 #
+            if (hash === 'posts') {
+                activateTab('posts');
+            } else if (hash === 'collections') {
+                activateTab('collections');
+            } else if (hash === 'downloads') {
+                activateTab('downloads');
+            } else if (hash === 'wrongBook') {
+                activateTab('wrongBook');
+            } else if (hash === 'settings') {
+                // 打开编辑资料弹窗（使用统一的打开函数，确保数据同步且能正常关闭）
+                openProfileModal();
+            }
+        }
+
+        // 页面加载时执行一次（使用 setTimeout 确保所有函数已定义）
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(handleHashChange, 100);
+        });
+        // 监听 hash 变化
+        window.addEventListener('hashchange', handleHashChange);
+
         // 用户下拉菜单
         const userAvatarBtn = document.getElementById('userAvatarBtn');
         const dropdown = document.getElementById('userDropdownMenu');
@@ -2763,6 +3581,7 @@
         const profileSchoolInput = document.getElementById('profileSchoolInput');
         const profileGradeSelect = document.getElementById('profileGradeSelect');
         const profileRoleSelect = document.getElementById('profileRoleSelect');
+        const profileIpInput = document.getElementById('profileIpInput');
         const studyHoursValue = document.getElementById('studyHoursValue');
         const studyHoursBar = document.getElementById('studyHoursBar');
         const studyHoursDesc = document.getElementById('studyHoursDesc');
@@ -2777,6 +3596,7 @@
         const roleBadgeText = document.getElementById('roleBadgeText');
         const gradeChipText = document.getElementById('gradeChipText');
         const schoolChipText = document.getElementById('schoolChipText');
+        const ipChipText = document.getElementById('ipChipText');
         const postAuthorNames = document.querySelectorAll('.post-card .post-top strong');
         let savedAvatarDataUrl = '';
         let pendingAvatarDataUrl = '';
@@ -2807,18 +3627,20 @@
                 profileUsernameInput.value = profileNameText.textContent.trim();
                 profileUsernameInput.disabled = false;
             }
-            if (profileIntroductionInput && profileIntroduction) {
-                const introText = profileIntroduction.textContent.replace(/^个人简介：/, '').trim();
-                profileIntroductionInput.value = introText === '还没写个人简介' ? '' : introText;
+            if (profileRoleSelect) {
+                profileRoleSelect.value = currentUser.role || '学生';
             }
-            if (profileSchoolInput && schoolChipText) {
-                profileSchoolInput.value = schoolChipText.textContent.replace(/^🏫:?/, '').trim();
+            if (profileIpInput) {
+                profileIpInput.value = currentUser.ip_address || '';
             }
-            if (profileGradeSelect && gradeChipText) {
-                profileGradeSelect.value = gradeChipText.textContent.trim();
+            if (profileSchoolInput) {
+                profileSchoolInput.value = currentUser.school || '';
             }
-            if (profileRoleSelect && roleBadgeText) {
-                profileRoleSelect.value = roleBadgeText.textContent.trim();
+            if (profileGradeSelect) {
+                profileGradeSelect.value = currentUser.grade || '高一';
+            }
+            if (profileIntroductionInput) {
+                profileIntroductionInput.value = currentUser.introduction || '';
             }
             if (profileAvatarPreview) {
                 profileAvatarPreview.src = pendingAvatarDataUrl || savedAvatarDataUrl || (topbarAvatarImage ? topbarAvatarImage.src : '../images/touxiang.png');
@@ -2834,32 +3656,21 @@
             profileModalOverlay.classList.remove('show');
             profileModalOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('modal-open');
+            // 关闭弹窗时移除 URL hash
+            if (window.location.hash === '#settings') {
+                history.replaceState(null, '', window.location.pathname);
+            }
         }
 
         async function applyProfileUpdates() {
             const school = profileSchoolInput ? profileSchoolInput.value.trim() : '';
             const grade = profileGradeSelect ? profileGradeSelect.value : '';
             const role = profileRoleSelect ? profileRoleSelect.value : '';
+            const ipAddress = profileIpInput ? profileIpInput.value.trim() : '';
             const introduction = profileIntroductionInput ? profileIntroductionInput.value.trim() : '';
             const avatarSrc = pendingAvatarDataUrl || savedAvatarDataUrl || (topbarAvatarImage ? topbarAvatarImage.src : '');
 
-            if (school && schoolChipText) {
-                schoolChipText.textContent = `🏫:${school}`;
-            }
-            if (grade && gradeChipText) {
-                gradeChipText.textContent = grade;
-            }
-            if (role && roleBadgeText) {
-                roleBadgeText.textContent = role;
-                roleBadgeText.classList.toggle('role-teacher', role === '老师');
-            }
-            if (profileIntroduction) {
-                if (introduction) {
-                    profileIntroduction.innerHTML = `<span style="font-weight: 600;">个人简介：</span>${introduction.replace(/\n/g, '<br>')}`;
-                } else {
-                    profileIntroduction.innerHTML = '<span style="font-weight: 600;">个人简介：</span>还没写个人简介<br>';
-                }
-            }
+            // 更新头像（如果有新头像）
             if (avatarSrc && pendingAvatarDataUrl) {
                 const payload = parseToken(currentToken);
                 if (payload && payload.user_id) {
@@ -2874,8 +3685,6 @@
                     const result = await response.json();
                     if (result.success) {
                         console.log('头像上传成功');
-                        // 重新加载用户信息，确保头像正确显示
-                        await loadUserInfo();
                     } else {
                         console.error('头像上传失败:', result.msg);
                     }
@@ -2883,25 +3692,33 @@
                 pendingAvatarDataUrl = null;
             }
 
-            if (profileIntroductionInput) {
-                const payload = parseToken(currentToken);
-                if (payload && payload.user_id) {
-                    const introResponse = await fetch(`${API_BASE_URL}/user/${payload.user_id}/introduction`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'token': currentToken
-                        },
-                        body: JSON.stringify({ introduction: introduction })
-                    });
-                    const introResult = await introResponse.json();
-                    if (introResult.success) {
-                        console.log('个人简介保存成功');
-                    } else {
-                        console.error('个人简介保存失败:', introResult.msg);
-                    }
+            // 统一更新其他用户信息
+            const payload = parseToken(currentToken);
+            if (payload && payload.user_id) {
+                const infoResponse = await fetch(`${API_BASE_URL}/user/${payload.user_id}/info`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': currentToken
+                    },
+                    body: JSON.stringify({ 
+                        school: school || null, 
+                        grade: grade || null, 
+                        role: role || null, 
+                        introduction: introduction || null, 
+                        ip_address: ipAddress || null 
+                    })
+                });
+                const infoResult = await infoResponse.json();
+                if (infoResult.success) {
+                    console.log('用户信息保存成功');
+                } else {
+                    console.error('用户信息保存失败:', infoResult.msg);
                 }
             }
+
+            // 重新加载用户信息，确保显示正确
+            await loadUserInfo();
         }
 
         if (roleBadgeText) {
@@ -3080,6 +3897,118 @@
                 closeProfileModal();
             });
         }
+
+        // IP地址下拉框交互
+        let ipDropdown;
+        let ipSearchInput;
+
+        function initIpDropdown() {
+            ipDropdown = document.getElementById('ipDropdown');
+            ipSearchInput = document.getElementById('ipSearchInput');
+
+            // 点击输入框显示下拉框（只使用 click 事件，避免与 focus 事件冲突）
+            if (profileIpInput) {
+                profileIpInput.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleIpDropdown();
+                });
+            }
+
+            // 点击城市项
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    if (profileIpInput) {
+                        profileIpInput.value = value;
+                    }
+                    hideIpDropdown();
+                });
+            });
+
+            // 搜索功能
+            if (ipSearchInput) {
+                ipSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const groups = document.querySelectorAll('.dropdown-group');
+                    groups.forEach(group => {
+                        const items = group.querySelectorAll('.dropdown-item');
+                        let hasVisibleItem = false;
+                        items.forEach(item => {
+                            const text = item.textContent.toLowerCase();
+                            if (text.includes(searchTerm)) {
+                                item.style.display = 'block';
+                                hasVisibleItem = true;
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                        const label = group.querySelector('.group-label');
+                        group.style.display = hasVisibleItem ? 'block' : 'none';
+                    });
+                });
+            }
+
+            // 点击外部关闭下拉框
+            document.addEventListener('click', function(event) {
+                const combobox = document.querySelector('.custom-combobox');
+                if (combobox && !combobox.contains(event.target)) {
+                    hideIpDropdown();
+                }
+            });
+        }
+
+        function toggleIpDropdown() {
+            if (ipDropdown && profileIpInput) {
+                ipDropdown.classList.toggle('show');
+                if (ipDropdown.classList.contains('show')) {
+                    // 设置下拉框位置 - 默认显示在上方
+                    const rect = profileIpInput.getBoundingClientRect();
+                    ipDropdown.style.left = `${rect.left}px`;
+                    ipDropdown.style.width = `${rect.width}px`;
+                    
+                    // 先计算高度
+                    ipDropdown.style.top = `${rect.top + 1000}px`; // 临时位置计算高度
+                    const dropdownHeight = ipDropdown.offsetHeight;
+                    
+                    // 默认显示在上方
+                    ipDropdown.style.top = `${rect.top - dropdownHeight - 8}px`;
+                    
+                    // 如果下拉框超出视口顶部，向下显示
+                    const dropdownRect = ipDropdown.getBoundingClientRect();
+                    if (dropdownRect.top < 0) {
+                        ipDropdown.style.top = `${rect.bottom + 8}px`;
+                    }
+                    
+                    if (ipSearchInput) {
+                        ipSearchInput.value = '';
+                        ipSearchInput.focus();
+                        // 重置显示所有项
+                        const groups = document.querySelectorAll('.dropdown-group');
+                        groups.forEach(group => {
+                            group.style.display = 'block';
+                            const items = group.querySelectorAll('.dropdown-item');
+                            items.forEach(item => {
+                                item.style.display = 'block';
+                            });
+                        });
+                    }
+                }
+            }
+        }
+
+        function hideIpDropdown() {
+            if (ipDropdown) {
+                ipDropdown.classList.remove('show');
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', initIpDropdown);
+
+        // 全局函数供onclick调用
+        window.toggleIpDropdown = toggleIpDropdown;
+
         if (profileModalOverlay) {
             profileModalOverlay.addEventListener('click', (event) => {
                 if (event.target === profileModalOverlay) {
@@ -3096,11 +4025,458 @@
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 closeGoalModal();
+                closeFollowingModal();
             }
         });
 
         updateGoalSummary();
+
+        // ==================== 关注列表功能 =====================
+        // 在DOM完全加载后再获取元素
+        const followingBox = document.getElementById('followingBox');
+        
+        // 打开关注列表模态框
+        function openFollowingModal() {
+            const followingModalOverlay = document.getElementById('followingModalOverlay');
+            const followingModalList = document.getElementById('followingModalList');
+            
+            if (!followingModalOverlay || !followingModalList) {
+                console.error('模态框元素未找到');
+                return;
+            }
+            
+            followingModalOverlay.classList.add('show');
+            loadFollowingList();
+        }
+
+        // 关闭关注列表模态框
+        function closeFollowingModal() {
+            const followingModalOverlay = document.getElementById('followingModalOverlay');
+            if (!followingModalOverlay) return;
+            followingModalOverlay.classList.remove('show');
+        }
+
+        // 加载关注列表
+        async function loadFollowingList() {
+            const followingModalList = document.getElementById('followingModalList');
+            if (!followingModalList) {
+                console.error('模态框列表元素未找到');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const payload = parseToken(token);
+            const userId = payload && payload.user_id;
+            
+            if (!userId) {
+                followingModalList.innerHTML = '<div class="empty-state">请先登录</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/following`, {
+                    headers: { token }
+                });
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    renderFollowingList(result.data);
+                } else {
+                    followingModalList.innerHTML = '<div class="empty-state">暂无关注用户</div>';
+                }
+            } catch (error) {
+                console.error('加载关注列表失败:', error);
+                followingModalList.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+            }
+        }
+
+        // 渲染关注列表
+        function renderFollowingList(following) {
+            const followingModalList = document.getElementById('followingModalList');
+            if (!followingModalList) {
+                console.error('模态框列表元素未找到');
+                return;
+            }
+
+            followingModalList.innerHTML = '';
+            
+            following.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                
+                // 判断是否有真实头像
+                let avatarHtml;
+                if (user.avatar && user.avatar !== 'null' && user.avatar !== 'undefined') {
+                    let avatarUrl = user.avatar;
+                    
+                    // 判断是否是 base64 图片（以 data:image 开头）
+                    if (avatarUrl.startsWith('data:image')) {
+                        // 直接使用 base64 图片，不需要添加时间戳
+                        avatarHtml = `<img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />`;
+                    } else {
+                        // 如果头像路径不是完整URL且不以上传目录开头，则添加前缀
+                        if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+                            avatarUrl = `/uploads/${avatarUrl}`;
+                        }
+                        avatarUrl = avatarUrl + '?t=' + Date.now();
+                        avatarHtml = `
+                            <div class="user-avatar-container">
+                                <img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />
+                                <div class="user-avatar-fallback">${user.username.charAt(0).toUpperCase()}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    avatarHtml = `<div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                item.innerHTML = `
+                    ${avatarHtml}
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-id">ID: ${user.user_id}</div>
+                    </div>
+                `;
+                
+                // 添加图片加载失败的处理
+                const img = item.querySelector('.user-avatar-img');
+                if (img) {
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        const fallback = item.querySelector('.user-avatar-fallback');
+                        if (fallback) fallback.style.display = 'flex';
+                    };
+                }
+                item.addEventListener('click', () => goToUserProfile(user.user_id));
+                followingModalList.appendChild(item);
+            });
+        }
+
+        // 跳转到用户主页
+        function goToUserProfile(userId) {
+            const token = localStorage.getItem('token');
+            const payload = parseToken(token);
+            const currentUserId = payload && payload.user_id;
+            
+            if (currentUserId == userId) {
+                window.location.href = './main.html';
+            } else {
+                window.location.href = `./other_main.html?userId=${userId}`;
+            }
+            closeFollowingModal();
+        }
+
+        // 绑定关注框点击事件
+        if (followingBox) {
+            followingBox.addEventListener('click', openFollowingModal);
+        }
+
+        // 打开获赞列表模态框
+        function openLikersModal() {
+            const likersModalOverlay = document.getElementById('likersModalOverlay');
+            const likersModalList = document.getElementById('likersModalList');
+            
+            if (!likersModalOverlay || !likersModalList) {
+                console.error('获赞模态框元素未找到');
+                return;
+            }
+            
+            likersModalOverlay.classList.add('show');
+            loadLikersList();
+        }
+
+        // 关闭获赞列表模态框
+        function closeLikersModal() {
+            const likersModalOverlay = document.getElementById('likersModalOverlay');
+            if (!likersModalOverlay) return;
+            likersModalOverlay.classList.remove('show');
+        }
+
+        // 加载获赞列表
+        async function loadLikersList() {
+            const likersModalList = document.getElementById('likersModalList');
+            if (!likersModalList) {
+                console.error('获赞模态框列表元素未找到');
+                return;
+            }
+
+            const payload = parseToken(currentToken);
+            const userId = payload && payload.user_id;
+            
+            if (!userId) {
+                likersModalList.innerHTML = '<div class="empty-state">请先登录</div>';
+                return;
+            }
+
+            likersModalList.innerHTML = '<div class="empty-state">加载中...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/likers`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    renderLikersList(result.data);
+                } else {
+                    likersModalList.innerHTML = '<div class="empty-state">暂无获赞用户</div>';
+                }
+            } catch (error) {
+                console.error('加载获赞列表失败:', error);
+                likersModalList.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+            }
+        }
+
+        // 渲染获赞列表
+        function renderLikersList(likers) {
+            const likersModalList = document.getElementById('likersModalList');
+            if (!likersModalList) {
+                console.error('获赞模态框列表元素未找到');
+                return;
+            }
+
+            likersModalList.innerHTML = '';
+            
+            likers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                
+                let avatarHtml;
+                if (user.avatar && user.avatar !== 'null' && user.avatar !== 'undefined') {
+                    let avatarUrl = user.avatar;
+                    if (avatarUrl.startsWith('data:image')) {
+                        avatarHtml = `<img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />`;
+                    } else {
+                        if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+                            avatarUrl = `/uploads/${avatarUrl}`;
+                        }
+                        avatarUrl = avatarUrl + '?t=' + Date.now();
+                        avatarHtml = `
+                            <div class="user-avatar-container">
+                                <img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />
+                                <div class="user-avatar-fallback">${user.username.charAt(0).toUpperCase()}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    avatarHtml = `<div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                item.innerHTML = `
+                    ${avatarHtml}
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-id">ID: ${user.user_id}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => goToUserProfile(user.user_id));
+                likersModalList.appendChild(item);
+            });
+        }
+
+        // 绑定模态框事件（在DOM加载完成后绑定）
+        document.addEventListener('DOMContentLoaded', () => {
+            // 关注模态框关闭事件
+            const closeBtn = document.getElementById('followingModalClose');
+            const overlay = document.getElementById('followingModalOverlay');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeFollowingModal);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', (event) => {
+                    if (event.target === overlay) {
+                        closeFollowingModal();
+                    }
+                });
+            }
+            
+            // 获赞模态框关闭事件
+            const likersCloseBtn = document.getElementById('likersModalClose');
+            const likersOverlay = document.getElementById('likersModalOverlay');
+            
+            if (likersCloseBtn) {
+                likersCloseBtn.addEventListener('click', closeLikersModal);
+            }
+            
+            if (likersOverlay) {
+                likersOverlay.addEventListener('click', (event) => {
+                    if (event.target === likersOverlay) {
+                        closeLikersModal();
+                    }
+                });
+            }
+            
+            // 点击获赞框打开获赞列表
+            const likeBox = document.getElementById('likeBox');
+            if (likeBox) {
+                likeBox.addEventListener('click', openLikersModal);
+            }
+            
+            // 点击粉丝框打开粉丝列表
+            const followerBox = document.getElementById('followerBox');
+            if (followerBox) {
+                followerBox.addEventListener('click', openFollowersModal);
+            }
+        });
+
+        // 打开粉丝列表模态框
+        function openFollowersModal() {
+            const followersModalOverlay = document.getElementById('followersModalOverlay');
+            const followersModalList = document.getElementById('followersModalList');
+            
+            if (!followersModalOverlay || !followersModalList) {
+                console.error('粉丝模态框元素未找到');
+                return;
+            }
+            
+            followersModalOverlay.classList.add('show');
+            loadFollowersList();
+        }
+
+        // 关闭粉丝列表模态框
+        function closeFollowersModal() {
+            const followersModalOverlay = document.getElementById('followersModalOverlay');
+            if (!followersModalOverlay) return;
+            followersModalOverlay.classList.remove('show');
+        }
+
+        // 加载粉丝列表
+        async function loadFollowersList() {
+            const followersModalList = document.getElementById('followersModalList');
+            if (!followersModalList) {
+                console.error('粉丝模态框列表元素未找到');
+                return;
+            }
+
+            const payload = parseToken(currentToken);
+            const userId = payload && payload.user_id;
+            
+            if (!userId) {
+                followersModalList.innerHTML = '<div class="empty-state">请先登录</div>';
+                return;
+            }
+
+            followersModalList.innerHTML = '<div class="empty-state">加载中...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/followers`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    renderFollowersList(result.data);
+                } else {
+                    followersModalList.innerHTML = '<div class="empty-state">暂无粉丝</div>';
+                }
+            } catch (error) {
+                console.error('加载粉丝列表失败:', error);
+                followersModalList.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+            }
+        }
+
+        // 渲染粉丝列表
+        function renderFollowersList(followers) {
+            const followersModalList = document.getElementById('followersModalList');
+            if (!followersModalList) {
+                console.error('粉丝模态框列表元素未找到');
+                return;
+            }
+
+            followersModalList.innerHTML = '';
+            
+            followers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                
+                let avatarHtml;
+                if (user.avatar && user.avatar !== 'null' && user.avatar !== 'undefined') {
+                    let avatarUrl = user.avatar;
+                    if (avatarUrl.startsWith('data:image')) {
+                        avatarHtml = `<img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />`;
+                    } else {
+                        if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+                            avatarUrl = `/uploads/${avatarUrl}`;
+                        }
+                        avatarUrl = avatarUrl + '?t=' + Date.now();
+                        avatarHtml = `
+                            <div class="user-avatar-container">
+                                <img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />
+                                <div class="user-avatar-fallback">${user.username.charAt(0).toUpperCase()}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    avatarHtml = `<div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                item.innerHTML = `
+                    ${avatarHtml}
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-id">ID: ${user.user_id}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => goToUserProfile(user.user_id));
+                followersModalList.appendChild(item);
+            });
+        }
+
+        // 绑定粉丝模态框事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const followersCloseBtn = document.getElementById('followersModalClose');
+            const followersOverlay = document.getElementById('followersModalOverlay');
+            
+            if (followersCloseBtn) {
+                followersCloseBtn.addEventListener('click', closeFollowersModal);
+            }
+            
+            if (followersOverlay) {
+                followersOverlay.addEventListener('click', (event) => {
+                    if (event.target === followersOverlay) {
+                        closeFollowersModal();
+                    }
+                });
+            }
+        });
     </script>
+
+    <!-- 关注列表模态框 -->
+    <div class="modal-overlay" id="followingModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>我的关注</h3>
+                <button class="modal-close" id="followingModalClose">&times;</button>
+            </div>
+            <div class="modal-list" id="followingModalList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 获赞列表模态框 -->
+    <div class="modal-overlay" id="likersModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>获赞用户</h3>
+                <button class="modal-close" id="likersModalClose">&times;</button>
+            </div>
+            <div class="modal-list" id="likersModalList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 粉丝列表模态框 -->
+    <div class="modal-overlay" id="followersModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>我的粉丝</h3>
+                <button class="modal-close" id="followersModalClose">&times;</button>
+            </div>
+            <div class="modal-list" id="followersModalList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

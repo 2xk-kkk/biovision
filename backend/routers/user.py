@@ -1,8 +1,8 @@
 #这里是用户接口文件
 from fastapi import APIRouter, Header
-from service.user import register_user, login_user, delete_user_account, change_user_password, get_user_profile, update_user_username, update_user_avatar, update_user_introduction, get_user_statistics, follow_user_service, unfollow_user_service, check_follow_status, increment_profile_view, get_user_followers, get_user_following
+from service.user import register_user, login_user, delete_user_account, change_user_password, get_user_profile, update_user_username, update_user_avatar, update_user_introduction, update_user_ip_address, get_user_statistics, follow_user_service, unfollow_user_service, check_follow_status, increment_profile_view, get_user_followers, get_user_following, update_user_info, get_user_likers
 from utils.response import ApiResponse
-from model.request import userRegisterRequest, userLoginRequest, changeUsernameRequest, changeAvatarRequest, changeIntroductionRequest
+from model.request import userRegisterRequest, userLoginRequest, changeUsernameRequest, changeAvatarRequest, changeIntroductionRequest, changeIpAddressRequest, updateUserInfoRequest
 from utils.jwt_utils import verify_jwt
 
 router = APIRouter()
@@ -58,6 +58,18 @@ def update_introduction(user_id: int, request: changeIntroductionRequest, token:
     
     return update_user_introduction(user_id, request.introduction)
 
+#更新IP地址接口
+@router.put("/user/{user_id}/ip_address")
+def update_ip(user_id: int, request: changeIpAddressRequest, token: str = Header(...)):
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+    
+    if int(payload["msg"]["user_id"]) != user_id:
+        return ApiResponse.error(msg="无权限")
+    
+    return update_user_ip_address(user_id, request.ip_address)
+
 #获取用户统计数据接口
 @router.get("/user/{user_id}/stats")
 def get_stats(user_id: int):
@@ -107,3 +119,20 @@ def get_followers(user_id: int):
 @router.get("/user/{user_id}/following")
 def get_following(user_id: int):
     return get_user_following(user_id)
+
+# 更新用户信息接口
+@router.put("/user/{user_id}/info")
+def update_info(user_id: int, request: updateUserInfoRequest, token: str = Header(...)):
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+    
+    if int(payload["msg"]["user_id"]) != user_id:
+        return ApiResponse.error(msg="无权限")
+    
+    return update_user_info(user_id, request.school, request.grade, request.role, request.introduction, request.ip_address)
+
+# 获取点赞用户列表接口
+@router.get("/user/{user_id}/likers")
+def get_likers(user_id: int):
+    return get_user_likers(user_id)

@@ -50,6 +50,13 @@ def init_db():
     add_column_if_not_exists(conn, 'users', 'follower_count', 'INTEGER DEFAULT 0')
     add_column_if_not_exists(conn, 'users', 'following_count', 'INTEGER DEFAULT 0')
     add_column_if_not_exists(conn, 'users', 'view_count', 'INTEGER DEFAULT 0')
+    add_column_if_not_exists(conn, 'users', 'ip_address', 'TEXT')
+    add_column_if_not_exists(conn, 'users', 'school', 'TEXT')
+    add_column_if_not_exists(conn, 'users', 'grade', 'TEXT')
+    add_column_if_not_exists(conn, 'users', 'role', 'TEXT DEFAULT "学生"')
+    add_column_if_not_exists(conn, 'users', 'study_hours', 'REAL DEFAULT 0')
+    add_column_if_not_exists(conn, 'users', 'question_count', 'INTEGER DEFAULT 0')
+    add_column_if_not_exists(conn, 'users', 'wrong_count', 'INTEGER DEFAULT 0')
 
     # 用户在线状态表（新增！用于登录时记录 last_active）
     cursor.execute('''
@@ -128,6 +135,19 @@ def init_db():
             UNIQUE(user_id, post_id, type),
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE
+        )
+    ''')
+
+    # 评论点赞表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS comment_likes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            comment_id INTEGER NOT NULL,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, comment_id),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE
         )
     ''')
 

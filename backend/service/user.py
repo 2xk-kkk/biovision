@@ -1,6 +1,6 @@
 #用户功能业务逻辑
 from utils.crypto import verify_password
-from model.user import register, get_user_by_username, delete_user, change_password, user_exists, update_username, update_avatar, get_user_by_id, update_introduction, get_user_stats, follow_user, unfollow_user, is_following, increment_view_count, increment_like_count, increment_follower_count, decrement_follower_count, increment_following_count, decrement_following_count, get_followers, get_following 
+from model.user import register, get_user_by_username, delete_user, change_password, user_exists, update_username, update_avatar, get_user_by_id, update_introduction, get_user_stats, follow_user, unfollow_user, is_following, increment_view_count, increment_like_count, increment_follower_count, decrement_follower_count, increment_following_count, decrement_following_count, get_followers, get_following, get_post_likers 
 from database.db import get_db_connection
 from utils.jwt_utils import generate_jwt
 from utils.response import ApiResponse
@@ -119,9 +119,31 @@ def get_user_profile(user_id):
         cols = [c[1] for c in cursor.fetchall()]
         
         # 构建查询语句
-        select_cols = ["id", "username", "telephone", "avatar"]
+        select_cols = ["id", "username", "telephone", "avatar", "ip_address"]
         intro_col = "introduction" if "introduction" in cols else "bio"
         select_cols.append(intro_col)
+        
+        # 添加新字段
+        if "school" in cols:
+            select_cols.append("school")
+        if "grade" in cols:
+            select_cols.append("grade")
+        if "role" in cols:
+            select_cols.append("role")
+        if "like_count" in cols:
+            select_cols.append("like_count")
+        if "follower_count" in cols:
+            select_cols.append("follower_count")
+        if "following_count" in cols:
+            select_cols.append("following_count")
+        if "view_count" in cols:
+            select_cols.append("view_count")
+        if "study_hours" in cols:
+            select_cols.append("study_hours")
+        if "question_count" in cols:
+            select_cols.append("question_count")
+        if "wrong_count" in cols:
+            select_cols.append("wrong_count")
         
         cursor.execute(
             f"SELECT {', '.join(select_cols)} FROM users WHERE id = ?",
@@ -133,16 +155,48 @@ def get_user_profile(user_id):
         if not user:
             return ApiResponse.error(msg="用户不存在")
 
-        return ApiResponse.success(
-            data={
-                "id": user[0],
-                "username": user[1],
-                "telephone": user[2],
-                "avatar": user[3] if user[3] else None,
-                "introduction": user[4] if user[4] else None
-            },
-            msg="获取成功"
-        )
+        data = {
+            "id": user[0],
+            "username": user[1],
+            "telephone": user[2],
+            "avatar": user[3] if user[3] else None,
+            "ip_address": user[4] if user[4] else None,
+            "introduction": user[5] if user[5] else None
+        }
+        
+        # 添加可选字段
+        idx = 6
+        if "school" in cols:
+            data["school"] = user[idx] if user[idx] else None
+            idx += 1
+        if "grade" in cols:
+            data["grade"] = user[idx] if user[idx] else None
+            idx += 1
+        if "role" in cols:
+            data["role"] = user[idx] if user[idx] else "学生"
+            idx += 1
+        if "like_count" in cols:
+            data["like_count"] = user[idx] if user[idx] else 0
+            idx += 1
+        if "follower_count" in cols:
+            data["follower_count"] = user[idx] if user[idx] else 0
+            idx += 1
+        if "following_count" in cols:
+            data["following_count"] = user[idx] if user[idx] else 0
+            idx += 1
+        if "view_count" in cols:
+            data["view_count"] = user[idx] if user[idx] else 0
+            idx += 1
+        if "study_hours" in cols:
+            data["study_hours"] = user[idx] if user[idx] else 0.0
+            idx += 1
+        if "question_count" in cols:
+            data["question_count"] = user[idx] if user[idx] else 0
+            idx += 1
+        if "wrong_count" in cols:
+            data["wrong_count"] = user[idx] if user[idx] else 0
+
+        return ApiResponse.success(data=data, msg="获取成功")
 
     except Exception as e:
         return ApiResponse.error(msg=f"获取用户信息失败: {str(e)}")
@@ -203,6 +257,25 @@ def update_user_username(user_id, new_username):
             return ApiResponse.error(msg="修改失败")
     except Exception as e:
         return ApiResponse.error(msg=f"修改用户名失败: {str(e)}")
+    finally:
+        db.close()
+
+# 更新IP地址
+def update_user_ip_address(user_id, ip_address):
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+        user = cursor.fetchone()
+        if not user:
+            return ApiResponse.error(msg="用户不存在")
+        
+        cursor.execute("UPDATE users SET ip_address = ? WHERE id = ?", (ip_address, user_id))
+        db.commit()
+        
+        return ApiResponse.success(msg="IP地址更新成功")
+    except Exception as e:
+        return ApiResponse.error(msg=f"IP地址更新失败: {str(e)}")
     finally:
         db.close()
 
@@ -353,5 +426,71 @@ def get_user_following(user_id):
         return ApiResponse.success(data=data)
     except Exception as e:
         return ApiResponse.error(msg=f"获取关注列表失败: {str(e)}")
+    finally:
+        db.close()
+
+# 获取点赞用户列表
+def get_user_likers(user_id):
+    db = get_db_connection()
+    try:
+        likers = get_post_likers(db, user_id)
+        data = []
+        for l in likers:
+            data.append({
+                "user_id": l[0],
+                "username": l[1],
+                "avatar": l[2] if l[2] else None
+            })
+        return ApiResponse.success(data=data)
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取点赞用户列表失败: {str(e)}")
+    finally:
+        db.close()
+
+# 更新用户信息
+def update_user_info(user_id, school=None, grade=None, role=None, introduction=None, ip_address=None):
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+        user = cursor.fetchone()
+        if not user:
+            return ApiResponse.error(msg="用户不存在")
+        
+        # 检查表有哪些列
+        cursor.execute("PRAGMA table_info(users)")
+        cols = [c[1] for c in cursor.fetchall()]
+        
+        # 构建更新语句
+        updates = []
+        params = []
+        
+        if school is not None and "school" in cols:
+            updates.append("school = ?")
+            params.append(school)
+        if grade is not None and "grade" in cols:
+            updates.append("grade = ?")
+            params.append(grade)
+        if role is not None and "role" in cols:
+            updates.append("role = ?")
+            params.append(role)
+        if introduction is not None:
+            intro_col = "introduction" if "introduction" in cols else "bio"
+            updates.append(f"{intro_col} = ?")
+            params.append(introduction)
+        if ip_address is not None and "ip_address" in cols:
+            updates.append("ip_address = ?")
+            params.append(ip_address)
+        
+        if not updates:
+            return ApiResponse.error(msg="没有要更新的字段")
+        
+        params.append(user_id)
+        cursor.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", params)
+        db.commit()
+        
+        return ApiResponse.success(msg="用户信息更新成功")
+    except Exception as e:
+        return ApiResponse.error(msg=f"更新用户信息失败: {str(e)}")
     finally:
         db.close()

@@ -977,7 +977,7 @@
                     <img src="../images/touxiang.png" alt="Avatar" class="avatar" id="topbarAvatarImage" />
                     <div class="upload-overlay">+</div>
                     <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <a href="user-center/main.html" class="user-dropdown-item">个人中心</a>
+                        <a href="main.html" class="user-dropdown-item">个人中心</a>
                         <a href="#" class="user-dropdown-item">设置</a>
                         <a href="../login/login-main.html" class="user-dropdown-item danger">退出登录</a>
                     </div>
@@ -1545,10 +1545,10 @@
                         <div class="post-tools">
                             <span>👁 ${post.view_count || 0}</span>
                             <span>👍 ${post.like_count || 0}</span>
-                            <span>💬 评论</span>
-                            <span>⭐ 收藏</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
                         </div>
-                        <a class="btn btn-secondary" style="padding: 10px 14px;" href="../forum/main.html" target="_blank">查看原帖</a>
+                        <a class="btn btn-secondary" style="padding: 10px 14px;" href="../forum/post-detail.html?id=${post.post_id}" target="_blank">查看原帖</a>
                     </div>
                 </div>
             `).join('');
@@ -1581,9 +1581,10 @@
                         <div class="post-tools">
                             <span>👁 ${post.view_count || 0}</span>
                             <span>👍 ${post.like_count || 0}</span>
-                            <span>💬 评论</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
                         </div>
-                        <a class="btn btn-secondary" style="padding: 10px 14px;" href="../forum/main.html" target="_blank">查看原帖</a>
+                        <a class="btn btn-secondary" style="padding: 10px 14px;" href="../forum/post-detail.html?id=${post.post_id}" target="_blank">查看原帖</a>
                     </div>
                 </div>
             `).join('');
@@ -1625,6 +1626,18 @@
                 console.warn('获取统计数据失败:', e);
             }
 
+            // 调用增加浏览量接口（看过TA）
+            try {
+                await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/view`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (e) {
+                console.warn('增加浏览量失败:', e);
+            }
+
             renderProfile({
                 user_id: VIEW_USER_ID,
                 username: user.username,
@@ -1636,7 +1649,7 @@
                 like_count: stats?.like_count || user.like_count || 0,
                 follower_count: stats?.follower_count || user.follower_count || 0,
                 following_count: stats?.following_count || user.following_count || 0,
-                view_count: stats?.view_count || user.view_count || 0,
+                view_count: (stats?.view_count || user.view_count || 0) + 1, // 本地加1显示
                 mutual_count: 0,
                 study_hours: 0,
                 study_goal: 8,
@@ -1735,24 +1748,23 @@ async function checkFollowStatus() {
             followBtn.disabled = true;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/user/${currentProfile.user_id || VIEW_USER_ID}/follow`, {
+                // 根据状态选择不同的接口
+                const endpoint = nextState ? 'follow' : 'unfollow';
+                const response = await fetch(`${API_BASE_URL}/user/${currentProfile.user_id || VIEW_USER_ID}/${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'token': currentToken
-                    },
-                    body: JSON.stringify({
-                        action: nextState ? 'follow' : 'unfollow'
-                    })
+                    }
                 });
 
                 const result = await response.json();
                 if (result.success) {
-                    isFollowing = result.data && typeof result.data.is_following === 'boolean'
-                        ? result.data.is_following
-                        : nextState;
-                } else {
                     isFollowing = nextState;
+                } else {
+                    alert(result.msg || '操作失败');
+                    // 如果失败，保持原来的状态
+                    isFollowing = !nextState;
                 }
             } catch (error) {
                 console.warn('关注接口不可用，使用本地切换。', error);

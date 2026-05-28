@@ -25,7 +25,8 @@ from model.post import (
     get_user_posts,
     delete_post_images,
     get_user_collect_posts,
-    get_user_liked_posts
+    get_user_liked_posts,
+    toggle_comment_like
 )
 from model.user import get_user_stats
 
@@ -236,15 +237,37 @@ def get_post_comments_service(post_id):
                 "id": c[0],
                 "user_id": c[1],
                 "username": c[2],
-                "content": c[3],
-                "create_at": c[4],
-                "like_count": c[5]
+                "avatar": c[3] if c[3] else None,
+                "content": c[4],
+                "create_at": c[5],
+                "like_count": c[6],
+                "parent_id": c[7] if len(c) > 7 else None
             })
         return ApiResponse.success(data=data)
     finally:
         db.close()
 
-# 4. 获取用户发布的帖子
+# 4. 评论点赞
+def like_comment(token, comment_id):
+    db = get_db_connection()
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        db.close()
+        return ApiResponse.error(msg="请先登录")
+    user_id = int(payload["msg"]["user_id"])
+    
+    try:
+        like_count, liked = toggle_comment_like(db, user_id, comment_id)
+        if like_count is None:
+            return ApiResponse.error(msg="评论不存在")
+        return ApiResponse.success(data={"liked": liked, "like_count": like_count})
+    except Exception as e:
+        print(f"[DEBUG] 评论点赞失败: {e}")
+        return ApiResponse.error(msg="点赞失败")
+    finally:
+        db.close()
+
+# 5. 获取用户发布的帖子
 def get_user_posts_service(user_id, page=1, page_size=10):
     db = get_db_connection()
     try:

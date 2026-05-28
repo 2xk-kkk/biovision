@@ -17,7 +17,8 @@ from service.post import (
     get_user_posts_service,
     get_user_statistics,
     get_user_collect_posts_service,
-    get_user_liked_posts_service
+    get_user_liked_posts_service,
+    like_comment
 )
 
 router = APIRouter()
@@ -72,6 +73,14 @@ def create_comment_api(
 @router.get("/post/{post_id}/comments")
 def get_post_comments_api(post_id: int):
     return get_post_comments_service(post_id)  # 这里也改对
+
+# 评论点赞
+@router.post("/comment/{comment_id}/like")
+def like_comment_api(
+    comment_id: int,
+    token: str = Header(...)
+):
+    return like_comment(token, comment_id)
 
 # 获取某个用户发布的所有帖子 
 @router.get("/user/{user_id}/posts")

@@ -291,13 +291,38 @@ def create_comment(db, post_id, user_id, content, parent_id=None):
 def get_post_comments(db, post_id):
     cursor = db.cursor()
     cursor.execute('''
-        SELECT c.id, c.user_id, u.username, c.content, c.create_at, c.like_count
+        SELECT c.id, c.user_id, u.username, u.avatar, c.content, c.create_at, c.like_count, c.parent_id
         FROM comments c
         JOIN users u ON c.user_id = u.id
         WHERE c.post_id = ?
         ORDER BY c.create_at ASC
     ''', (post_id,))
     return cursor.fetchall()
+
+
+# 评论点赞/取消点赞
+def toggle_comment_like(db, user_id, comment_id):
+    cursor = db.cursor()
+    cursor.execute("SELECT like_count FROM comments WHERE id=?", (comment_id,))
+    result = cursor.fetchone()
+    if not result:
+        return None, False
+    
+    current_likes = result[0]
+    
+    cursor.execute("SELECT id FROM comment_likes WHERE user_id=? AND comment_id=?", (user_id, comment_id))
+    existing_like = cursor.fetchone()
+    
+    if existing_like:
+        cursor.execute("DELETE FROM comment_likes WHERE user_id=? AND comment_id=?", (user_id, comment_id))
+        cursor.execute("UPDATE comments SET like_count = like_count - 1 WHERE id=?", (comment_id,))
+        db.commit()
+        return current_likes - 1, False
+    else:
+        cursor.execute("INSERT INTO comment_likes (user_id, comment_id) VALUES (?, ?)", (user_id, comment_id))
+        cursor.execute("UPDATE comments SET like_count = like_count + 1 WHERE id=?", (comment_id,))
+        db.commit()
+        return current_likes + 1, True
 
 
 # 获取某个用户发布的所有帖子
