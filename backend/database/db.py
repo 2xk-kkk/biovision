@@ -58,6 +58,9 @@ def init_db():
     add_column_if_not_exists(conn, 'users', 'question_count', 'INTEGER DEFAULT 0')
     add_column_if_not_exists(conn, 'users', 'wrong_count', 'INTEGER DEFAULT 0')
 
+    # 迁移：为帖子表添加标签字段
+    add_column_if_not_exists(conn, 'posts', 'tags', 'TEXT')
+
     # 用户在线状态表（新增！用于登录时记录 last_active）
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_online (

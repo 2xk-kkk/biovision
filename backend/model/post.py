@@ -1,8 +1,11 @@
 # 帖子功能数据库操作
 
-def create_post(db,user_id, content, tag):
-    cursor= db.cursor()
-    cursor.execute("insert into posts(user_id, content, tag) values(?,?,?)",(user_id, content, tag))
+def create_post(db, user_id, content, tag, tags=None):
+    cursor = db.cursor()
+    # 将标签列表转换为逗号分隔的字符串存储
+    tags_str = ",".join(tags) if tags and isinstance(tags, list) else None
+    cursor.execute("INSERT INTO posts(user_id, content, tag, tags) VALUES(?,?,?,?)", 
+                   (user_id, content, tag, tags_str))
     db.commit()
     post_id = cursor.lastrowid
     return post_id
@@ -66,7 +69,8 @@ def get_posts_with_counts(db, page=1, page_size=20):
             COALESCE((SELECT COUNT(*) FROM comments WHERE post_id = posts.id), 0) as comment_count,
             posts.like_count,
             posts.view_count,
-            posts.collect_count
+            posts.collect_count,
+            posts.tags
         FROM posts
         JOIN users ON posts.user_id = users.id
         ORDER BY posts.create_at DESC

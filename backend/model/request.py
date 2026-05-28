@@ -35,6 +35,7 @@ class CreatePostRequest(BaseModel):
     content: str
     tag: str = "Question_discussion"
     image_urls: List[str] = []
+    tags: List[str] = []
     file_urls: List[str] = []
 
 class CreateCommentRequest(BaseModel):

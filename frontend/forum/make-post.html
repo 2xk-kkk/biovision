@@ -1531,8 +1531,9 @@
           },
           body: JSON.stringify({
             content: content,
-            file_urls: await uploadPendingFiles(token),
-            tag: tag
+            image_urls: await uploadPendingImages(token),
+            tag: tag,
+            tags: selectedTags
           })
         });
 
