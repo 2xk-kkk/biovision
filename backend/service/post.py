@@ -30,8 +30,8 @@ from model.post import (
 )
 from model.user import get_user_stats
 
-def create_post(token, content, image_urls, tag):
-    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}")
+def create_post(token, content, image_urls, tag, tags=None):
+    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}, tags={tags}")
     print(f"[DEBUG] image_urls type: {type(image_urls)}, value: {image_urls}")
     
     db = get_db_connection()
@@ -47,7 +47,7 @@ def create_post(token, content, image_urls, tag):
     user_id = int(user_id)
     
     try:
-        post_id = create_post_db(db, user_id, content, tag)
+        post_id = create_post_db(db, user_id, content, tag, tags)
 
         if image_urls:
             valid_image_urls = []
@@ -150,6 +150,9 @@ def get_all_posts(page=1, page_size=20):
         for row in posts_data:
             post_id = row[0]
             post_ids.append(post_id)
+            # 解析标签字符串为列表
+            tags_str = row[11] if len(row) > 11 else None
+            tags = tags_str.split(",") if tags_str else []
             posts_list.append({
                 "post_id": post_id,
                 "user_id": row[1],
@@ -162,6 +165,7 @@ def get_all_posts(page=1, page_size=20):
                 "like_count": row[8] if len(row) > 8 else 0,
                 "view_count": row[9] if len(row) > 9 else 0,
                 "collect_count": row[10] if len(row) > 10 else 0,
+                "tags": tags,
                 "images": []
             })
 

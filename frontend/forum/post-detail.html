@@ -1312,18 +1312,31 @@
           }
         }
 
+        // 显示板块标签和用户选择的标签
         const tagLabels = {
-          'Question_discussion': '学习讨论',
+          'Question_discussion': '学习交流',
           'Course_discussion': '课程讨论',
           'Visualization_model': '可视化模型',
           'Examination_experience': '考试经验',
           'Life_share': '生活分享'
         };
-
+        
+        let tagsHtml = '';
+        
+        // 添加板块标签
         if (post.tag) {
           const tagLabel = tagLabels[post.tag] || post.tag;
-          document.getElementById("postTags").innerHTML = `<span class="post-tag">${tagLabel}</span>`;
+          tagsHtml += `<span class="post-tag">${tagLabel}</span>`;
         }
+        
+        // 添加用户选择的标签
+        if (Array.isArray(post.tags) && post.tags.length > 0) {
+          post.tags.forEach(tag => {
+            tagsHtml += `<span class="post-tag">${tag}</span>`;
+          });
+        }
+        
+        document.getElementById("postTags").innerHTML = tagsHtml;
 
         // 先检查是否已关注，再渲染按钮（只渲染一次）
         await checkFollowStatus();

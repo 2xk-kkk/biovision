@@ -41,7 +41,7 @@ def create_post_api(
     req: CreatePostRequest,
     token: str = Header(...)
 ):
-    return create_post(token, req.content, req.image_urls, req.tag)
+    return create_post(token, req.content, req.image_urls, req.tag, req.tags)
 
 # 获取帖子列表（全部 / 按标签）
 @router.get("/posts")

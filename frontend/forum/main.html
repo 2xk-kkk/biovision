@@ -1173,15 +1173,28 @@
 
         const tagsEl = document.createElement('div');
         tagsEl.className = 'post-tags';
-        if (tag) {
-          const tags = String(tag).split(/[，,\s]+/).filter(Boolean);
-          (tags.length ? tags : [tag]).slice(0, 3).forEach(t => {
-            const span = document.createElement('span');
-            span.className = 'post-tag';
-            span.textContent = t;
-            tagsEl.appendChild(span);
-          });
-        }
+        
+        // 板块标签中文映射
+        const tagLabels = {
+          'Question_discussion': '学习交流',
+          'Course_discussion': '课程讨论',
+          'Visualization_model': '可视化模型',
+          'Examination_experience': '备考经验',
+          'Life_share': '生活分享'
+        };
+        
+        // 优先使用新的 tags 数组字段，兼容旧数据使用 tag 字段
+        const postTags = Array.isArray(post.tags) && post.tags.length > 0 
+          ? post.tags 
+          : (tag ? String(tag).split(/[，,\s]+/).filter(Boolean) : []);
+        
+        postTags.slice(0, 5).forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'post-tag';
+          // 将英文标签转换为中文，如果不是映射中的标签则直接显示
+          span.textContent = tagLabels[t] || t;
+          tagsEl.appendChild(span);
+        });
 
         const contentEl = document.createElement('div');
         contentEl.className = 'post-content';
