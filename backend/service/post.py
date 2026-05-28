@@ -30,9 +30,10 @@ from model.post import (
 )
 from model.user import get_user_stats
 
-def create_post(token, content, image_urls, tag):
-    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}")
+def create_post(token, content, image_urls=None, tag=None, file_urls=None):
+    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}, file_urls={file_urls}")
     print(f"[DEBUG] image_urls type: {type(image_urls)}, value: {image_urls}")
+    print(f"[DEBUG] file_urls type: {type(file_urls)}, value: {file_urls}")
     
     db = get_db_connection()
     payload = verify_jwt(token)
@@ -49,6 +50,7 @@ def create_post(token, content, image_urls, tag):
     try:
         post_id = create_post_db(db, user_id, content, tag)
 
+        # 处理图片URL
         if image_urls:
             valid_image_urls = []
             if isinstance(image_urls, list):
@@ -59,6 +61,20 @@ def create_post(token, content, image_urls, tag):
             for index, image_url in enumerate(valid_image_urls):
                 if image_url and str(image_url).strip():
                     create_post_image(db, post_id, str(image_url).strip(), index)
+        
+        # 处理文件URL（包括Word、Excel、PDF等）
+        if file_urls:
+            valid_file_urls = []
+            if isinstance(file_urls, list):
+                valid_file_urls = file_urls
+            elif file_urls and isinstance(file_urls, str):
+                valid_file_urls = [file_urls]
+            
+            # 从现有的图片数量开始编号
+            image_count = len([url for url in (image_urls or []) if url])
+            for index, file_url in enumerate(valid_file_urls):
+                if file_url and str(file_url).strip():
+                    create_post_image(db, post_id, str(file_url).strip(), image_count + index)
         
         db.commit()
         return ApiResponse.success(data={"post_id": post_id}, msg="帖子创建成功")
@@ -191,7 +207,21 @@ def get_post_detail(post_id):
         comments = get_post_comments(db, post_id)
         comment_count = len(comments)
         
-        images = get_post_images_by_post_ids(db, [post_id])
+        # 获取所有附件（图片和文件）
+        all_attachments = get_post_images_by_post_ids(db, [post_id]).get(post_id, [])
+        
+        # 区分图片和文件
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+        images = []
+        files = []
+        for attachment in all_attachments:
+            lower_url = attachment.lower()
+            is_image = any(lower_url.endswith(ext) for ext in image_extensions)
+            if is_image:
+                images.append(attachment)
+            else:
+                files.append(attachment)
+        
         return ApiResponse.success(data={
             "post_id": post[0],
             "user_id": post[1],
@@ -203,7 +233,8 @@ def get_post_detail(post_id):
             "like_count": post[7] if len(post) > 7 else 0,
             "collect_count": post[8] if len(post) > 8 else 0,
             "comment_count": comment_count,
-            "images": images.get(post_id, []),
+            "images": images,
+            "files": files,
             "avatar": post[10] if len(post) > 10 else None
         })
     finally:

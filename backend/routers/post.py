@@ -35,13 +35,25 @@ def upload_image(file: UploadFile = File(...)):
     print("图片上传成功，访问URL:", image_url)
     return {"image_url": image_url}
 
+# 上传文件（支持文档、Word、Excel等）
+@router.post("/upload_file")
+def upload_file(file: UploadFile = File(...)):
+    ext = file.filename.split(".")[-1]
+    new_filename = f"{uuid.uuid4()}.{ext}"
+    save_path = f"uploads/{new_filename}"
+    with open(save_path, "wb") as f:
+        f.write(file.file.read())
+    file_url = f"/uploads/{new_filename}"
+    print("文件上传成功，访问URL:", file_url)
+    return {"file_url": file_url}
+
 # 发布帖子
 @router.post("/create_post")
 def create_post_api(
     req: CreatePostRequest,
     token: str = Header(...)
 ):
-    return create_post(token, req.content, req.image_urls, req.tag)
+    return create_post(token, req.content, req.image_urls, req.tag, req.file_urls)
 
 # 获取帖子列表（全部 / 按标签）
 @router.get("/posts")
