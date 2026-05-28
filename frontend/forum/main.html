@@ -1056,6 +1056,63 @@
       return IMAGE_BASE + '/' + url;
     }
 
+    function getFileIcon(fileName) {
+      const ext = fileName.toLowerCase().split('.').pop();
+      const iconMap = {
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        'bmp': 'fa-file-image',
+        'webp': 'fa-file-image',
+        'svg': 'fa-file-image',
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        'xls': 'fa-file-excel',
+        'xlsx': 'fa-file-excel',
+        'csv': 'fa-file-excel',
+        'pdf': 'fa-file-pdf',
+        'ppt': 'fa-file-powerpoint',
+        'pptx': 'fa-file-powerpoint',
+        'zip': 'fa-file-archive',
+        'rar': 'fa-file-archive',
+        '7z': 'fa-file-archive',
+        'tar': 'fa-file-archive',
+        'gz': 'fa-file-archive',
+        'txt': 'fa-file-text',
+        'rtf': 'fa-file-alt',
+        'md': 'fa-file-code',
+        'json': 'fa-file-code',
+        'xml': 'fa-file-code',
+        'mp4': 'fa-file-video',
+        'avi': 'fa-file-video',
+        'mov': 'fa-file-video',
+        'wmv': 'fa-file-video',
+        'flv': 'fa-file-video',
+        'mp3': 'fa-file-audio',
+        'wav': 'fa-file-audio',
+        'ogg': 'fa-file-audio',
+        'flac': 'fa-file-audio',
+        'c': 'fa-file-code',
+        'cpp': 'fa-file-code',
+        'h': 'fa-file-code',
+        'hpp': 'fa-file-code',
+        'java': 'fa-file-code',
+        'py': 'fa-file-code',
+        'js': 'fa-file-code',
+        'ts': 'fa-file-code',
+        'html': 'fa-file-code',
+        'css': 'fa-file-code',
+        'go': 'fa-file-code',
+        'rs': 'fa-file-code',
+        'php': 'fa-file-code',
+        'rb': 'fa-file-code',
+        'swift': 'fa-file-code',
+        'kt': 'fa-file-code'
+      };
+      return iconMap[ext] || 'fa-file';
+    }
+
     function escapeHtml(text) {
       return String(text ?? '').replace(/[&<>"']/g, (ch) => ({
         '&': '&amp;',
@@ -1143,6 +1200,7 @@
         const createAt = post.create_at || '';
         const tag = post.tag || '';
         const images = Array.isArray(post.images) ? post.images : [];
+        const files = Array.isArray(post.files) ? post.files : [];
 
         // ✅ 1. 提取帖子作者的用户ID（用于跳转个人主页）
         const postUserId = post.user_id || '';
@@ -1212,27 +1270,78 @@
         contentEl.className = 'post-content';
         contentEl.textContent = content;
 
-        if (images.length) {
-          const imgWrap = document.createElement('div');
-          imgWrap.style.marginTop = '12px';
-          imgWrap.style.display = 'flex';
-          imgWrap.style.gap = '10px';
-          imgWrap.style.flexWrap = 'wrap';
+        function isImageFile(fileName) {
+          const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+          const ext = fileName.toLowerCase().split('.').pop();
+          return imageExts.includes(ext);
+        }
 
-          images.slice(0, 3).forEach(u => {
-            const img = document.createElement('img');
-            img.src = resolveImageUrl(u);
-            img.alt = '帖子图片';
-            img.loading = 'lazy';
-            img.style.width = '180px';
-            img.style.maxWidth = '100%';
-            img.style.height = '120px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '10px';
-            img.style.border = '1px solid #e2e8f0';
-            imgWrap.appendChild(img);
+        if (images.length > 0 || files.length > 0) {
+          const mediaWrap = document.createElement('div');
+          mediaWrap.style.marginTop = '12px';
+          mediaWrap.style.display = 'flex';
+          mediaWrap.style.gap = '10px';
+          mediaWrap.style.flexWrap = 'wrap';
+
+          const allMedia = [...images, ...files];
+          allMedia.slice(0, 3).forEach(u => {
+            const fileName = u.split('/').pop();
+            
+            if (isImageFile(fileName)) {
+              const img = document.createElement('img');
+              img.src = resolveImageUrl(u);
+              img.alt = fileName;
+              img.loading = 'lazy';
+              img.style.width = '180px';
+              img.style.maxWidth = '100%';
+              img.style.height = '120px';
+              img.style.objectFit = 'cover';
+              img.style.borderRadius = '10px';
+              img.style.border = '1px solid #e2e8f0';
+              mediaWrap.appendChild(img);
+            } else {
+              const iconClass = getFileIcon(fileName);
+              
+              const fileWrap = document.createElement('div');
+              fileWrap.style.width = '100px';
+              fileWrap.style.maxWidth = '100%';
+              fileWrap.style.height = '80px';
+              fileWrap.style.borderRadius = '8px';
+              fileWrap.style.border = '1px solid #e2e8f0';
+              fileWrap.style.backgroundColor = '#f8fafc';
+              fileWrap.style.display = 'flex';
+              fileWrap.style.flexDirection = 'column';
+              fileWrap.style.alignItems = 'center';
+              fileWrap.style.justifyContent = 'center';
+              fileWrap.style.gap = '4px';
+              fileWrap.style.cursor = 'pointer';
+              fileWrap.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.open(resolveImageUrl(u), '_blank');
+              });
+
+              const iconEl = document.createElement('i');
+              iconEl.className = `fas ${iconClass}`;
+              iconEl.style.fontSize = '20px';
+              iconEl.style.color = '#3B82F6';
+
+              const nameEl = document.createElement('div');
+              nameEl.textContent = fileName.length > 10 ? fileName.substring(0, 10) + '...' : fileName;
+              nameEl.style.fontSize = '11px';
+              nameEl.style.color = '#64748b';
+              nameEl.style.textAlign = 'center';
+              nameEl.style.maxWidth = '90px';
+              nameEl.style.overflow = 'hidden';
+              nameEl.style.textOverflow = 'ellipsis';
+              nameEl.style.whiteSpace = 'nowrap';
+
+              fileWrap.appendChild(iconEl);
+              fileWrap.appendChild(nameEl);
+              mediaWrap.appendChild(fileWrap);
+            }
           });
-          contentEl.appendChild(imgWrap);
+
+          contentEl.appendChild(mediaWrap);
         }
 
         const commentCount = post.comment_count || 0;
