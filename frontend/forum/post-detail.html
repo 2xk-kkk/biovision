@@ -667,30 +667,35 @@
       box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
 
-    /* 加载更多 */
-    .load-more {
-      text-align: center;
-      padding-top: 24px;
-      border-top: 1px solid var(--gray-100);
-      margin-top: 24px;
+    /* 展开/收起按钮 */
+    .expand-comments {
+      padding: 8px 0;
     }
 
-    .load-more-btn {
-      background: var(--gray-50);
-      color: var(--gray-600);
-      padding: 12px 28px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      border: 1px solid var(--gray-200);
+    .expand-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 13px;
       cursor: pointer;
+      padding: 6px 0;
       transition: all 0.2s;
     }
 
-    .load-more-btn:hover {
-      background: var(--primary);
-      color: var(--white);
-      border-color: var(--primary);
+    .expand-btn:hover {
+      color: var(--primary-dark);
+    }
+
+    .expand-arrow {
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+
+    .expand-btn.expanded .expand-arrow {
+      transform: rotate(90deg);
     }
 
     /* 右侧边栏 */
@@ -1073,10 +1078,7 @@
             <!-- 评论会通过JS动态生成 -->
           </div>
 
-          <!-- 加载更多 -->
-          <div class="load-more">
-            <button class="load-more-btn" id="loadMoreBtn">加载更多评论</button>
-          </div>
+          
         </div>
       </div>
     </div>
@@ -1754,20 +1756,110 @@
       return `../user-center/other_main.html?userId=${userId}`;
     }
 
-    function renderComment(comment, parentComments) {
-      const userProfileUrl = getUserProfileUrl(comment.user_id);
-      const childComments = parentComments.filter(c => c.parent_id === comment.id);
+    function findAllChildComments(parentId, allComments) {
+      const children = allComments.filter(c => c.parent_id === parentId || c.parent_id === parentId.toString());
+      let allChildren = [...children];
+      children.forEach(child => {
+        const grandChildren = findAllChildComments(child.id, allComments);
+        allChildren = [...allChildren, ...grandChildren];
+      });
+      return allChildren;
+    }
 
-      let childHtml = '';
-      if (childComments.length > 0) {
-        childHtml = `
-          <div class="child-comments">
-            ${childComments.map(c => renderComment(c, parentComments)).join('')}
+    function renderComment(comment, allComments) {
+      const userProfileUrl = getUserProfileUrl(comment.user_id);
+      const childComments = findAllChildComments(comment.id, allComments);
+
+      function renderChildComment(c, allComments) {
+        const repliedTo = allComments.find(p => p.id === c.parent_id || p.id === c.parent_id.toString());
+        const repliedToName = repliedTo ? repliedTo.username : '未知用户';
+        const repliedToUrl = getUserProfileUrl(repliedTo?.user_id);
+        
+        let avatarHtml;
+        if (c.avatar && c.avatar !== 'null' && c.avatar !== 'undefined') {
+          let avatarUrl = c.avatar;
+          if (avatarUrl.startsWith('data:image')) {
+            avatarHtml = `<img src="${avatarUrl}" alt="${c.username}" class="comment-avatar-img" />`;
+          } else {
+            if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+              avatarUrl = `/uploads/${avatarUrl}`;
+            }
+            avatarUrl = avatarUrl + '?t=' + Date.now();
+            avatarHtml = `
+              <div class="comment-avatar-container">
+                <img src="${avatarUrl}" alt="${c.username}" class="comment-avatar-img" />
+                <div class="comment-avatar-fallback">${(c.username || "匿").charAt(0)}</div>
+              </div>
+            `;
+          }
+        } else {
+          avatarHtml = `<div class="comment-avatar-small">${(c.username || "匿").charAt(0)}</div>`;
+        }
+        
+        const replyUserUrl = getUserProfileUrl(c.user_id);
+        
+        return `
+          <div class="child-comment" data-comment-id="${c.id}">
+            <a href="${replyUserUrl}" class="comment-avatar-link" title="查看主页">${avatarHtml}</a>
+            <div class="comment-body">
+              <div class="comment-header">
+                <a href="${replyUserUrl}" class="comment-author">${c.username || "匿名用户"}</a>
+                <span style="color: #64748b;">回复</span>
+                <a href="${repliedToUrl}" class="comment-author">${repliedToName}</a>
+                <span class="comment-time">${c.create_at || "未知时间"}</span>
+              </div>
+              <div class="comment-content">${escapeHtml(c.content)}</div>
+              <div class="comment-actions-small">
+                <button class="action-btn-small" onclick="likeComment(this, ${c.id})">
+                  <i class="far fa-thumbs-up"></i> <span class="like-num">${c.like_count || 0}</span>
+                </button>
+                <button class="action-btn-small" onclick="showReplyBox(${c.id})">
+                  <i class="far fa-comment"></i> 回复
+                </button>
+              </div>
+              <div class="reply-box" id="reply-box-${c.id}" style="display: none; margin-top: 12px;">
+                <textarea class="reply-textarea" placeholder="写下你的回复..." rows="3"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+                  <button class="btn-secondary" style="padding: 6px 14px; font-size: 13px;" onclick="hideReplyBox(${c.id})">取消</button>
+                  <button class="btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="submitReply(${c.id})">回复</button>
+                </div>
+              </div>
+            </div>
           </div>
         `;
       }
 
-      // 生成头像HTML（支持真实头像和首字母fallback）
+      let childHtml = '';
+      if (childComments.length > 0) {
+        const maxVisible = 3;
+        const visibleComments = childComments.slice(0, maxVisible);
+        const hiddenComments = childComments.slice(maxVisible);
+        
+        let visibleHtml = visibleComments.map(c => renderChildComment(c, allComments)).join('');
+        let hiddenHtml = '';
+        
+        if (hiddenComments.length > 0) {
+          hiddenHtml = `
+            <div class="hidden-comments" id="hidden-comments-${comment.id}" style="display: none;">
+              ${hiddenComments.map(c => renderChildComment(c, allComments)).join('')}
+            </div>
+            <div class="expand-comments">
+              <button class="expand-btn" onclick="toggleExpand(${comment.id})">
+                <span class="expand-arrow">▶</span>
+                <span class="expand-text">展开全部 ${childComments.length} 条回复</span>
+              </button>
+            </div>
+          `;
+        }
+        
+        childHtml = `
+          <div class="child-comments">
+            ${visibleHtml}
+            ${hiddenHtml}
+          </div>
+        `;
+      }
+
       let avatarHtml;
       if (comment.avatar && comment.avatar !== 'null' && comment.avatar !== 'undefined') {
         let avatarUrl = comment.avatar;
@@ -1806,7 +1898,6 @@
                 <i class="far fa-comment"></i> 回复
               </button>
             </div>
-            <!-- 回复输入框 -->
             <div class="reply-box" id="reply-box-${comment.id}" style="display: none; margin-top: 12px;">
               <textarea class="reply-textarea" placeholder="写下你的回复..." rows="3"></textarea>
               <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
@@ -1822,7 +1913,7 @@
 
     async function loadComments(page = 1) {
       try {
-        const res = await fetch(`${API_BASE}/post/${postId}/comments`);
+        const res = await fetch(`${API_BASE}/post/${postId}/comments?_=${Date.now()}`);
         const result = await res.json();
 
         if (!result.success) {
@@ -1844,9 +1935,7 @@
           commentsList.innerHTML += html;
         });
 
-        if (comments.length < pageSize) {
-          document.getElementById("loadMoreBtn").style.display = "none";
-        }
+        
 
       } catch (err) {
         console.error("获取评论失败:", err);
@@ -2080,10 +2169,7 @@
     function bindEvents() {
       document.getElementById("submitCommentBtn").addEventListener("click", submitComment);
       document.getElementById("likeBtn").addEventListener("click", likePost);
-      document.getElementById("loadMoreBtn").addEventListener("click", () => {
-        currentPage++;
-        loadComments(currentPage);
-      });
+      
 
       const backToTopBtn = document.getElementById('backToTop');
       window.addEventListener('scroll', function () {
@@ -2092,6 +2178,24 @@
       backToTopBtn.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
+    }
+
+    function toggleExpand(commentId) {
+      const hiddenDiv = document.getElementById(`hidden-comments-${commentId}`);
+      const expandBtn = document.querySelector(`#hidden-comments-${commentId} + .expand-comments .expand-btn`);
+      const expandText = expandBtn?.querySelector('.expand-text');
+      
+      if (hiddenDiv && expandBtn && expandText) {
+        if (hiddenDiv.style.display === 'none') {
+          hiddenDiv.style.display = 'block';
+          expandText.textContent = '收起回复';
+          expandBtn.classList.add('expanded');
+        } else {
+          hiddenDiv.style.display = 'none';
+          expandText.textContent = `展开全部 ${document.querySelectorAll(`#hidden-comments-${commentId} .child-comment`).length + 3} 条回复`;
+          expandBtn.classList.remove('expanded');
+        }
+      }
     }
 
     function escapeHtml(text) {

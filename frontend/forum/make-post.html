@@ -1274,6 +1274,397 @@
       contentCount.textContent = this.value.length;
     });
 
+    // ==================== 草稿保存功能 ====================
+    document.addEventListener('DOMContentLoaded', function() {
+    const DRAFT_KEY = 'forum_post_draft';
+    let hasUnsavedChanges = false;
+
+    // 加载草稿
+    function loadDraft() {
+      const draft = localStorage.getItem(DRAFT_KEY);
+      if (draft) {
+        try {
+          const draftData = JSON.parse(draft);
+          // 如果草稿有内容，弹出确认对话框询问是否恢复
+          if (draftData.content || draftData.tags?.length > 0 || draftData.section) {
+            showRestoreDraftDialog(draftData);
+          }
+        } catch (e) {
+          console.error('加载草稿失败:', e);
+        }
+      }
+    }
+
+    // 显示恢复草稿确认对话框
+    function showRestoreDraftDialog(draftData) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      `;
+
+      const dialog = document.createElement('div');
+      dialog.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 320px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      `;
+
+      dialog.innerHTML = `
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #333;">
+          是否恢复上次编辑的内容？
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button class="dialog-btn-cancel" style="
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+          ">不保留</button>
+          <button class="dialog-btn-restore" style="
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+          ">恢复内容</button>
+        </div>
+      `;
+
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      const cleanup = () => {
+        overlay.remove();
+      };
+
+      dialog.querySelector('.dialog-btn-cancel').addEventListener('click', () => {
+        clearDraft();
+        cleanup();
+      });
+
+      dialog.querySelector('.dialog-btn-restore').addEventListener('click', () => {
+        // 恢复草稿内容
+        if (draftData.content) {
+          contentInput.value = draftData.content;
+          contentCount.textContent = draftData.content.length;
+        }
+        if (draftData.section) {
+          document.querySelectorAll('.section-option').forEach(opt => {
+            opt.classList.remove('selected');
+          });
+          const savedSection = document.querySelector(`.section-option[data-section="${draftData.section}"]`);
+          if (savedSection) {
+            savedSection.classList.add('selected');
+          }
+        }
+        if (draftData.tags) {
+          selectedTags = [...draftData.tags];
+          updateSelectedTags();
+          draftData.tags.forEach(tag => {
+            document.querySelectorAll('.tag-option').forEach(opt => {
+              if (opt.textContent === tag) {
+                opt.classList.add('selected');
+              }
+            });
+          });
+        }
+        cleanup();
+      });
+    }
+
+    // 保存草稿
+    function saveDraft() {
+      const draftData = {
+        content: contentInput.value,
+        section: document.querySelector('.section-option.selected')?.dataset.section || '',
+        tags: [...selectedTags],
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+      hasUnsavedChanges = false;
+    }
+
+    // 清除草稿
+    function clearDraft() {
+      localStorage.removeItem(DRAFT_KEY);
+      hasUnsavedChanges = false;
+    }
+
+    // 检查是否有未保存的更改
+    function checkForChanges() {
+      const draft = localStorage.getItem(DRAFT_KEY);
+      const currentContent = contentInput.value.trim();
+      const currentSection = document.querySelector('.section-option.selected')?.dataset.section || '';
+      
+      // 如果有任何内容、标签或板块选择，就认为有更改
+      if (currentContent || selectedTags.length > 0 || currentSection) {
+        if (draft) {
+          try {
+            const draftData = JSON.parse(draft);
+            // 比较内容、标签和板块
+            if (currentContent !== draftData.content || 
+                JSON.stringify(selectedTags) !== JSON.stringify(draftData.tags) ||
+                currentSection !== draftData.section) {
+              return true;
+            }
+          } catch (e) {
+            console.error('checkForChanges error:', e);
+            return true;
+          }
+        } else {
+          // 没有保存过草稿，但有内容，说明有未保存的更改
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // 监听内容变化
+    contentInput.addEventListener('input', function () {
+      hasUnsavedChanges = checkForChanges();
+    });
+
+    // 监听标签变化
+    const originalUpdateSelectedTags = updateSelectedTags;
+    updateSelectedTags = function() {
+      originalUpdateSelectedTags();
+      hasUnsavedChanges = checkForChanges();
+    };
+
+    // 监听板块选择变化
+    document.querySelectorAll('.section-option').forEach(option => {
+      option.addEventListener('click', function () {
+        hasUnsavedChanges = checkForChanges();
+      });
+    });
+
+    // 页面加载时恢复草稿
+    loadDraft();
+
+    // 保存草稿按钮
+    const saveDraftBtn = document.querySelector('.btn-secondary');
+    if (saveDraftBtn && saveDraftBtn.textContent.includes('保存草稿')) {
+      saveDraftBtn.addEventListener('click', function () {
+        saveDraft();
+        showAlert('success', '草稿已保存');
+      });
+    }
+
+    // 修复：发布成功后清除草稿（通过修改原有的submitBtn点击处理）
+    // 移除原有的点击事件并重新添加，确保清除草稿在成功发布后执行
+    const submitHandler = async function (e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const content = document.getElementById('postContent').value.trim();
+      const token = localStorage.getItem('token');
+
+      const selectedSection = document.querySelector('.section-option.selected');
+      const tag = selectedSection ? selectedSection.dataset.section : 'Question_discussion';
+
+      if (!token) {
+        showAlert('error', '请先登录');
+        return;
+      }
+
+      if (!content) {
+        showAlert('error', '请输入帖子内容');
+        return;
+      }
+
+      if (content.length > 10000) {
+        showAlert('error', '帖子内容不能超过10000字');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发布中...';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/create_post`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({
+            content: content,
+            image_urls: await uploadPendingFiles(token),
+            tag: tag,
+            tags: selectedTags
+          })
+        });
+
+        let data = null;
+        try { data = await response.json(); } catch (_) { }
+
+        if (response.ok) {
+          isSubmitting = true; // 设置标记，防止 beforeunload 触发保存
+          console.log('发布成功，清除草稿');
+          clearDraft(); // 发布成功后清除草稿
+          console.log('草稿已清除');
+          showAlert('success', '发帖成功，正在跳转...');
+          console.log('redirecting to main.html');
+          window.location.replace('main.html');
+        } else {
+          showAlert('error', (data && data.msg) || '发帖失败');
+        }
+      } catch (error) {
+        console.error('发帖失败:', error);
+        showAlert('error', '网络错误，请稍后重试');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发布帖子';
+      }
+    };
+    
+    // 移除原有事件监听并添加新的
+    submitBtn.removeEventListener('click', submitBtn.originalHandler);
+    submitBtn.originalHandler = submitHandler;
+    submitBtn.addEventListener('click', submitHandler);
+
+    // 自定义确认对话框
+    function showLeaveConfirmDialog(callback) {
+      // 创建遮罩层
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        animation: fadeIn 0.2s ease;
+      `;
+
+      // 创建对话框
+      const dialog = document.createElement('div');
+      dialog.style.cssText = `
+        background: white;
+        border-radius: 16px;
+        padding: 28px 32px;
+        width: 90%;
+        max-width: 420px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.25s ease;
+      `;
+
+      // 对话框内容
+      dialog.innerHTML = `
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="width: 56px; height: 56px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 28px; color: #f59e0b;"></i>
+          </div>
+          <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 8px;">提示</h3>
+          <p style="font-size: 14px; color: #64748b; line-height: 1.6;">
+            您的帖子内容尚未保存，离开后内容将会丢失。是否保留当前内容作为草稿？
+          </p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button id="leaveCancelBtn" style="flex: 1; padding: 12px; background: #f1f5f9; color: #64748b; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+            取消
+          </button>
+          <button id="leaveSaveBtn" style="flex: 1; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+            保留
+          </button>
+        </div>
+      `;
+
+      // 添加动画样式
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #leaveCancelBtn:hover { background: #e2e8f0; }
+        #leaveSaveBtn:hover { background: #2563eb; }
+      `;
+      document.head.appendChild(style);
+
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      // 绑定事件
+      const cancelBtn = dialog.querySelector('#leaveCancelBtn');
+      const saveBtn = dialog.querySelector('#leaveSaveBtn');
+
+      const cleanup = () => {
+        overlay.remove();
+        style.remove();
+      };
+
+      cancelBtn.addEventListener('click', () => {
+        cleanup();
+        clearDraft();
+        window.location.href = 'main.html';
+      });
+
+      saveBtn.addEventListener('click', () => {
+        saveDraft();
+        cleanup();
+        window.location.href = 'main.html';
+      });
+
+      // 点击遮罩不关闭
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          // 不关闭
+        }
+      });
+    }
+
+    // 页面离开前确认
+    let isSubmitting = false;
+    
+    window.addEventListener('beforeunload', function (e) {
+      if (isSubmitting) return;
+      
+      if (checkForChanges()) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
+
+    // 监听返回按钮点击
+    const backBtn = document.querySelector('.navbar-left a.btn-secondary');
+    if (backBtn) {
+      backBtn.addEventListener('click', function (e) {
+        console.log('backBtn clicked, has changes:', checkForChanges());
+        if (checkForChanges()) {
+          e.preventDefault();
+          e.stopPropagation();
+          showLeaveConfirmDialog(function (save) {
+            if (!save) {
+              window.location.href = 'main.html';
+            }
+          });
+        }
+      });
+    }
+
+    }); // 结束 DOMContentLoaded
+
     // 文件上传
     const uploadArea = document.getElementById('uploadArea');
     const uploadedFiles = document.getElementById('uploadedFiles');
@@ -1531,7 +1922,7 @@
           },
           body: JSON.stringify({
             content: content,
-            image_urls: await uploadPendingImages(token),
+            image_urls: await uploadPendingFiles(token),
             tag: tag,
             tags: selectedTags
           })
