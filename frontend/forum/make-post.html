@@ -1752,9 +1752,8 @@
       e.preventDefault();
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = 'image/*,.doc,.docx,.xls,.xlsx,.pdf,.txt,.rtf,.ppt,.pptx,.zip,.rar,.7z,.csv,.md,.json,.xml,.mp4,.avi,.mov,.mp3,.wav';
+      input.accept = 'image/*,.doc,.docx,.xls,.xlsx,.pdf,.txt,.rtf,.ppt,.pptx,.zip,.rar,.7z,.csv,.md,.json,.xml';
       input.multiple = true;
-      input.webkitdirectory = true; // 支持选择文件夹
       input.onchange = function (e) {
         handleFiles(e.target.files);
       };
