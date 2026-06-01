@@ -209,6 +209,23 @@
     /* 主内容区 */
     .main-content {
       min-width: 0;
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    /* 自定义滚动条 */
+    .main-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .main-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .main-content::-webkit-scrollbar-thumb {
+      background: var(--gray-300);
+      border-radius: 3px;
     }
 
     /* 页面标题 */
@@ -606,6 +623,23 @@
       position: sticky;
       top: 96px;
       height: fit-content;
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      padding-left: 8px;
+    }
+
+    /* 自定义滚动条 */
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--gray-300);
+      border-radius: 3px;
     }
 
     .sidebar-card {
@@ -686,6 +720,7 @@
       margin-bottom: 12px;
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
     }
 
     .draft-item:hover {
@@ -707,6 +742,44 @@
       color: var(--gray-400);
       display: flex;
       justify-content: space-between;
+      align-items: center;
+    }
+
+    .draft-item .delete-draft {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #EF4444;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .draft-item:hover .delete-draft {
+      opacity: 1;
+    }
+
+    .draft-item .delete-draft:hover {
+      background: #EF4444;
+      color: white;
+    }
+
+    .draft-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .btn-clear-all:hover {
+      background: rgba(239, 68, 68, 0.1);
     }
 
     .draft-empty {
@@ -892,7 +965,7 @@
         <!-- 提交按钮 -->
         <div class="card-section form-actions">
           <div class="draft-actions">
-            <button class="btn-secondary">
+            <button class="btn-secondary" id="saveDraftBtn">
               <i class="fas fa-save"></i> 保存草稿
             </button>
           </div>
@@ -966,11 +1039,16 @@
         <div class="sidebar-header">
           <i class="fas fa-file-alt"></i>
           我的草稿
+          <button class="btn-clear-all" id="clearAllDrafts" title="清空所有草稿" style="margin-left: auto; background: none; border: none; color: #EF4444; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; display: none;">
+            <i class="fas fa-trash-alt"></i> 一键清空
+          </button>
         </div>
         <div class="sidebar-content">
-          <div class="draft-empty">
-            <i class="fas fa-inbox"></i>
-            <p>暂无草稿</p>
+          <div class="draft-list" id="draftList">
+            <div class="draft-empty" id="draftEmpty">
+              <i class="fas fa-inbox"></i>
+              <p>暂无草稿</p>
+            </div>
           </div>
         </div>
       </div>
@@ -1274,166 +1352,228 @@
       contentCount.textContent = this.value.length;
     });
 
-    // ==================== 草稿保存功能 ====================
+    // ==================== 草稿箱功能 ====================
     document.addEventListener('DOMContentLoaded', function() {
-    const DRAFT_KEY = 'forum_post_draft';
+    const DRAFTS_KEY = 'forum_post_drafts';
+    const DRAFT_ID_KEY = 'forum_current_draft_id';
     let hasUnsavedChanges = false;
 
-    // 加载草稿
-    function loadDraft() {
-      const draft = localStorage.getItem(DRAFT_KEY);
-      if (draft) {
-        try {
-          const draftData = JSON.parse(draft);
-          // 如果草稿有内容，弹出确认对话框询问是否恢复
-          if (draftData.content || draftData.tags?.length > 0 || draftData.section) {
-            showRestoreDraftDialog(draftData);
-          }
-        } catch (e) {
-          console.error('加载草稿失败:', e);
+    // 获取所有草稿
+    function getAllDrafts() {
+      const drafts = localStorage.getItem(DRAFTS_KEY);
+      return drafts ? JSON.parse(drafts) : [];
+    }
+
+    // 保存所有草稿
+    function saveAllDrafts(drafts) {
+      localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
+    }
+
+    // 生成唯一ID
+    function generateDraftId() {
+      return 'draft_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // 渲染草稿列表到右侧栏
+    function renderDraftList() {
+      const draftList = document.getElementById('draftList');
+      const draftEmpty = document.getElementById('draftEmpty');
+      const clearAllBtn = document.getElementById('clearAllDrafts');
+      const drafts = getAllDrafts();
+
+      if (drafts.length === 0) {
+        draftList.innerHTML = `
+          <div class="draft-empty" id="draftEmpty">
+            <i class="fas fa-inbox"></i>
+            <p>暂无草稿</p>
+          </div>
+        `;
+        if (clearAllBtn) clearAllBtn.style.display = 'none';
+        return;
+      }
+
+      // 显示一键清空按钮
+      if (clearAllBtn) clearAllBtn.style.display = 'block';
+
+      // 按时间倒序排列，最新的在前
+      drafts.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
+
+      draftList.innerHTML = drafts.map(draft => {
+        const title = draft.content ? draft.content.substring(0, 30) + (draft.content.length > 30 ? '...' : '') : '无标题';
+        const date = new Date(draft.savedAt);
+        const timeStr = date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+        return `
+          <div class="draft-item" data-draft-id="${draft.id}">
+            <button class="delete-draft" data-draft-id="${draft.id}" title="删除草稿">
+              <i class="fas fa-times"></i>
+            </button>
+            <div class="draft-title">${title}</div>
+            <div class="draft-meta">
+              <span>${timeStr}</span>
+              <span>${draft.tags?.length || 0}个标签</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 绑定点击事件 - 加载草稿
+      document.querySelectorAll('.draft-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+          if (e.target.closest('.delete-draft')) return;
+          const draftId = this.dataset.draftId;
+          loadDraftById(draftId);
+        });
+      });
+
+      // 绑定删除事件
+      document.querySelectorAll('.delete-draft').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const draftId = this.dataset.draftId;
+          deleteDraftById(draftId);
+        });
+      });
+    }
+
+    // 根据ID加载草稿
+    function loadDraftById(draftId) {
+      const drafts = getAllDrafts();
+      const draft = drafts.find(d => d.id === draftId);
+      if (!draft) return;
+
+      // 恢复内容
+      contentInput.value = draft.content || '';
+      contentCount.textContent = (draft.content || '').length;
+
+      // 恢复板块
+      document.querySelectorAll('.section-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      if (draft.section) {
+        const savedSection = document.querySelector(`.section-option[data-section="${draft.section}"]`);
+        if (savedSection) {
+          savedSection.classList.add('selected');
         }
+      }
+
+      // 恢复标签
+      selectedTags = [...(draft.tags || [])];
+      updateSelectedTags();
+      document.querySelectorAll('.tag-option').forEach(opt => {
+        if (draft.tags && draft.tags.includes(opt.textContent)) {
+          opt.classList.add('selected');
+        } else {
+          opt.classList.remove('selected');
+        }
+      });
+
+      // 保存当前草稿ID
+      localStorage.setItem(DRAFT_ID_KEY, draftId);
+
+      showAlert('success', '已加载草稿');
+    }
+
+    // 根据ID删除草稿
+    function deleteDraftById(draftId) {
+      const drafts = getAllDrafts();
+      const filteredDrafts = drafts.filter(d => d.id !== draftId);
+      saveAllDrafts(filteredDrafts);
+      renderDraftList();
+
+      // 如果删除的是当前编辑的草稿，清除当前草稿ID
+      const currentDraftId = localStorage.getItem(DRAFT_ID_KEY);
+      if (currentDraftId === draftId) {
+        localStorage.removeItem(DRAFT_ID_KEY);
+      }
+
+      showAlert('success', '草稿已删除');
+    }
+
+    // 一键清空所有草稿
+    function clearAllDrafts() {
+      if (confirm('确定要清空所有草稿吗？此操作不可恢复。')) {
+        saveAllDrafts([]);
+        localStorage.removeItem(DRAFT_ID_KEY);
+        renderDraftList();
+        showAlert('success', '所有草稿已清空');
       }
     }
 
-    // 显示恢复草稿确认对话框
-    function showRestoreDraftDialog(draftData) {
-      const overlay = document.createElement('div');
-      overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      `;
-
-      const dialog = document.createElement('div');
-      dialog.style.cssText = `
-        background: white;
-        border-radius: 12px;
-        padding: 24px;
-        width: 320px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-      `;
-
-      dialog.innerHTML = `
-        <div style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #333;">
-          是否恢复上次编辑的内容？
-        </div>
-        <div style="display: flex; gap: 12px; justify-content: center;">
-          <button class="dialog-btn-cancel" style="
-            flex: 1;
-            padding: 10px 16px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background: white;
-            color: #666;
-            cursor: pointer;
-            font-size: 14px;
-          ">不保留</button>
-          <button class="dialog-btn-restore" style="
-            flex: 1;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            background: #667eea;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-          ">恢复内容</button>
-        </div>
-      `;
-
-      overlay.appendChild(dialog);
-      document.body.appendChild(overlay);
-
-      const cleanup = () => {
-        overlay.remove();
-      };
-
-      dialog.querySelector('.dialog-btn-cancel').addEventListener('click', () => {
-        clearDraft();
-        cleanup();
-      });
-
-      dialog.querySelector('.dialog-btn-restore').addEventListener('click', () => {
-        // 恢复草稿内容
-        if (draftData.content) {
-          contentInput.value = draftData.content;
-          contentCount.textContent = draftData.content.length;
-        }
-        if (draftData.section) {
-          document.querySelectorAll('.section-option').forEach(opt => {
-            opt.classList.remove('selected');
-          });
-          const savedSection = document.querySelector(`.section-option[data-section="${draftData.section}"]`);
-          if (savedSection) {
-            savedSection.classList.add('selected');
-          }
-        }
-        if (draftData.tags) {
-          selectedTags = [...draftData.tags];
-          updateSelectedTags();
-          draftData.tags.forEach(tag => {
-            document.querySelectorAll('.tag-option').forEach(opt => {
-              if (opt.textContent === tag) {
-                opt.classList.add('selected');
-              }
-            });
-          });
-        }
-        cleanup();
-      });
-    }
-
-    // 保存草稿
+    // 保存当前编辑内容为草稿
     function saveDraft() {
-      const draftData = {
-        content: contentInput.value,
-        section: document.querySelector('.section-option.selected')?.dataset.section || '',
-        tags: [...selectedTags],
+      const currentContent = contentInput.value.trim();
+      const currentSection = document.querySelector('.section-option.selected')?.dataset.section || '';
+      const currentTags = [...selectedTags];
+
+      // 如果内容为空，不保存
+      if (!currentContent && currentTags.length === 0 && !currentSection) {
+        showAlert('error', '请先输入内容后再保存草稿');
+        return;
+      }
+
+      const drafts = getAllDrafts();
+
+      // 每次保存都创建新草稿，不会覆盖之前的草稿
+      const newDraft = {
+        id: generateDraftId(),
+        content: currentContent,
+        section: currentSection,
+        tags: currentTags,
         savedAt: new Date().toISOString()
       };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+      drafts.push(newDraft);
+
+      saveAllDrafts(drafts);
+      renderDraftList();
       hasUnsavedChanges = false;
+      
+      // 保存成功后清空编辑器内容
+      contentInput.value = '';
+      document.getElementById('contentCount').textContent = '0';
+      selectedTags = [];
+      updateSelectedTags();
+      
+      // 重置板块选择
+      document.querySelectorAll('.section-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      document.querySelector('.section-option[data-section="Question_discussion"]')?.classList.add('selected');
+      
+      // 清空文件上传区域
+      const fileList = document.getElementById('fileList');
+      if (fileList) fileList.innerHTML = '';
+      pendingFiles = [];
+      
+      showAlert('success', '草稿已保存，编辑器已清空');
     }
 
-    // 清除草稿
-    function clearDraft() {
-      localStorage.removeItem(DRAFT_KEY);
-      hasUnsavedChanges = false;
+    // 清除当前草稿
+    function clearCurrentDraft() {
+      const currentDraftId = localStorage.getItem(DRAFT_ID_KEY);
+      if (currentDraftId) {
+        deleteDraftById(currentDraftId);
+      }
+      localStorage.removeItem(DRAFT_ID_KEY);
+    }
+
+    // 页面加载时初始化草稿列表
+    renderDraftList();
+
+    // 一键清空按钮事件
+    const clearAllBtn = document.getElementById('clearAllDrafts');
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', clearAllDrafts);
     }
 
     // 检查是否有未保存的更改
     function checkForChanges() {
-      const draft = localStorage.getItem(DRAFT_KEY);
       const currentContent = contentInput.value.trim();
-      const currentSection = document.querySelector('.section-option.selected')?.dataset.section || '';
       
-      // 如果有任何内容、标签或板块选择，就认为有更改
-      if (currentContent || selectedTags.length > 0 || currentSection) {
-        if (draft) {
-          try {
-            const draftData = JSON.parse(draft);
-            // 比较内容、标签和板块
-            if (currentContent !== draftData.content || 
-                JSON.stringify(selectedTags) !== JSON.stringify(draftData.tags) ||
-                currentSection !== draftData.section) {
-              return true;
-            }
-          } catch (e) {
-            console.error('checkForChanges error:', e);
-            return true;
-          }
-        } else {
-          // 没有保存过草稿，但有内容，说明有未保存的更改
-          return true;
-        }
+      // 只有当有实际内容或选择了标签时，才认为有更改
+      // 板块选择不算作"有更改"，因为默认就选中了一个
+      if (currentContent || selectedTags.length > 0) {
+        return true;
       }
       return false;
     }
@@ -1457,18 +1597,35 @@
       });
     });
 
-    // 页面加载时恢复草稿
-    loadDraft();
-
     // 保存草稿按钮
-    const saveDraftBtn = document.querySelector('.btn-secondary');
-    if (saveDraftBtn && saveDraftBtn.textContent.includes('保存草稿')) {
-      saveDraftBtn.addEventListener('click', function () {
+    const saveDraftBtn = document.querySelector('#saveDraftBtn');
+    if (saveDraftBtn) {
+      saveDraftBtn.addEventListener('click', function (e) {
+        e.preventDefault();
         saveDraft();
-        showAlert('success', '草稿已保存');
       });
     }
 
+    // 左右区域滚动隔离 - 鼠标停在左边滚动左边，停在右边滚动右边
+    (function() {
+      const mainContent = document.querySelector('.main-content');
+      const sidebar = document.querySelector('.sidebar');
+      
+      if (mainContent) {
+        mainContent.addEventListener('wheel', function(e) {
+          // 当鼠标在mainContent区域时，阻止事件冒泡到其他区域
+          e.stopPropagation();
+        }, { passive: true });
+      }
+      
+      if (sidebar) {
+        sidebar.addEventListener('wheel', function(e) {
+          // 当鼠标在sidebar区域时，阻止事件冒泡到其他区域
+          e.stopPropagation();
+        }, { passive: true });
+      }
+    })();
+    
     // 修复：发布成功后清除草稿（通过修改原有的submitBtn点击处理）
     const submitBtn = document.querySelector('.btn-primary.large');
     console.log('submitBtn found', !!submitBtn);
@@ -1522,7 +1679,7 @@
         if (response.ok) {
           isSubmitting = true; // 设置标记，防止 beforeunload 触发保存
           console.log('发布成功，清除草稿');
-          clearDraft(); // 发布成功后清除草稿
+          clearCurrentDraft(); // 发布成功后清除草稿
           console.log('草稿已清除');
           showAlert('success', '发帖成功，正在跳转...');
           console.log('redirecting to main.html');
@@ -1545,7 +1702,7 @@
     submitBtn.addEventListener('click', submitHandler);
 
     // 自定义确认对话框
-    function showLeaveConfirmDialog(callback) {
+    function showLeaveConfirmDialog() {
       // 创建遮罩层
       const overlay = document.createElement('div');
       overlay.style.cssText = `
@@ -1619,14 +1776,37 @@
 
       cancelBtn.addEventListener('click', () => {
         cleanup();
-        clearDraft();
+        clearCurrentDraft();
         window.location.href = 'main.html';
       });
 
       saveBtn.addEventListener('click', () => {
-        saveDraft();
+        // 先保存草稿到localStorage
+        const currentContent = contentInput.value.trim();
+        const currentSection = document.querySelector('.section-option.selected')?.dataset.section || '';
+        const currentTags = [...selectedTags];
+
+        if (currentContent || currentTags.length > 0 || currentSection) {
+          const drafts = getAllDrafts();
+          const newDraft = {
+            id: generateDraftId(),
+            content: currentContent,
+            section: currentSection,
+            tags: currentTags,
+            savedAt: new Date().toISOString()
+          };
+          drafts.push(newDraft);
+          saveAllDrafts(drafts);
+        }
+
+        // 关闭对话框并设置标记
         cleanup();
-        window.location.href = 'main.html';
+        isLeavingWithSave = true;
+        
+        // 延迟跳转，让用户看到保存成功的提示
+        setTimeout(() => {
+          window.location.href = 'main.html';
+        }, 100);
       });
 
       // 点击遮罩不关闭
@@ -1639,9 +1819,10 @@
 
     // 页面离开前确认
     let isSubmitting = false;
+    let isLeavingWithSave = false;
     
     window.addEventListener('beforeunload', function (e) {
-      if (isSubmitting) return;
+      if (isSubmitting || isLeavingWithSave) return;
       
       if (checkForChanges()) {
         e.preventDefault();
@@ -1658,11 +1839,7 @@
         if (checkForChanges()) {
           e.preventDefault();
           e.stopPropagation();
-          showLeaveConfirmDialog(function (save) {
-            if (!save) {
-              window.location.href = 'main.html';
-            }
-          });
+          showLeaveConfirmDialog();
         }
       });
     }
@@ -1752,8 +1929,9 @@
       e.preventDefault();
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = 'image/*,.doc,.docx,.xls,.xlsx,.pdf,.txt,.rtf,.ppt,.pptx,.zip,.rar,.7z,.csv,.md,.json,.xml';
+      input.accept = 'image/*,.doc,.docx,.xls,.xlsx,.pdf,.txt,.rtf,.ppt,.pptx,.zip,.rar,.7z,.csv,.md,.json,.xml,.mp4,.avi,.mov,.mp3,.wav';
       input.multiple = true;
+      input.webkitdirectory = true; // 支持选择文件夹
       input.onchange = function (e) {
         handleFiles(e.target.files);
       };
