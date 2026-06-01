@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>本地模板库</title>
+  <style>
+    :root {
+      --bg: #f5f9ff;
+      --panel: rgba(255, 255, 255, 0.88);
+      --text: #17324d;
+      --muted: #6d8198;
+      --blue: #6ea8ff;
+      --blue-strong: #4c8dff;
+      --shadow: 0 18px 50px rgba(74, 116, 176, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(110, 168, 255, 0.18), transparent 24%),
+        radial-gradient(circle at 85% 20%, rgba(152, 201, 255, 0.24), transparent 20%),
+        linear-gradient(180deg, #fbfdff 0%, #f3f8ff 100%);
+      padding: 28px;
+    }
+
+    .shell {
+      max-width: 980px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.82);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      padding: 28px;
+      backdrop-filter: blur(18px);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 42px);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .template {
+      min-height: 140px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(145, 181, 223, 0.24);
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,250,255,0.92));
+    }
+
+    .template strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .template span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 18px;
+      padding: 11px 16px;
+      border-radius: 999px;
+      color: white;
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--blue), var(--blue-strong));
+      box-shadow: 0 12px 24px rgba(76, 141, 255, 0.2);
+      font-weight: 700;
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 14px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <h1>本地模板库</h1>
+    <p>这里用于浏览本地模板卡片，后续可以继续扩展成分类、收藏和一键套用。</p>
+
+    <section class="grid">
+      <div class="template">
+        <strong>细胞结构模板</strong>
+        <span>适合讲解细胞膜、细胞核、线粒体等基础知识。</span>
+      </div>
+      <div class="template">
+        <strong>实验观察模板</strong>
+        <span>适合显微镜观察、实验记录和课堂问答型内容。</span>
+      </div>
+      <div class="template">
+        <strong>知识点归纳模板</strong>
+        <span>适合课后复习、重点总结和结构化梳理。</span>
+      </div>
+      <div class="template">
+        <strong>测验练习模板</strong>
+        <span>适合加入选择题、判断题和课堂小测模块。</span>
+      </div>
+    </section>
+
+    <a class="back" href="./index.html">返回主页 →</a>
+  </main>
+</body>
+</html>
