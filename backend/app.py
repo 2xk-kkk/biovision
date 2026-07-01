@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import user, post, exam
+from routers import user, post
 from utils.response import ApiResponse
 from database.db import init_db
 import os
