@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import user, post
+from routers import user, post, exam
 from utils.response import ApiResponse
 from database.db import init_db
 import os
@@ -53,6 +53,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.include_router(user.router, prefix="/api", tags=["用户"])
 app.include_router(post.router, prefix="/api", tags=["发帖"])
 app.include_router(chart.router, prefix="/api", tags=["统计"])
+app.include_router(exam.router, prefix="/api", tags=["试卷"])
 
 #根路径
 @app.get("/")

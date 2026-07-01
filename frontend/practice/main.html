@@ -911,7 +911,7 @@
                         <div class="beta-icon">🧠</div>
                         <div class="beta-name">错题集</div>
                     </div>
-                    <div class="beta-item">
+                    <div class="beta-item" id="examButton">
                         <div class="beta-icon">🔍</div>
                         <div class="beta-name">真题大观</div>
                     </div>
@@ -1192,7 +1192,11 @@
         document.querySelectorAll('.beta-item').forEach(item => {
             item.addEventListener('click', function() {
                 const name = this.querySelector('.beta-name').textContent;
-                alert(`即将打开: ${name}`);
+                if (name === '真题大观') {
+                    window.location.href = 'exams.html';
+                } else {
+                    alert(`即将打开: ${name}`);
+                }
             });
         });
         

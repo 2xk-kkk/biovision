@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真题大观 - 生物视界</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #9fe8f1, #bbfcfc);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #262626;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #8c8c8c;
+            margin-top: 4px;
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .exam-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .exam-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-color: #8febd7;
+        }
+
+        .exam-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .exam-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e6f7ff, #fff7e6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .exam-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+        }
+
+        .file-list {
+            margin-bottom: 16px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .file-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .file-item:hover {
+            background: #edfbff;
+        }
+
+        .file-icon {
+            font-size: 16px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 13px;
+            color: #262626;
+            font-weight: 500;
+        }
+
+        .file-size {
+            font-size: 11px;
+            color: #8c8c8c;
+            margin-top: 2px;
+        }
+
+        .file-action {
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border-radius: 12px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: #8c8c8c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+        .modal-close:hover {
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #faf5ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f3f4f6;
+        }
+
+        .file-upload-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .file-upload-text {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .file-upload-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .exam-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="logo"></div>
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="../practice/main.html" class="nav-link active">每日训练</a>
+                <a href="../forum/main.html" class="nav-link">论坛</a>
+            </div>
+            <div class="user-actions">
+                <div class="avatar">👤</div>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="header-icon">🔍</div>
+            <div>
+                <div class="header-title">真题大观</div>
+                <div class="header-subtitle">查看和下载历年高考生物真题试卷</div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-primary" onclick="openUploadModal()">📤 上传试卷</button>
+            <button class="btn btn-success" onclick="importFromD()">📥 从D盘导入</button>
+        </div>
+
+        <div id="examContainer" class="exam-grid">
+            <div class="loading">⏳ 加载试卷列表中...</div>
+        </div>
+    </main>
+
+    <div id="uploadModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">上传试卷</div>
+                <div class="modal-close" onclick="closeUploadModal()">×</div>
+            </div>
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label class="form-label">试卷分类</label>
+                    <input type="text" class="form-input" id="categoryInput" placeholder="例如：25浙江1月" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择文件</label>
+                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
+                        <div class="file-upload-icon">📁</div>
+                        <div class="file-upload-text">点击或拖拽文件到此处</div>
+                        <div class="file-upload-hint">支持 .docx, .pdf, .doc, .zip 等格式</div>
+                        <input type="file" id="fileInput" style="display: none;" accept=".docx,.doc,.pdf,.zip,.rar,.jpg,.png" onchange="handleFileSelect(event)">
+                    </div>
+                </div>
+                <div id="selectedFile" style="display: none; margin-bottom: 16px; padding: 10px; background: #f3f4f6; border-radius: 8px;">
+                    <span id="fileName"></span>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="clearFile()" style="margin-left: 10px;">清除</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">上传</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        async function loadExams() {
+            const container = document.getElementById('examContainer');
+            try {
+                const response = await fetch('http://localhost:8000/api/exams');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">${result.msg || '试卷目录为空'}</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const exams = result.data;
+                if (exams.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">请点击上方"上传试卷"或"从D盘导入"添加试卷</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = exams.map(exam => `
+                    <div class="exam-card">
+                        <div class="exam-header">
+                            <div class="exam-icon">📄</div>
+                            <div class="exam-name">${exam.name}</div>
+                        </div>
+                        <div class="file-list">
+                            ${exam.files.map(file => `
+                                <div class="file-item" onclick="downloadFile('${encodeURIComponent(file.path)}')">
+                                    <div class="file-icon">${getFileIcon(file.extension)}</div>
+                                    <div class="file-info">
+                                        <div class="file-name">${file.name}</div>
+                                        <div class="file-size">${formatSize(file.size)}</div>
+                                    </div>
+                                    <div class="file-action">⬇️</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">加载失败</div>
+                        <div class="empty-desc">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('加载试卷失败:', error);
+            }
+        }
+
+        function getFileIcon(ext) {
+            const icons = {
+                '.docx': '📝',
+                '.doc': '📝',
+                '.pdf': '📕',
+                '.url': '🔗',
+                '.jpg': '🖼️',
+                '.png': '🖼️',
+                '.zip': '📦',
+                '.rar': '📦'
+            };
+            return icons[ext] || '📄';
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function downloadFile(encodedPath) {
+            const url = `http://localhost:8000/api/exams/download?file_path=${encodedPath}`;
+            window.open(url, '_blank');
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('show');
+            document.getElementById('categoryInput').value = '';
+            clearFile();
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('show');
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function handleDrop(event) {
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('selectedFile').style.display = 'none';
+        }
+
+        async function importFromD() {
+            try {
+                const response = await fetch('http://localhost:8000/api/exams/import', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', result.msg);
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '导入失败，请确保后端服务已启动');
+                console.error('导入失败:', error);
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const category = document.getElementById('categoryInput').value.trim();
+            if (!category) {
+                showToast('error', '请输入试卷分类');
+                return;
+            }
+            
+            if (!selectedFile) {
+                showToast('error', '请选择要上传的文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('category', category);
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('http://localhost:8000/api/exams/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', '上传成功');
+                    closeUploadModal();
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '上传失败，请确保后端服务已启动');
+                console.error('上传失败:', error);
+            }
+        });
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+
+        document.getElementById('uploadModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUploadModal();
+            }
+        });
+
+        loadExams();
+    </script>
+</body>
+</html>
