@@ -154,6 +154,52 @@ def init_db():
         )
     ''')
 
+    # 试卷表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS exams (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            file_name TEXT,
+            question_count INTEGER DEFAULT 0,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(name)
+        )
+    ''')
+
+    # 题目表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            exam_id INTEGER NOT NULL,
+            number INTEGER NOT NULL,
+            stem TEXT NOT NULL,
+            option_a TEXT,
+            option_b TEXT,
+            option_c TEXT,
+            option_d TEXT,
+            answer TEXT,
+            images TEXT,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(exam_id) REFERENCES exams(id) ON DELETE CASCADE,
+            UNIQUE(exam_id, number)
+        )
+    ''')
+
+    # 用户答题记录表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_answers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            question_id INTEGER NOT NULL,
+            answer TEXT,
+            is_correct INTEGER DEFAULT 0,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(question_id) REFERENCES questions(id) ON DELETE CASCADE,
+            UNIQUE(user_id, question_id)
+        )
+    ''')
+
     conn.commit()
     conn.close()
 

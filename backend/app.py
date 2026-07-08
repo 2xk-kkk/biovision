@@ -1,8 +1,7 @@
 # app.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import user, post, exam
-from routers import user, post
+from routers import user, post, exam, question
 from utils.response import ApiResponse
 from database.db import init_db
 import os
@@ -38,7 +37,7 @@ BACKEND_UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")  # 旧的上传目录
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(BACKEND_UPLOAD_DIR, exist_ok=True)
 
-# 尝试将旧目录中的文件复制到新目录
+# 尝试将旧目录中的文件复制到新目录（包括子目录）
 import shutil
 for item in os.listdir(BACKEND_UPLOAD_DIR):
     src = os.path.join(BACKEND_UPLOAD_DIR, item)
@@ -46,6 +45,9 @@ for item in os.listdir(BACKEND_UPLOAD_DIR):
     if os.path.isfile(src) and not os.path.exists(dst):
         shutil.copy2(src, dst)
         print(f"复制文件: {item}")
+    elif os.path.isdir(src) and not os.path.exists(dst):
+        shutil.copytree(src, dst)
+        print(f"复制目录: {item}")
 
 # 挂载静态文件服务
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
@@ -55,6 +57,7 @@ app.include_router(user.router, prefix="/api", tags=["用户"])
 app.include_router(post.router, prefix="/api", tags=["发帖"])
 app.include_router(chart.router, prefix="/api", tags=["统计"])
 app.include_router(exam.router, prefix="/api", tags=["试卷"])
+app.include_router(question.router, prefix="/api", tags=["题目"])
 
 #根路径
 @app.get("/")

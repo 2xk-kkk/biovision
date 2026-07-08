@@ -15,8 +15,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
             color: #333;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
-            background-attachment: fixed;
         }
 
         .top {
@@ -126,172 +124,131 @@
             cursor: pointer;
         }
 
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 24px;
         }
 
-        .page-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .header-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #9fe8f1, #bbfcfc);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        .header-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #262626;
-        }
-
-        .header-subtitle {
-            font-size: 14px;
-            color: #8c8c8c;
-            margin-top: 4px;
-        }
-
-        .exam-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            grid-auto-rows: 1fr;
-            gap: 20px;
-        }
-
-        .exam-card {
-            background: #fff;
+        .filter-section {
+            background: white;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-            transition: all 0.3s;
-            border: 1px solid #f0f0f0;
-            display: flex;
-            flex-direction: column;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
 
-        .exam-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border-color: #8febd7;
-        }
-
-        .exam-header {
+        .filter-row {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        .exam-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #e6f7ff, #fff7e6);
-            border-radius: 10px;
+        .filter-group {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .exam-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #262626;
-        }
-
-        .file-list {
-            margin-bottom: 16px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
             gap: 8px;
         }
 
-        .file-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: #fafafa;
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            margin-bottom: 8px;
-            transition: background 0.2s;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            min-width: 120px;
             cursor: pointer;
         }
 
-        .file-item:last-child {
-            margin-bottom: 0;
+        .filter-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .file-item:hover {
-            background: #edfbff;
-        }
-
-        .file-icon {
-            font-size: 16px;
-        }
-
-        .file-info {
+        .region-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
             flex: 1;
         }
 
-        .file-name {
+        .region-tag {
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 13px;
-            color: #262626;
-            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
         }
 
-        .file-size {
-            font-size: 11px;
-            color: #8c8c8c;
-            margin-top: 2px;
-        }
-
-        .file-action {
+        .region-tag:hover {
+            border-color: #667eea;
             color: #667eea;
-            font-size: 14px;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: #fff;
-            border-radius: 12px;
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .empty-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #262626;
-            margin-bottom: 8px;
-        }
-
-        .empty-desc {
-            font-size: 14px;
-            color: #8c8c8c;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-            font-size: 14px;
+        .region-tag.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
         }
 
         .action-bar {
@@ -343,6 +300,173 @@
         .btn-sm {
             padding: 6px 12px;
             font-size: 12px;
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .exam-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .exam-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: #e5e7eb;
+        }
+
+        .exam-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .exam-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .exam-title {
+            flex: 1;
+        }
+
+        .exam-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.4;
+        }
+
+        .exam-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f9fafb;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .meta-icon {
+            font-size: 12px;
+        }
+
+        .meta-value {
+            font-weight: 500;
+        }
+
+        .exam-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 16px;
+            margin-top: 12px;
+        }
+
+        .exam-tag {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tag-new {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .tag-hot {
+            background: #fed7aa;
+            color: #ea580c;
+        }
+
+        .exam-footer {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 2px;
+            font-size: 14px;
+        }
+
+        .star {
+            color: #fbbf24;
+        }
+
+        .btn-start {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-start:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: #8c8c8c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 14px;
         }
 
         .modal-overlay {
@@ -506,8 +630,17 @@
                 display: none;
             }
             
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
             .exam-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -533,12 +666,50 @@
         </div>
     </div>
 
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-title">📚 真题大观</div>
+            <div class="hero-subtitle">汇聚各地历年生物真题，助力高效备考</div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotalExams">0</div>
+                    <div class="stat-label">试卷总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotalRegions">0</div>
+                    <div class="stat-label">覆盖省份</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statYearRange">--</div>
+                    <div class="stat-label">年份范围</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotalQuestions">3200+</div>
+                    <div class="stat-label">题目总量</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <main class="main-content">
-        <div class="page-header">
-            <div class="header-icon">🔍</div>
-            <div>
-                <div class="header-title">真题大观</div>
-                <div class="header-subtitle">查看和下载历年高考生物真题试卷</div>
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <span class="filter-label">年份</span>
+                    <select class="filter-select" id="yearSelect" onchange="handleFilterChange()">
+                        <option value="全部">全部年份</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">试卷类型</span>
+                    <select class="filter-select" id="typeSelect" onchange="handleFilterChange()">
+                        <option value="全部">全部类型</option>
+                        <option value="高考真题">高考真题</option>
+                        <option value="模拟试题">模拟试题</option>
+                    </select>
+                </div>
+                <div class="region-tags" id="regionTags">
+                </div>
             </div>
         </div>
 
@@ -560,8 +731,8 @@
             </div>
             <form id="uploadForm">
                 <div class="form-group">
-                    <label class="form-label">试卷分类</label>
-                    <input type="text" class="form-input" id="categoryInput" placeholder="例如：25浙江1月" required>
+                    <label class="form-label">试卷分类（格式：年份_省份_类型，如 2025_北京卷_生物）</label>
+                    <input type="text" class="form-input" id="categoryInput" placeholder="例如：2025_北京卷_生物" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">选择文件</label>
@@ -590,11 +761,21 @@
 
     <script>
         let selectedFile = null;
+        let currentYear = '全部';
+        let currentRegion = '全部';
+        let years = [];
+        let regions = [];
 
-        async function loadExams() {
+        async function loadExams(year = null, region = null) {
             const container = document.getElementById('examContainer');
             try {
-                const response = await fetch('http://localhost:8000/api/exams');
+                let url = 'http://localhost:8000/api/exams';
+                const params = [];
+                if (year && year !== '全部') params.push(`year=${year}`);
+                if (region && region !== '全部') params.push(`region=${encodeURIComponent(region)}`);
+                if (params.length > 0) url += '?' + params.join('&');
+                
+                const response = await fetch(url);
                 const result = await response.json();
                 
                 if (!result.success) {
@@ -608,7 +789,16 @@
                     return;
                 }
 
-                const exams = result.data;
+                const data = result.data;
+                const exams = data.exams;
+                stats = data.stats || {};
+                years = data.years || [];
+                regions = data.regions || [];
+
+                updateStats(stats);
+                updateYearSelect(years);
+                updateRegionTags(regions);
+
                 if (exams.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
@@ -620,23 +810,41 @@
                     return;
                 }
 
-                container.innerHTML = exams.map(exam => `
+                container.innerHTML = exams.map((exam, index) => `
                     <div class="exam-card">
-                        <div class="exam-header">
-                            <div class="exam-icon">📄</div>
-                            <div class="exam-name">${exam.name}</div>
+                        <div class="exam-card-header">
+                            <div class="exam-icon">📝</div>
+                            <div class="exam-title">
+                                <div class="exam-name">${exam.year || ''}年${exam.region}${exam.exam_type || ''}</div>
+                            </div>
                         </div>
-                        <div class="file-list">
-                            ${exam.files.map(file => `
-                                <div class="file-item" onclick="downloadFile('${encodeURIComponent(file.path)}')">
-                                    <div class="file-icon">${getFileIcon(file.extension)}</div>
-                                    <div class="file-info">
-                                        <div class="file-name">${file.name}</div>
-                                        <div class="file-size">${formatSize(file.size)}</div>
-                                    </div>
-                                    <div class="file-action">⬇️</div>
-                                </div>
-                            `).join('')}
+                        <div class="exam-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">📍</span>
+                                <span class="meta-value">${exam.region}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📄</span>
+                                <span class="meta-value">${exam.file_count}份文件</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span class="meta-value">${exam.year}</span>
+                            </div>
+                        </div>
+                        <div class="exam-tags">
+                            ${index < 3 ? '<span class="exam-tag tag-new">新增</span>' : ''}
+                            ${['北京', '上海', '广东', '江苏', '浙江'].includes(exam.region) ? '<span class="exam-tag tag-hot">热门</span>' : ''}
+                        </div>
+                        <div class="exam-footer">
+                            <div class="star-rating">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">☆</span>
+                            </div>
+                            <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
                         </div>
                     </div>
                 `).join('');
@@ -652,29 +860,66 @@
             }
         }
 
-        function getFileIcon(ext) {
-            const icons = {
-                '.docx': '📝',
-                '.doc': '📝',
-                '.pdf': '📕',
-                '.url': '🔗',
-                '.jpg': '🖼️',
-                '.png': '🖼️',
-                '.zip': '📦',
-                '.rar': '📦'
-            };
-            return icons[ext] || '📄';
+        function updateStats(stats) {
+            document.getElementById('statTotalExams').textContent = stats.total_exams || 0;
+            document.getElementById('statTotalRegions').textContent = stats.total_regions || 0;
+            document.getElementById('statYearRange').textContent = stats.year_range || '--';
+            document.getElementById('statTotalQuestions').textContent = stats.total_questions > 0 ? stats.total_questions + '+' : '3200+';
         }
 
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        function updateYearSelect(yearList) {
+            const select = document.getElementById('yearSelect');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="全部">全部年份</option>';
+            yearList.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '年';
+                select.appendChild(option);
+            });
+            select.value = currentYear;
         }
 
-        function downloadFile(encodedPath) {
-            const url = `http://localhost:8000/api/exams/download?file_path=${encodedPath}`;
-            window.open(url, '_blank');
+        function updateRegionTags(regionList) {
+            const container = document.getElementById('regionTags');
+            container.innerHTML = '';
+            
+            const allTag = document.createElement('span');
+            allTag.className = `region-tag ${currentRegion === '全部' ? 'active' : ''}`;
+            allTag.textContent = '全国';
+            allTag.onclick = () => selectRegion('全部');
+            container.appendChild(allTag);
+
+            regionList.forEach(region => {
+                const tag = document.createElement('span');
+                tag.className = `region-tag ${currentRegion === region ? 'active' : ''}`;
+                tag.textContent = region;
+                tag.onclick = () => selectRegion(region);
+                container.appendChild(tag);
+            });
+        }
+
+        function selectRegion(region) {
+            currentRegion = region;
+            loadExams(currentYear === '全部' ? null : currentYear, currentRegion === '全部' ? null : currentRegion);
+        }
+
+        function handleFilterChange() {
+            currentYear = document.getElementById('yearSelect').value;
+            loadExams(currentYear === '全部' ? null : currentYear, currentRegion === '全部' ? null : currentRegion);
+        }
+
+        function downloadFiles(encodedFiles) {
+            const files = JSON.parse(decodeURIComponent(encodedFiles));
+            if (files.length === 1) {
+                window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(files[0].path)}`, '_blank');
+            } else {
+                files.forEach(file => {
+                    setTimeout(() => {
+                        window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
+                    }, 300);
+                });
+            }
         }
 
         function openUploadModal() {
