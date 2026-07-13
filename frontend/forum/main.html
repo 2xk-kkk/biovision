@@ -1,0 +1,2392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生物论坛 - 高中生物教学可视化与互动平台</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .top {
+      background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+      height: 60px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    .logo {
+      width: 120px;
+      height: 40px;
+      background-image: url(../images/logo.png);
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      flex-shrink: 0;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .search {
+      flex: 1;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-form {
+      display: flex;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #f9fafb;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      outline: none;
+      background: transparent;
+    }
+
+    .search-btn {
+      background: #667eea;
+      border: none;
+      padding: 0 16px;
+      cursor: pointer;
+      font-size: 16px;
+      color: white;
+    }
+
+    .nav-area {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      padding: 4px 8px;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: #667eea;
+      background-color: #f3f4f6;
+    }
+
+    .nav-link.active {
+      color: #667eea;
+      background-color: #f0f6fd;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: #667eea;
+      color: #fff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #5a6fd8;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      min-width: 200px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f3f4f6;
+      color: #667eea;
+    }
+
+    .dropdown.show .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-toggle::after {
+      content: '';
+      display: inline-block;
+      width: 0;
+      height: 0;
+      margin-left: 6px;
+      vertical-align: middle;
+      border-top: 4px solid;
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      overflow: hidden;
+      transition: transform 0.2s;
+      object-fit: cover;
+    }
+
+    .avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .upload-overlay {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background: #667eea;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: white;
+      border: 2px solid white;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .avatar-wrapper:hover .upload-overlay {
+      opacity: 1;
+    }
+
+    .user-dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 8px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 160px;
+      overflow: hidden;
+      display: none;
+      z-index: 1000;
+    }
+
+    .user-dropdown-menu.show {
+      display: block;
+    }
+
+    .user-dropdown-item {
+      padding: 10px 16px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+      display: block;
+      transition: background 0.2s;
+    }
+
+    .user-dropdown-item:hover {
+      background: #f1f5f9;
+    }
+
+    .user-dropdown-item.danger {
+      color: #ef4444;
+    }
+
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .main-content {
+      min-width: 0;
+    }
+
+    .sidebar {
+      /* 固定定位：滚动页面时侧边栏保持不动 */
+      position: sticky;
+      top: 84px;
+      align-self: flex-start;
+      height: calc(100vh - 108px);
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+      /* 确保侧边栏在滚动时不跟随移动 */
+      will-change: transform;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title i {
+      color: #3B82F6;
+    }
+
+    .forum-sections {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-box {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+      display: block;
+    }
+
+    .section-box:hover {
+      border-color: #3B82F6;
+      background: #f0f7ff;
+    }
+
+    .section-box.active {
+      border-color: #3B82F6;
+      background: #f0f7ff;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 4px;
+    }
+
+    .section-box:hover .section-title,
+    .section-box.active .section-title {
+      color: #3B82F6;
+    }
+
+    .section-count {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #3B82F6;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .stat-card.green .stat-value {
+      color: #10B981;
+    }
+
+    .stat-card.purple .stat-value {
+      color: #8B5CF6;
+    }
+
+    .stat-card.yellow .stat-value {
+      color: #F59E0B;
+    }
+
+    .activity-chart {
+      margin-top: 20px;
+    }
+
+    .activity-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 12px;
+    }
+
+    .tags-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tag-item {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .tag-item:hover {
+      background: #3B82F6;
+      color: #fff;
+    }
+
+    .sort-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .sort-btn {
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      color: #64748b;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .sort-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .sort-btn.active {
+      background: #3B82F6;
+      color: #fff;
+    }
+
+    .post-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .post-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .post-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .post-avatar-link {
+      display: inline-block;
+      text-decoration: none;
+      transition: transform 0.2s ease;
+    }
+
+    .post-avatar-link:hover {
+      transform: scale(1.1);
+    }
+
+    .post-avatar img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .post-user-info {
+      flex: 1;
+    }
+
+    .post-username {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+
+    .post-username-link {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .post-username-link:hover {
+      color: #3B82F6;
+    }
+
+    .post-time {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .post-tag {
+      background: #e0f2fe;
+      color: #0284c7;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .post-tag.green {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .post-tag.purple {
+      background: #f3e8ff;
+      color: #9333ea;
+    }
+
+    .post-tag.orange {
+      background: #ffedd5;
+      color: #ea580c;
+    }
+
+    .post-tag.gray {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .post-content {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.7;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+    }
+
+    .post-actions {
+      display: flex;
+      gap: 20px;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #94a3b8;
+      font-size: 13px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .action-btn:hover {
+      color: #3B82F6;
+    }
+
+    .action-btn.danger:hover {
+      color: #ef4444;
+    }
+
+    .loading-spinner {
+      display: none;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .loading-spinner.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #3B82F6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .back-to-top {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.2s, visibility 0.2s;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 99;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .back-to-top:hover {
+      background: #f1f5f9;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .content-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        overflow: visible;
+        padding-right: 0;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .search {
+        max-width: 100%;
+      }
+
+      .top {
+        gap: 12px;
+      }
+
+      .logo {
+        width: 96px;
+      }
+    }
+    /* 气泡提示样式，只对这三个按钮生效，不影响其他元素 */
+.sort-btn {
+  position: relative;
+}
+.sort-btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #333;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 999;
+}
+.sort-btn:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+  </style>
+</head>
+
+<body>
+  <div class="top">
+    <div class="logo">
+      <img src="../images/logo.png" alt="Logo">
+    </div>
+
+    <div class="search">
+      <form class="search-form">
+        <input type="text" class="search-input" placeholder="搜索">
+        <button type="submit" class="search-btn">🔍</button>
+      </form>
+    </div>
+
+    <div class="nav-area">
+      <div class="nav-links">
+        <a href="../index.html" class="nav-link">首页</a>
+
+        <div class="dropdown">
+          <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-module="必修一" style="color: #90b2e6;">🔬必修一：分子与细胞</a>
+            <a href="#" class="dropdown-item" data-module="必修二" style="color: #a194e3;">🧬必修二：遗传与进化</a>
+            <a href="#" class="dropdown-item" data-module="选修一" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+            <a href="#" class="dropdown-item" data-module="选修二" style="color: burlywood;">🌿选修二：生物与环境</a>
+            <a href="#" class="dropdown-item" data-module="选修三" style="color: #6bd3b1;">🧫选修三：生物技术与工程</a>
+          </div>
+        </div>
+
+        <a href="#" class="nav-link">PPT快搭</a>
+        <a href="../practice/main.html" class="nav-link">每日训练</a>
+        <a href="../3D model/main.html" class="nav-link">可视学习</a>
+        <a href="main.html" class="nav-link active">论坛</a>
+        <a href="make-post.html" class="btn-primary">
+          <i class="fas fa-plus"></i> 发帖
+        </a>
+      </div>
+
+      <div class="user-actions">
+        <div class="avatar-wrapper" id="userAvatarBtn">
+          <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
+          <div class="upload-overlay">+</div>
+
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <a href="../user-center/main.html" class="user-dropdown-item">
+              <i class="fas fa-user"></i> 个人中心
+            </a>
+            <a href="../user-center/main.html#posts" class="user-dropdown-item">
+              <i class="fas fa-file-alt"></i> 我的帖子
+            </a>
+            <a href="../user-center/main.html#settings" class="user-dropdown-item">
+              <i class="fas fa-cog"></i> 设置
+            </a>
+            <a href="../login/login-main.html" class="user-dropdown-item danger">
+              <i class="fas fa-sign-out-alt"></i> 退出登录
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="content-layout">
+      <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #1e293b;">
+            <i class="fas fa-fire post-main-name" style="color: #F59E0B;"></i> 最新帖子
+          </h2>
+<div class="sort-buttons">
+<button class="sort-btn new-btn active" data-tip="按发布时间从新到旧排序">最新</button><button class="sort-btn hot-btn" data-tip="按互动热度从高到低排序">热门</button><button class="sort-btn cream-btn" data-tip="按精华/优质帖子优先排序">精华</button>
+</div>
+        </div>
+
+        <div class="loading-spinner" id="loading">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="card-title">
+            <i class="fas fa-th-large"></i> 论坛板块
+          </div>
+          <div class="forum-sections">
+            <a href="#" class="section-box active" data-category="all">
+              <div class="section-title">全部帖子</div>
+              <div class="section-count" id="totalNum">加载中...</div>
+            </a>
+
+            <a href="#" class="section-box" data-category="study">
+              <div class="section-title">学习交流</div>
+              <div class="section-count" id="xuexiCount">加载中...</div>
+            </a>
+
+            <a href="#" class="section-box" data-category="course">
+              <div class="section-title">课程讨论</div>
+              <div class="section-count" id="kechengCount">加载中...</div>
+            </a>
+
+            <a href="#" class="section-box" data-category="visual">
+              <div class="section-title">可视化模型</div>
+              <div class="section-count" id="visualCount">加载中...</div>
+            </a>
+
+            <a href="#" class="section-box" data-category="exam">
+              <div class="section-title">备考经验</div>
+              <div class="section-count" id="kaoshiCount">加载中...</div>
+            </a>
+
+            <a href="#" class="section-box" data-category="life">
+              <div class="section-title">生活分享</div>
+              <div class="section-count" id="lifeCount">加载中...</div>
+            </a>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="card-title">
+            <i class="fas fa-chart-bar"></i> 论坛统计
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-user">128</div>
+              <div class="stat-label">用户总数</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-value" id="stat-post">256</div>
+              <div class="stat-label">帖子总数</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-value" id="stat-comments">512</div>
+              <div class="stat-label">评论总数</div>
+            </div>
+            <div class="stat-card yellow">
+              <div class="stat-value" id="stat-online">16</div>
+              <div class="stat-label">在线用户</div>
+            </div>
+          </div>
+
+          <div class="activity-chart">
+            <div class="activity-title">近7天活跃度</div>
+            <canvas id="activityChart" height="150"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-tags"></i> 热门标签
+          </div>
+          <div class="tags-cloud">
+            <a href="#" class="tag-item">细胞呼吸</a>
+            <a href="#" class="tag-item">光合作用</a>
+            <a href="#" class="tag-item">遗传规律</a>
+            <a href="#" class="tag-item">神经调节</a>
+            <a href="#" class="tag-item">高考备考</a>
+            <a href="#" class="tag-item">实验探究</a>
+            <a href="#" class="tag-item">生态系统</a>
+            <a href="#" class="tag-item">备课资源</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 生物论坛. All rights reserved.
+  </footer>
+
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <script>
+    // 通用头像处理函数
+    function getDefaultAvatarSVG(username, size = 40) {
+      const avatarChar = (username || '用').trim()[0] || '用';
+      const viewBox = `${size} ${size}`;
+      const radius = Math.floor(size * 0.45);
+      const centerX = Math.floor(size / 2);
+      const centerY = Math.floor(size / 2);
+      const fontSize = Math.floor(size * 0.45);
+      const textY = Math.floor(size * 0.65);
+
+      return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23667eea'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+    }
+
+    function getGuestAvatarSVG(size = 40) {
+      const viewBox = `${size} ${size}`;
+      const radius = Math.floor(size * 0.45);
+      const centerX = Math.floor(size / 2);
+      const centerY = Math.floor(size / 2);
+      const headRadius = Math.floor(size * 0.12);
+      const headY = Math.floor(size * 0.35);
+      const bodyStroke = Math.floor(size * 0.1);
+      const bodyY1 = Math.floor(size * 0.6);
+      const bodyY2 = Math.floor(size * 0.85);
+
+      return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23d1d5db'/%3E%3Ccircle cx='${centerX}' cy='${headY}' r='${headRadius}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(size * 0.3)} ${bodyY1} Q${centerX} ${bodyY2} ${Math.floor(size * 0.7)} ${bodyY1}' fill='none' stroke='%239ca3af' stroke-width='${bodyStroke}' stroke-linecap='round'/%3E%3C/svg%3E`;
+    }
+
+    function getUserAvatar(avatarData, username, isCurrentUser = false) {
+      if (avatarData) {
+        return avatarData;
+      }
+      // 不使用localStorage缓存，始终返回首字母头像
+      return getDefaultAvatarSVG(username, 40);
+    }
+
+    // ===== 全局状态变量 =====
+    let currentTab = 'Latest';          // 当前排序标签：Latest(最新)/Hot(热门)/Cream(精华)
+    let currentCategory = 'all';        // 当前分类：all(全部)/study(学习交流)/course(课程讨论)/visual(可视化)/exam(备考)/life(生活)
+    const API_BASE = 'http://localhost:8000/api';  // 后端API地址
+    const IMAGE_BASE = 'http://127.0.0.1:8000'; // 图片服务器地址
+    const PAGE_SIZE = 10;               // 每页显示帖子数量
+    let currentPage = 1;                // 当前页码
+    let hasMore = true;                 // 是否还有更多数据
+    let isLoading = false;              // 是否正在加载中
+    let activityChart = null;           // 活跃度图表实例
+
+    // ===== 获取DOM元素 =====
+    const sortBtns = document.querySelectorAll('.sort-btn');  // 排序按钮组
+    const titleElement = document.querySelector('h2 .post-main-name').parentElement; // 标题元素
+
+    // ===== 排序按钮点击事件处理 =====
+    // 最新帖子按钮 - 按发布时间倒序
+    const LatestBtn = document.querySelector('.new-btn');
+    LatestBtn.addEventListener('click', function () {
+      sortBtns.forEach(btn => btn.classList.remove('active'));
+      LatestBtn.classList.add('active');
+      currentTab = 'Latest';
+      titleElement.innerHTML = '<i class="fas fa-clock post-main-name" style="color: #3B82F6;"></i> 最新帖子';
+      loadPosts(true);  // 传入true表示强制刷新，不限制点击间隔
+    });
+
+    // 热门帖子按钮 - 按浏览量倒序
+    const HotBtn = document.querySelector('.hot-btn');
+    HotBtn.addEventListener('click', function () {
+      sortBtns.forEach(btn => btn.classList.remove('active'));
+      HotBtn.classList.add('active');
+      currentTab = 'Hot';
+      titleElement.innerHTML = '<i class="fas fa-fire post-main-name" style="color: #F59E0B;"></i> 热门帖子';
+      loadPosts(true);  // 传入true表示强制刷新
+    });
+
+    // 精华帖子按钮 - 按点赞数倒序
+    const CreamBtn = document.querySelector('.cream-btn');
+    CreamBtn.addEventListener('click', function () {
+      sortBtns.forEach(btn => btn.classList.remove('active'));
+      CreamBtn.classList.add('active');
+      currentTab = 'Cream';
+      titleElement.innerHTML = '<i class="fas fa-crown post-main-name" style="color: #8B5CF6;"></i> 精华帖子';
+      loadPosts(true);  // 传入true表示强制刷新
+    });
+
+    // ===== 侧边栏分类配置映射 =====
+    // 分类ID → 显示名称 → 后端标签
+    const categoryConfig = {
+      'all': { name: '全部帖子', tag: null },
+      'study': { name: '学习交流', tag: 'Question_discussion' },
+      'course': { name: '课程讨论', tag: 'Course_discussion' },
+      'visual': { name: '可视化模型', tag: 'Visualization_model' },
+      'exam': { name: '备考经验', tag: 'Examination_experience' },
+      'life': { name: '生活分享', tag: 'Life_share' }
+    };
+
+    // ===== 侧边栏分类点击事件 =====
+    // 点击分类后筛选对应标签的帖子，按发布时间从晚到早排序
+    document.querySelectorAll('.section-box').forEach(box => {
+      box.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // 获取当前点击的分类ID
+        const categoryId = this.dataset.category || 'all';
+
+        // 更新分类选中状态
+        document.querySelectorAll('.section-box').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        // 更新全局分类状态
+        currentCategory = categoryId;
+
+        // 点击分类时，默认切换到"最新"排序（按发布时间从晚到早）
+        currentTab = 'Latest';
+
+        // 更新排序按钮状态
+        sortBtns.forEach(btn => btn.classList.remove('active'));
+        LatestBtn.classList.add('active');
+
+        // 更新页面标题为当前分类名称
+        const categoryName = categoryConfig[categoryId]?.name || '全部帖子';
+        titleElement.innerHTML = `<i class="fas fa-clock post-main-name" style="color: #3B82F6;"></i> ${categoryName}`;
+
+        // 强制刷新加载帖子
+        loadPosts(true);
+      });
+    });
+
+    function resolveImageUrl(url) {
+      if (!url) return '';
+      if (/^https?:\/\//i.test(url)) return url;
+      if (url.startsWith('data:image')) return url;
+      if (url.startsWith('/')) return IMAGE_BASE + url;
+      return IMAGE_BASE + '/' + url;
+    }
+
+    function getFileIcon(fileName) {
+      const ext = fileName.toLowerCase().split('.').pop();
+      const iconMap = {
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        'bmp': 'fa-file-image',
+        'webp': 'fa-file-image',
+        'svg': 'fa-file-image',
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        'xls': 'fa-file-excel',
+        'xlsx': 'fa-file-excel',
+        'csv': 'fa-file-excel',
+        'pdf': 'fa-file-pdf',
+        'ppt': 'fa-file-powerpoint',
+        'pptx': 'fa-file-powerpoint',
+        'zip': 'fa-file-archive',
+        'rar': 'fa-file-archive',
+        '7z': 'fa-file-archive',
+        'tar': 'fa-file-archive',
+        'gz': 'fa-file-archive',
+        'txt': 'fa-file-text',
+        'rtf': 'fa-file-alt',
+        'md': 'fa-file-code',
+        'json': 'fa-file-code',
+        'xml': 'fa-file-code',
+        'mp4': 'fa-file-video',
+        'avi': 'fa-file-video',
+        'mov': 'fa-file-video',
+        'wmv': 'fa-file-video',
+        'flv': 'fa-file-video',
+        'mp3': 'fa-file-audio',
+        'wav': 'fa-file-audio',
+        'ogg': 'fa-file-audio',
+        'flac': 'fa-file-audio',
+        'c': 'fa-file-code',
+        'cpp': 'fa-file-code',
+        'h': 'fa-file-code',
+        'hpp': 'fa-file-code',
+        'java': 'fa-file-code',
+        'py': 'fa-file-code',
+        'js': 'fa-file-code',
+        'ts': 'fa-file-code',
+        'html': 'fa-file-code',
+        'css': 'fa-file-code',
+        'go': 'fa-file-code',
+        'rs': 'fa-file-code',
+        'php': 'fa-file-code',
+        'rb': 'fa-file-code',
+        'swift': 'fa-file-code',
+        'kt': 'fa-file-code'
+      };
+      return iconMap[ext] || 'fa-file';
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[ch]));
+    }
+
+    function getMainContentEl() {
+      return document.querySelector('.main-content');
+    }
+
+    function getLoadingEl() {
+      return document.getElementById('loading');
+    }
+
+    /**
+     * 清除已渲染的帖子和空状态提示
+     */
+    function clearRenderedPosts() {
+      const main = getMainContentEl();
+      if (!main) return;
+      // 清除所有帖子卡片
+      main.querySelectorAll('.post-card').forEach(el => el.remove());
+      // 清除空状态提示
+      main.querySelectorAll('.empty-state').forEach(el => el.remove());
+    }
+    /**
+     * 渲染帖子列表
+     * @param {Array} posts - 帖子数组
+     * @param {Object} options - 选项
+     * @param {boolean} options.append - 是否追加模式（true=加载更多，false=重新渲染）
+     */
+    // 修改：论坛接真实个人信息，并添加空数据提示
+    function renderPosts(posts, { append = false } = {}) {
+      const main = getMainContentEl();
+      const loadingEl = getLoadingEl();
+      if (!main || !loadingEl) return;
+
+      // 非追加模式时，清除现有帖子
+      if (!append) clearRenderedPosts();
+
+      // ===== 处理空数据情况 =====
+      if (!posts || posts.length === 0) {
+        // 从统一配置中获取当前分类名称，用于友好提示
+        const categoryName = categoryConfig[currentCategory]?.name || '该板块';
+
+        // 创建空状态提示元素（添加 empty-state 类以便后续清除）
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        // 样式：居中展示、无边框、无阴影、占据主内容区域
+        emptyState.style.cssText = `
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          min-height: 400px;
+          text-align: center;
+          padding: 20px;
+          background: transparent;
+        `;
+        emptyState.innerHTML = `
+          <div style="font-size: 56px; margin-bottom: 20px;">📭</div>
+          <div style="font-size: 18px; color: #64748b; margin-bottom: 10px; font-weight: 500;">
+            该主题还没有人参与讨论
+          </div>
+          <div style="font-size: 14px; color: #94a3b8;">
+            快来成为第一个讨论的人吧~
+          </div>
+        `;
+        main.insertBefore(emptyState, loadingEl);
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+
+      // 在函数内部获取token
+      const token = localStorage.getItem('token');
+
+      posts.forEach(post => {
+        const username = post.username || '匿名用户';
+        const content = post.content || '';
+        const createAt = post.create_at || '';
+        const tag = post.tag || '';
+        const images = Array.isArray(post.images) ? post.images : [];
+        const files = Array.isArray(post.files) ? post.files : [];
+
+        // ✅ 1. 提取帖子作者的用户ID（用于跳转个人主页）
+        const postUserId = post.user_id || '';
+
+        // 检查是否是当前登录用户，确保使用一致的头像逻辑
+        const payload = token ? parseJwt(token) : null;
+        const isCurrentUser = payload && post.user_id === payload.user_id;
+        const avatar = getUserAvatar(post.avatar, username, isCurrentUser);
+
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        const postId = post.post_id || post.id;
+        card.addEventListener('click', () => {
+          window.location.href = `post-detail.html?id=${postId}`;
+        });
+
+        const header = document.createElement('div');
+        header.className = 'post-header';
+
+        // 根据是否是当前用户，决定跳转链接
+        const profileUrl = isCurrentUser 
+          ? '../user-center/main.html' 
+          : (postUserId ? `../user-center/other_main.html?userId=${postUserId}` : 'javascript:void(0)');
+
+        const avatarLink = document.createElement('a');
+        avatarLink.href = profileUrl;
+        avatarLink.className = 'post-avatar-link';
+        avatarLink.addEventListener('click', (e) => e.stopPropagation());
+
+        const avatarEl = document.createElement('img');
+        avatarEl.className = 'post-avatar';
+        avatarEl.src = avatar;
+        avatarEl.alt = username;
+        avatarLink.appendChild(avatarEl);
+
+        const userInfo = document.createElement('div');
+        userInfo.className = 'post-user-info';
+
+        const usernameLink = document.createElement('a');
+        usernameLink.href = profileUrl;
+        usernameLink.className = 'post-username-link';
+        usernameLink.addEventListener('click', (e) => e.stopPropagation());
+        usernameLink.textContent = username;
+
+        const timeEl = document.createElement('div');
+        timeEl.className = 'post-time';
+        timeEl.textContent = createAt;
+
+        userInfo.appendChild(usernameLink);
+        userInfo.appendChild(timeEl);
+        header.appendChild(avatarLink);
+        header.appendChild(userInfo);
+
+        const tagsEl = document.createElement('div');
+        tagsEl.className = 'post-tags';
+        
+        // 板块标签中文映射
+        const tagLabels = {
+          'Question_discussion': '学习交流',
+          'Course_discussion': '课程讨论',
+          'Visualization_model': '可视化模型',
+          'Examination_experience': '备考经验',
+          'Life_share': '生活分享'
+        };
+        
+        // 优先使用新的 tags 数组字段，兼容旧数据使用 tag 字段
+        const postTags = Array.isArray(post.tags) && post.tags.length > 0 
+          ? post.tags 
+          : (tag ? String(tag).split(/[，,\s]+/).filter(Boolean) : []);
+        
+        postTags.slice(0, 5).forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'post-tag';
+          // 将英文标签转换为中文，如果不是映射中的标签则直接显示
+          span.textContent = tagLabels[t] || t;
+          tagsEl.appendChild(span);
+        });
+
+        const contentEl = document.createElement('div');
+        contentEl.className = 'post-content';
+        contentEl.textContent = content;
+
+        function isImageFile(fileName) {
+          const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+          const ext = fileName.toLowerCase().split('.').pop();
+          return imageExts.includes(ext);
+        }
+
+        if (images.length > 0 || files.length > 0) {
+          const mediaWrap = document.createElement('div');
+          mediaWrap.style.marginTop = '12px';
+          mediaWrap.style.display = 'flex';
+          mediaWrap.style.gap = '10px';
+          mediaWrap.style.flexWrap = 'wrap';
+
+          const allMedia = [...images, ...files];
+          allMedia.slice(0, 3).forEach(u => {
+            const fileName = u.split('/').pop();
+            
+            if (isImageFile(fileName)) {
+              const img = document.createElement('img');
+              img.src = resolveImageUrl(u);
+              img.alt = fileName;
+              img.loading = 'lazy';
+              img.style.width = '180px';
+              img.style.maxWidth = '100%';
+              img.style.height = '120px';
+              img.style.objectFit = 'cover';
+              img.style.borderRadius = '10px';
+              img.style.border = '1px solid #e2e8f0';
+              // 处理图片加载失败的情况
+              img.onerror = function() {
+                img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120"%3E%3Crect fill="%23f3f4f6" width="180" height="120"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="12" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E图片加载失败%3C/text%3E%3C/svg%3E';
+                img.style.objectFit = 'contain';
+              };
+              mediaWrap.appendChild(img);
+            } else {
+              const iconClass = getFileIcon(fileName);
+              
+              const fileWrap = document.createElement('div');
+              fileWrap.style.width = '100px';
+              fileWrap.style.maxWidth = '100%';
+              fileWrap.style.height = '80px';
+              fileWrap.style.borderRadius = '8px';
+              fileWrap.style.border = '1px solid #e2e8f0';
+              fileWrap.style.backgroundColor = '#f8fafc';
+              fileWrap.style.display = 'flex';
+              fileWrap.style.flexDirection = 'column';
+              fileWrap.style.alignItems = 'center';
+              fileWrap.style.justifyContent = 'center';
+              fileWrap.style.gap = '4px';
+              fileWrap.style.cursor = 'pointer';
+              fileWrap.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.open(resolveImageUrl(u), '_blank');
+              });
+
+              const iconEl = document.createElement('i');
+              iconEl.className = `fas ${iconClass}`;
+              iconEl.style.fontSize = '20px';
+              iconEl.style.color = '#3B82F6';
+
+              const nameEl = document.createElement('div');
+              nameEl.textContent = fileName.length > 10 ? fileName.substring(0, 10) + '...' : fileName;
+              nameEl.style.fontSize = '11px';
+              nameEl.style.color = '#64748b';
+              nameEl.style.textAlign = 'center';
+              nameEl.style.maxWidth = '90px';
+              nameEl.style.overflow = 'hidden';
+              nameEl.style.textOverflow = 'ellipsis';
+              nameEl.style.whiteSpace = 'nowrap';
+
+              fileWrap.appendChild(iconEl);
+              fileWrap.appendChild(nameEl);
+              mediaWrap.appendChild(fileWrap);
+            }
+          });
+
+          contentEl.appendChild(mediaWrap);
+        }
+
+        const commentCount = post.comment_count || 0;
+        const viewCount = post.view_count || 0;
+
+        // ===== 获取用户之前的互动状态（持久化恢复）=====
+        const interactions = getUserInteractions();
+
+        // 从 localStorage 获取持久化的点赞状态和数量
+        const likeData = interactions.likes[postId];
+        const isLiked = likeData ? likeData.liked : false;
+        // 确保点赞数不为 undefined，默认为 0
+        const likeCount = likeData && likeData.count != null ? likeData.count : (post.like_count || 0);
+
+        // 从 localStorage 获取持久化的收藏状态和数量
+        const collectData = interactions.collects[postId];
+        const isCollected = collectData ? collectData.collected : false;
+        // 确保收藏数不为 undefined，默认为 0
+        const collectCount = collectData && collectData.count != null ? collectData.count : (post.collect_count || 0);
+
+        const actions = document.createElement('div');
+        actions.className = 'post-actions';
+        actions.innerHTML = `
+            <button class="action-btn" id="likeBtn-${postId}">
+                <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                <span>${likeCount}</span>
+            </button>
+            <button class="action-btn">
+                <i class="far fa-comment"></i>
+                <span>${commentCount}</span>
+            </button>
+            <button class="action-btn">
+                <i class="far fa-eye"></i>
+                <span>${viewCount}</span>
+            </button>
+            <button class="action-btn" id="collectBtn-${postId}">
+                <i class="${isCollected ? 'fas' : 'far'} fa-bookmark"></i>
+                <span>${collectCount}</span>
+            </button>
+        `;
+
+        // 绑定点赞事件
+        const likeBtn = actions.querySelector(`#likeBtn-${postId}`);
+        if (likeBtn) {
+          likeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleLike(postId, likeBtn);
+          });
+        }
+
+        // 绑定收藏事件
+        const collectBtn = actions.querySelector(`#collectBtn-${postId}`);
+        if (collectBtn) {
+          collectBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleCollect(postId, collectBtn);
+          });
+        }
+
+        card.appendChild(header);
+        if (tagsEl.childNodes.length) card.appendChild(tagsEl);
+        card.appendChild(contentEl);
+        card.appendChild(actions);
+
+        frag.appendChild(card);
+      });
+
+      main.insertBefore(frag, loadingEl);
+    }
+
+    /**
+     * 获取帖子列表（支持排序和分类筛选）
+     * @param {number} page - 页码
+     * @returns {Array} 帖子数组
+     * 
+     * 排序规则：
+     * - Latest(最新): 按发布时间倒序 (create_at)
+     * - Hot(热门): 按点赞数倒序 (like_count)，点赞相同时按发布时间倒序
+     * - Cream(精华): 按收藏数倒序 (collect_count)，收藏相同时按发布时间倒序
+     * 
+     * 分类映射（从 categoryConfig 获取）：
+     * - all: 全部帖子
+     * - study: 学习交流 (Question_discussion)
+     * - course: 课程讨论 (Course_discussion)
+     * - visual: 可视化模型 (Visualization_model)
+     * - exam: 备考经验 (Examination_experience)
+     * - life: 生活分享 (Life_share)
+     */
+    async function fetchLatestPosts(page) {
+      // 构建基础请求URL
+      let url = `${API_BASE}/posts?page=${page}&page_size=${PAGE_SIZE}`;
+
+      // ===== 1. 添加排序参数 =====
+      if (currentTab === 'Hot') {
+        // 热门：按点赞数倒序，点赞相同时按发布时间倒序
+        url += '&sort_by=like_count&sort_order=desc';
+      } else if (currentTab === 'Cream') {
+        // 精华：按收藏数倒序，收藏相同时按发布时间倒序
+        url += '&sort_by=collect_count&sort_order=desc';
+      } else {
+        // 最新：按发布时间倒序（从晚到早）
+        url += '&sort_by=create_at&sort_order=desc';
+      }
+
+      // ===== 2. 添加分类筛选参数（根据侧边栏点击的分类获取对应标签） =====
+      const currentCategoryTag = categoryConfig[currentCategory]?.tag;
+      if (currentCategoryTag) {
+        // 使用 encodeURIComponent 确保标签参数正确编码
+        url += `&tag=${encodeURIComponent(currentCategoryTag)}`;
+      }
+
+      // 调试日志：输出当前状态和请求 URL
+      console.log('===== fetchLatestPosts 调试信息 =====');
+      console.log('currentCategory:', currentCategory);
+      console.log('currentTab:', currentTab);
+      console.log('currentCategoryTag:', currentCategoryTag);
+      console.log('请求 URL:', url);
+      console.log('=====================================');
+
+      // ===== 3. 发送请求并处理响应 =====
+      const resp = await fetch(url, { method: 'GET' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const json = await resp.json();
+      if (!json || json.success !== true) throw new Error((json && json.msg) || '获取帖子失败');
+      const posts = (json.data && json.data.posts) ? json.data.posts : [];
+
+      // 调试：输出获取到的帖子信息
+      console.log('获取到的帖子数量:', posts.length);
+      if (posts.length > 0) {
+        console.log('第一篇文章的标签:', posts[0].tag);
+      }
+
+      // ===== 4. 先从 localStorage 恢复点赞/收藏数量（用于正确排序）=====
+      const interactions = getUserInteractions();
+      posts.forEach(post => {
+        const postId = post.post_id || post.id;
+        if (postId) {
+          // 从 localStorage 恢复点赞数量
+          const likeData = interactions.likes[postId];
+          if (likeData && likeData.count != null) {
+            post.like_count = likeData.count;
+          }
+          // 从 localStorage 恢复收藏数量
+          const collectData = interactions.collects[postId];
+          if (collectData && collectData.count != null) {
+            post.collect_count = collectData.count;
+          }
+          // 更新内存缓存
+          cachedPosts[postId] = post;
+        }
+      });
+
+      // ===== 5. 前端兜底排序（使用恢复后的数量进行排序）=====
+      if (currentTab === 'Hot') {
+        // 热门：按点赞数倒序，点赞相同时按发布时间倒序
+        posts.sort((a, b) => {
+          const likeDiff = (b.like_count || 0) - (a.like_count || 0);
+          if (likeDiff !== 0) return likeDiff;
+          // 点赞数相同时，按发布时间排序
+          const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
+          const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
+          return Date.parse(sb) - Date.parse(sa);
+        });
+      } else if (currentTab === 'Cream') {
+        // 精华：按收藏数倒序，收藏相同时按发布时间倒序
+        posts.sort((a, b) => {
+          const collectDiff = (b.collect_count || 0) - (a.collect_count || 0);
+          if (collectDiff !== 0) return collectDiff;
+          // 收藏数相同时，按发布时间排序
+          const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
+          const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
+          return Date.parse(sb) - Date.parse(sa);
+        });
+      } else {
+        // 最新：按发布时间从晚到早
+        posts.sort((a, b) => {
+          const sa = String(a && a.create_at ? a.create_at : '').replace(' ', 'T');
+          const sb = String(b && b.create_at ? b.create_at : '').replace(' ', 'T');
+          const ta = Date.parse(sa) || 0;
+          const tb = Date.parse(sb) || 0;
+          return tb - ta;
+        });
+      }
+
+      return posts;
+    }
+
+    // ===== 帖子加载控制 =====
+    let lastLoadTime = 0;
+    const MIN_LOAD_INTERVAL = 2000; // 最小加载间隔（毫秒），用于滚动加载防重复
+
+    /**
+     * 加载帖子列表
+     * @param {boolean} force - 是否强制刷新（跳过间隔限制），用于点击排序/分类按钮时
+     */
+    async function loadPosts(force = false) {
+      // 非强制刷新时，检查点击间隔限制
+      if (!force) {
+        const now = Date.now();
+        if (now - lastLoadTime < MIN_LOAD_INTERVAL) {
+          console.log('loadPosts: too soon, skipping');
+          return;
+        }
+      }
+
+      // 检查是否正在加载中
+      if (isLoading) {
+        console.log('loadPosts: already loading, skipping');
+        return;
+      }
+
+      console.log('loadPosts: starting...');
+      lastLoadTime = Date.now();
+      isLoading = true;
+      currentPage = 1;      // 重新加载时重置页码
+      hasMore = true;       // 重置加载状态
+
+      // 显示加载指示器
+      const loadingEl = getLoadingEl();
+      if (loadingEl) {
+        loadingEl.classList.add('show');
+        console.log('loadPosts: loading indicator shown');
+      }
+
+      try {
+        // 根据当前标签和分类获取帖子
+        const posts = await fetchLatestPosts(currentPage);
+        console.log('loadPosts: fetched', posts.length, 'posts');
+        // 渲染帖子（覆盖模式，不追加）
+        renderPosts(posts, { append: false });
+        // 判断是否还有更多数据
+        hasMore = posts.length >= PAGE_SIZE;
+      } catch (e) {
+        console.error('loadPosts error:', e);
+      } finally {
+        // 隐藏加载指示器
+        if (loadingEl) {
+          loadingEl.classList.remove('show');
+          console.log('loadPosts: loading indicator hidden');
+        }
+        isLoading = false;
+        console.log('loadPosts: done');
+      }
+    }
+
+    async function loadMorePosts() {
+      if (isLoading || !hasMore) return;
+      isLoading = true;
+
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) loadingElement.classList.add('show');
+
+      try {
+        currentPage += 1;
+        const posts = await fetchLatestPosts(currentPage);
+        renderPosts(posts, { append: true });
+        if (posts.length < PAGE_SIZE) hasMore = false;
+      } catch (e) {
+        console.error(e);
+        hasMore = false;
+      } finally {
+        if (loadingElement) loadingElement.classList.remove('show');
+        isLoading = false;
+      }
+    }
+
+    async function updateForumStats() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`);
+        const data = await res.json();
+
+        if (data.success === true) {
+          document.getElementById('stat-user').textContent = data.data.total_users;
+          document.getElementById('stat-post').textContent = data.data.total_posts;
+          document.getElementById('stat-comments').textContent = data.data.total_comments;
+          document.getElementById('stat-online').textContent = data.data.online_users;
+
+          if (window.activityChart) {
+            window.activityChart.data.labels = data.data.activity_dates || ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+            window.activityChart.data.datasets[0].data = data.data.activity || [0, 0, 0, 0, 0, 0, 0];
+            window.activityChart.update();
+          }
+        }
+      } catch (e) {
+        console.log('统计数据更新失败');
+      }
+    }
+
+    async function updateSectionCount(elementId, url, fallbackText = '0 个帖子') {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const count = (data && data.data && typeof data.data.total === 'number') ? data.data.total : 0;
+        el.innerText = `${count} 个帖子`;
+      } catch (err) {
+        el.innerText = fallbackText;
+      }
+    }
+
+
+    async function loadUserAvatar() {
+      const token = localStorage.getItem('token');
+      const avatarImg = document.getElementById('userAvatarImg');
+      if (!avatarImg) return;
+
+      // 清除之前存储的头像缓存，确保刷新时不会看到旧头像
+      localStorage.removeItem('user_avatar');
+
+      // 未登录显示默认灰色图标
+      const guestAvatar = getGuestAvatarSVG(40);
+
+      if (!token) {
+        avatarImg.src = guestAvatar;
+        return;
+      }
+
+      try {
+        const payload = parseJwt(token);
+        if (!payload || !payload.user_id) {
+          avatarImg.src = guestAvatar;
+          return;
+        }
+
+        // 添加token到请求头，确保后端能正确识别用户
+        const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`, {
+          headers: {
+            'token': token
+          }
+        });
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const username = result.data.username || '用户';
+          const userAvatar = result.data.avatar;
+
+          if (userAvatar) {
+            // 优先使用后端返回的用户头像
+            let avatarToUse = userAvatar;
+            // 如果是远程图片，添加时间戳防止浏览器缓存
+            if (userAvatar.startsWith('http')) {
+              avatarToUse = userAvatar + '?t=' + Date.now();
+            }
+            avatarImg.src = avatarToUse;
+          } else {
+            // 用户没有上传头像，显示首字母头像
+            avatarImg.src = getDefaultAvatarSVG(username, 40);
+          }
+        } else {
+          // 获取失败时显示默认首字母头像
+          avatarImg.src = getDefaultAvatarSVG('用户', 40);
+        }
+      } catch (error) {
+        console.error('加载用户头像失败:', error);
+        // 出错时显示默认首字母头像
+        avatarImg.src = getDefaultAvatarSVG('用户', 40);
+      }
+    }
+
+    async function loadUserAvatarOld() {
+
+      const token = localStorage.getItem('token');
+      const avatarImg = document.getElementById('userAvatarImg');
+      if (!avatarImg) return;
+
+      // 未登录显示默认灰色图标
+      const guestAvatar = getGuestAvatarSVG(40);
+
+      if (!token) {
+        avatarImg.src = guestAvatar;
+        return;
+      }
+
+      try {
+        const payload = parseJwt(token);
+        if (!payload || !payload.user_id) {
+          avatarImg.src = guestAvatar;
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const username = result.data.username || '用户';
+          const avatar = getUserAvatar(result.data.avatar, username, true);
+          avatarImg.src = avatar;
+        } else {
+          avatarImg.src = guestAvatar;
+        }
+      } catch (error) {
+        console.error('加载用户头像失败:', error);
+        avatarImg.src = guestAvatar;
+      }
+    }
+
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    console.log('=== Page loaded at:', new Date().toISOString());
+
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('=== DOMContentLoaded fired');
+
+      const ctx = document.getElementById('activityChart');
+      if (ctx) {
+        window.activityChart = new Chart(ctx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+            datasets: [{
+              label: '帖子数',
+              data: [0, 0, 0, 0, 0, 0, 0],
+              borderColor: '#3B82F6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  display: false
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }
+        });
+      }
+
+      const userAvatarBtn = document.getElementById('userAvatarBtn');
+      const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+      if (userAvatarBtn && userDropdownMenu) {
+        userAvatarBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          userDropdownMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!userAvatarBtn.contains(event.target) && !userDropdownMenu.contains(event.target)) {
+            userDropdownMenu.classList.remove('show');
+          }
+        });
+      }
+
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const dropdown = this.closest('.dropdown');
+          dropdown.classList.toggle('show');
+        });
+      });
+
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+      });
+
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.addEventListener('click', e => e.stopPropagation());
+      });
+
+      const searchForm = document.querySelector('.search-form');
+      if (searchForm) {
+        searchForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          console.log('Search form submitted, prevented default');
+        });
+      }
+
+      loadPosts();
+      updateForumStats();
+      loadUserAvatar();
+
+      // 发帖按钮登录检查
+      const postBtn = document.querySelector('a.btn-primary[href="make-post.html"]');
+      if (postBtn) {
+        postBtn.addEventListener('click', function (e) {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            e.preventDefault();
+            alert('请先登录');
+          }
+        });
+      }
+
+      updateSectionCount('totalNum', `${API_BASE}/posts?page=1`);
+      updateSectionCount('xuexiCount', `${API_BASE}/posts?tag=Question_discussion&page=1`);
+      updateSectionCount('kechengCount', `${API_BASE}/posts?tag=Course_discussion&page=1`);
+      updateSectionCount('visualCount', `${API_BASE}/posts?tag=Visualization_model&page=1`);
+      updateSectionCount('kaoshiCount', `${API_BASE}/posts?tag=Examination_experience&page=1`);
+      updateSectionCount('lifeCount', `${API_BASE}/posts?tag=Life_share&page=1`);
+
+      setInterval(updateForumStats, 15000);
+
+      // ===== 滚动事件处理 =====
+      // 鼠标悬停区域检测：悬停在左侧主内容区时滚动页面，悬停在右侧边栏时滚动边栏
+      let currentHoverArea = 'main'; // 'main' | 'sidebar'
+      let scrollTimeout = null;
+      let lastScrollTime = 0;
+      const MIN_SCROLL_INTERVAL = 500; // 减小间隔，提高响应速度
+
+      // 检测鼠标悬停区域
+      const mainContent = document.querySelector('.main-content');
+      const sidebar = document.querySelector('.sidebar');
+
+      if (mainContent) {
+        mainContent.addEventListener('mouseenter', () => {
+          currentHoverArea = 'main';
+        });
+        mainContent.addEventListener('mouseleave', () => {
+          // 鼠标离开主内容区时，如果不在侧边栏上，默认滚动主页面
+          if (!sidebar?.contains(document.elementFromPoint(event?.clientX, event?.clientY))) {
+            currentHoverArea = 'main';
+          }
+        });
+      }
+
+      if (sidebar) {
+        sidebar.addEventListener('mouseenter', () => {
+          currentHoverArea = 'sidebar';
+        });
+        sidebar.addEventListener('mouseleave', () => {
+          currentHoverArea = 'main';
+        });
+      }
+
+      // 自定义滚动处理
+      window.addEventListener('wheel', function (e) {
+        // 只在侧边栏区域滚动时阻止默认行为
+        if (currentHoverArea === 'sidebar' && sidebar) {
+          e.preventDefault();
+          sidebar.scrollTop += e.deltaY;
+          return; // 侧边栏滚动，不触发页面滚动和加载更多
+        }
+
+        // 主内容区滚动逻辑
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const clientHeight = document.documentElement.clientHeight;
+
+        const now = Date.now();
+        if (now - lastScrollTime < MIN_SCROLL_INTERVAL) {
+          return;
+        }
+
+        if (scrollHeight <= clientHeight + 500) {
+          return;
+        }
+
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
+          lastScrollTime = now;
+          if (scrollTimeout) clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(function () {
+            console.log('scroll: triggering loadMorePosts');
+            loadMorePosts();
+          }, 300); // 缩短延迟，提高响应速度
+        }
+      }, { passive: false });
+
+      // 页面滚动事件（用于显示/隐藏返回顶部按钮）
+      window.addEventListener('scroll', function () {
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const backToTopButton = document.getElementById('backToTop');
+        if (backToTopButton) {
+          if (scrollTop > 300) {
+            backToTopButton.classList.add('show');
+          } else {
+            backToTopButton.classList.remove('show');
+          }
+        }
+      });
+
+      const backToTopButton = document.getElementById('backToTop');
+      if (backToTopButton) {
+        backToTopButton.addEventListener('click', function () {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      }
+    });
+
+    // ================= 帖子数据缓存（用于持久化后恢复）=================
+    let cachedPosts = {};
+
+    /**
+     * 更新帖子点赞数据（同时更新内存缓存和localStorage）
+     * @param {string} postId - 帖子ID
+     * @param {number} likeCount - 点赞数
+     * @param {boolean} isLiked - 是否已点赞
+     */
+    function updatePostLikeCount(postId, likeCount, isLiked) {
+      // 1. 更新内存缓存
+      if (cachedPosts[postId]) {
+        cachedPosts[postId].like_count = likeCount;
+        cachedPosts[postId].is_liked = isLiked;
+      }
+      // 2. 更新localStorage
+      const interactions = getUserInteractions();
+      interactions.likes[postId] = { liked: isLiked, count: likeCount };
+      saveUserInteractions(interactions);
+      console.log('点赞数据已保存:', postId, isLiked, likeCount);
+    }
+
+    /**
+     * 更新帖子收藏数据（同时更新内存缓存和localStorage）
+     * @param {string} postId - 帖子ID
+     * @param {number} collectCount - 收藏数
+     * @param {boolean} isCollected - 是否已收藏
+     */
+    function updatePostCollectCount(postId, collectCount, isCollected) {
+      // 1. 更新内存缓存
+      if (cachedPosts[postId]) {
+        cachedPosts[postId].collect_count = collectCount;
+        cachedPosts[postId].is_collected = isCollected;
+      }
+      // 2. 更新localStorage
+      const interactions = getUserInteractions();
+      interactions.collects[postId] = { collected: isCollected, count: collectCount };
+      saveUserInteractions(interactions);
+      console.log('收藏数据已保存:', postId, isCollected, collectCount);
+    }
+
+    // ================= 1. 点赞（支持持久化）=================
+    /**
+     * 获取用户互动状态（点赞、收藏）
+     * @returns {Object} 用户互动状态对象
+     */
+    function getUserInteractions() {
+      try {
+        const data = localStorage.getItem('user_interactions');
+        return data ? JSON.parse(data) : { likes: {}, collects: {} };
+      } catch {
+        return { likes: {}, collects: {} };
+      }
+    }
+
+    /**
+     * 保存用户互动状态
+     * @param {Object} interactions - 用户互动状态对象
+     */
+    function saveUserInteractions(interactions) {
+      localStorage.setItem('user_interactions', JSON.stringify(interactions));
+    }
+
+    let likingLock = {};
+    async function toggleLike(postId, button) {
+      if (likingLock[postId]) return;
+      likingLock[postId] = true;
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert("请先登录");
+          return;
+        }
+
+        const resp = await fetch(`${API_BASE}/post/${postId}/like`, {
+          method: 'POST',
+          headers: { token }
+        });
+
+        const result = await resp.json();
+        if (!result.success) {
+          throw new Error(result.msg || '点赞失败');
+        }
+
+        const likeIcon = button.querySelector('i');
+        const likeCountSpan = button.querySelector('span');
+        let currentCount = parseInt(likeCountSpan.textContent) || 0;
+        const isLiked = likeIcon.classList.contains('fas');
+
+        if (isLiked) {
+          likeIcon.classList.remove('fas');
+          likeIcon.classList.add('far');
+          currentCount = Math.max(0, currentCount - 1);
+        } else {
+          likeIcon.classList.remove('far');
+          likeIcon.classList.add('fas');
+          currentCount += 1;
+        }
+
+        likeCountSpan.textContent = currentCount;
+
+        // ===== 持久化点赞状态和数量 =====
+        // 通过统一的函数保存，确保数据结构一致
+        updatePostLikeCount(postId, currentCount, !isLiked);
+      } catch (err) {
+        console.error('toggleLike error:', err);
+        alert(err.message);
+      } finally {
+        setTimeout(() => {
+          likingLock[postId] = false;
+        }, 800);
+      }
+    }
+    // ================= 2. 收藏（支持持久化）=================
+    let collectingLock = {};
+    async function toggleCollect(postId, button) {
+      if (collectingLock[postId]) return;
+      collectingLock[postId] = true;
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert("请先登录");
+          return;
+        }
+
+        const res = await fetch(`${API_BASE}/post/${postId}/collect`, {
+          method: 'POST',
+          headers: { token }
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          alert(data.msg);
+          return;
+        }
+
+        const icon = button.querySelector('i');
+        const span = button.querySelector('span');
+        let num = parseInt(span.textContent) || 0;
+        const isCollected = icon.classList.contains('fas');
+
+        // 计算新状态和新数量
+        const newCollected = !isCollected;
+        const newCount = newCollected ? num + 1 : Math.max(0, num - 1);
+
+        // 更新图标状态
+        if (newCollected) {
+          icon.classList.replace('far', 'fas');
+        } else {
+          icon.classList.replace('fas', 'far');
+        }
+
+        // 更新显示数量
+        span.textContent = newCount;
+
+        // ===== 持久化收藏状态和数量 =====
+        // 通过统一的函数保存，确保数据结构一致
+        updatePostCollectCount(postId, newCount, newCollected);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setTimeout(() => {
+          collectingLock[postId] = false;
+        }, 800);
+      }
+    }
+
+    // ================= 3. 获取评论 =================
+    async function getComments(postId, page = 1, pageSize = 10) {
+      try {
+        const url =
+          `${API_BASE}/post/${postId}/comments?page=${page}&page_size=${pageSize}`;
+
+        const resp = await fetch(url);
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '获取评论失败');
+        }
+
+        return result.data || [];
+      } catch (err) {
+        console.error('getComments error:', err);
+        throw err;
+      }
+    }
+
+    // ================= 4. 发布评论 =================
+    async function addComment(postId, content) {
+      try {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          throw new Error("请先登录");
+        }
+
+        if (!content || !content.trim()) {
+          throw new Error("评论内容不能为空");
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/post/${postId}/comment?content=${encodeURIComponent(content)}`,
+          {
+            method: 'POST',
+            headers: {
+              'token': token
+            }
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '评论失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('addComment error:', err);
+        throw err;
+      }
+    }
+
+    // ================= 5. 回复评论 =================
+    async function replyComment(commentId, content) {
+      try {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          throw new Error("请先登录");
+        }
+
+        if (!content || !content.trim()) {
+          throw new Error("回复内容不能为空");
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/comment/${commentId}/reply?content=${encodeURIComponent(content)}`,
+          {
+            method: 'POST',
+            headers: {
+              'token': token
+            }
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '回复失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('replyComment error:', err);
+        throw err;
+      }
+    }
+
+    // ================= 6. 上传图片 =================
+    async function uploadImage(file) {
+      try {
+        if (!file) {
+          throw new Error("请选择图片");
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const resp = await fetch(
+          `${API_BASE}/upload_image`,
+          {
+            method: 'POST',
+            body: formData
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+        if (result.success === false) {
+          throw new Error(result.msg || '上传失败');
+        }
+        if (result.image_url) {
+          return result.image_url;
+        }
+        return result.data?.image_url || '';
+      } catch (err) {
+        console.error('uploadImage error:', err);
+        throw err;
+      }
+    }
+
+    // ================= 7. 发帖 =================
+    async function createPost(content, imageUrls = [], tag = '') {
+      try {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          throw new Error("请先登录");
+        }
+
+        if (!content || !content.trim()) {
+          throw new Error("帖子内容不能为空");
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/create_post`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'token': token
+            },
+            body: JSON.stringify({
+              content: content.trim(),
+              image_urls: imageUrls,
+              tag: tag
+            })
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '发帖失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('createPost error:', err);
+        throw err;
+      }
+    }
+
+    // ================= 8. 获取用户信息 =================
+    async function getUserProfile(userId) {
+      try {
+        if (!userId) {
+          throw new Error("用户ID不能为空");
+        }
+
+        const token = localStorage.getItem('token');
+        const headers = {};
+
+        if (token) {
+          headers['token'] = token;
+        }
+
+        const resp = await fetch(
+          `${API_BASE}/user/${userId}`,
+          {
+            method: 'GET',
+            headers
+          }
+        );
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '获取用户信息失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('getUserProfile error:', err);
+        throw err;
+      }
+    }
+
+    // ================= 9. 获取论坛统计 =================
+    async function getForumStats() {
+      try {
+        const resp = await fetch(`${API_BASE}/stats`);
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const result = await resp.json();
+
+        if (!result.success) {
+          throw new Error(result.msg || '获取统计失败');
+        }
+
+        return result.data || {};
+      } catch (err) {
+        console.error('getForumStats error:', err);
+        throw err;
+      }
+    }
+  </script>
+</body>
+
+</html>
