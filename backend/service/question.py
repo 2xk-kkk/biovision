@@ -1,5 +1,9 @@
 from database.db import get_db_connection
+<<<<<<< HEAD
 from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_random_choice_questions
+=======
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 from utils.response import ApiResponse
 import json
 import os
@@ -102,6 +106,7 @@ def get_user_exam_answers(user_id, exam_id):
     except Exception as e:
         return ApiResponse.error(msg=f"获取答题记录失败: {str(e)}")
     finally:
+<<<<<<< HEAD
         db.close()
 
 def get_random_quiz_questions(count=10):
@@ -112,4 +117,6 @@ def get_random_quiz_questions(count=10):
     except Exception as e:
         return ApiResponse.error(msg=f"获取随机题目失败: {str(e)}")
     finally:
+=======
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         db.close()

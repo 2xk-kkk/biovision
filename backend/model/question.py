@@ -127,6 +127,7 @@ def get_exam_stats(db, exam_id, user_id):
         'answered': answered,
         'correct': correct,
         'wrong': answered - correct
+<<<<<<< HEAD
     }
 
 def get_random_choice_questions(db, count=10):
@@ -156,3 +157,6 @@ def get_random_choice_questions(db, count=10):
             'exam_id': row[9]
         })
     return questions
+=======
+    }
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0

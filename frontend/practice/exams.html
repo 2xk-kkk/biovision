@@ -771,7 +771,17 @@
         async function loadExams(year = null, region = null) {
             const container = document.getElementById('examContainer');
             try {
+<<<<<<< HEAD
                 const response = await fetch('http://localhost:8000/api/exams/list');
+=======
+                let url = 'http://localhost:8000/api/exams';
+                const params = [];
+                if (year && year !== '全部') params.push(`year=${year}`);
+                if (region && region !== '全部') params.push(`region=${encodeURIComponent(region)}`);
+                if (params.length > 0) url += '?' + params.join('&');
+                
+                const response = await fetch(url);
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                 const result = await response.json();
                 
                 if (!result.success) {
@@ -785,6 +795,7 @@
                     return;
                 }
 
+<<<<<<< HEAD
                 const exams = result.data;
                 stats = { total_exams: exams.length };
                 years = [...new Set(exams.map(e => {
@@ -792,6 +803,17 @@
                     return yearMatch ? yearMatch[1] : '';
                 }).filter(Boolean))];
                 regions = ['全国'];
+=======
+                const data = result.data;
+                const exams = data.exams;
+                stats = data.stats || {};
+                years = data.years || [];
+                regions = data.regions || [];
+
+                updateStats(stats);
+                updateYearSelect(years);
+                updateRegionTags(regions);
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 
                 if (exams.length === 0) {
                     container.innerHTML = `
@@ -809,17 +831,38 @@
                         <div class="exam-card-header">
                             <div class="exam-icon">📝</div>
                             <div class="exam-title">
+<<<<<<< HEAD
                                 <div class="exam-name">${exam.name}</div>
+=======
+                                <div class="exam-name">${exam.year || ''}年${exam.region}${exam.exam_type || ''}</div>
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                             </div>
                         </div>
                         <div class="exam-meta">
                             <div class="meta-item">
+<<<<<<< HEAD
                                 <span class="meta-icon">📄</span>
                                 <span class="meta-value">${exam.question_count || 0}道题</span>
+=======
+                                <span class="meta-icon">📍</span>
+                                <span class="meta-value">${exam.region}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📄</span>
+                                <span class="meta-value">${exam.file_count}份文件</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span class="meta-value">${exam.year}</span>
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                             </div>
                         </div>
                         <div class="exam-tags">
                             ${index < 3 ? '<span class="exam-tag tag-new">新增</span>' : ''}
+<<<<<<< HEAD
+=======
+                            ${['北京', '上海', '广东', '江苏', '浙江'].includes(exam.region) ? '<span class="exam-tag tag-hot">热门</span>' : ''}
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                         </div>
                         <div class="exam-footer">
                             <div class="star-rating">
@@ -829,7 +872,11 @@
                                 <span class="star">★</span>
                                 <span class="star">☆</span>
                             </div>
+<<<<<<< HEAD
                             <button class="btn-start" onclick="startExam('${exam.name}')">开始答题</button>
+=======
+                            <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                         </div>
                     </div>
                 `).join('');
@@ -907,6 +954,7 @@
             }
         }
 
+<<<<<<< HEAD
         async function startExam(examName) {
             try {
                 window.location.href = `quiz.html?exam_name=${encodeURIComponent(examName)}`;
@@ -916,6 +964,8 @@
             }
         }
 
+=======
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         function openUploadModal() {
             document.getElementById('uploadModal').classList.add('show');
             document.getElementById('categoryInput').value = '';
@@ -987,11 +1037,14 @@
             formData.append('category', category);
             formData.append('file', selectedFile);
 
+<<<<<<< HEAD
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.textContent;
             submitBtn.textContent = '上传中...';
             submitBtn.disabled = true;
 
+=======
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
             try {
                 const response = await fetch('http://localhost:8000/api/exams/upload', {
                     method: 'POST',
@@ -1000,6 +1053,7 @@
                 const result = await response.json();
                 
                 if (result.success) {
+<<<<<<< HEAD
                     const questionCount = result.data?.question_count || 0;
                     if (questionCount > 0) {
                         showToast('success', `上传成功！解析出 ${questionCount} 道题`);
@@ -1010,13 +1064,23 @@
                     loadExams();
                 } else {
                     showToast('error', result.msg || '上传失败');
+=======
+                    showToast('success', '上传成功');
+                    closeUploadModal();
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                 }
             } catch (error) {
                 showToast('error', '上传失败，请确保后端服务已启动');
                 console.error('上传失败:', error);
+<<<<<<< HEAD
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
+=======
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
             }
         });
 

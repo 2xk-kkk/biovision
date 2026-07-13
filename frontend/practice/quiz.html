@@ -148,6 +148,46 @@
             color: #1f2937;
         }
 
+<<<<<<< HEAD
+=======
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .exam-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .exam-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .exam-card.selected {
+            background: #f0f6fd;
+            border-color: #667eea;
+        }
+
+        .exam-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .exam-count {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         .start-btn {
             background: #667eea;
             color: white;
@@ -268,9 +308,12 @@
             padding: 32px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             min-height: 600px;
+<<<<<<< HEAD
             max-width: 900px;
             margin: 0 auto;
             overflow: hidden;
+=======
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         }
 
         .paper-title {
@@ -424,6 +467,7 @@
             background: #fef2f2;
         }
 
+<<<<<<< HEAD
         .fill-blank-input {
             display: inline;
             border: none;
@@ -498,6 +542,8 @@
             opacity: 0.7;
         }
 
+=======
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         .answer-feedback {
             margin-top: 8px;
             padding: 8px 12px;
@@ -653,12 +699,21 @@
 
     <main class="main-content">
         <div id="selectSection" class="exam-select-section">
+<<<<<<< HEAD
             <div class="section-title">📝 在线答题</div>
             <div style="text-align: center; padding: 40px;">
                 <div style="font-size: 48px; margin-bottom: 16px;">🎯</div>
                 <div style="font-size: 16px; color: #6b7280; margin-bottom: 8px;">从真题大观中随机抽取选择题</div>
                 <div style="font-size: 14px; color: #9ca3af; margin-bottom: 24px;">每次答题随机抽取10道选择题，帮助你巩固知识点</div>
                 <button class="start-btn" onclick="startQuiz()">开始答题</button>
+=======
+            <div class="section-title">📝 选择试卷开始答题</div>
+            <div id="examList" class="exam-grid">
+                <div class="loading">⏳ 加载试卷列表中...</div>
+            </div>
+            <div style="text-align: center;">
+                <button class="start-btn" id="startBtn" disabled onclick="startQuiz()">开始答题</button>
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
             </div>
         </div>
 
@@ -675,6 +730,10 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 12px;">
+<<<<<<< HEAD
+=======
+                    <button class="btn btn-warning" onclick="toggleAnswers()">显示答案</button>
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                     <button class="btn btn-success" onclick="submitAll()">提交答案</button>
                     <button class="btn btn-secondary" onclick="backToSelect()">返回选择</button>
                 </div>
@@ -715,6 +774,7 @@
     </div>
 
     <script>
+<<<<<<< HEAD
         let questions = [];
         let userAnswers = {};
         let showAnswerMode = false;
@@ -722,11 +782,19 @@
         let exams = [];
         let selectedExamId = null;
         let currentExamName = '';
+=======
+        let exams = [];
+        let questions = [];
+        let selectedExamId = null;
+        let userAnswers = {};
+        let showAnswerMode = false;
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 
         async function loadExams() {
             try {
                 const response = await fetch('http://localhost:8000/api/exams/list');
                 const result = await response.json();
+<<<<<<< HEAD
                 if (result.success) {
                     exams = result.data;
                 }
@@ -753,11 +821,21 @@
                             <div class="empty-icon">📭</div>
                             <div class="empty-title">暂无题目</div>
                             <div class="empty-desc">请先在真题大观中导入试卷</div>
+=======
+                
+                if (!result.success) {
+                    document.getElementById('examList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">请先导入试卷</div>
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                         </div>
                     `;
                     return;
                 }
 
+<<<<<<< HEAD
                 questions = result.data.questions || [];
                 document.getElementById('questionCount').textContent = questions.length;
                 userAnswers = {};
@@ -766,21 +844,62 @@
                 renderPaper();
             } catch (error) {
                 document.getElementById('paperContainer').innerHTML = `
+=======
+                exams = result.data;
+                
+                if (exams.length === 0) {
+                    document.getElementById('examList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">请先导入试卷</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                document.getElementById('examList').innerHTML = exams.map(exam => `
+                    <div class="exam-card" onclick="selectExam(${exam.id})">
+                        <div class="exam-name">${exam.name}</div>
+                        <div class="exam-count">${exam.question_count || 0} 道题</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('examList').innerHTML = `
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                     <div class="empty-state">
                         <div class="empty-icon">❌</div>
                         <div class="empty-title">加载失败</div>
                         <div class="empty-desc">请确保后端服务已启动</div>
                     </div>
                 `;
+<<<<<<< HEAD
                 console.error('加载题目失败:', error);
             }
         }
 
         async function startExam(examName) {
+=======
+                console.error('加载试卷失败:', error);
+            }
+        }
+
+        function selectExam(examId) {
+            selectedExamId = examId;
+            document.querySelectorAll('.exam-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        async function startQuiz() {
+            if (!selectedExamId) return;
+
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
             document.getElementById('selectSection').style.display = 'none';
             document.getElementById('quizSection').style.display = 'block';
             document.getElementById('resultSection').style.display = 'none';
 
+<<<<<<< HEAD
             isRandomMode = false;
             currentExamName = examName;
             document.getElementById('examName').textContent = examName;
@@ -800,6 +919,12 @@
                 }
 
                 selectedExamId = exam.id;
+=======
+            const exam = exams.find(e => e.id === selectedExamId);
+            document.getElementById('examName').textContent = exam.name;
+
+            try {
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                 const response = await fetch(`http://localhost:8000/api/exams/${selectedExamId}/questions`);
                 const result = await response.json();
 
@@ -814,7 +939,11 @@
                     return;
                 }
 
+<<<<<<< HEAD
                 questions = result.data.questions || [];
+=======
+                questions = result.data;
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                 document.getElementById('questionCount').textContent = questions.length;
                 userAnswers = {};
                 showAnswerMode = false;
@@ -832,6 +961,7 @@
             }
         }
 
+<<<<<<< HEAD
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const examNameParam = urlParams.get('exam_name');
@@ -841,12 +971,18 @@
             }
         });
 
+=======
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         function parseOptions(optionsData) {
             if (typeof optionsData === 'string') {
                 try {
                     return JSON.parse(optionsData);
                 } catch (e) {
+<<<<<<< HEAD
                     const match = optionsData.match(/@?\{A=(.+?);\s*B=(.+?);\s*C=(.+?);\s*D=(.+?)\}/);
+=======
+                    const match = optionsData.match(/\{A=(.+?);\s*B=(.+?);\s*C=(.+?);\s*D=(.+?)\}/);
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                     if (match) {
                         return {
                             'A': match[1].trim(),
@@ -883,6 +1019,7 @@
         }
 
         function renderPaper() {
+<<<<<<< HEAD
             let paperHtml = isRandomMode 
                 ? `<div class="paper-title">🎯 在线答题 - 随机选择题</div>`
                 : `<div class="paper-title">${currentExamName}</div>`;
@@ -912,6 +1049,19 @@
                         isWrong = userAnswer !== correctAnswer;
                     }
                 }
+=======
+            const exam = exams.find(e => e.id === selectedExamId);
+            let paperHtml = `<div class="paper-title">${exam.name}</div>`;
+
+            questions.forEach((question, index) => {
+                const options = parseOptions(question.options);
+                const images = parseImages(question.images);
+                const isChoice = Object.keys(options).length > 0;
+                const userAnswer = userAnswers[question.id];
+                const correctAnswer = question.answer || '';
+                const isCorrect = showAnswerMode && userAnswer && userAnswer === correctAnswer;
+                const isWrong = showAnswerMode && userAnswer && userAnswer !== correctAnswer;
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 
                 let imagesHtml = images.map(img => 
                     `<img src="http://localhost:8000${img}" class="question-image" alt="题目图片">`
@@ -944,6 +1094,7 @@
 
                 let fillHtml = '';
                 if (!isChoice) {
+<<<<<<< HEAD
                     const stemLines = question.stem.split('\n');
                     let globalBlankIndex = 0;
                     
@@ -984,6 +1135,22 @@
                     fillHtml = `
                         <div class="fill-blank-section">
                             <div class="question-stem-with-blanks">${rowsHtml}</div>
+=======
+                    let inputClass = 'fill-input';
+                    if (showAnswerMode) {
+                        if (userAnswer === correctAnswer && userAnswer) {
+                            inputClass += ' correct';
+                        } else if (userAnswer && userAnswer !== correctAnswer) {
+                            inputClass += ' wrong';
+                        }
+                    }
+                    fillHtml = `
+                        <div class="fill-blank-section">
+                            <input type="text" class="${inputClass}" 
+                                placeholder="请输入答案..."
+                                value="${userAnswer || ''}"
+                                onchange="saveFillAnswer(${question.id}, this.value)">
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                             ${showAnswerMode ? `
                                 <div class="answer-feedback ${isCorrect ? 'correct show' : (isWrong ? 'wrong show' : '')}">
                                     ${correctAnswer ? '正确答案：' + correctAnswer : '暂无答案'}
@@ -996,7 +1163,12 @@
                 paperHtml += `
                     <div class="question-block" id="question-${question.id}">
                         <div class="question-header">
+<<<<<<< HEAD
                             ${isChoice ? `<div class="question-stem">${question.stem}</div>` : ''}
+=======
+                            <div class="question-number">${question.number}</div>
+                            <div class="question-stem">${question.stem}</div>
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                         </div>
                         ${imagesHtml}
                         ${optionsHtml}
@@ -1015,12 +1187,18 @@
             renderPaper();
         }
 
+<<<<<<< HEAD
         function saveFillAnswer(questionId, blankIndex, value) {
             if (showAnswerMode) return;
             if (!userAnswers[questionId]) {
                 userAnswers[questionId] = [];
             }
             userAnswers[questionId][blankIndex - 1] = value.trim();
+=======
+        function saveFillAnswer(questionId, value) {
+            if (showAnswerMode) return;
+            userAnswers[questionId] = value.trim();
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         }
 
         function toggleAnswers() {
@@ -1037,6 +1215,11 @@
 
         function submitAll() {
             showAnswerMode = true;
+<<<<<<< HEAD
+=======
+            const btn = document.querySelector('.btn-warning');
+            btn.textContent = '隐藏答案';
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
             renderPaper();
 
             let correct = 0;
@@ -1046,6 +1229,7 @@
                 const userAnswer = userAnswers[q.id];
                 const correctAnswer = q.answer || '';
                 
+<<<<<<< HEAD
                 if (!userAnswer) return;
                 
                 if (Array.isArray(userAnswer)) {
@@ -1064,6 +1248,12 @@
                     } else {
                         wrong++;
                     }
+=======
+                if (userAnswer && userAnswer === correctAnswer) {
+                    correct++;
+                } else if (userAnswer) {
+                    wrong++;
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
                 }
             });
 
@@ -1084,6 +1274,7 @@
         }
 
         function restartQuiz() {
+<<<<<<< HEAD
             if (isRandomMode) {
                 startQuiz();
             } else {
@@ -1098,11 +1289,31 @@
             } else {
                 window.location.href = 'exams.html';
             }
+=======
+            userAnswers = {};
+            showAnswerMode = false;
+            document.querySelector('.btn-warning').textContent = '显示答案';
+            document.getElementById('resultSection').style.display = 'none';
+            renderPaper();
+        }
+
+        function backToSelect() {
+            document.getElementById('quizSection').style.display = 'none';
+            document.getElementById('selectSection').style.display = 'block';
+            selectedExamId = null;
+            document.getElementById('startBtn').disabled = true;
+            loadExams();
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
         }
 
         document.querySelector('.search-form').addEventListener('submit', function(e) {
             e.preventDefault();
         });
+<<<<<<< HEAD
+=======
+
+        loadExams();
+>>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
     </script>
 </body>
 </html>
