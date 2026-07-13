@@ -1347,9 +1347,9 @@
             <div class="logo">AI</div>
             <div>
               <div class="eyebrow">Biology PPT Studio</div>
-              <h1>AI 生成生物教学 PPT 界面</h1>
+              <h1>智能PPT生成器</h1>
               <p class="subtitle">
-                适合快速整理生物课堂内容、知识点清单与题目结构，支持浅色清爽视觉和动态蓝色点缀。
+                您备课的得力助手
               </p>
             </div>
           </div>
@@ -1431,8 +1431,8 @@
                 <label for="modelSelect">模型</label>
                 <select id="modelSelect">
                   <option value="GPT-4.1">GPT-4.1</option>
-                  <option value="Claude 3.7">Claude 3.7</option>
-                  <option value="Gemini 2.5">Gemini 2.5</option>
+                  <option value="deepseek-v4-pro">deepseek-v4-pro</option>
+                  <option value="deepseek-v4-flash">deepseek-v4-flash</option>
                   <option value="通义千问">通义千问</option>
                 </select>
               </div>
@@ -1444,6 +1444,14 @@
                   <span class="chev" id="knowledgeToggleChevron">打开</span>
                 </button>
                 <div class="knowledge-summary" id="knowledgeSummary"></div>
+              </div>
+
+              <div class="field">
+                <label>题库选择</label>
+                <button type="button" class="btn btn-ghost knowledge-toggle" id="questionBankToggle">
+                  <span id="questionBankToggleText">选择题库</span>
+                  <span class="chev">打开</span>
+                </button>
               </div>
 
               <div class="field">
@@ -1794,6 +1802,10 @@
 
     knowledgeToggle.addEventListener('click', () => {
       openKnowledgeModal();
+    });
+
+    document.getElementById('questionBankToggle').addEventListener('click', () => {
+      window.open('../practice/main.html', '_blank');
     });
 
     knowledgeModalClose.addEventListener('click', () => {
