@@ -8,7 +8,7 @@ EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "
 EXTERNAL_DIR = r"D:\biology_exams"
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "forum.db")
 
-REGIONS = ['全国', '北京', '上海', '江苏', '浙江', '广东', '山东', '湖北', '湖南', '河北', '四川', '重庆', '陕西', '山西', '青海', '宁夏', '云南', '黑龙江', '吉林', '辽宁', '内蒙古', '河南', '安徽', '福建', '江西', '天津', '新疆', '海南', '甘肃', '贵州', '广西']
+REGIONS = ['全国', '北京', '上海', '江苏', '浙江', '广东', '山东', '湖北', '湖南', '河北', '四川', '重庆', '陕西', '山西', '青海', '宁夏', '云南', '黑龙江', '吉林', '辽宁', '内蒙古', '河南', '安徽', '福建', '江西', '天津', '新疆', '海南', '甘肃', '贵州', '广西', '黑吉辽蒙', '黑吉辽', '陕晋青宁']
 
 def parse_exam_info(name):
     year = ''
@@ -132,6 +132,10 @@ def get_exam_list(year=None, region=None):
                 db_id = db_result[0] if db_result else None
                 db_question_count = db_result[1] if db_result else 0
                 
+                db_cursor.execute('SELECT COUNT(*) FROM questions WHERE exam_id = ? AND answer IS NOT NULL AND answer != ""', (db_id,))
+                answer_count = db_cursor.fetchone()[0] if db_id else 0
+                has_answers = answer_count > 0
+                
                 all_regions.add(exam_region)
                 if exam_year:
                     all_years.append(exam_year)
@@ -144,6 +148,7 @@ def get_exam_list(year=None, region=None):
                     "exam_type": exam_type,
                     "question_count": db_question_count,
                     "file_count": file_count,
+                    "has_answers": has_answers,
                     "files": files
                 })
         
@@ -234,3 +239,51 @@ def delete_exam_file(file_path: str):
         return ApiResponse.success(msg="删除成功")
     except Exception as e:
         return ApiResponse.error(msg=f"删除文件失败: {str(e)}")
+
+def get_exam_questions(exam_id: int):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT id, name FROM exams WHERE id = ?', (exam_id,))
+        exam_row = cursor.fetchone()
+        
+        if not exam_row:
+            conn.close()
+            return ApiResponse.error(msg="试卷不存在")
+        
+        exam_id_val, exam_name = exam_row
+        
+        cursor.execute('''
+            SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images 
+            FROM questions 
+            WHERE exam_id = ? 
+            ORDER BY number ASC
+        ''', (exam_id_val,))
+        
+        questions = []
+        for row in cursor.fetchall():
+            questions.append({
+                'id': row[0],
+                'number': row[1],
+                'stem': row[2],
+                'options': {
+                    'A': row[3] if row[3] else '',
+                    'B': row[4] if row[4] else '',
+                    'C': row[5] if row[5] else '',
+                    'D': row[6] if row[6] else ''
+                },
+                'answer': row[7] if row[7] else '',
+                'images': row[8] if row[8] else ''
+            })
+        
+        conn.close()
+        
+        return ApiResponse.success(data={
+            'exam_id': exam_id_val,
+            'exam_name': exam_name,
+            'questions': questions,
+            'question_count': len(questions)
+        })
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取题目失败: {str(e)}")

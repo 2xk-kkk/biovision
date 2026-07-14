@@ -1,5 +1,5 @@
 from fastapi import APIRouter, File, UploadFile, Form, Query
-from service.exam import get_exam_list, get_exam_file, upload_exam_file, import_from_external, delete_exam_file
+from service.exam import get_exam_list, get_exam_file, upload_exam_file, import_from_external, delete_exam_file, get_exam_questions
 from fastapi.responses import FileResponse
 import os
 
@@ -8,6 +8,10 @@ router = APIRouter()
 @router.get("/exams")
 def list_exams(year: str = Query(None), region: str = Query(None)):
     return get_exam_list(year=year, region=region)
+
+@router.get("/exams/{exam_id}/questions")
+def get_questions(exam_id: int):
+    return get_exam_questions(exam_id)
 
 @router.get("/exams/download")
 def download_exam(file_path: str):
