@@ -1,10 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, Form, Query
 from service.exam import get_exam_list, get_exam_file, upload_exam_file, import_from_external, delete_exam_file
-<<<<<<< HEAD
 from service.exam import get_exam_questions
 from database.db import get_db_connection
-=======
->>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 from fastapi.responses import FileResponse
 import os
 
@@ -14,7 +11,6 @@ router = APIRouter()
 def list_exams(year: str = Query(None), region: str = Query(None)):
     return get_exam_list(year=year, region=region)
 
-<<<<<<< HEAD
 @router.get("/exams/list")
 def list_exams_simple():
     conn = get_db_connection()
@@ -40,8 +36,6 @@ def list_exams_simple():
 def get_exam_questions_api(exam_id: int):
     return get_exam_questions(exam_id)
 
-=======
->>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 @router.get("/exams/download")
 def download_exam(file_path: str):
     if not os.path.exists(file_path):

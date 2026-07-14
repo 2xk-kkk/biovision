@@ -8,7 +8,8 @@ DB_NAME = os.path.join(BASE_DIR, "forum.db")
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")  # 启用 WAL 模式，提升并发性能
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA encoding = 'UTF-8'")
     return conn
 
 

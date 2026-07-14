@@ -1,13 +1,9 @@
 import os
 import shutil
 import re
-<<<<<<< HEAD
 import zipfile
 from utils.response import ApiResponse
 from database.db import get_db_connection
-=======
-from utils.response import ApiResponse
->>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 
 EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "exams")
 EXTERNAL_DIR = r"D:\biology_exams"
@@ -186,7 +182,6 @@ def upload_exam_file(category: str, file_name: str, file_content: bytes):
         with open(file_path, 'wb') as f:
             f.write(file_content)
         
-<<<<<<< HEAD
         total_questions = 0
         parse_errors = []
         
@@ -233,9 +228,6 @@ def upload_exam_file(category: str, file_name: str, file_content: bytes):
             return ApiResponse.error(msg=f"上传成功但未解析出题目，错误：{'; '.join(parse_errors)}")
         
         return ApiResponse.error(msg="上传成功但未解析出题目，请检查文件格式是否正确")
-=======
-        return ApiResponse.success(data={"file_path": file_path})
->>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
     except Exception as e:
         return ApiResponse.error(msg=f"上传文件失败: {str(e)}")
 
@@ -264,7 +256,6 @@ def import_from_external():
     except Exception as e:
         return ApiResponse.error(msg=f"导入文件失败: {str(e)}")
 
-<<<<<<< HEAD
 def get_exam_questions(exam_id: int):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -312,9 +303,6 @@ def get_exam_questions(exam_id: int):
         conn.close()
         return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
 
-
-=======
->>>>>>> 3dda3ed5df70478afd4f8e6ec969e6318ce519a0
 def delete_exam_file(file_path: str):
     if not os.path.exists(file_path):
         return ApiResponse.error(msg="文件不存在")

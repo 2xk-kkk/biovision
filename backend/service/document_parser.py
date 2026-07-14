@@ -46,7 +46,23 @@ def parse_questions(text):
     
     answer_section_start = -1
     for i, line in enumerate(lines):
-        if re.match(r'^【\d+题答案】', line.strip()):
+        line_strip = line.strip()
+        if re.match(r'^【\d+题答案】', line_strip):
+            answer_section_start = i
+            break
+        if re.match(r'^答案[:：]', line_strip):
+            answer_section_start = i
+            break
+        if re.match(r'^参考答案[:：]', line_strip):
+            answer_section_start = i
+            break
+        if re.match(r'^选择题答案', line_strip):
+            answer_section_start = i
+            break
+        if re.match(r'^非选择题答案', line_strip):
+            answer_section_start = i
+            break
+        if re.match(r'^\d+\.答案[:：]', line_strip):
             answer_section_start = i
             break
     
