@@ -200,6 +200,13 @@ def init_db():
         )
     ''')
 
+    # 迁移：user_answers 扩展字段（错题集）
+    add_column_if_not_exists(conn, 'user_answers', 'wrong_count', 'INTEGER DEFAULT 0')
+    add_column_if_not_exists(conn, 'user_answers', 'mastered', 'INTEGER DEFAULT 0')
+
+    # 迁移：questions 扩展字段（教材分类）
+    add_column_if_not_exists(conn, 'questions', 'textbook', 'TEXT DEFAULT ""')
+
     conn.commit()
     conn.close()
 

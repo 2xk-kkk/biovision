@@ -1370,7 +1370,9 @@
         document.querySelectorAll('.beta-item').forEach(item => {
             item.addEventListener('click', function() {
                 const name = this.querySelector('.beta-name').textContent;
-                if (name === '真题大观') {
+                if (name === '错题集') {
+                    window.location.href = 'wrong-answers.html';
+                } else if (name === '真题大观') {
                     window.location.href = 'exams.html';
                 } else if (name === '在线答题') {
                     window.location.href = 'quiz.html';
