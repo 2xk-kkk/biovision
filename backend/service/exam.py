@@ -1,10 +1,12 @@
 import os
 import shutil
 import re
+import sqlite3
 from utils.response import ApiResponse
 
 EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "exams")
 EXTERNAL_DIR = r"D:\biology_exams"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "forum.db")
 
 REGIONS = ['全国', '北京', '上海', '江苏', '浙江', '广东', '山东', '湖北', '湖南', '河北', '四川', '重庆', '陕西', '山西', '青海', '宁夏', '云南', '黑龙江', '吉林', '辽宁', '内蒙古', '河南', '安徽', '福建', '江西', '天津', '新疆', '海南', '甘肃', '贵州', '广西']
 
@@ -88,6 +90,9 @@ def get_exam_list(year=None, region=None):
         return ApiResponse.error(msg="试卷目录不存在")
     
     try:
+        db = sqlite3.connect(DB_PATH)
+        db_cursor = db.cursor()
+        
         all_regions = set()
         all_years = []
         
@@ -122,19 +127,27 @@ def get_exam_list(year=None, region=None):
                 if region and region != '全部' and exam_region != region:
                     continue
                 
+                db_cursor.execute('SELECT id, question_count FROM exams WHERE name = ?', (item,))
+                db_result = db_cursor.fetchone()
+                db_id = db_result[0] if db_result else None
+                db_question_count = db_result[1] if db_result else 0
+                
                 all_regions.add(exam_region)
                 if exam_year:
                     all_years.append(exam_year)
                 
                 exams.append({
+                    "id": db_id,
                     "name": item,
                     "year": exam_year,
                     "region": exam_region,
                     "exam_type": exam_type,
-                    "question_count": question_count,
+                    "question_count": db_question_count,
                     "file_count": file_count,
                     "files": files
                 })
+        
+        db.close()
         
         exams.sort(key=lambda x: (x['year'] or '0', x['region']), reverse=True)
         

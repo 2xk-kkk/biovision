@@ -440,6 +440,29 @@
             color: white;
         }
 
+        .btn-preview {
+            background: #3b82f6;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            margin-right: 8px;
+        }
+
+        .btn-preview:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 8px;
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -495,6 +518,148 @@
             width: 90%;
             max-width: 480px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .preview-modal {
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 16px;
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .preview-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-close:hover {
+            background: #e5e7eb;
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .preview-question {
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .preview-question-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .preview-q-number {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .preview-q-type {
+            font-size: 12px;
+            color: #6b7280;
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .preview-q-content {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .preview-q-images {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .preview-q-images img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+
+        .preview-options {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .preview-option {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .preview-option span:first-child {
+            font-weight: 600;
+            margin-right: 8px;
+            color: #3b82f6;
+        }
+
+        .preview-answer {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #ecfdf5;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #059669;
+            border-left: 3px solid #10b981;
+        }
+
+        .preview-no-questions {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
         }
 
         .modal-header {
@@ -757,6 +922,21 @@
         </div>
     </div>
 
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal preview-modal">
+            <div class="preview-header">
+                <div class="preview-title">试卷预览</div>
+                <button class="preview-close" onclick="closePreviewModal()">×</button>
+            </div>
+            <div class="preview-content" id="previewContent">
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="footer">
         <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
     </div>
@@ -846,7 +1026,10 @@
                                 <span class="star">★</span>
                                 <span class="star">☆</span>
                             </div>
-                            <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+                            <div class="exam-actions">
+                                <button class="btn-preview" onclick="previewExam(${exam.id})">预览</button>
+                                <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -928,6 +1111,141 @@
             document.getElementById('uploadModal').classList.add('show');
             document.getElementById('categoryInput').value = '';
             clearFile();
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.remove('show');
+        }
+
+        async function previewExam(examId) {
+            document.getElementById('previewModal').classList.add('show');
+            const content = document.getElementById('previewContent');
+            content.innerHTML = `
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/exams/${examId}/questions`);
+                const result = await response.json();
+                
+                if (result.code === 200 && result.data && result.data.length > 0) {
+                    const questions = result.data;
+                    content.innerHTML = questions.map((q, index) => {
+                        const options = parseOptions(q.options);
+                        const images = parseImages(q.images);
+                        const hasOptions = options && options.length > 0;
+                        const typeText = q.type === 'choice' || hasOptions ? '选择题' : (q.type === 'fill' ? '填空题' : '其他');
+                        
+                        let optionsHtml = '';
+                        if (options && options.length > 0) {
+                            optionsHtml = `
+                                <div class="preview-options">
+                                    ${options.map(opt => `
+                                        <div class="preview-option">
+                                            <span>${opt.key}.</span>
+                                            <span>${opt.text || opt}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                        }
+                        
+                        let imagesHtml = '';
+                        if (images && images.length > 0) {
+                            imagesHtml = `
+                                <div class="preview-q-images">
+                                    ${images.map(img => `<img src="http://localhost:8000${img}" alt="题目图片">`).join('')}
+                                </div>
+                            `;
+                        }
+                        
+                        let answerHtml = '';
+                        if (q.answer) {
+                            answerHtml = `
+                                <div class="preview-answer">
+                                    <strong>参考答案：</strong>${q.answer}
+                                </div>
+                            `;
+                        }
+                        
+                        return `
+                            <div class="preview-question">
+                                <div class="preview-question-header">
+                                    <div class="preview-q-number">${index + 1}</div>
+                                    <div class="preview-q-type">${typeText}</div>
+                                </div>
+                                <div class="preview-q-content">${q.stem || q.content || q.question || ''}</div>
+                                ${imagesHtml}
+                                ${optionsHtml}
+                                ${answerHtml}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    content.innerHTML = `
+                        <div class="preview-no-questions">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                            <div>该试卷暂无题目</div>
+                            <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请先导入试卷文件并提取题目</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="preview-no-questions">
+                        <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                        <div>加载失败</div>
+                        <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('预览失败:', error);
+            }
+        }
+
+        function parseOptions(optionsData) {
+            if (!optionsData) return [];
+            if (typeof optionsData === 'string') {
+                try {
+                    const parsed = JSON.parse(optionsData);
+                    if (Array.isArray(parsed)) return parsed;
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        return Object.keys(parsed).map(key => ({ key, text: parsed[key] }));
+                    }
+                    return [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            if (Array.isArray(optionsData)) return optionsData;
+            if (typeof optionsData === 'object' && optionsData !== null) {
+                return Object.keys(optionsData).map(key => ({ key, text: optionsData[key] }));
+            }
+            return [];
+        }
+
+        function parseImages(imagesData) {
+            if (!imagesData) return [];
+            let images = [];
+            if (typeof imagesData === 'string') {
+                try {
+                    images = JSON.parse(imagesData);
+                } catch (e) {
+                    if (imagesData.startsWith('/')) {
+                        images = [imagesData];
+                    } else {
+                        return [];
+                    }
+                }
+            } else {
+                images = imagesData;
+            }
+            return images.filter(img => {
+                const ext = img.split('.').pop().toLowerCase();
+                return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp'].includes(ext);
+            });
         }
 
         function closeUploadModal() {
