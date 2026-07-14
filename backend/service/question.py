@@ -1,5 +1,5 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_random_choice_questions
 from model.question import get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, categorize_textbook, batch_categorize_questions
 from utils.response import ApiResponse
 import json
@@ -106,6 +106,19 @@ def get_user_exam_answers(user_id, exam_id):
         db.close()
 
 
+# ========== 随机答题 ==========
+
+def get_random_quiz_questions(count=10):
+    db = get_db_connection()
+    try:
+        questions = get_random_choice_questions(db, count)
+        return ApiResponse.success(data={'questions': questions})
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取随机题目失败: {str(e)}")
+    finally:
+        db.close()
+
+
 # ========== 错题集相关服务 ==========
 
 def get_wrong_answer_list(user_id, textbook=None, status=None, page=1, page_size=20):
@@ -147,7 +160,6 @@ def submit_retry_answer(user_id, question_id, answer):
 
         retry_wrong_answer(db, user_id, question_id, answer, is_correct)
 
-        # 获取最新的 wrong_count
         cursor.execute(
             'SELECT wrong_count, mastered FROM user_answers WHERE user_id = ? AND question_id = ?',
             (user_id, question_id)

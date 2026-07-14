@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -682,6 +683,7 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -700,15 +702,15 @@
             .nav-links {
                 display: none;
             }
-            
+
             .stats-row {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .exam-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .filter-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -716,6 +718,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="top">
         <div class="logo"></div>
@@ -745,7 +748,8 @@
                         <a href="../user-center/main.html#settings" class="user-dropdown-item">
                             <i class="fas fa-cog"></i> 设置
                         </a>
-                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                        <a href="../login/login-main.html" class="user-dropdown-item danger"
+                            onclick="localStorage.clear()">
                             <i class="fas fa-sign-out-alt"></i> 退出登录
                         </a>
                     </div>
@@ -824,16 +828,22 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">选择文件</label>
-                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
+                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()"
+                        ondragover="event.preventDefault(); this.classList.add('dragover')"
+                        ondragleave="this.classList.remove('dragover')"
+                        ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
                         <div class="file-upload-icon">📁</div>
                         <div class="file-upload-text">点击或拖拽文件到此处</div>
                         <div class="file-upload-hint">支持 .docx, .pdf, .doc, .zip 等格式</div>
-                        <input type="file" id="fileInput" style="display: none;" accept=".docx,.doc,.pdf,.zip,.rar,.jpg,.png" onchange="handleFileSelect(event)">
+                        <input type="file" id="fileInput" style="display: none;"
+                            accept=".docx,.doc,.pdf,.zip,.rar,.jpg,.png" onchange="handleFileSelect(event)">
                     </div>
                 </div>
-                <div id="selectedFile" style="display: none; margin-bottom: 16px; padding: 10px; background: #f3f4f6; border-radius: 8px;">
+                <div id="selectedFile"
+                    style="display: none; margin-bottom: 16px; padding: 10px; background: #f3f4f6; border-radius: 8px;">
                     <span id="fileName"></span>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="clearFile()" style="margin-left: 10px;">清除</button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="clearFile()"
+                        style="margin-left: 10px;">清除</button>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">取消</button>
@@ -957,15 +967,15 @@
         async function loadExams(year = null, region = null) {
             const container = document.getElementById('examContainer');
             try {
-                let url = `${API_BASE}/exams`;
+                let url = `${API_BASE}/exams/list`;
                 const params = [];
                 if (year && year !== '全部') params.push(`year=${year}`);
                 if (region && region !== '全部') params.push(`region=${encodeURIComponent(region)}`);
                 if (params.length > 0) url += '?' + params.join('&');
-                
+
                 const response = await fetch(url);
                 const result = await response.json();
-                
+
                 if (!result.success) {
                     container.innerHTML = `
                         <div class="empty-state">
@@ -977,15 +987,13 @@
                     return;
                 }
 
-                const data = result.data;
-                const exams = data.exams;
-                stats = data.stats || {};
-                years = data.years || [];
-                regions = data.regions || [];
-
-                updateStats(stats);
-                updateYearSelect(years);
-                updateRegionTags(regions);
+                const exams = result.data;
+                stats = { total_exams: exams.length };
+                years = [...new Set(exams.map(e => {
+                    const yearMatch = e.name.match(/(20\d{2})/);
+                    return yearMatch ? yearMatch[1] : '';
+                }).filter(Boolean))];
+                regions = ['全国'];
 
                 if (exams.length === 0) {
                     container.innerHTML = `
@@ -1003,26 +1011,17 @@
                         <div class="exam-card-header">
                             <div class="exam-icon">📝</div>
                             <div class="exam-title">
-                                <div class="exam-name">${exam.year || ''}年${exam.region}${exam.exam_type || ''}</div>
+                                <div class="exam-name">${exam.name}</div>
                             </div>
                         </div>
                         <div class="exam-meta">
                             <div class="meta-item">
-                                <span class="meta-icon">📍</span>
-                                <span class="meta-value">${exam.region}</span>
-                            </div>
-                            <div class="meta-item">
                                 <span class="meta-icon">📄</span>
-                                <span class="meta-value">${exam.file_count}份文件</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">📅</span>
-                                <span class="meta-value">${exam.year}</span>
+                                <span class="meta-value">${exam.question_count || 0}道题</span>
                             </div>
                         </div>
                         <div class="exam-tags">
                             ${index < 3 ? '<span class="exam-tag tag-new">新增</span>' : ''}
-                            ${['北京', '上海', '广东', '江苏', '浙江'].includes(exam.region) ? '<span class="exam-tag tag-hot">热门</span>' : ''}
                         </div>
                         <div class="exam-footer">
                             <div class="star-rating">
@@ -1032,7 +1031,7 @@
                                 <span class="star">★</span>
                                 <span class="star">☆</span>
                             </div>
-                            <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+                            <button class="btn-start" onclick="startExam('${exam.name}')">开始答题</button>
                         </div>
                     </div>
                 `).join('');
@@ -1071,7 +1070,7 @@
         function updateRegionTags(regionList) {
             const container = document.getElementById('regionTags');
             container.innerHTML = '';
-            
+
             const allTag = document.createElement('span');
             allTag.className = `region-tag ${currentRegion === '全部' ? 'active' : ''}`;
             allTag.textContent = '全国';
@@ -1107,6 +1106,15 @@
                         window.open(`${API_BASE}/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
                     }, 300);
                 });
+            }
+        }
+
+        async function startExam(examName) {
+            try {
+                window.location.href = `quiz.html?exam_name=${encodeURIComponent(examName)}`;
+            } catch (error) {
+                showToast('error', '获取试卷信息失败');
+                console.error('获取试卷信息失败:', error);
             }
         }
 
@@ -1152,7 +1160,7 @@
                     headers: { 'token': token }
                 });
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showToast('success', result.msg);
                     loadExams();
@@ -1165,15 +1173,15 @@
             }
         }
 
-        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const category = document.getElementById('categoryInput').value.trim();
             if (!category) {
                 showToast('error', '请输入试卷分类');
                 return;
             }
-            
+
             if (!selectedFile) {
                 showToast('error', '请选择要上传的文件');
                 return;
@@ -1183,6 +1191,11 @@
             formData.append('category', category);
             formData.append('file', selectedFile);
 
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '上传中...';
+            submitBtn.disabled = true;
+
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/exams/upload`, {
@@ -1191,17 +1204,25 @@
                     body: formData
                 });
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    showToast('success', '上传成功');
+                    const questionCount = result.data?.question_count || 0;
+                    if (questionCount > 0) {
+                        showToast('success', `上传成功！解析出 ${questionCount} 道题`);
+                    } else {
+                        showToast('success', '上传成功');
+                    }
                     closeUploadModal();
                     loadExams();
                 } else {
-                    showToast('error', result.msg);
+                    showToast('error', result.msg || '上传失败');
                 }
             } catch (error) {
                 showToast('error', '上传失败，请确保后端服务已启动');
                 console.error('上传失败:', error);
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
 
@@ -1210,17 +1231,17 @@
             toast.className = `toast ${type}`;
             toast.textContent = message;
             document.body.appendChild(toast);
-            
+
             setTimeout(() => {
                 toast.remove();
             }, 3000);
         }
 
-        document.querySelector('.search-form').addEventListener('submit', function(e) {
+        document.querySelector('.search-form').addEventListener('submit', function (e) {
             e.preventDefault();
         });
 
-        document.getElementById('uploadModal').addEventListener('click', function(e) {
+        document.getElementById('uploadModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeUploadModal();
             }
@@ -1229,4 +1250,5 @@
         loadExams();
     </script>
 </body>
+
 </html>

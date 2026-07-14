@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -217,42 +218,6 @@
             color: #1f2937;
         }
 
-        .exam-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-        }
-
-        .exam-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        .exam-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .exam-card.selected {
-            background: #f0f6fd;
-            border-color: #667eea;
-        }
-
-        .exam-name {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .exam-count {
-            font-size: 12px;
-            color: #6b7280;
-        }
 
         .start-btn {
             background: #667eea;
@@ -631,6 +596,72 @@
             font-size: 14px;
         }
 
+        .start-screen {
+            text-align: center;
+            padding: 80px 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .start-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .start-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .start-desc {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .question-count-select {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            font-size: 16px;
+            color: #374151;
+        }
+
+        .question-count-select select {
+            padding: 8px 16px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .question-count-select select:focus {
+            border-color: #667eea;
+        }
+
+        .btn-start-quiz {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-start-quiz:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
         .footer {
             background-color: #343a40;
             color: #f8f9fa;
@@ -643,22 +674,23 @@
             .options-list {
                 grid-template-columns: 1fr;
             }
-            
+
             .quiz-header {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .quiz-info {
                 justify-content: space-between;
             }
-            
+
             .paper-container {
                 padding: 16px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="top">
         <div class="logo"></div>
@@ -688,7 +720,8 @@
                         <a href="../user-center/main.html#settings" class="user-dropdown-item">
                             <i class="fas fa-cog"></i> 设置
                         </a>
-                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                        <a href="../login/login-main.html" class="user-dropdown-item danger"
+                            onclick="localStorage.clear()">
                             <i class="fas fa-sign-out-alt"></i> 退出登录
                         </a>
                     </div>
@@ -699,13 +732,7 @@
 
     <main class="main-content">
         <div id="selectSection" class="exam-select-section">
-            <div class="section-title">📝 选择试卷开始答题</div>
-            <div id="examList" class="exam-grid">
-                <div class="loading">⏳ 加载试卷列表中...</div>
-            </div>
-            <div style="text-align: center;">
-                <button class="start-btn" id="startBtn" disabled onclick="startQuiz()">开始答题</button>
-            </div>
+        </div>
         </div>
 
         <div id="quizSection" class="quiz-container">
@@ -721,7 +748,6 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-warning" onclick="toggleAnswers()">显示答案</button>
                     <button class="btn btn-success" onclick="submitAll()">提交答案</button>
                     <button class="btn btn-secondary" onclick="backToSelect()">返回选择</button>
                 </div>
@@ -862,81 +888,59 @@
             }
         })();
 
-        let exams = [];
         let questions = [];
-        let selectedExamId = null;
         let userAnswers = {};
         let showAnswerMode = false;
+        let quizMode = '';
 
-        async function loadExams() {
+        function getUrlParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        async function loadExamQuestions() {
+            const examName = getUrlParam('exam_name');
+            if (!examName) {
+                showStartScreen();
+                return;
+            }
+
+            quizMode = 'exam';
             try {
                 const response = await fetch(`${API_BASE}/exams/list`);
                 const result = await response.json();
-                
-                if (!result.success) {
-                    document.getElementById('examList').innerHTML = `
+
+                if (!result.success || !result.data.length) {
+                    document.getElementById('paperContainer').innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">📭</div>
                             <div class="empty-title">暂无试卷</div>
-                            <div class="empty-desc">请先导入试卷</div>
+                            <div class="empty-desc">请确保后端服务已启动</div>
                         </div>
                     `;
                     return;
                 }
 
-                exams = result.data;
-                
-                if (exams.length === 0) {
-                    document.getElementById('examList').innerHTML = `
+                const exam = result.data.find(e => e.name === examName);
+                if (!exam) {
+                    document.getElementById('paperContainer').innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">📭</div>
-                            <div class="empty-title">暂无试卷</div>
-                            <div class="empty-desc">请先导入试卷</div>
+                            <div class="empty-title">试卷不存在</div>
+                            <div class="empty-desc">请从真题大观选择试卷</div>
                         </div>
                     `;
                     return;
                 }
 
-                document.getElementById('examList').innerHTML = exams.map(exam => `
-                    <div class="exam-card" onclick="selectExam(${exam.id})">
-                        <div class="exam-name">${exam.name}</div>
-                        <div class="exam-count">${exam.question_count || 0} 道题</div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                document.getElementById('examList').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">❌</div>
-                        <div class="empty-title">加载失败</div>
-                        <div class="empty-desc">请确保后端服务已启动</div>
-                    </div>
-                `;
-                console.error('加载试卷失败:', error);
-            }
-        }
+                document.getElementById('examName').textContent = exam.name;
+                document.getElementById('selectSection').style.display = 'none';
+                document.getElementById('quizSection').style.display = 'block';
 
-        function selectExam(examId) {
-            selectedExamId = examId;
-            document.querySelectorAll('.exam-card').forEach(card => card.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-            document.getElementById('startBtn').disabled = false;
-        }
+                const qResponse = await fetch(`${API_BASE}/exams/${exam.id}/questions`);
+                const qResult = await qResponse.json();
 
-        async function startQuiz() {
-            if (!selectedExamId) return;
-
-            document.getElementById('selectSection').style.display = 'none';
-            document.getElementById('quizSection').style.display = 'block';
-            document.getElementById('resultSection').style.display = 'none';
-
-            const exam = exams.find(e => e.id === selectedExamId);
-            document.getElementById('examName').textContent = exam.name;
-
-            try {
-                const response = await fetch(`${API_BASE}/exams/${selectedExamId}/questions`);
-                const result = await response.json();
-
-                if (!result.success) {
+                if (!qResult.success) {
                     document.getElementById('paperContainer').innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">📭</div>
@@ -947,7 +951,7 @@
                     return;
                 }
 
-                questions = result.data;
+                questions = qResult.data.questions;
                 document.getElementById('questionCount').textContent = questions.length;
                 userAnswers = {};
                 showAnswerMode = false;
@@ -970,58 +974,98 @@
                 try {
                     return JSON.parse(optionsData);
                 } catch (e) {
-                    const match = optionsData.match(/\{A=(.+?);\s*B=(.+?);\s*C=(.+?);\s*D=(.+?)\}/);
-                    if (match) {
-                        return {
-                            'A': match[1].trim(),
-                            'B': match[2].trim(),
-                            'C': match[3].trim(),
-                            'D': match[4].trim()
-                        };
-                    }
+                    return {};
                 }
             }
             return optionsData || {};
         }
 
-        function parseImages(imagesData) {
-            if (!imagesData) return [];
-            let images = [];
-            if (typeof imagesData === 'string') {
-                try {
-                    images = JSON.parse(imagesData);
-                } catch (e) {
-                    if (imagesData.startsWith('/')) {
-                        images = [imagesData];
-                    } else {
-                        return [];
-                    }
+        function showStartScreen() {
+            document.getElementById('selectSection').style.display = 'none';
+            document.getElementById('quizSection').style.display = 'block';
+            document.getElementById('examName').textContent = '在线答题';
+
+            document.getElementById('paperContainer').innerHTML = `
+                <div class="start-screen">
+                    <div class="start-icon">📝</div>
+                    <div class="start-title">在线答题</div>
+                    <div class="start-desc">从真题大观中随机抽取选择题进行练习</div>
+                    <div class="question-count-select">
+                        <label>题目数量：</label>
+                        <select id="questionCountSelect">
+                            <option value="5">5题</option>
+                            <option value="10" selected>10题</option>
+                            <option value="15">15题</option>
+                            <option value="20">20题</option>
+                        </select>
+                    </div>
+                    <button class="btn-start-quiz" onclick="startRandomQuiz()">开始答题</button>
+                </div>
+            `;
+        }
+
+        async function startRandomQuiz() {
+            const count = parseInt(document.getElementById('questionCountSelect').value);
+            quizMode = 'random';
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/quiz/random?count=${count}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    document.getElementById('paperContainer').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">获取题目失败</div>
+                            <div class="empty-desc">${result.msg || '请确保后端服务已启动'}</div>
+                        </div>
+                    `;
+                    return;
                 }
-            } else {
-                images = imagesData;
+
+                questions = result.data.questions;
+                document.getElementById('questionCount').textContent = questions.length;
+                userAnswers = {};
+                showAnswerMode = false;
+
+                renderPaper();
+            } catch (error) {
+                document.getElementById('paperContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">加载失败</div>
+                        <div class="empty-desc">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('加载题目失败:', error);
             }
-            return images.filter(img => {
-                const ext = img.split('.').pop().toLowerCase();
-                return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp'].includes(ext);
-            });
         }
 
         function renderPaper() {
-            const exam = exams.find(e => e.id === selectedExamId);
-            let paperHtml = `<div class="paper-title">${exam.name}</div>`;
+            let paperTitle = quizMode === 'random' ? '随机答题' : document.getElementById('examName').textContent;
+            let paperHtml = `<div class="paper-title">${paperTitle}</div>`;
 
             questions.forEach((question, index) => {
                 const options = parseOptions(question.options);
-                const images = parseImages(question.images);
-                const isChoice = Object.keys(options).length > 0;
-                const userAnswer = userAnswers[question.id];
+                const userAnswer = userAnswers[question.id] || '';
                 const correctAnswer = question.answer || '';
-                const isCorrect = showAnswerMode && userAnswer && userAnswer === correctAnswer;
-                const isWrong = showAnswerMode && userAnswer && userAnswer !== correctAnswer;
 
-                let imagesHtml = images.map(img => 
-                    `<img src="http://localhost:8000${img}" class="question-image" alt="题目图片">`
-                ).join('');
+                const hasOptions = Object.values(options).some(v => v && v.trim());
+                const isChoice = hasOptions;
+
+                let imagesHtml = '';
+
+                let stemHtml = question.stem;
+                if (!isChoice) {
+                    stemHtml = stemHtml.replace(/____+/g, (_, i) => {
+                        const blankIndex = (stemHtml.match(/____+/g) || []).indexOf(_) + 1;
+                        return `<input type="text" class="fill-blank-input" 
+                            placeholder="请输入答案" 
+                            oninput="saveFillAnswer(${question.id}, ${blankIndex}, this.value)"
+                            value="${userAnswers[question.id] && userAnswers[question.id][blankIndex - 1] || ''}"
+                            ${showAnswerMode ? 'disabled' : ''}>`;
+                    });
+                }
 
                 let optionsHtml = '';
                 if (isChoice) {
@@ -1032,14 +1076,14 @@
                         if (showAnswerMode) {
                             if (key === correctAnswer) {
                                 className += ' correct';
-                            } else if (key === userAnswer && userAnswer !== correctAnswer) {
+                            } else if (userAnswer === key && userAnswer !== correctAnswer) {
                                 className += ' wrong';
                             }
                         } else if (userAnswer === key) {
                             className += ' selected';
                         }
                         optionsHtml += `
-                            <div class="${className}" onclick="selectOption(${question.id}, '${key}', ${isChoice})">
+                            <div class="${className}" onclick="selectOption(${question.id}, '${key}')">
                                 <div class="option-letter">${key}</div>
                                 <div class="option-text">${value}</div>
                             </div>
@@ -1048,40 +1092,22 @@
                     optionsHtml += `</div>`;
                 }
 
-                let fillHtml = '';
-                if (!isChoice) {
-                    let inputClass = 'fill-input';
-                    if (showAnswerMode) {
-                        if (userAnswer === correctAnswer && userAnswer) {
-                            inputClass += ' correct';
-                        } else if (userAnswer && userAnswer !== correctAnswer) {
-                            inputClass += ' wrong';
-                        }
-                    }
-                    fillHtml = `
-                        <div class="fill-blank-section">
-                            <input type="text" class="${inputClass}" 
-                                placeholder="请输入答案..."
-                                value="${userAnswer || ''}"
-                                onchange="saveFillAnswer(${question.id}, this.value)">
-                            ${showAnswerMode ? `
-                                <div class="answer-feedback ${isCorrect ? 'correct show' : (isWrong ? 'wrong show' : '')}">
-                                    ${correctAnswer ? '正确答案：' + correctAnswer : '暂无答案'}
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
+                let feedbackHtml = '';
+                if (showAnswerMode && correctAnswer) {
+                    feedbackHtml = `<div class="answer-feedback ${userAnswer === correctAnswer ? 'correct' : 'wrong'}">
+                        正确答案：${correctAnswer}
+                    </div>`;
                 }
 
                 paperHtml += `
                     <div class="question-block" id="question-${question.id}">
                         <div class="question-header">
-                            <div class="question-number">${question.number}</div>
-                            <div class="question-stem">${question.stem}</div>
+                            <div class="question-number">${index + 1}</div>
+                            <div class="question-stem">${stemHtml}</div>
                         </div>
                         ${imagesHtml}
                         ${optionsHtml}
-                        ${fillHtml}
+                        ${feedbackHtml}
                     </div>
                 `;
             });
@@ -1089,34 +1115,22 @@
             document.getElementById('paperContainer').innerHTML = paperHtml;
         }
 
-        function selectOption(questionId, optionKey, isChoice) {
+        function selectOption(questionId, optionKey) {
             if (showAnswerMode) return;
-            
             userAnswers[questionId] = optionKey;
             renderPaper();
         }
 
-        function saveFillAnswer(questionId, value) {
+        function saveFillAnswer(questionId, blankIndex, value) {
             if (showAnswerMode) return;
-            userAnswers[questionId] = value.trim();
-        }
-
-        function toggleAnswers() {
-            showAnswerMode = !showAnswerMode;
-            const btn = document.querySelector('.btn-warning');
-            btn.textContent = showAnswerMode ? '隐藏答案' : '显示答案';
-            
-            if (!showAnswerMode) {
-                document.getElementById('resultSection').style.display = 'none';
+            if (!userAnswers[questionId]) {
+                userAnswers[questionId] = {};
             }
-            
-            renderPaper();
+            userAnswers[questionId][blankIndex] = value.trim();
         }
 
         async function submitAll() {
             showAnswerMode = true;
-            const btn = document.querySelector('.btn-warning');
-            btn.textContent = '隐藏答案';
             renderPaper();
 
             const token = localStorage.getItem('token');
@@ -1143,7 +1157,7 @@
                 const userAnswer = userAnswers[q.id];
                 const correctAnswer = q.answer || '';
 
-                if (userAnswer && userAnswer === correctAnswer) {
+                if (userAnswer && String(userAnswer).toUpperCase() === String(correctAnswer).toUpperCase()) {
                     correct++;
                 } else if (userAnswer) {
                     wrong++;
@@ -1169,24 +1183,22 @@
         function restartQuiz() {
             userAnswers = {};
             showAnswerMode = false;
-            document.querySelector('.btn-warning').textContent = '显示答案';
             document.getElementById('resultSection').style.display = 'none';
             renderPaper();
         }
 
         function backToSelect() {
-            document.getElementById('quizSection').style.display = 'none';
-            document.getElementById('selectSection').style.display = 'block';
-            selectedExamId = null;
-            document.getElementById('startBtn').disabled = true;
-            loadExams();
+            window.location.href = 'exams.html';
         }
 
-        document.querySelector('.search-form').addEventListener('submit', function(e) {
+        document.querySelector('.search-form').addEventListener('submit', function (e) {
             e.preventDefault();
         });
 
-        loadExams();
+        document.addEventListener('DOMContentLoaded', function () {
+            loadExamQuestions();
+        });
     </script>
 </body>
+
 </html>

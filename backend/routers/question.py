@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, Query
-from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers
+from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_random_quiz_questions
 from service.question import get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, categorize_all_questions
 from utils.jwt_utils import verify_jwt
 from utils.response import ApiResponse
@@ -21,6 +21,10 @@ def list_all_exams():
 @router.get("/exams/{exam_id}/questions")
 def exam_questions(exam_id: int):
     return get_exam_questions(exam_id)
+
+@router.get("/quiz/random")
+def random_quiz_questions(count: int = Query(10, ge=1, le=50)):
+    return get_random_quiz_questions(count)
 
 @router.post("/questions/answer")
 def answer_question(question_id: int, answer: str, token: str = Header(...)):

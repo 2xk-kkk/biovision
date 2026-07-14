@@ -1,7 +1,9 @@
 import os
 import shutil
 import re
+import zipfile
 from utils.response import ApiResponse
+from database.db import get_db_connection
 
 EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "exams")
 EXTERNAL_DIR = r"D:\biology_exams"
@@ -180,7 +182,52 @@ def upload_exam_file(category: str, file_name: str, file_content: bytes):
         with open(file_path, 'wb') as f:
             f.write(file_content)
         
-        return ApiResponse.success(data={"file_path": file_path})
+        total_questions = 0
+        parse_errors = []
+        
+        ext = os.path.splitext(file_name)[1].lower()
+        
+        if ext in ['.pdf', '.docx']:
+            from service.document_parser import parse_and_save
+            parse_result = parse_and_save(file_path, custom_title=category)
+            if parse_result['success']:
+                total_questions = parse_result['question_count']
+            else:
+                parse_errors.append(parse_result.get('msg', '解析失败'))
+        
+        elif ext == '.zip':
+            with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                zip_ref.extractall(category_path)
+            
+            extracted_files = []
+            for root, dirs, filenames in os.walk(category_path):
+                for extracted_file in filenames:
+                    extracted_files.append(os.path.join(root, extracted_file))
+            
+            for extracted_path in extracted_files:
+                if os.path.isfile(extracted_path):
+                    file_ext = os.path.splitext(extracted_path)[1].lower()
+                    if file_ext in ['.pdf', '.docx']:
+                        from service.document_parser import parse_and_save
+                        parse_result = parse_and_save(extracted_path, custom_title=category)
+                        if parse_result['success']:
+                            total_questions += parse_result['question_count']
+                        else:
+                            parse_errors.append(parse_result.get('msg', '解析失败'))
+        
+        if total_questions > 0:
+            msg = f"上传成功，解析出 {total_questions} 道题"
+            if parse_errors:
+                msg += f"（部分文件解析失败：{'; '.join(parse_errors[:3])}）"
+            return ApiResponse.success(data={
+                "file_path": file_path,
+                "question_count": total_questions
+            }, msg=msg)
+        
+        if parse_errors:
+            return ApiResponse.error(msg=f"上传成功但未解析出题目，错误：{'; '.join(parse_errors)}")
+        
+        return ApiResponse.error(msg="上传成功但未解析出题目，请检查文件格式是否正确")
     except Exception as e:
         return ApiResponse.error(msg=f"上传文件失败: {str(e)}")
 
@@ -208,6 +255,53 @@ def import_from_external():
         return ApiResponse.success(data={"imported_count": imported_count}, msg=f"成功导入 {imported_count} 个文件")
     except Exception as e:
         return ApiResponse.error(msg=f"导入文件失败: {str(e)}")
+
+def get_exam_questions(exam_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT id, name FROM exams WHERE id = ?', (exam_id,))
+        exam_row = cursor.fetchone()
+        
+        if not exam_row:
+            return ApiResponse.error(msg="试卷不存在")
+        
+        exam_id, exam_name = exam_row
+        
+        cursor.execute('''
+            SELECT id, number, stem, option_a, option_b, option_c, option_d, answer 
+            FROM questions 
+            WHERE exam_id = ? 
+            ORDER BY number ASC
+        ''', (exam_id,))
+        
+        questions = []
+        for row in cursor.fetchall():
+            questions.append({
+                'id': row[0],
+                'number': row[1],
+                'stem': row[2],
+                'options': {
+                    'A': row[3] if row[3] else '',
+                    'B': row[4] if row[4] else '',
+                    'C': row[5] if row[5] else '',
+                    'D': row[6] if row[6] else ''
+                },
+                'answer': row[7] if row[7] else ''
+            })
+        
+        conn.close()
+        
+        return ApiResponse.success(data={
+            'exam_id': exam_id,
+            'exam_name': exam_name,
+            'questions': questions,
+            'question_count': len(questions)
+        })
+    except Exception as e:
+        conn.close()
+        return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
 
 def delete_exam_file(file_path: str):
     if not os.path.exists(file_path):

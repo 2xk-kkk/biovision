@@ -52,6 +52,10 @@ for item in os.listdir(BACKEND_UPLOAD_DIR):
 # 挂载静态文件服务
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
+# 挂载前端静态文件
+FRONTEND_DIR = os.path.join(PROJECT_DIR, "frontend")
+app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
+
 #注册路由
 app.include_router(user.router, prefix="/api", tags=["用户"])
 app.include_router(post.router, prefix="/api", tags=["发帖"])

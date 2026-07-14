@@ -134,6 +134,34 @@ def get_exam_stats(db, exam_id, user_id):
         'wrong': answered - correct
     }
 
+def get_random_choice_questions(db, count=10):
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, exam_id
+        FROM questions
+        WHERE option_a IS NOT NULL AND option_a != ''
+        ORDER BY RANDOM()
+        LIMIT ?
+    ''', (count,))
+    questions = []
+    for row in cursor.fetchall():
+        images = json.loads(row[8]) if row[8] else []
+        questions.append({
+            'id': row[0],
+            'number': row[1],
+            'stem': row[2],
+            'options': {
+                'A': row[3],
+                'B': row[4],
+                'C': row[5],
+                'D': row[6]
+            },
+            'answer': row[7],
+            'images': images,
+            'exam_id': row[9]
+        })
+    return questions
+
 # ========== 错题集相关函数 ==========
 
 def get_wrong_answers(db, user_id, textbook=None, status=None, page=1, page_size=20):

@@ -1,5 +1,7 @@
 from fastapi import APIRouter, File, Header, UploadFile, Form, Query
 from service.exam import get_exam_list, get_exam_file, upload_exam_file, import_from_external, delete_exam_file
+from service.exam import get_exam_questions
+from database.db import get_db_connection
 from fastapi.responses import FileResponse
 from utils.jwt_utils import verify_jwt
 from utils.response import ApiResponse
@@ -10,6 +12,31 @@ router = APIRouter()
 @router.get("/exams")
 def list_exams(year: str = Query(None), region: str = Query(None)):
     return get_exam_list(year=year, region=region)
+
+@router.get("/exams/list")
+def list_exams_simple():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT id, name, question_count FROM exams ORDER BY id DESC')
+        exams = []
+        for row in cursor.fetchall():
+            exams.append({
+                'id': row[0],
+                'name': row[1],
+                'question_count': row[2]
+            })
+        
+        conn.close()
+        return {'success': True, 'data': exams}
+    except Exception as e:
+        conn.close()
+        return {'success': False, 'msg': str(e)}
+
+@router.get("/exams/{exam_id}/questions")
+def get_exam_questions_api(exam_id: int):
+    return get_exam_questions(exam_id)
 
 @router.get("/exams/download")
 def download_exam(file_path: str):
