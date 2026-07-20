@@ -2,6 +2,7 @@ import os
 import shutil
 import re
 import sqlite3
+import json
 from utils.response import ApiResponse
 
 EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "exams")
@@ -263,6 +264,14 @@ def get_exam_questions(exam_id: int):
         
         questions = []
         for row in cursor.fetchall():
+            images_str = row[8] if row[8] else ''
+            images = []
+            if images_str:
+                try:
+                    images = json.loads(images_str)
+                except:
+                    images = []
+            
             questions.append({
                 'id': row[0],
                 'number': row[1],
@@ -274,7 +283,7 @@ def get_exam_questions(exam_id: int):
                     'D': row[6] if row[6] else ''
                 },
                 'answer': row[7] if row[7] else '',
-                'images': row[8] if row[8] else ''
+                'images': ','.join(images) if images else ''
             })
         
         conn.close()

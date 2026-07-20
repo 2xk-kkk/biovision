@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>在线答题 - 生物视界</title>
     <style>
         * {
@@ -12,236 +15,251 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'SimSun', 'Songti SC', serif;
+            background: #f5f7fa;
             min-height: 100vh;
             padding: 20px;
         }
 
         .quiz-container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
             overflow: hidden;
         }
 
         .quiz-header {
-            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
             color: white;
             padding: 24px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
         }
 
         .quiz-title {
             font-size: 24px;
-            font-weight: 600;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
 
-        .quiz-info {
-            display: flex;
-            gap: 24px;
+        .quiz-subtitle {
             font-size: 14px;
+            opacity: 0.9;
         }
 
-        .info-item {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-        }
-
-        .quiz-progress {
-            background: #f0f0f0;
-            padding: 16px 32px;
+        .quiz-info-bar {
+            background: #f8f9fa;
+            padding: 12px 32px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 16px;
-        }
-
-        .progress-bar {
-            flex: 1;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00b4db, #0083b0);
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
+            border-bottom: 1px solid #e0e0e0;
             font-size: 14px;
-            font-weight: 500;
             color: #666;
         }
 
-        .quiz-content {
+        .quiz-paper {
             padding: 32px;
         }
 
-        .question-card {
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 24px;
+        .paper-header {
+            text-align: center;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #0066cc;
+            margin-bottom: 32px;
+        }
+
+        .paper-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .paper-info {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0099ff;
+        }
+
+        .question-item {
             margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            page-break-inside: avoid;
         }
 
         .question-header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .question-number {
-            background: linear-gradient(135deg, #00b4db, #0083b0);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 600;
+            font-weight: bold;
+            color: #0066cc;
+            min-width: 30px;
         }
 
-        .question-type {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
+        .question-score {
+            color: #999;
+            font-size: 14px;
         }
 
         .question-stem {
-            font-size: 18px;
+            font-size: 16px;
             line-height: 1.8;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .question-image {
             max-width: 100%;
             height: auto;
-            border-radius: 8px;
-            margin: 16px 0;
+            border-radius: 4px;
+            margin: 12px 0;
             display: block;
         }
 
-        .options-list {
+        .options-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+            padding-left: 40px;
         }
 
         .option-item {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 16px 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
             display: flex;
             align-items: flex-start;
-            gap: 12px;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
         .option-item:hover {
-            border-color: #00b4db;
-            background: #f0f9ff;
+            background: #e8f4ff;
+            border-color: #b3d9ff;
         }
 
         .option-item.selected {
-            border-color: #00b4db;
-            background: #e3f2fd;
+            background: #e8f4ff;
+            border-color: #0066cc;
         }
 
         .option-item.correct {
-            border-color: #4caf50;
             background: #e8f5e9;
+            border-color: #4caf50;
         }
 
         .option-item.wrong {
-            border-color: #f44336;
             background: #ffebee;
+            border-color: #f44336;
         }
 
         .option-letter {
-            background: #e0e0e0;
+            font-weight: bold;
             color: #666;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            flex-shrink: 0;
+            min-width: 24px;
+            text-align: center;
         }
 
         .option-item.selected .option-letter {
-            background: #00b4db;
-            color: white;
+            color: #0066cc;
         }
 
         .option-item.correct .option-letter {
-            background: #4caf50;
-            color: white;
+            color: #4caf50;
         }
 
         .option-item.wrong .option-letter {
-            background: #f44336;
-            color: white;
+            color: #f44336;
         }
 
         .option-content {
-            font-size: 16px;
+            font-size: 15px;
             line-height: 1.6;
             color: #444;
         }
 
-        .answer-feedback {
-            margin-top: 20px;
-            padding: 16px;
-            border-radius: 12px;
+        .fill-blank-area {
+            padding-left: 40px;
+        }
+
+        .fill-blank-item {
+            margin-bottom: 20px;
+        }
+
+        .fill-blank-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .fill-blank-input {
+            display: inline-block;
+            width: 120px;
+            padding: 0 0 4px 0;
+            border: none;
+            border-bottom: 2px solid #333;
+            border-radius: 0;
+            font-size: 16px;
+            text-align: center;
+            background: transparent;
+            transition: all 0.2s ease;
+            margin: 0 4px;
+        }
+
+        .fill-blank-input:focus {
+            outline: none;
+            border-bottom-color: #0066cc;
+        }
+
+        .fill-blank-input.correct {
+            border-bottom-color: #4caf50;
+            background: transparent;
+            color: #4caf50;
+        }
+
+        .fill-blank-input.wrong {
+            border-bottom-color: #f44336;
+            background: transparent;
+            color: #f44336;
+        }
+
+        .fill-blank-input.blank {
+            border-bottom-color: #9e9e9e;
+            background: transparent;
+        }
+
+        .answer-reveal {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #fff3e0;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #e65100;
             display: none;
         }
 
-        .answer-feedback.show {
+        .answer-reveal.show {
             display: block;
-        }
-
-        .answer-feedback.correct {
-            background: #e8f5e9;
-            border: 1px solid #c8e6c9;
-        }
-
-        .answer-feedback.wrong {
-            background: #ffebee;
-            border: 1px solid #ffcdd2;
-        }
-
-        .feedback-icon {
-            font-size: 24px;
-            margin-right: 12px;
-        }
-
-        .feedback-text {
-            font-size: 16px;
-        }
-
-        .feedback-correct-answer {
-            margin-top: 8px;
-            font-weight: 600;
-            color: #4caf50;
         }
 
         .quiz-footer {
@@ -253,14 +271,9 @@
             border-top: 1px solid #e0e0e0;
         }
 
-        .nav-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
         .btn {
-            padding: 12px 28px;
-            border-radius: 10px;
+            padding: 12px 32px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
@@ -269,13 +282,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #00b4db, #0083b0);
+            background: linear-gradient(135deg, #0066cc, #0099ff);
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 131, 176, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
         }
 
         .btn-secondary {
@@ -285,8 +298,8 @@
         }
 
         .btn-secondary:hover {
-            border-color: #00b4db;
-            color: #00b4db;
+            border-color: #0066cc;
+            color: #0066cc;
         }
 
         .btn:disabled {
@@ -295,51 +308,9 @@
             transform: none !important;
         }
 
-        .question-nav {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            max-width: 600px;
-        }
-
-        .nav-dot {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: #e0e0e0;
-            color: #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .nav-dot:hover {
-            background: #00b4db;
-            color: white;
-        }
-
-        .nav-dot.current {
-            background: #00b4db;
-            color: white;
-            box-shadow: 0 2px 8px rgba(0, 180, 219, 0.4);
-        }
-
-        .nav-dot.answered {
-            background: #4caf50;
-            color: white;
-        }
-
-        .nav-dot.correct {
-            background: #4caf50;
-            color: white;
-        }
-
-        .nav-dot.wrong {
-            background: #f44336;
-            color: white;
+        .submit-warning {
+            font-size: 14px;
+            color: #ff9800;
         }
 
         .result-modal {
@@ -361,10 +332,10 @@
 
         .result-content {
             background: white;
-            border-radius: 24px;
-            padding: 48px;
+            border-radius: 16px;
+            padding: 40px;
             text-align: center;
-            max-width: 500px;
+            max-width: 480px;
             width: 90%;
             animation: slideUp 0.3s ease;
         }
@@ -381,57 +352,57 @@
         }
 
         .result-icon {
-            font-size: 80px;
-            margin-bottom: 24px;
+            font-size: 72px;
+            margin-bottom: 20px;
         }
 
         .result-title {
-            font-size: 28px;
-            font-weight: 600;
+            font-size: 26px;
+            font-weight: bold;
             color: #333;
             margin-bottom: 8px;
         }
 
         .result-desc {
-            font-size: 16px;
+            font-size: 15px;
             color: #666;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
         }
 
         .result-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin-bottom: 32px;
+            gap: 20px;
+            margin-bottom: 28px;
         }
 
         .stat-item {
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 16px;
+            padding: 16px;
+            border-radius: 12px;
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: 600;
-            color: #00b4db;
+            font-size: 28px;
+            font-weight: bold;
+            color: #0066cc;
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
             margin-top: 4px;
         }
 
         .result-actions {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             justify-content: center;
         }
 
         .btn-large {
-            padding: 16px 40px;
-            font-size: 18px;
+            padding: 14px 36px;
+            font-size: 16px;
         }
 
         .btn-success {
@@ -439,24 +410,71 @@
             color: white;
         }
 
+        .question-nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .nav-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-dot:hover {
+            background: #0066cc;
+            color: white;
+        }
+
+        .nav-dot.current {
+            background: #0066cc;
+            color: white;
+        }
+
+        .nav-dot.answered {
+            background: #4caf50;
+            color: white;
+        }
+
+        .nav-dot.correct {
+            background: #4caf50;
+            color: white;
+        }
+
+        .nav-dot.wrong {
+            background: #f44336;
+            color: white;
+        }
+
         @media (max-width: 768px) {
-            .options-list {
+            .options-grid {
                 grid-template-columns: 1fr;
             }
 
-            .quiz-info {
-                flex-direction: column;
-                gap: 8px;
+            .quiz-paper {
+                padding: 16px;
             }
 
-            .question-nav {
-                display: none;
+            .question-stem {
+                font-size: 15px;
             }
 
-            .quiz-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
+            .fill-blank-input {
+                width: 100%;
+                margin: 4px 0;
             }
         }
     </style>
@@ -464,22 +482,17 @@
 <body>
     <div class="quiz-container">
         <div class="quiz-header">
-            <div class="quiz-title" id="examTitle">试卷练习</div>
-            <div class="quiz-info">
-                <div class="info-item">📝 题目: <span id="totalQuestions">0</span> 道</div>
-                <div class="info-item">✅ 正确: <span id="correctCount">0</span> 道</div>
-                <div class="info-item">⏱️ 用时: <span id="timeElapsed">0</span> 秒</div>
-            </div>
+            <div class="quiz-title">在线答题</div>
+            <div class="quiz-subtitle" id="examTitle">试卷练习</div>
         </div>
 
-        <div class="quiz-progress">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-            </div>
-            <div class="progress-text" id="progressText">1 / 1</div>
+        <div class="quiz-info-bar">
+            <div>⏱️ 用时: <span id="timeElapsed">0</span> 秒</div>
+            <div>📝 已答: <span id="answeredCount">0</span> / <span id="totalQuestions">0</span></div>
+            <div>✅ 正确: <span id="correctCount">0</span></div>
         </div>
 
-        <div class="quiz-content" id="quizContent">
+        <div class="quiz-paper" id="quizPaper">
             <div style="text-align: center; padding: 60px;">
                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
                 <div style="font-size: 20px; color: #666;">加载中...</div>
@@ -487,11 +500,10 @@
         </div>
 
         <div class="quiz-footer">
-            <div class="question-nav" id="questionNav">
-            </div>
+            <div class="submit-warning" id="submitWarning" style="display: none;">⚠️ 还有题目未作答</div>
             <div class="nav-buttons">
-                <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>上一题</button>
-                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">下一题</button>
+                <button class="btn btn-secondary" onclick="window.location.href='exams.html'">返回列表</button>
+                <button class="btn btn-primary" onclick="submitExam()">提交试卷</button>
             </div>
         </div>
     </div>
@@ -527,12 +539,12 @@
         
         let examId = null;
         let questions = [];
-        let currentIndex = 0;
         let answers = {};
         let results = {};
         let correctCount = 0;
         let startTime = null;
         let timer = null;
+        let isSubmitted = false;
 
         function getQueryParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -543,7 +555,7 @@
             examId = getQueryParam('exam_id');
             
             if (!examId) {
-                document.getElementById('quizContent').innerHTML = `
+                document.getElementById('quizPaper').innerHTML = `
                     <div style="text-align: center; padding: 60px;">
                         <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
                         <div style="font-size: 20px; color: #666;">未选择试卷，请返回选择试卷</div>
@@ -557,34 +569,35 @@
                 const result = await response.json();
 
                 if (result.code === 200 && result.data) {
+                    let qs = [];
+                    let examName = '试卷练习';
+                    
                     if (result.data.questions && result.data.questions.length > 0) {
-                        questions = result.data.questions;
-                        document.getElementById('examTitle').textContent = result.data.exam_name || '试卷练习';
-                        document.getElementById('totalQuestions').textContent = questions.length;
-                        
-                        startTime = Date.now();
-                        startTimer();
-                        renderQuestion();
-                        renderNav();
+                        qs = result.data.questions;
+                        examName = result.data.exam_name || '试卷练习';
                     } else if (Array.isArray(result.data) && result.data.length > 0) {
-                        questions = result.data;
-                        document.getElementById('examTitle').textContent = '试卷练习';
-                        document.getElementById('totalQuestions').textContent = questions.length;
-                        
-                        startTime = Date.now();
-                        startTimer();
-                        renderQuestion();
-                        renderNav();
-                    } else {
-                        document.getElementById('quizContent').innerHTML = `
+                        qs = result.data;
+                    }
+
+                    if (qs.length === 0) {
+                        document.getElementById('quizPaper').innerHTML = `
                             <div style="text-align: center; padding: 60px;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
                                 <div style="font-size: 20px; color: #666;">该试卷暂无题目</div>
                             </div>
                         `;
+                        return;
                     }
+
+                    questions = qs;
+                    document.getElementById('examTitle').textContent = examName;
+                    document.getElementById('totalQuestions').textContent = questions.length;
+                    
+                    startTime = Date.now();
+                    startTimer();
+                    renderPaper();
                 } else {
-                    document.getElementById('quizContent').innerHTML = `
+                    document.getElementById('quizPaper').innerHTML = `
                         <div style="text-align: center; padding: 60px;">
                             <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
                             <div style="font-size: 20px; color: #666;">${result.msg || '加载失败'}</div>
@@ -593,7 +606,7 @@
                 }
             } catch (error) {
                 console.error('加载失败:', error);
-                document.getElementById('quizContent').innerHTML = `
+                document.getElementById('quizPaper').innerHTML = `
                     <div style="text-align: center; padding: 60px;">
                         <div style="font-size: 48px; margin-bottom: 16px;">🔌</div>
                         <div style="font-size: 20px; color: #666;">网络错误，请检查后端服务是否启动</div>
@@ -616,10 +629,62 @@
             }
         }
 
-        function renderQuestion() {
-            const question = questions[currentIndex];
-            if (!question) return;
+        function getQuestionType(question) {
+            const hasOptions = question.options && Object.keys(question.options).some(k => question.options[k]);
+            const hasAnswer = question.answer && question.answer.trim() !== '';
+            
+            if (hasOptions) {
+                return 'choice';
+            }
+            return 'fill';
+        }
 
+        function renderPaper() {
+            const choiceQuestions = questions.filter(q => getQuestionType(q) === 'choice');
+            const fillQuestions = questions.filter(q => getQuestionType(q) === 'fill');
+
+            let html = `
+                <div class="paper-header">
+                    <div class="paper-title">${document.getElementById('examTitle').textContent}</div>
+                    <div class="paper-info">
+                        选择题：共 ${choiceQuestions.length} 题，每题 6 分，共 ${choiceQuestions.length * 6} 分<br>
+                        非选择题：共 ${fillQuestions.length} 题，共 ${fillQuestions.length * 8} 分<br>
+                        考试时间：45分钟
+                    </div>
+                </div>
+            `;
+
+            if (choiceQuestions.length > 0) {
+                html += `
+                    <div class="section">
+                        <div class="section-title">一、选择题（本题共${choiceQuestions.length}小题，每题6分，共${choiceQuestions.length * 6}分）</div>
+                `;
+
+                choiceQuestions.forEach((question, index) => {
+                    html += renderChoiceQuestion(question, index + 1);
+                });
+
+                html += '</div>';
+            }
+
+            if (fillQuestions.length > 0) {
+                html += `
+                    <div class="section">
+                        <div class="section-title">二、非选择题（本题共${fillQuestions.length}小题，共${fillQuestions.length * 8}分）</div>
+                `;
+
+                fillQuestions.forEach((question, index) => {
+                    html += renderFillQuestion(question, choiceQuestions.length + index + 1);
+                });
+
+                html += '</div>';
+            }
+
+            document.getElementById('quizPaper').innerHTML = html;
+            updateAnsweredCount();
+        }
+
+        function renderChoiceQuestion(question, displayNumber) {
             const isAnswered = answers[question.id] !== undefined;
             const isCorrect = results[question.id];
             const selectedAnswer = answers[question.id];
@@ -633,19 +698,21 @@
                 if (!optionValue) return;
 
                 let optionClass = 'option-item';
-                if (isAnswered) {
+                if (isSubmitted) {
                     if (key === selectedAnswer) {
                         optionClass += isCorrect ? ' correct' : ' wrong';
                     } else if (key === correctAnswer) {
                         optionClass += ' correct';
-                    } else {
-                        optionClass += ' selected';
                     }
+                } else if (key === selectedAnswer) {
+                    optionClass += ' selected';
                 }
 
+                const onclick = isSubmitted ? '' : `onclick="selectChoice('${key}', ${question.id})"`;
+                
                 optionsHtml += `
-                    <div class="${optionClass}" onclick="${isAnswered ? '' : `selectOption('${key}', ${question.id})`}">
-                        <div class="option-letter">${key}</div>
+                    <div class="${optionClass}" ${onclick}>
+                        <div class="option-letter">${key}.</div>
                         <div class="option-content">${optionValue}</div>
                     </div>
                 `;
@@ -657,136 +724,195 @@
                 imagePaths.forEach(imgPath => {
                     imgPath = imgPath.trim();
                     if (imgPath) {
-                        const imgUrl = `http://localhost:8000/api${imgPath.replace('backend', '')}`;
-                        imageHtml += `<img src="${imgUrl}" class="question-image" alt="题目图片">`;
+                        const imgUrl = `http://localhost:8000${imgPath}`;
+                        imageHtml += `<img src="${encodeURI(imgUrl)}" class="question-image" alt="题目图片">`;
                     }
                 });
             }
 
             let feedbackHtml = '';
-            if (isAnswered) {
+            if (isSubmitted) {
                 const feedbackType = isCorrect ? 'correct' : 'wrong';
-                const feedbackIcon = isCorrect ? '✅' : '❌';
-                const feedbackText = isCorrect ? '回答正确！' : `回答错误，正确答案是 ${correctAnswer}`;
+                const feedbackText = isCorrect ? '✓ 回答正确' : `✗ 回答错误，正确答案：${correctAnswer}`;
                 
                 feedbackHtml = `
-                    <div class="answer-feedback ${feedbackType} show">
-                        <div class="feedback-text"><span class="feedback-icon">${feedbackIcon}</span>${feedbackText}</div>
+                    <div class="answer-reveal ${feedbackType === 'correct' ? 'correct' : 'wrong'} show">
+                        ${feedbackText}
                     </div>
                 `;
             }
 
-            document.getElementById('quizContent').innerHTML = `
-                <div class="question-card">
+            return `
+                <div class="question-item" id="question-${question.id}">
                     <div class="question-header">
-                        <div class="question-number">${currentIndex + 1}</div>
-                        <div class="question-type">选择题</div>
+                        <span class="question-number">${displayNumber}.</span>
+                        <span class="question-score">（6分）</span>
                     </div>
                     <div class="question-stem">${question.stem}</div>
                     ${imageHtml}
-                    <div class="options-list">${optionsHtml}</div>
+                    <div class="options-grid">${optionsHtml}</div>
                     ${feedbackHtml}
                 </div>
             `;
-
-            updateProgress();
-            updateNav();
-            updateButtons();
         }
 
-        function selectOption(key, questionId) {
-            if (answers[questionId] !== undefined) return;
+        function renderFillQuestion(question, displayNumber) {
+            const isAnswered = answers[question.id] !== undefined && answers[question.id] !== '';
+            const isCorrect = results[question.id];
+            const userAnswer = answers[question.id] || '';
+            const correctAnswer = question.answer || '';
 
-            const question = questions.find(q => q.id === questionId);
-            if (!question) return;
+            let stemHtml = question.stem;
+            const blankCount = (stemHtml.match(/____/g) || []).length;
+            
+            if (blankCount > 0) {
+                for (let i = 0; i < blankCount; i++) {
+                    const inputId = `fill-input-${question.id}-${i}`;
+                    const inputValue = userAnswer ? userAnswer.split(';')[i] || '' : '';
+                    
+                    let inputClass = 'fill-blank-input';
+                    if (isSubmitted) {
+                        const correctPart = correctAnswer.split(';')[i] || '';
+                        const isPartCorrect = inputValue.trim() === correctPart.trim();
+                        
+                        if (inputValue.trim() === '') {
+                            inputClass += ' blank';
+                        } else if (isPartCorrect) {
+                            inputClass += ' correct';
+                        } else {
+                            inputClass += ' wrong';
+                        }
+                    }
+
+                    const onChange = isSubmitted ? '' : `oninput="updateFillAnswer(${question.id}, ${blankCount})"`;
+                    
+                    stemHtml = stemHtml.replace('____', `<input type="text" class="${inputClass}" id="${inputId}" value="${inputValue}" ${onChange}>`);
+                }
+            }
+
+            let imageHtml = '';
+            if (question.images) {
+                const imagePaths = question.images.split(',');
+                imagePaths.forEach(imgPath => {
+                    imgPath = imgPath.trim();
+                    if (imgPath) {
+                        const imgUrl = `http://localhost:8000${imgPath}`;
+                        imageHtml += `<img src="${encodeURI(imgUrl)}" class="question-image" alt="题目图片">`;
+                    }
+                });
+            }
+
+            let feedbackHtml = '';
+            if (isSubmitted) {
+                feedbackHtml = `
+                    <div class="answer-reveal show">
+                        <strong>参考答案：</strong>${correctAnswer.replace(';', '；')}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="question-item" id="question-${question.id}">
+                    <div class="question-header">
+                        <span class="question-number">${displayNumber}.</span>
+                        <span class="question-score">（8分）</span>
+                    </div>
+                    <div class="fill-blank-area">
+                        <div class="fill-blank-text">${stemHtml}</div>
+                        ${imageHtml}
+                        ${feedbackHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectChoice(key, questionId) {
+            if (isSubmitted) return;
 
             answers[questionId] = key;
-            const correctAnswer = question.answer || '';
-            const isCorrect = key === correctAnswer;
-            results[questionId] = isCorrect;
+            updateAnsweredCount();
+            renderPaper();
+        }
 
-            if (isCorrect) {
-                correctCount++;
-                document.getElementById('correctCount').textContent = correctCount;
+        function updateFillAnswer(questionId, blankCount) {
+            if (isSubmitted) return;
+
+            let answerParts = [];
+            for (let i = 0; i < blankCount; i++) {
+                const input = document.getElementById(`fill-input-${questionId}-${i}`);
+                answerParts.push(input ? input.value : '');
             }
-
-            renderQuestion();
-        }
-
-        function prevQuestion() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderQuestion();
-            }
-        }
-
-        function nextQuestion() {
-            if (currentIndex < questions.length - 1) {
-                currentIndex++;
-                renderQuestion();
-            } else {
-                showResult();
-            }
-        }
-
-        function jumpToQuestion(index) {
-            currentIndex = index;
-            renderQuestion();
-        }
-
-        function updateProgress() {
-            const progress = ((currentIndex + 1) / questions.length) * 100;
-            document.getElementById('progressFill').style.width = `${progress}%`;
-            document.getElementById('progressText').textContent = `${currentIndex + 1} / ${questions.length}`;
-        }
-
-        function renderNav() {
-            const navContainer = document.getElementById('questionNav');
-            navContainer.innerHTML = '';
-
-            questions.forEach((q, index) => {
-                let navClass = 'nav-dot';
-                if (index === currentIndex) {
-                    navClass += ' current';
-                }
-                if (answers[q.id] !== undefined) {
-                    if (results[q.id]) {
-                        navClass += ' correct';
-                    } else {
-                        navClass += ' wrong';
-                    }
-                }
-
-                navContainer.innerHTML += `
-                    <div class="${navClass}" onclick="jumpToQuestion(${index})">${index + 1}</div>
-                `;
-            });
-        }
-
-        function updateNav() {
-            const navDots = document.querySelectorAll('.nav-dot');
-            navDots.forEach((dot, index) => {
-                dot.classList.remove('current');
-                if (index === currentIndex) {
-                    dot.classList.add('current');
-                }
-            });
-        }
-
-        function updateButtons() {
-            document.getElementById('prevBtn').disabled = currentIndex === 0;
             
-            const nextBtn = document.getElementById('nextBtn');
-            if (currentIndex === questions.length - 1) {
-                nextBtn.textContent = '提交试卷';
-            } else {
-                nextBtn.textContent = '下一题';
+            answers[questionId] = answerParts.join(';');
+            updateAnsweredCount();
+        }
+
+        function updateAnsweredCount() {
+            const answered = Object.keys(answers).filter(key => {
+                const val = answers[key];
+                return val !== undefined && val !== '';
+            }).length;
+            document.getElementById('answeredCount').textContent = answered;
+        }
+
+        function submitExam() {
+            const unanswered = questions.filter(q => {
+                const ans = answers[q.id];
+                return ans === undefined || ans === '';
+            });
+
+            if (unanswered.length > 0) {
+                document.getElementById('submitWarning').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('submitWarning').style.display = 'none';
+                }, 3000);
+                
+                unanswered[0].element = document.getElementById(`question-${unanswered[0].id}`);
+                if (unanswered[0].element) {
+                    unanswered[0].element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
             }
+
+            isSubmitted = true;
+            correctCount = 0;
+
+            questions.forEach(question => {
+                const userAnswer = answers[question.id];
+                const correctAnswer = question.answer || '';
+                
+                let isCorrect = false;
+                
+                if (getQuestionType(question) === 'choice') {
+                    isCorrect = userAnswer === correctAnswer;
+                } else {
+                    const userParts = userAnswer.split(';');
+                    const correctParts = correctAnswer.split(';');
+                    let correctCountParts = 0;
+                    
+                    userParts.forEach((part, index) => {
+                        const correctPart = correctParts[index] || '';
+                        if (part.trim() === correctPart.trim()) {
+                            correctCountParts++;
+                        }
+                    });
+                    
+                    isCorrect = correctCountParts === correctParts.length && userParts.length === correctParts.length;
+                }
+
+                results[question.id] = isCorrect;
+                if (isCorrect) {
+                    correctCount++;
+                }
+            });
+
+            document.getElementById('correctCount').textContent = correctCount;
+            stopTimer();
+            renderPaper();
+            showResult();
         }
 
         function showResult() {
-            stopTimer();
-            
             const total = questions.length;
             const correct = correctCount;
             const rate = Math.round((correct / total) * 100);
@@ -830,16 +956,16 @@
 
         function restartQuiz() {
             document.getElementById('resultModal').classList.remove('show');
-            currentIndex = 0;
             answers = {};
             results = {};
             correctCount = 0;
+            isSubmitted = false;
             document.getElementById('correctCount').textContent = '0';
+            document.getElementById('answeredCount').textContent = '0';
             
             startTime = Date.now();
             startTimer();
-            renderQuestion();
-            renderNav();
+            renderPaper();
         }
 
         window.addEventListener('load', loadExam);

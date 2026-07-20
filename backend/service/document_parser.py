@@ -99,36 +99,24 @@ def parse_questions(text):
                 'stem': q_stem,
                 'options': {}
             }
-            
-            has_options_in_line = bool(re.search(r'[ABCDabcd][．.、)）]\s*', q_stem))
-            if has_options_in_line:
-                parts = re.split(r'([ABCDabcd][．.、)）])', q_stem)
-                stem_parts = []
-                for i, part in enumerate(parts):
-                    if re.match(r'[ABCDabcd][．.、)）]', part):
-                        if i + 1 < len(parts):
-                            opt_key = part[0].upper()
-                            opt_value = parts[i + 1].strip()
-                            if opt_key not in current_question['options']:
-                                current_question['options'][opt_key] = opt_value
-                    elif part.strip() and not re.match(r'^[ABCDabcd][．.、)）]$', part):
-                        stem_parts.append(part)
-                
-                current_question['stem'] = ''.join(stem_parts).strip()
-                if current_question['stem'].endswith('（') or current_question['stem'].endswith('('):
-                    current_question['stem'] = current_question['stem'][:-1].strip()
             continue
         
-        opt_line_match = re.findall(r'([ABCDabcd])[．.、)）]\s*([^\n]*?)(?=\s*[ABCDabcd][．.、)）]|$)', line)
-        if opt_line_match and current_question:
-            for key, value in opt_line_match:
-                key_upper = key.upper()
-                if key_upper not in current_question['options'] or not current_question['options'][key_upper]:
-                    current_question['options'][key_upper] = value.strip()
+        option_match = re.match(r'^([A-D])[\.\uff0e、]\s*(.+)$', line)
+        if option_match:
+            if current_question:
+                opt_key = option_match.group(1)
+                opt_val = option_match.group(2)
+                current_question['options'][opt_key] = opt_val
             continue
         
         if current_question:
-            current_question['stem'] += ' ' + line
+            if line.startswith(('A', 'B', 'C', 'D')):
+                opt_key = line[0]
+                opt_val = line[1:].lstrip('.．、').strip()
+                if opt_key in 'ABCD':
+                    current_question['options'][opt_key] = opt_val
+            else:
+                current_question['stem'] += '\n' + line
     
     if current_question:
         if len(current_question.get('options', {})) >= 1 or current_question.get('stem', '').strip():
@@ -158,11 +146,36 @@ def parse_answers(text):
             answers[current_num] = ans_match.group(1).upper()
             current_num = None
             continue
+        
+        ans_match2 = re.match(r'^(\d+)[．.、]\s*([ABCDabcd]+)', line)
+        if ans_match2:
+            answers[int(ans_match2.group(1))] = ans_match2.group(2).upper()
+            continue
     
     return answers
 
 
 def parse_document(file_path):
+    ext = os.path.splitext(file_path)[1].lower()
+    
+    if ext == '.docx':
+        try:
+            from .extract_questions import parse_questions as parse_docx_questions
+            exam_name = os.path.splitext(os.path.basename(file_path))[0]
+            questions = parse_docx_questions(file_path, exam_name)
+            
+            pages = extract_text_from_docx(file_path)
+            full_text = '\n\n'.join(pages)
+            answers = parse_answers(full_text)
+            
+            for q in questions:
+                if q['number'] in answers:
+                    q['answer'] = answers[q['number']]
+            
+            return exam_name, questions, answers
+        except Exception as e:
+            print(f"使用extract_questions解析失败: {e}")
+    
     pages = extract_text_from_file(file_path)
     
     if not pages:
@@ -195,6 +208,12 @@ def save_questions(exam_id, questions):
         cursor.execute('DELETE FROM questions WHERE exam_id = ?', (exam_id,))
         
         for q in questions:
+            images_list = q.get('images', [])
+            if isinstance(images_list, list):
+                images_json = json.dumps(images_list)
+            else:
+                images_json = json.dumps([])
+            
             cursor.execute('''
                 INSERT INTO questions 
                 (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images)
@@ -208,7 +227,7 @@ def save_questions(exam_id, questions):
                 q['options'].get('C', ''),
                 q['options'].get('D', ''),
                 q.get('answer', ''),
-                ''
+                images_json
             ))
         
         conn.commit()
@@ -252,6 +271,12 @@ def parse_and_save(file_path, custom_title=None):
             exam_id = cursor.fetchone()[0]
         
         for q in questions:
+            images_list = q.get('images', [])
+            if isinstance(images_list, list):
+                images_json = json.dumps(images_list)
+            else:
+                images_json = json.dumps([])
+            
             cursor.execute('''
                 INSERT OR REPLACE INTO questions 
                 (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images)
@@ -265,7 +290,7 @@ def parse_and_save(file_path, custom_title=None):
                 q['options'].get('C', ''),
                 q['options'].get('D', ''),
                 q.get('answer', ''),
-                ''
+                images_json
             ))
         
         conn.commit()
@@ -281,4 +306,6 @@ def parse_and_save(file_path, custom_title=None):
             'answer_count': answer_count
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return {'success': False, 'msg': f'解析保存失败: {str(e)}', 'title': custom_title or os.path.basename(file_path)}

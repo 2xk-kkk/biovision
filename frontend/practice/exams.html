@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>真题大观 - 生物视界</title>
     <style>
         * {
@@ -1309,7 +1312,7 @@
                                 if (images && images.length > 0) {
                                     imagesHtml = `
                                         <div class="preview-q-images">
-                                            ${images.map(img => `<img src="http://localhost:8000${img}" alt="题目图片">`).join('')}
+                                            ${images.map(img => `<img src="http://localhost:8000${encodeURI(img)}" alt="题目图片">`).join('')}
                                         </div>
                                     `;
                                 }
@@ -1390,7 +1393,11 @@
                     images = JSON.parse(imagesData);
                 } catch (e) {
                     if (imagesData.startsWith('/')) {
-                        images = [imagesData];
+                        if (imagesData.includes(',')) {
+                            images = imagesData.split(',').map(img => img.trim()).filter(img => img);
+                        } else {
+                            images = [imagesData];
+                        }
                     } else {
                         return [];
                     }
