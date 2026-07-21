@@ -529,6 +529,7 @@
             </div>
             <div class="result-actions">
                 <button class="btn btn-secondary btn-large" onclick="closeResult()">返回试卷列表</button>
+                <button class="btn btn-primary btn-large" onclick="viewAnswers()">查看答案</button>
                 <button class="btn btn-success btn-large" onclick="restartQuiz()">再做一次</button>
             </div>
         </div>
@@ -568,7 +569,7 @@
                 const response = await fetch(`${API_BASE_URL}/exams/${examId}/questions`);
                 const result = await response.json();
 
-                if (result.code === 200 && result.data) {
+                if (result.success && result.data) {
                     let qs = [];
                     let examName = '试卷练习';
                     
@@ -856,21 +857,16 @@
         }
 
         function submitExam() {
-            const unanswered = questions.filter(q => {
+            const answeredQuestions = questions.filter(q => {
                 const ans = answers[q.id];
-                return ans === undefined || ans === '';
+                return ans !== undefined && ans !== '';
             });
 
-            if (unanswered.length > 0) {
+            if (answeredQuestions.length === 0) {
                 document.getElementById('submitWarning').style.display = 'block';
                 setTimeout(() => {
                     document.getElementById('submitWarning').style.display = 'none';
                 }, 3000);
-                
-                unanswered[0].element = document.getElementById(`question-${unanswered[0].id}`);
-                if (unanswered[0].element) {
-                    unanswered[0].element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
                 return;
             }
 
@@ -883,21 +879,23 @@
                 
                 let isCorrect = false;
                 
-                if (getQuestionType(question) === 'choice') {
-                    isCorrect = userAnswer === correctAnswer;
-                } else {
-                    const userParts = userAnswer.split(';');
-                    const correctParts = correctAnswer.split(';');
-                    let correctCountParts = 0;
-                    
-                    userParts.forEach((part, index) => {
-                        const correctPart = correctParts[index] || '';
-                        if (part.trim() === correctPart.trim()) {
-                            correctCountParts++;
-                        }
-                    });
-                    
-                    isCorrect = correctCountParts === correctParts.length && userParts.length === correctParts.length;
+                if (userAnswer !== undefined && userAnswer !== '') {
+                    if (getQuestionType(question) === 'choice') {
+                        isCorrect = userAnswer === correctAnswer;
+                    } else {
+                        const userParts = userAnswer.split(';');
+                        const correctParts = correctAnswer.split(';');
+                        let correctCountParts = 0;
+                        
+                        userParts.forEach((part, index) => {
+                            const correctPart = correctParts[index] || '';
+                            if (part.trim() === correctPart.trim()) {
+                                correctCountParts++;
+                            }
+                        });
+                        
+                        isCorrect = correctCountParts === correctParts.length && userParts.length === correctParts.length;
+                    }
                 }
 
                 results[question.id] = isCorrect;
@@ -952,6 +950,10 @@
 
         function closeResult() {
             window.location.href = 'exams.html';
+        }
+
+        function viewAnswers() {
+            document.getElementById('resultModal').classList.remove('show');
         }
 
         function restartQuiz() {

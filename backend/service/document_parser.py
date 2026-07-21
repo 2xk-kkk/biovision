@@ -115,6 +115,8 @@ def parse_questions(text):
                 opt_val = line[1:].lstrip('.．、').strip()
                 if opt_key in 'ABCD':
                     current_question['options'][opt_key] = opt_val
+            elif line.startswith('【') and ('题答案' in line or line.startswith('【答案】')):
+                continue
             else:
                 current_question['stem'] += '\n' + line
     
@@ -141,9 +143,9 @@ def parse_answers(text):
             current_num = int(num_match.group(1))
             continue
         
-        ans_match = re.match(r'【答案】\s*([ABCDabcd]+)', line)
+        ans_match = re.match(r'【答案】\s*(.+)$', line)
         if ans_match and current_num:
-            answers[current_num] = ans_match.group(1).upper()
+            answers[current_num] = ans_match.group(1).strip()
             current_num = None
             continue
         
@@ -164,13 +166,7 @@ def parse_document(file_path):
             exam_name = os.path.splitext(os.path.basename(file_path))[0]
             questions = parse_docx_questions(file_path, exam_name)
             
-            pages = extract_text_from_docx(file_path)
-            full_text = '\n\n'.join(pages)
-            answers = parse_answers(full_text)
-            
-            for q in questions:
-                if q['number'] in answers:
-                    q['answer'] = answers[q['number']]
+            answers = {q['number']: q['answer'] for q in questions if q.get('answer')}
             
             return exam_name, questions, answers
         except Exception as e:
