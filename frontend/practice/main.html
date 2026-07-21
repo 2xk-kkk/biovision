@@ -1126,7 +1126,7 @@
                         <div class="beta-icon">🏆</div>
                         <div class="beta-name">院校PK</div>
                     </div>
-                    <div class="beta-item">
+                    <div class="beta-item" onclick="window.location.href='textbook-trace.html'">
                         <div class="beta-icon">📚</div>
                         <div class="beta-name">教材溯源</div>
                     </div>
@@ -1418,6 +1418,11 @@
         }
         
         generateHeatmap();
+
+        const username = localStorage.getItem('username');
+        if (username) {
+            document.getElementById('welcomeUsername').textContent = username;
+        }
         
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
