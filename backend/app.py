@@ -29,6 +29,7 @@ app.add_middleware(
 #配置静态文件目录（用于上传图片）
 # 使用绝对路径确保所有用户访问同一目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(BASE_DIR)
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 # 创建目录
