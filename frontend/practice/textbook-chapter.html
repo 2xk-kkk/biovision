@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教材章节练习 - BioVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #1976d2;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 32px;
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .chapter-list {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .chapter-item {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .chapter-item:last-child {
+            border-bottom: none;
+        }
+
+        .chapter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .chapter-header:hover {
+            background: #f8fafc;
+        }
+
+        .chapter-header.active {
+            background: #e3f2fd;
+        }
+
+        .chapter-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chapter-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .chapter-icon.chapter {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+        }
+
+        .chapter-icon.section {
+            background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%);
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+
+        .chapter-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a237e;
+        }
+
+        .chapter-desc {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .chapter-arrow {
+            font-size: 20px;
+            color: #999;
+            transition: transform 0.3s;
+        }
+
+        .chapter-header.active .chapter-arrow {
+            transform: rotate(90deg);
+        }
+
+        .chapter-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #388e3c 100%);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .section-list {
+            display: none;
+            background: #fafafa;
+        }
+
+        .section-list.show {
+            display: block;
+        }
+
+        .section-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px 16px 84px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.3s;
+        }
+
+        .section-item:last-child {
+            border-bottom: none;
+        }
+
+        .section-item:hover {
+            background: #f0f9ff;
+        }
+
+        .section-info {
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .section-action {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .question-count {
+            font-size: 14px;
+            color: #666;
+            background: #eee;
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+
+        .btn-practice {
+            padding: 8px 20px;
+            background: #ff9800;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn-practice:hover {
+            background: #f57c00;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="../images/logo.png" alt="BioVision">
+            <span>BioVision</span>
+        </div>
+        <nav class="nav-links">
+            <a href="main.html">首页</a>
+            <a href="knowledge-list.html">知识清单</a>
+            <a href="ppt-list.html">PPT图谱</a>
+            <a href="daily-practice.html">每日训练</a>
+            <a href="visual-learning.html">可视学习</a>
+            <a href="forum.html">论坛</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>📖 <span id="textbookName">必修一：分子与细胞</span></h1>
+            <p>按照章节进行专项练习，巩固知识点</p>
+        </div>
+
+        <div class="chapter-list" id="chapterList">
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 BioVision 生物视界 - 高中生物教学辅助平台</p>
+    </footer>
+
+    <script>
+        const textbooks = {
+            '必修一': {
+                name: '分子与细胞',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 走近细胞',
+                        icon: '🔬',
+                        sections: [
+                            { id: 's1-1', title: '第1节 细胞是生命活动的基本单位', questions: 25 },
+                            { id: 's1-2', title: '第2节 细胞的多样性和统一性', questions: 30 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 组成细胞的分子',
+                        icon: '🧪',
+                        sections: [
+                            { id: 's2-1', title: '第1节 细胞中的元素和化合物', questions: 20 },
+                            { id: 's2-2', title: '第2节 细胞中的无机物', questions: 18 },
+                            { id: 's2-3', title: '第3节 细胞中的糖类和脂质', questions: 22 },
+                            { id: 's2-4', title: '第4节 蛋白质是生命活动的主要承担者', questions: 28 },
+                            { id: 's2-5', title: '第5节 核酸是遗传信息的携带者', questions: 25 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 细胞的基本结构',
+                        icon: '🏠',
+                        sections: [
+                            { id: 's3-1', title: '第1节 细胞膜的结构和功能', questions: 22 },
+                            { id: 's3-2', title: '第2节 细胞器之间的分工合作', questions: 25 },
+                            { id: 's3-3', title: '第3节 细胞核的结构和功能', questions: 20 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 细胞的物质输入和输出',
+                        icon: '🔄',
+                        sections: [
+                            { id: 's4-1', title: '第1节 被动运输', questions: 20 },
+                            { id: 's4-2', title: '第2节 主动运输与胞吞、胞吐', questions: 22 }
+                        ]
+                    },
+                    {
+                        id: 'c5',
+                        title: '第5章 细胞的能量供应和利用',
+                        icon: '⚡',
+                        sections: [
+                            { id: 's5-1', title: '第1节 降低化学反应活化能的酶', questions: 30 },
+                            { id: 's5-2', title: '第2节 细胞的能量“货币”ATP', questions: 18 },
+                            { id: 's5-3', title: '第3节 细胞呼吸的原理和应用', questions: 28 },
+                            { id: 's5-4', title: '第4节 光合作用与能量转化', questions: 32 }
+                        ]
+                    },
+                    {
+                        id: 'c6',
+                        title: '第6章 细胞的生命历程',
+                        icon: '⏳',
+                        sections: [
+                            { id: 's6-1', title: '第1节 细胞的增殖', questions: 25 },
+                            { id: 's6-2', title: '第2节 细胞的分化', questions: 20 },
+                            { id: 's6-3', title: '第3节 细胞的衰老和死亡', questions: 18 }
+                        ]
+                    }
+                ]
+            },
+            '必修二': {
+                name: '遗传与进化',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 遗传因子的发现',
+                        icon: '🧬',
+                        sections: [
+                            { id: 's1-1', title: '第1节 孟德尔的豌豆杂交实验（一）', questions: 30 },
+                            { id: 's1-2', title: '第2节 孟德尔的豌豆杂交实验（二）', questions: 35 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 基因和染色体的关系',
+                        icon: '🧫',
+                        sections: [
+                            { id: 's2-1', title: '第1节 减数分裂和受精作用', questions: 30 },
+                            { id: 's2-2', title: '第2节 基因在染色体上', questions: 25 },
+                            { id: 's2-3', title: '第3节 伴性遗传', questions: 28 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 基因的本质',
+                        icon: '📊',
+                        sections: [
+                            { id: 's3-1', title: '第1节 DNA是主要的遗传物质', questions: 25 },
+                            { id: 's3-2', title: '第2节 DNA的结构', questions: 20 },
+                            { id: 's3-3', title: '第3节 DNA的复制', questions: 22 },
+                            { id: 's3-4', title: '第4节 基因通常是有遗传效应的DNA片段', questions: 18 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 基因的表达',
+                        icon: '📝',
+                        sections: [
+                            { id: 's4-1', title: '第1节 基因指导蛋白质的合成', questions: 30 },
+                            { id: 's4-2', title: '第2节 基因表达与性状的关系', questions: 25 }
+                        ]
+                    },
+                    {
+                        id: 'c5',
+                        title: '第5章 基因突变及其他变异',
+                        icon: '🔀',
+                        sections: [
+                            { id: 's5-1', title: '第1节 基因突变和基因重组', questions: 25 },
+                            { id: 's5-2', title: '第2节 染色体变异', questions: 28 },
+                            { id: 's5-3', title: '第3节 人类遗传病', questions: 20 }
+                        ]
+                    },
+                    {
+                        id: 'c6',
+                        title: '第6章 生物的进化',
+                        icon: '🦖',
+                        sections: [
+                            { id: 's6-1', title: '第1节 生物有共同祖先的证据', questions: 20 },
+                            { id: 's6-2', title: '第2节 自然选择与适应的形成', questions: 25 },
+                            { id: 's6-3', title: '第3节 种群基因组成的变化与物种的形成', questions: 30 },
+                            { id: 's6-4', title: '第4节 协同进化与生物多样性的形成', questions: 22 }
+                        ]
+                    }
+                ]
+            },
+            '选择性必修一': {
+                name: '稳态与调节',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 人体的内环境与稳态',
+                        icon: '🧠',
+                        sections: [
+                            { id: 's1-1', title: '第1节 细胞生活的环境', questions: 20 },
+                            { id: 's1-2', title: '第2节 内环境的稳态', questions: 25 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 神经调节',
+                        icon: '⚡',
+                        sections: [
+                            { id: 's2-1', title: '第1节 神经调节的结构基础', questions: 22 },
+                            { id: 's2-2', title: '第2节 神经调节的基本方式', questions: 25 },
+                            { id: 's2-3', title: '第3节 神经冲动的产生和传导', questions: 28 },
+                            { id: 's2-4', title: '第4节 神经系统的分级调节', questions: 20 },
+                            { id: 's2-5', title: '第5节 人脑的高级功能', questions: 20 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 体液调节',
+                        icon: '🧪',
+                        sections: [
+                            { id: 's3-1', title: '第1节 激素与内分泌系统', questions: 22 },
+                            { id: 's3-2', title: '第2节 激素调节的过程', questions: 28 },
+                            { id: 's3-3', title: '第3节 神经调节与体液调节的关系', questions: 22 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 免疫调节',
+                        icon: '🛡️',
+                        sections: [
+                            { id: 's4-1', title: '第1节 免疫系统的组成和功能', questions: 20 },
+                            { id: 's4-2', title: '第2节 特异性免疫', questions: 30 },
+                            { id: 's4-3', title: '第3节 免疫失调', questions: 25 }
+                        ]
+                    },
+                    {
+                        id: 'c5',
+                        title: '第5章 植物生命活动的调节',
+                        icon: '🌱',
+                        sections: [
+                            { id: 's5-1', title: '第1节 植物生长素', questions: 25 },
+                            { id: 's5-2', title: '第2节 其他植物激素', questions: 22 },
+                            { id: 's5-3', title: '第3节 植物生长调节剂的应用', questions: 18 }
+                        ]
+                    }
+                ]
+            },
+            '选择性必修二': {
+                name: '生物与环境',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 种群及其动态',
+                        icon: '🐦',
+                        sections: [
+                            { id: 's1-1', title: '第1节 种群的数量特征', questions: 22 },
+                            { id: 's1-2', title: '第2节 种群数量的变化', questions: 28 },
+                            { id: 's1-3', title: '第3节 影响种群数量变化的因素', questions: 20 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 群落及其演替',
+                        icon: '🌳',
+                        sections: [
+                            { id: 's2-1', title: '第1节 群落的结构', questions: 25 },
+                            { id: 's2-2', title: '第2节 群落的主要类型', questions: 20 },
+                            { id: 's2-3', title: '第3节 群落的演替', questions: 22 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 生态系统及其稳定性',
+                        icon: '🌍',
+                        sections: [
+                            { id: 's3-1', title: '第1节 生态系统的结构', questions: 25 },
+                            { id: 's3-2', title: '第2节 生态系统的能量流动', questions: 28 },
+                            { id: 's3-3', title: '第3节 生态系统的物质循环', questions: 25 },
+                            { id: 's3-4', title: '第4节 生态系统的信息传递', questions: 22 },
+                            { id: 's3-5', title: '第5节 生态系统的稳定性', questions: 25 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 人与环境',
+                        icon: '👥',
+                        sections: [
+                            { id: 's4-1', title: '第1节 人类活动对生态环境的影响', questions: 22 },
+                            { id: 's4-2', title: '第2节 生物多样性及其保护', questions: 25 },
+                            { id: 's4-3', title: '第3节 生态工程', questions: 20 }
+                        ]
+                    }
+                ]
+            },
+            '选择性必修三': {
+                name: '生物技术与工程',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 发酵工程',
+                        icon: '🍺',
+                        sections: [
+                            { id: 's1-1', title: '第1节 传统发酵技术的应用', questions: 20 },
+                            { id: 's1-2', title: '第2节 微生物的培养技术及应用', questions: 25 },
+                            { id: 's1-3', title: '第3节 发酵工程及其应用', questions: 22 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 细胞工程',
+                        icon: '🧫',
+                        sections: [
+                            { id: 's2-1', title: '第1节 植物细胞工程', questions: 28 },
+                            { id: 's2-2', title: '第2节 动物细胞工程', questions: 30 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 基因工程',
+                        icon: '🔬',
+                        sections: [
+                            { id: 's3-1', title: '第1节 重组DNA技术的基本工具', questions: 25 },
+                            { id: 's3-2', title: '第2节 基因工程的基本操作程序', questions: 30 },
+                            { id: 's3-3', title: '第3节 基因工程的应用', questions: 22 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 生物技术的安全性与伦理问题',
+                        icon: '⚖️',
+                        sections: [
+                            { id: 's4-1', title: '第1节 转基因产品的安全性', questions: 20 },
+                            { id: 's4-2', title: '第2节 关注生殖性克隆人', questions: 18 },
+                            { id: 's4-3', title: '第3节 禁止生物武器', questions: 15 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function getUrlParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function renderChapters() {
+            const textbookId = getUrlParam('id') || '必修一';
+            const textbook = textbooks[textbookId];
+            
+            if (!textbook) {
+                document.getElementById('chapterList').innerHTML = '<div style="padding: 40px; text-align: center; color: #999;">未找到该教材</div>';
+                return;
+            }
+
+            document.getElementById('textbookName').textContent = `${textbookId}：${textbook.name}`;
+            
+            const chapterList = document.getElementById('chapterList');
+            chapterList.innerHTML = '';
+
+            textbook.chapters.forEach((chapter, chapterIndex) => {
+                const chapterItem = document.createElement('div');
+                chapterItem.className = 'chapter-item';
+                
+                const totalQuestions = chapter.sections.reduce((sum, s) => sum + s.questions, 0);
+                
+                chapterItem.innerHTML = `
+                    <div class="chapter-header" onclick="toggleChapter('${chapter.id}')">
+                        <div class="chapter-info">
+                            <div class="chapter-icon chapter">${chapter.icon}</div>
+                            <div>
+                                <div class="chapter-title">${chapter.title}</div>
+                                <div class="chapter-desc">共 ${chapter.sections.length} 节 · ${totalQuestions} 题</div>
+                            </div>
+                        </div>
+                        <div class="chapter-progress">
+                            <span class="progress-text">0%</span>
+                            <span class="chapter-arrow">›</span>
+                        </div>
+                    </div>
+                    <div class="section-list" id="${chapter.id}-sections">
+                        ${chapter.sections.map(section => `
+                            <div class="section-item">
+                                <div class="section-info">
+                                    <div class="section-title">${section.title}</div>
+                                </div>
+                                <div class="section-action">
+                                    <span class="question-count">${section.questions}题</span>
+                                    <a href="quiz.html?chapter=${section.id}&textbook=${textbookId}" class="btn-practice">开始练习</a>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                chapterList.appendChild(chapterItem);
+            });
+
+            if (textbook.chapters.length > 0) {
+                toggleChapter(textbook.chapters[0].id);
+            }
+        }
+
+        function toggleChapter(chapterId) {
+            const sectionList = document.getElementById(`${chapterId}-sections`);
+            const headers = document.querySelectorAll('.chapter-header');
+            
+            headers.forEach(header => {
+                header.classList.remove('active');
+                const arrow = header.querySelector('.chapter-arrow');
+                if (arrow) arrow.style.transform = 'rotate(0deg)';
+            });
+            
+            const activeHeader = document.querySelector(`[onclick="toggleChapter('${chapterId}')"]`);
+            if (activeHeader) {
+                activeHeader.classList.add('active');
+            }
+            
+            document.querySelectorAll('.section-list').forEach(list => {
+                list.classList.remove('show');
+            });
+            
+            if (sectionList) {
+                sectionList.classList.add('show');
+            }
+        }
+
+        renderChapters();
+    </script>
+</body>
+</html>
