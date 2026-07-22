@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教材溯源 - BioVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #1976d2;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 32px;
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .textbook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .textbook-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .textbook-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .textbook-cover {
+            height: 200px;
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .textbook-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .textbook-cover .placeholder {
+            color: white;
+            font-size: 60px;
+            opacity: 0.8;
+        }
+
+        .textbook-info {
+            padding: 20px;
+        }
+
+        .textbook-info h3 {
+            font-size: 18px;
+            color: #1a237e;
+            margin-bottom: 8px;
+        }
+
+        .textbook-info p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .textbook-info .btn-view {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .textbook-info .btn-view:hover {
+            background: #1565c0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #1a237e;
+        }
+
+        .modal-header .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .download-section {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 10px 30px;
+            background: #4caf50;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #388e3c;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="../images/logo.png" alt="BioVision">
+            <span>BioVision</span>
+        </div>
+        <nav class="nav-links">
+            <a href="main.html">首页</a>
+            <a href="knowledge-list.html">知识清单</a>
+            <a href="ppt-list.html">PPT图谱</a>
+            <a href="daily-practice.html">每日训练</a>
+            <a href="visual-learning.html">可视学习</a>
+            <a href="forum.html">论坛</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>📚 教材溯源</h1>
+            <p>查看高中生物学全套教材，深入理解知识点</p>
+        </div>
+
+        <div class="textbook-grid">
+            <div class="textbook-card" onclick="openTextbook('必修1', '分子与细胞')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b必修1.jpg" alt="必修1" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🧬</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>必修1：分子与细胞</h3>
+                    <p>探索细胞的结构与功能，理解生命的基本单位</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('必修1', '分子与细胞')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('必修2', '遗传与进化')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b必修2.jpg" alt="必修2" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🧬</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>必修2：遗传与进化</h3>
+                    <p>学习遗传规律，探索生物进化的奥秘</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('必修2', '遗传与进化')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('选择性必修1', '稳态与调节')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b选择性必修1.jpg" alt="选择性必修1" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>⚖️</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>选择性必修1：稳态与调节</h3>
+                    <p>理解生命系统的稳态调节机制</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('选择性必修1', '稳态与调节')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('选择性必修2', '生物与环境')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b选择性必修2.jpg" alt="选择性必修2" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🌍</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>选择性必修2：生物与环境</h3>
+                    <p>研究生物与环境的相互关系</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('选择性必修2', '生物与环境')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('选择性必修3', '生物技术与工程')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b选择性必修3.jpg" alt="选择性必修3" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🔬</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>选择性必修3：生物技术与工程</h3>
+                    <p>掌握现代生物技术的原理与应用</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('选择性必修3', '生物技术与工程')">查看教材</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="textbookModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">教材查看</h3>
+                <span class="close-btn" onclick="closeModal()">×</span>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfFrame" class="pdf-viewer" src=""></iframe>
+            </div>
+            <div class="download-section">
+                <a id="downloadLink" href="#" class="download-btn">📥 下载教材</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 BioVision 生物视界 - 高中生物教学辅助平台</p>
+    </footer>
+
+    <script>
+        const textbooks = {
+            '必修1': {
+                name: '分子与细胞',
+                pdf: '../textbooks/普通高中教科书-生物学必修1-分子与细胞.pdf',
+                download: '../textbooks/普通高中教科书-生物学必修1-分子与细胞.pdf'
+            },
+            '必修2': {
+                name: '遗传与进化',
+                pdf: '../textbooks/普通高中教科书-生物学必修2-遗传与进化.pdf',
+                download: '../textbooks/普通高中教科书-生物学必修2-遗传与进化.pdf'
+            },
+            '选择性必修1': {
+                name: '稳态与调节',
+                pdf: '../textbooks/普通高中教科书-生物学选择性必修1-稳态与调节.pdf',
+                download: '../textbooks/普通高中教科书-生物学选择性必修1-稳态与调节.pdf'
+            },
+            '选择性必修2': {
+                name: '生物与环境',
+                pdf: '../textbooks/普通高中教科书-生物学选择性必修2-生物与环境.pdf',
+                download: '../textbooks/普通高中教科书-生物学选择性必修2-生物与环境.pdf'
+            },
+            '选择性必修3': {
+                name: '生物技术与工程',
+                pdf: '../textbooks/普通高中教科书-生物学选择性必修3-生物技术与工程.pdf',
+                download: '../textbooks/普通高中教科书-生物学选择性必修3-生物技术与工程.pdf'
+            }
+        };
+
+        function openTextbook(bookId, bookName) {
+            const book = textbooks[bookId];
+            if (book) {
+                document.getElementById('modalTitle').textContent = `${bookId}：${book.name}`;
+                document.getElementById('pdfFrame').src = book.pdf;
+                document.getElementById('downloadLink').href = book.download;
+                document.getElementById('textbookModal').classList.add('show');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('textbookModal').classList.remove('show');
+            document.getElementById('pdfFrame').src = '';
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('textbookModal')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -29,25 +29,10 @@ app.add_middleware(
 #配置静态文件目录（用于上传图片）
 # 使用绝对路径确保所有用户访问同一目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(BASE_DIR)  # 项目根目录
-UPLOAD_DIR = os.path.join(PROJECT_DIR, "uploads")
-BACKEND_UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")  # 旧的上传目录
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 # 创建目录
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(BACKEND_UPLOAD_DIR, exist_ok=True)
-
-# 尝试将旧目录中的文件复制到新目录（包括子目录）
-import shutil
-for item in os.listdir(BACKEND_UPLOAD_DIR):
-    src = os.path.join(BACKEND_UPLOAD_DIR, item)
-    dst = os.path.join(UPLOAD_DIR, item)
-    if os.path.isfile(src) and not os.path.exists(dst):
-        shutil.copy2(src, dst)
-        print(f"复制文件: {item}")
-    elif os.path.isdir(src) and not os.path.exists(dst):
-        shutil.copytree(src, dst)
-        print(f"复制目录: {item}")
 
 # 挂载静态文件服务
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")

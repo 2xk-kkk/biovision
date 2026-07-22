@@ -276,6 +276,204 @@
             display: flex;
             align-items: center;
             gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .welcome-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .welcome-arrow {
+            margin-left: auto;
+            font-size: 24px;
+            color: #8898aa;
+            opacity: 0.6;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .profile-modal {
+            width: 90%;
+            max-width: 400px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 32px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: white;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .profile-role {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .profile-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .profile-stat {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .profile-section {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            padding-left: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .profile-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .item-value {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            padding: 20px;
+            background: #f9fafb;
+        }
+
+        .profile-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .profile-btn:first-child {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .profile-btn:first-child:hover {
+            background: linear-gradient(135deg, #5a6fd6, #6a4092);
+        }
+
+        .profile-btn:last-child {
+            background: white;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+
+        .profile-btn:last-child:hover {
+            background: #f3f4f6;
         }
 
         .welcome-icon {
@@ -840,7 +1038,7 @@
                     </div>
                 </div>
 
-                <a href="#" class="nav-link" target="_blank">PPT快搭</a>
+                <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
                 <a href="../practice/main.html" class="nav-link active" >每日训练</a>
                 <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
                 <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
@@ -874,12 +1072,13 @@
         <!-- 顶部卡片区 -->
         <div class="top-cards">
             <!-- 欢迎卡片 -->
-            <div class="card welcome-card">
+            <div class="card welcome-card" onclick="window.location.href='../user-center/main.html'">
                 <div class="welcome-icon">👤</div>
                 <div>
                     <div class="welcome-text">欢迎回来</div>
                     <div class="welcome-title" id="welcomeUsername">加载中...</div>
                 </div>
+                <div class="welcome-arrow">›</div>
             </div>
             
             <!-- 已做题数卡片 -->
@@ -978,7 +1177,7 @@
                         <div class="beta-icon">🏆</div>
                         <div class="beta-name">院校PK</div>
                     </div>
-                    <div class="beta-item">
+                    <div class="beta-item" onclick="window.location.href='textbook-trace.html'">
                         <div class="beta-icon">📚</div>
                         <div class="beta-name">教材溯源</div>
                     </div>
@@ -1191,6 +1390,61 @@
             </div>
         </div>
     </div>
+
+    <!-- 个人中心弹窗 -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal profile-modal">
+            <div class="profile-header">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-info">
+                    <div class="profile-name">Lofrmin</div>
+                    <div class="profile-role">学生</div>
+                </div>
+                <button class="profile-close" onclick="closeProfileModal()">×</button>
+            </div>
+            
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="stat-num">0</div>
+                    <div class="stat-text">做题数</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="stat-num">0</div>
+                    <div class="stat-text">正确率</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="stat-num">0</div>
+                    <div class="stat-text">连续天数</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="stat-num">0</div>
+                    <div class="stat-text">收藏数</div>
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <div class="section-title">个人信息</div>
+                <div class="profile-item">
+                    <span class="item-label">🏫 学校</span>
+                    <span class="item-value">未填写</span>
+                </div>
+                <div class="profile-item">
+                    <span class="item-label">🎓 年级</span>
+                    <span class="item-value">未填写</span>
+                </div>
+                <div class="profile-item">
+                    <span class="item-label">📝 简介</span>
+                    <span class="item-value">暂无简介</span>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <button class="profile-btn">编辑资料</button>
+                <button class="profile-btn">设置</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = 'http://localhost:8000/api';
 
@@ -1338,6 +1592,11 @@
         }
         
         generateHeatmap();
+
+        const username = localStorage.getItem('username');
+        if (username) {
+            document.getElementById('welcomeUsername').textContent = username;
+        }
         
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
@@ -1375,7 +1634,7 @@
                 } else if (name === '真题大观') {
                     window.location.href = 'exams.html';
                 } else if (name === '在线答题') {
-                    window.location.href = 'quiz.html';
+                    window.location.href = 'exams.html';
                 } else {
                     alert(`即将打开: ${name}`);
                 }
@@ -1396,6 +1655,22 @@
             const query = this.querySelector('.search-input').value;
             if (query.trim()) {
                 alert(`搜索: ${query}`);
+            }
+        });
+
+        // 个人中心弹窗
+        function showProfileModal() {
+            document.getElementById('profileModal').classList.add('show');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+
+        // 点击遮罩层关闭弹窗
+        document.getElementById('profileModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProfileModal();
             }
         });
     </script>

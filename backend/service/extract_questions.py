@@ -21,10 +21,10 @@ def extract_images(docx_path, exam_name):
     with zipfile.ZipFile(docx_path, 'r') as z:
         for name in z.namelist():
             if name.startswith('word/media/') and name != 'word/media/':
-                ext = os.path.splitext(name)[1]
                 img_num = re.search(r'image(\d+)', name)
                 if img_num:
-                    new_name = f"q{img_num.group(1)}{ext}"
+                    ext = os.path.splitext(name)[1]
+                    new_name = f"img{img_num.group(1)}{ext}"
                 else:
                     new_name = os.path.basename(name)
                 dest_path = os.path.join(exam_image_dir, new_name)
@@ -40,13 +40,16 @@ def build_image_mapping(docx_path, exam_name):
                 root = tree.getroot()
                 ns = {'r': 'http://schemas.openxmlformats.org/package/2006/relationships'}
                 
+                image_counter = {}
                 for rel in root.iter('{' + ns['r'] + '}Relationship'):
                     rid = rel.get('Id')
                     target = rel.get('Target')
                     if target and target.startswith('media/'):
                         img_num = re.search(r'image(\d+)', target)
                         if img_num:
-                            img_name = f"q{img_num.group(1)}{os.path.splitext(target)[1]}"
+                            num = int(img_num.group(1))
+                            ext = os.path.splitext(target)[1]
+                            img_name = f"img{num}{ext}"
                         else:
                             img_name = os.path.basename(target)
                         web_path = f"/uploads/exam_images/{exam_name}/{img_name}"
@@ -133,12 +136,51 @@ def is_page_number(line):
 
 def is_answer_section(line):
     text = line.strip()
-    return text.startswith('【答案】') or text.startswith('答案') or text.startswith('【') and '题答案】' in text
+    return text.startswith('参考答案') or text.startswith('参考答案及评分标准') or text.startswith('答案及解析') or '参考答案' in text or '答案：' in text or text.startswith('【答案】') and '题答案' not in text
+
+def is_instruction(line):
+    text = line.strip()
+    keywords = ['选择题必须使用', '非选择题必须使用', '作图可先使用', '保持卡面清洁', '不要折叠', '不要弄破', '不准使用', '修改液', '修正带', '刮纸刀', '答题前', '考生须知', '注意事项']
+    return any(keyword in text for keyword in keywords)
+
+def is_fill_question(stem):
+    return '____' in stem or re.search(r'（\d+）', stem) or re.search(r'\(\d+\)', stem)
 
 def parse_questions(docx_path, exam_name):
     extract_images(docx_path, exam_name)
     image_mapping = build_image_mapping(docx_path, exam_name)
     elements = read_docx_content(docx_path)
+    
+    answers = {}
+    current_answer_num = None
+    in_answer_section = False
+    
+    for elem in elements:
+        if elem['type'] == 'paragraph':
+            text = elem['text'].strip()
+            
+            if text.startswith('参考答案') or text.startswith('参考答案及评分标准') or text.startswith('答案及解析'):
+                in_answer_section = True
+                continue
+            
+            if not in_answer_section:
+                num_match = re.search(r'【(\d+)题答案】', text)
+                if num_match:
+                    current_answer_num = int(num_match.group(1))
+                
+                ans_match = re.match(r'【答案】\s*(.+)$', text)
+                if ans_match and current_answer_num:
+                    answers[current_answer_num] = ans_match.group(1).strip()
+                    current_answer_num = None
+            else:
+                num_match = re.match(r'^(\d+)[．.、]\s*(.+)$', text)
+                if num_match:
+                    answers[int(num_match.group(1))] = num_match.group(2).strip()
+                
+                inline_matches = re.findall(r'(\d+)[．.、]\s*([ABCDabcd]+)', text)
+                if inline_matches:
+                    for match in inline_matches:
+                        answers[int(match[0])] = match[1].strip().upper()
     
     start_index = 0
     found_choice_title = False
@@ -163,20 +205,37 @@ def parse_questions(docx_path, exam_name):
         for img_id in elem['images']:
             header_images.add(img_id)
     
+    answer_section_start = len(elements)
+    
+    for i, elem in enumerate(elements):
+        if elem['type'] == 'paragraph':
+            text = elem['text'].strip()
+            if text.startswith('参考答案') or text.startswith('参考答案及评分标准') or text.startswith('答案及解析'):
+                answer_section_start = i
+                break
+    
+    if answer_section_start == len(elements):
+        answer_count = 0
+        for i, elem in enumerate(elements):
+            if elem['type'] == 'paragraph':
+                text = elem['text'].strip()
+                if text.startswith('【') and ('题答案' in text or text.startswith('【答案】')):
+                    answer_count += 1
+                    if answer_count >= 3:
+                        answer_section_start = i - 2
+                        break
+    
     question_boundaries = []
     found_first = False
     expected_num = 1
-    in_answer_section = False
     
-    for i, elem in enumerate(elements[start_index:]):
+    elements_for_questions = elements[start_index:answer_section_start]
+    
+    for i, elem in enumerate(elements_for_questions):
         if elem['type'] == 'paragraph':
             text = elem['text'].strip()
             
-            if is_answer_section(text):
-                in_answer_section = True
-                continue
-            
-            if in_answer_section:
+            if is_instruction(text):
                 continue
             
             match = is_question_number(elem['text'])
@@ -188,7 +247,7 @@ def parse_questions(docx_path, exam_name):
                         question_boundaries.append(i)
                         expected_num = 2
                 else:
-                    if num == expected_num or num == expected_num + 1:
+                    if num == expected_num or num == expected_num + 1 or num >= 20:
                         question_boundaries.append(i)
                         expected_num = num + 1
     
@@ -196,9 +255,9 @@ def parse_questions(docx_path, exam_name):
     
     for idx in range(len(question_boundaries)):
         start = question_boundaries[idx]
-        end = question_boundaries[idx + 1] if idx + 1 < len(question_boundaries) else len(elements[start_index:])
+        end = question_boundaries[idx + 1] if idx + 1 < len(question_boundaries) else len(elements_for_questions)
         
-        question_elements = elements[start_index:][start:end]
+        question_elements = elements_for_questions[start:end]
         
         q_num_match = is_question_number(question_elements[0]['text'])
         if not q_num_match:
@@ -211,6 +270,7 @@ def parse_questions(docx_path, exam_name):
         images = []
         current_option = None
         found_option = False
+        is_fill = is_fill_question(stem_text)
         
         for elem in question_elements[1:]:
             line = elem['text'].strip()
@@ -226,6 +286,9 @@ def parse_questions(docx_path, exam_name):
             if '选择题' in line or '非选择题' in line:
                 continue
             
+            if line.startswith('【') and ('题答案' in line or line.startswith('【答案】')):
+                continue
+            
             for img_id in elem['images']:
                 if img_id not in header_images and img_id in image_mapping:
                     img_path = image_mapping[img_id]
@@ -234,6 +297,11 @@ def parse_questions(docx_path, exam_name):
             
             if elem['type'] == 'table':
                 stem_text += '\n' + elem['text']
+                continue
+            
+            if is_fill:
+                if line:
+                    stem_text += '\n' + line
                 continue
             
             option_pattern = re.compile(r'^([A-D])[\.\uff0e、]\s+')
@@ -276,6 +344,9 @@ def parse_questions(docx_path, exam_name):
                     stem_text += ' ' + line
         
         has_options = any(options[k] for k in options)
+        if question_num in answers:
+            answer = answers[question_num]
+        
         questions.append({
             'number': question_num,
             'stem': stem_text,
@@ -284,6 +355,11 @@ def parse_questions(docx_path, exam_name):
             'images': images,
             'type': 'non_choice' if not has_options else 'choice'
         })
+    
+    sorted_answers = sorted(answers.items(), key=lambda x: x[0])
+    for i, (ans_num, ans_val) in enumerate(sorted_answers):
+        if i < len(questions):
+            questions[i]['answer'] = ans_val
     
     return questions
 

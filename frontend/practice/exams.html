@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>真题大观 - 生物视界</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -510,6 +513,47 @@
             color: white;
         }
 
+        .btn-preview {
+            background: #3b82f6;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            margin-right: 8px;
+        }
+
+        .btn-preview:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-quiz {
+            background: #f59e0b;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            margin-right: 8px;
+        }
+
+        .btn-quiz:hover {
+            background: #d97706;
+            color: white;
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 8px;
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -565,6 +609,263 @@
             width: 90%;
             max-width: 480px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .preview-modal {
+            width: 95%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .preview-header {
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            color: white;
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .preview-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .preview-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            background: #fafafa;
+        }
+
+        .preview-paper {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            min-height: 600px;
+        }
+
+        .preview-paper-header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .preview-paper-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .preview-paper-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .preview-question {
+            margin-bottom: 32px;
+            line-height: 1.8;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .preview-question-number {
+            float: left;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: 16px;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .preview-question-content {
+            margin-left: 64px;
+        }
+
+        .preview-question-stem {
+            margin-bottom: 16px;
+        }
+
+        .preview-q-images {
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .preview-q-images img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .preview-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .preview-option-letter {
+            font-weight: 600;
+            color: #0083b0;
+            font-size: 16px;
+            width: 24px;
+            flex-shrink: 0;
+        }
+
+        .preview-option-text {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .preview-answer {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+            font-size: 14px;
+        }
+
+        .preview-paper-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .preview-no-questions {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .preview-q-number {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .preview-q-type {
+            font-size: 12px;
+            color: #6b7280;
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .preview-q-content {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .preview-q-images {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .preview-q-images img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+
+        .preview-options {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .preview-option {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .preview-option span:first-child {
+            font-weight: 600;
+            margin-right: 8px;
+            color: #3b82f6;
+        }
+
+        .preview-answer {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #ecfdf5;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #059669;
+            border-left: 3px solid #10b981;
+        }
+
+        .preview-no-questions {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
         }
 
         .modal-header {
@@ -677,6 +978,55 @@
         .toast.error {
             background: #ef4444;
         }
+         .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
 
         @keyframes slideIn {
             from {
@@ -731,7 +1081,20 @@
         <div class="nav-area">
             <div class="nav-links">
                 <a href="../index.html" class="nav-link">首页</a>
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="#" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="#" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="#" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="#" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
                 <a href="../practice/main.html" class="nav-link active">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
                 <a href="../forum/main.html" class="nav-link">论坛</a>
             </div>
             <div class="user-actions">
@@ -850,6 +1213,21 @@
                     <button type="submit" class="btn btn-primary">上传</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal preview-modal">
+            <div class="preview-header">
+                <div class="preview-title">试卷预览</div>
+                <button class="preview-close" onclick="closePreviewModal()">×</button>
+            </div>
+            <div class="preview-content" id="previewContent">
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1031,7 +1409,12 @@
                                 <span class="star">★</span>
                                 <span class="star">☆</span>
                             </div>
-                            <button class="btn-start" onclick="startExam('${exam.name}')">开始答题</button>
+                            <div class="exam-actions">
+                                <button class="btn-preview" onclick="previewExam(${exam.id})">预览</button>
+                                ${exam.has_answers ? `<button class="btn-quiz" onclick="startQuiz(${exam.id})">开始练习</button>` : ''}
+                                <button class="btn-start" onclick="startExam('${exam.name}')">开始答题</button>
+                                <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -1122,6 +1505,167 @@
             document.getElementById('uploadModal').classList.add('show');
             document.getElementById('categoryInput').value = '';
             clearFile();
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.remove('show');
+        }
+
+        function startQuiz(examId) {
+            window.location.href = `quiz.html?exam_id=${examId}`;
+        }
+
+        async function previewExam(examId) {
+            document.getElementById('previewModal').classList.add('show');
+            const content = document.getElementById('previewContent');
+            content.innerHTML = `
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/exams/${examId}/questions`);
+                const result = await response.json();
+                
+                let questions = [];
+                if (result.code === 200 && result.data) {
+                    if (Array.isArray(result.data)) {
+                        questions = result.data;
+                    } else if (result.data.questions && Array.isArray(result.data.questions)) {
+                        questions = result.data.questions;
+                    }
+                }
+                
+                if (questions.length > 0) {
+                    const examName = result.data.exam_name || '生物高考真题';
+                    
+                    content.innerHTML = `
+                        <div class="preview-paper">
+                            <div class="preview-paper-header">
+                                <div class="preview-paper-title">${examName}</div>
+                                <div class="preview-paper-subtitle">共 ${questions.length} 道题</div>
+                            </div>
+                            ${questions.map((q, index) => {
+                                const options = parseOptions(q.options);
+                                const images = parseImages(q.images);
+                                
+                                let optionsHtml = '';
+                                if (options && options.length > 0) {
+                                    optionsHtml = `
+                                        <div class="preview-options">
+                                            ${options.map(opt => `
+                                                <div class="preview-option">
+                                                    <span class="preview-option-letter">${opt.key}.</span>
+                                                    <span class="preview-option-text">${opt.text || opt}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    `;
+                                }
+                                
+                                let imagesHtml = '';
+                                if (images && images.length > 0) {
+                                    imagesHtml = `
+                                        <div class="preview-q-images">
+                                            ${images.map(img => `<img src="http://localhost:8000${encodeURI(img)}" alt="题目图片">`).join('')}
+                                        </div>
+                                    `;
+                                }
+                                
+                                let answerHtml = '';
+                                if (q.answer) {
+                                    answerHtml = `
+                                        <div class="preview-answer">
+                                            <strong>参考答案：</strong>${q.answer}
+                                        </div>
+                                    `;
+                                }
+                                
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-number">${index + 1}</div>
+                                        <div class="preview-question-content">
+                                            <div class="preview-question-stem">${q.stem || q.content || q.question || ''}</div>
+                                            ${imagesHtml}
+                                            ${optionsHtml}
+                                            ${answerHtml}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                            <div class="preview-paper-footer">
+                                —— 试卷预览结束 ——
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="preview-no-questions">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                            <div>该试卷暂无题目</div>
+                            <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请先导入试卷文件并提取题目</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="preview-no-questions">
+                        <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                        <div>加载失败</div>
+                        <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('预览失败:', error);
+            }
+        }
+
+        function parseOptions(optionsData) {
+            if (!optionsData) return [];
+            if (typeof optionsData === 'string') {
+                try {
+                    const parsed = JSON.parse(optionsData);
+                    if (Array.isArray(parsed)) return parsed;
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        return Object.keys(parsed).map(key => ({ key, text: parsed[key] }));
+                    }
+                    return [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            if (Array.isArray(optionsData)) return optionsData;
+            if (typeof optionsData === 'object' && optionsData !== null) {
+                return Object.keys(optionsData).map(key => ({ key, text: optionsData[key] }));
+            }
+            return [];
+        }
+
+        function parseImages(imagesData) {
+            if (!imagesData) return [];
+            let images = [];
+            if (typeof imagesData === 'string') {
+                try {
+                    images = JSON.parse(imagesData);
+                } catch (e) {
+                    if (imagesData.startsWith('/')) {
+                        if (imagesData.includes(',')) {
+                            images = imagesData.split(',').map(img => img.trim()).filter(img => img);
+                        } else {
+                            images = [imagesData];
+                        }
+                    } else {
+                        return [];
+                    }
+                }
+            } else {
+                images = imagesData;
+            }
+            return images.filter(img => {
+                const ext = img.split('.').pop().toLowerCase();
+                return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp'].includes(ext);
+            });
         }
 
         function closeUploadModal() {
@@ -1246,7 +1790,23 @@
                 closeUploadModal();
             }
         });
+        // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
 
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
         loadExams();
     </script>
 </body>

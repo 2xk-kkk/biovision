@@ -529,6 +529,7 @@
             e.preventDefault();
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember').checked;
             const loginBtn = document.querySelector('.login-button');
 
             if (!username || !password) {
@@ -562,6 +563,14 @@
                         localStorage.setItem('username', data.data.username || '');
                     }
 
+                    if (rememberMe) {
+                        localStorage.setItem('remember_username', username);
+                        localStorage.setItem('remember_password', password);
+                    } else {
+                        localStorage.removeItem('remember_username');
+                        localStorage.removeItem('remember_password');
+                    }
+
                     setTimeout(() => {
                         window.location.href = '../index.html';
                     }, 1500);
@@ -588,8 +597,47 @@
             });
         });
 
-        window.addEventListener('load', () => {
+        async function checkToken() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/user/1/info`, {
+                        method: 'GET',
+                        headers: {
+                            'token': token
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.href = '../index.html';
+                        return true;
+                    }
+                } catch (error) {
+                    console.log('Token验证失败');
+                }
+            }
+            return false;
+        }
+
+        window.addEventListener('load', async () => {
             generateParticles();
+            
+            const hasValidToken = await checkToken();
+            if (hasValidToken) {
+                return;
+            }
+            
+            const savedUsername = localStorage.getItem('remember_username');
+            const savedPassword = localStorage.getItem('remember_password');
+            
+            if (savedUsername) {
+                document.getElementById('username').value = savedUsername;
+            }
+            if (savedPassword) {
+                document.getElementById('password').value = savedPassword;
+                document.getElementById('remember').checked = true;
+            }
+            
             console.log('BioVision 登录界面已加载');
         });
     </script>
