@@ -8,7 +8,8 @@ DB_NAME = os.path.join(BASE_DIR, "forum.db")
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")  # 启用 WAL 模式，提升并发性能
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA encoding = 'UTF-8'")
     return conn
 
 
@@ -199,6 +200,13 @@ def init_db():
             UNIQUE(user_id, question_id)
         )
     ''')
+
+    # 迁移：user_answers 扩展字段（错题集）
+    add_column_if_not_exists(conn, 'user_answers', 'wrong_count', 'INTEGER DEFAULT 0')
+    add_column_if_not_exists(conn, 'user_answers', 'mastered', 'INTEGER DEFAULT 0')
+
+    # 迁移：questions 扩展字段（教材分类）
+    add_column_if_not_exists(conn, 'questions', 'textbook', 'TEXT DEFAULT ""')
 
     conn.commit()
     conn.close()

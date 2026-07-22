@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题集 - 生物视界</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+            line-height: 1.6;
+        }
+
+        /* ===== 顶部导航栏 ===== */
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+            object-fit: cover;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .avatar-wrapper:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        /* ===== Hero 区域 ===== */
+        .hero-section {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 40%, #8b5cf6 100%);
+            padding: 36px 20px;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        /* ===== 主内容区 ===== */
+        .main-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* ===== 筛选区 ===== */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            padding: 8px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            min-width: 160px;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .status-tabs {
+            display: flex;
+            gap: 4px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 3px;
+        }
+
+        .status-tab {
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+        }
+
+        .status-tab:hover {
+            color: #374151;
+        }
+
+        .status-tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .filter-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* ===== 错题列表 ===== */
+        .wrong-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .wrong-item {
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.15s;
+        }
+
+        .wrong-item:last-child {
+            border-bottom: none;
+        }
+
+        .wrong-item:hover {
+            background: #fafbfc;
+        }
+
+        .wrong-item-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .wrong-item-num {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: #fef2f2;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .wrong-item-num.mastered {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .wrong-item-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .wrong-item-stem {
+            font-size: 14px;
+            color: #1f2937;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .wrong-item-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .textbook-tag {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .textbook-tag.b1 { background: #e8f5e9; color: #2e7d32; }
+        .textbook-tag.b2 { background: #e3f2fd; color: #1565c0; }
+        .textbook-tag.b3 { background: #fce4ec; color: #c62828; }
+        .textbook-tag.b4 { background: #fff3e0; color: #e65100; }
+        .textbook-tag.b5 { background: #f3e5f5; color: #6a1b9a; }
+        .textbook-tag.unknown { background: #f5f5f5; color: #9e9e9e; }
+
+        .wrong-count-badge {
+            font-size: 12px;
+            color: #ef4444;
+            font-weight: 500;
+        }
+
+        .wrong-count-badge i {
+            margin-right: 2px;
+        }
+
+        .wrong-time {
+            font-size: 12px;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        .wrong-item-badges {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .mastered-badge {
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .mastered-badge.done {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .mastered-badge.pending {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .expand-arrow {
+            font-size: 12px;
+            color: #9ca3af;
+            transition: transform 0.25s;
+            flex-shrink: 0;
+        }
+
+        .wrong-item.expanded .expand-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* ===== 展开详情 ===== */
+        .wrong-detail {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid #f3f4f6;
+            background: #fafbfc;
+        }
+
+        .wrong-item.expanded .wrong-detail {
+            display: block;
+        }
+
+        .detail-section {
+            margin-top: 16px;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .detail-stem {
+            font-size: 15px;
+            color: #1f2937;
+            line-height: 1.8;
+            padding: 14px 16px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .option-display {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            font-size: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .option-display.correct-answer {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .option-display.wrong-answer {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .option-letter {
+            font-weight: 700;
+            width: 22px;
+            flex-shrink: 0;
+        }
+
+        .answer-compare {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .answer-box {
+            flex: 1;
+            min-width: 180px;
+            padding: 14px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .answer-box.wrong {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .answer-box.correct {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .answer-box-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .answer-box.wrong .answer-box-label { color: #ef4444; }
+        .answer-box.correct .answer-box-label { color: #10b981; }
+
+        .answer-box-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .answer-box.wrong .answer-box-value { color: #dc2626; }
+        .answer-box.correct .answer-box-value { color: #059669; }
+
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-outline:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* ===== 重新作答区 ===== */
+        .retry-section {
+            display: none;
+            margin-top: 12px;
+            padding: 16px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .retry-section.show {
+            display: block;
+        }
+
+        .retry-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .retry-option {
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 14px;
+            background: white;
+        }
+
+        .retry-option:hover {
+            border-color: #667eea;
+            background: #f9fafb;
+        }
+
+        .retry-option.selected {
+            border-color: #667eea;
+            background: #f0f6fd;
+            font-weight: 600;
+        }
+
+        .retry-result {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .retry-result.show {
+            display: block;
+        }
+
+        .retry-result.success {
+            background: #f0fdf4;
+            color: #059669;
+            border: 1px solid #bbf7d0;
+        }
+
+        .retry-result.fail {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        /* ===== 空状态 ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 20px;
+        }
+
+        /* ===== 分页 ===== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #374151;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .page-info {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* ===== 加载状态 ===== */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+            font-size: 15px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .options-grid, .retry-options {
+                grid-template-columns: 1fr;
+            }
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-right {
+                margin-left: 0;
+            }
+            .wrong-item-header {
+                padding: 12px 14px;
+                gap: 10px;
+            }
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== 顶部导航栏 ===== -->
+    <div class="top">
+        <div class="logo"></div>
+        <div class="search">
+            <form class="search-form" onsubmit="return false">
+                <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="../practice/main.html" class="nav-link active">每日训练</a>
+                <a href="../forum/main.html" class="nav-link">论坛</a>
+            </div>
+            <div class="user-actions">
+                <div class="avatar-wrapper" id="userAvatarBtn">
+                    <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
+                    <div class="upload-overlay">+</div>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="../user-center/main.html" class="user-dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="../user-center/main.html#posts" class="user-dropdown-item">
+                            <i class="fas fa-file-alt"></i> 我的帖子
+                        </a>
+                        <a href="../user-center/main.html#settings" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Hero 区域 ===== -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-title">🧠 错题集</div>
+            <div class="hero-subtitle">记录每一次失误，让错误成为进步的阶梯</div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">错题总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statUnmastered">0</div>
+                    <div class="stat-label">待复习</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statMastered">0</div>
+                    <div class="stat-label">已攻克</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statRate">0%</div>
+                    <div class="stat-label">掌握率</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 主内容区 ===== -->
+    <main class="main-content">
+        <!-- 筛选区 -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <span class="filter-label">📘 教材</span>
+                <select class="filter-select" id="textbookSelect" onchange="handleFilterChange()">
+                    <option value="全部">全部教材</option>
+                    <option value="必修一：分子与细胞">必修一：分子与细胞</option>
+                    <option value="必修二：遗传与进化">必修二：遗传与进化</option>
+                    <option value="选修一：稳态与调节">选修一：稳态与调节</option>
+                    <option value="选修二：生物与环境">选修二：生物与环境</option>
+                    <option value="选修三：生物技术与工程">选修三：生物技术与工程</option>
+                </select>
+            </div>
+            <div class="status-tabs" id="statusTabs">
+                <button class="status-tab active" data-status="all" onclick="setStatusFilter('all', this)">全部</button>
+                <button class="status-tab" data-status="unmastered" onclick="setStatusFilter('unmastered', this)">🔴 待复习</button>
+                <button class="status-tab" data-status="mastered" onclick="setStatusFilter('mastered', this)">🟢 已攻克</button>
+            </div>
+            <div class="filter-right">
+                <span id="resultCount">共 0 条</span>
+            </div>
+        </div>
+
+        <!-- 错题列表 -->
+        <div class="wrong-list" id="wrongList">
+            <div class="loading">
+                <span class="loading-spinner"></span>加载错题中...
+            </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination" id="pagination"></div>
+    </main>
+
+    <div class="footer">
+        <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+
+        // ===== 状态 =====
+        let currentPage = 1;
+        let currentTextbook = '全部';
+        let currentStatus = 'all';
+        let expandedItemId = null;
+
+        // ===== JWT 解析 =====
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // ===== 头像 =====
+        function getDefaultAvatarSVG(username, size = 40) {
+            const avatarChar = (username || '用').trim()[0] || '用';
+            const centerX = Math.floor(size / 2);
+            const centerY = Math.floor(size / 2);
+            const radius = Math.floor(size * 0.45);
+            const fontSize = Math.floor(size * 0.45);
+            const textY = Math.floor(size * 0.65);
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23667eea'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function getGuestAvatarSVG(size = 40) {
+            const centerX = Math.floor(size / 2);
+            const centerY = Math.floor(size / 2);
+            const radius = Math.floor(size * 0.45);
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23d1d5db'/%3E%3Ccircle cx='${centerX}' cy='${Math.floor(size * 0.35)}' r='${Math.floor(size * 0.12)}' fill='%239ca3af'/%3E%3C/svg%3E`;
+        }
+
+        async function loadUserAvatar() {
+            const token = localStorage.getItem('token');
+            const avatarImg = document.getElementById('userAvatarImg');
+            if (!avatarImg) return;
+            const guestAvatar = getGuestAvatarSVG(40);
+            if (!token) {
+                avatarImg.src = guestAvatar;
+                return;
+            }
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    avatarImg.src = guestAvatar;
+                    return;
+                }
+                const resp = await fetch(`${API_BASE}/user/${payload.user_id}/info`);
+                const data = await resp.json();
+                if (data.success && data.data && data.data.avatar) {
+                    avatarImg.src = data.data.avatar;
+                } else if (data.data && data.data.username) {
+                    avatarImg.src = getDefaultAvatarSVG(data.data.username);
+                }
+            } catch (e) {
+                avatarImg.src = guestAvatar;
+            }
+        }
+
+        // ===== 下拉菜单 =====
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('userDropdownMenu');
+            if (!menu) return;
+            if (e.target.closest('#userAvatarBtn')) {
+                menu.classList.toggle('show');
+            } else if (!e.target.closest('#userDropdownMenu')) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // ===== 筛选 =====
+        function setStatusFilter(status, btn) {
+            currentStatus = status;
+            currentPage = 1;
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            loadWrongAnswers();
+        }
+
+        function handleFilterChange() {
+            currentTextbook = document.getElementById('textbookSelect').value;
+            currentPage = 1;
+            loadWrongAnswers();
+        }
+
+        // ===== 加载统计 =====
+        async function loadStats() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            try {
+                const resp = await fetch(`${API_BASE}/wrong-answers/stats`, {
+                    headers: { 'token': token }
+                });
+                const data = await resp.json();
+                if (data.success && data.data) {
+                    const s = data.data;
+                    document.getElementById('statTotal').textContent = s.total || 0;
+                    document.getElementById('statUnmastered').textContent = s.unmastered || 0;
+                    document.getElementById('statMastered').textContent = s.mastered || 0;
+                    document.getElementById('statRate').textContent = (s.mastery_rate || 0) + '%';
+                }
+            } catch (e) {
+                console.error('加载统计失败:', e);
+            }
+        }
+
+        // ===== 加载错题列表 =====
+        async function loadWrongAnswers() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('wrongList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔒</div>
+                        <div class="empty-title">请先登录</div>
+                        <div class="empty-desc">登录后即可查看您的专属错题集</div>
+                        <button class="btn btn-primary" onclick="window.location.href='../login/login-main.html'">前往登录</button>
+                    </div>`;
+                return;
+            }
+
+            document.getElementById('wrongList').innerHTML = '<div class="loading"><span class="loading-spinner"></span>加载错题中...</div>';
+
+            try {
+                let url = `${API_BASE}/wrong-answers?page=${currentPage}&page_size=20`;
+                if (currentTextbook && currentTextbook !== '全部') url += `&textbook=${encodeURIComponent(currentTextbook)}`;
+                if (currentStatus && currentStatus !== 'all') url += `&status=${currentStatus}`;
+
+                const resp = await fetch(url, { headers: { 'token': token } });
+                const data = await resp.json();
+
+                if (!data.success) {
+                    document.getElementById('wrongList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">加载失败</div><div class="empty-desc">${data.msg || '未知错误'}</div></div>`;
+                    return;
+                }
+
+                const result = data.data;
+                document.getElementById('resultCount').textContent = `共 ${result.total} 条`;
+
+                if (!result.items || result.items.length === 0) {
+                    document.getElementById('wrongList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🎉</div>
+                            <div class="empty-title">${currentStatus === 'mastered' ? '还没有已攻克的错题' : '太棒了，没有错题！'}</div>
+                            <div class="empty-desc">${currentStatus === 'mastered' ? '去答题并标记攻克吧' : '去在线答题看看你的掌握情况'}</div>
+                            <button class="btn btn-primary" onclick="window.location.href='quiz.html'">去答题</button>
+                        </div>`;
+                    document.getElementById('pagination').innerHTML = '';
+                    return;
+                }
+
+                renderWrongList(result.items);
+                renderPagination(result.total, result.page, result.total_pages);
+
+            } catch (e) {
+                console.error('加载错题失败:', e);
+                document.getElementById('wrongList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">网络错误</div><div class="empty-desc">请检查网络连接后重试</div></div>`;
+            }
+        }
+
+        // ===== 渲染错题列表 =====
+        function getTextbookClass(textbook) {
+            if (!textbook) return 'unknown';
+            if (textbook.includes('必修一')) return 'b1';
+            if (textbook.includes('必修二')) return 'b2';
+            if (textbook.includes('选修一')) return 'b3';
+            if (textbook.includes('选修二')) return 'b4';
+            if (textbook.includes('选修三')) return 'b5';
+            return 'unknown';
+        }
+
+        function getTextbookShort(textbook) {
+            if (!textbook) return '未分类';
+            if (textbook.includes('必修一')) return '必修一';
+            if (textbook.includes('必修二')) return '必修二';
+            if (textbook.includes('选修一')) return '选修一';
+            if (textbook.includes('选修二')) return '选修二';
+            if (textbook.includes('选修三')) return '选修三';
+            return textbook;
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const d = new Date(timeStr);
+            const now = new Date();
+            const diff = now - d;
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+            return d.toLocaleDateString('zh-CN');
+        }
+
+        function renderWrongList(items) {
+            let html = '';
+            items.forEach((item, index) => {
+                const globalIndex = (currentPage - 1) * 20 + index + 1;
+                const isMastered = item.mastered === 1;
+                const tbClass = getTextbookClass(item.textbook);
+                const tbShort = getTextbookShort(item.textbook);
+                const timeStr = formatTime(item.last_answer_time);
+
+                html += `
+                <div class="wrong-item ${expandedItemId === item.question_id ? 'expanded' : ''}" id="item-${item.question_id}">
+                    <div class="wrong-item-header" onclick="toggleDetail(${item.question_id})">
+                        <div class="wrong-item-num ${isMastered ? 'mastered' : ''}">${globalIndex}</div>
+                        <div class="wrong-item-main">
+                            <div class="wrong-item-stem">${escapeHtml(item.stem || '(题干缺失)')}</div>
+                            <div class="wrong-item-meta">
+                                <span class="textbook-tag ${tbClass}">${tbShort}</span>
+                                ${item.wrong_count > 0 ? `<span class="wrong-count-badge"><i class="fas fa-exclamation-triangle"></i>错${item.wrong_count}次</span>` : ''}
+                                <span class="wrong-time">${timeStr}</span>
+                            </div>
+                        </div>
+                        <div class="wrong-item-badges">
+                            <span class="mastered-badge ${isMastered ? 'done' : 'pending'}">${isMastered ? '🟢 已攻克' : '🔴 待复习'}</span>
+                        </div>
+                        <span class="expand-arrow">▼</span>
+                    </div>
+                    <div class="wrong-detail">
+                        ${renderDetail(item)}
+                    </div>
+                </div>`;
+            });
+            document.getElementById('wrongList').innerHTML = html;
+        }
+
+        function renderDetail(item) {
+            const options = [];
+            if (item.option_a) options.push({ letter: 'A', text: item.option_a });
+            if (item.option_b) options.push({ letter: 'B', text: item.option_b });
+            if (item.option_c) options.push({ letter: 'C', text: item.option_c });
+            if (item.option_d) options.push({ letter: 'D', text: item.option_d });
+
+            const correctAns = (item.correct_answer || '').trim().toUpperCase();
+            const userAns = (item.user_answer || '').trim().toUpperCase();
+            const isMastered = item.mastered === 1;
+
+            let optionsHtml = '';
+            if (options.length > 0) {
+                optionsHtml = `
+                <div class="detail-section">
+                    <div class="detail-label">📋 选项</div>
+                    <div class="options-grid">
+                        ${options.map(o => {
+                            let cls = '';
+                            if (o.letter === correctAns) cls = 'correct-answer';
+                            else if (o.letter === userAns && userAns !== correctAns) cls = 'wrong-answer';
+                            return `<div class="option-display ${cls}">
+                                <span class="option-letter">${o.letter}.</span>
+                                <span>${escapeHtml(o.text)}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+            }
+
+            return `
+                <div class="detail-section">
+                    <div class="detail-label">📝 题目</div>
+                    <div class="detail-stem">${escapeHtml(item.stem || '(题干缺失)')}</div>
+                </div>
+                ${optionsHtml}
+                <div class="answer-compare">
+                    <div class="answer-box wrong">
+                        <div class="answer-box-label">❌ 你的答案</div>
+                        <div class="answer-box-value">${userAns || '未作答'}</div>
+                    </div>
+                    <div class="answer-box correct">
+                        <div class="answer-box-label">✅ 正确答案</div>
+                        <div class="answer-box-value">${correctAns || '-'}</div>
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); showRetry(${item.question_id})">
+                        <i class="fas fa-redo"></i> 重新作答
+                    </button>
+                    <button class="btn ${isMastered ? 'btn-outline' : 'btn-success'}" onclick="event.stopPropagation(); toggleMaster(${item.question_id}, ${isMastered ? 0 : 1})">
+                        <i class="fas ${isMastered ? 'fa-undo' : 'fa-check'}"></i> ${isMastered ? '取消攻克' : '标记为已攻克'}
+                    </button>
+                </div>
+                <div class="retry-section" id="retry-${item.question_id}">
+                    <div class="detail-label">🔁 选择你的答案</div>
+                    <div class="retry-options">
+                        ${options.map(o => `
+                            <div class="retry-option" onclick="event.stopPropagation(); selectRetryOption(${item.question_id}, '${o.letter}')" data-letter="${o.letter}">
+                                <strong>${o.letter}</strong>. ${escapeHtml(o.text.substring(0, 60))}${o.text.length > 60 ? '...' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="event.stopPropagation(); submitRetry(${item.question_id})">
+                        提交答案
+                    </button>
+                    <div class="retry-result" id="retry-result-${item.question_id}"></div>
+                </div>`;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ===== 展开/收起 =====
+        function toggleDetail(questionId) {
+            const item = document.getElementById('item-' + questionId);
+            if (!item) return;
+            if (expandedItemId === questionId) {
+                item.classList.remove('expanded');
+                expandedItemId = null;
+            } else {
+                // 收起之前展开的
+                if (expandedItemId) {
+                    const prev = document.getElementById('item-' + expandedItemId);
+                    if (prev) prev.classList.remove('expanded');
+                }
+                item.classList.add('expanded');
+                expandedItemId = questionId;
+                // 隐藏重做区域
+                const retryEl = document.getElementById('retry-' + questionId);
+                if (retryEl) retryEl.classList.remove('show');
+                const resultEl = document.getElementById('retry-result-' + questionId);
+                if (resultEl) { resultEl.classList.remove('show'); resultEl.textContent = ''; }
+            }
+        }
+
+        // ===== 重新作答 =====
+        let retrySelections = {};
+
+        function showRetry(questionId) {
+            const retryEl = document.getElementById('retry-' + questionId);
+            if (!retryEl) return;
+            retryEl.classList.toggle('show');
+            const resultEl = document.getElementById('retry-result-' + questionId);
+            if (resultEl) { resultEl.classList.remove('show'); resultEl.textContent = ''; }
+            // 清除之前的选择
+            retryEl.querySelectorAll('.retry-option').forEach(o => o.classList.remove('selected'));
+            delete retrySelections[questionId];
+        }
+
+        function selectRetryOption(questionId, letter) {
+            const retryEl = document.getElementById('retry-' + questionId);
+            if (!retryEl) return;
+            retryEl.querySelectorAll('.retry-option').forEach(o => o.classList.remove('selected'));
+            const target = retryEl.querySelector(`.retry-option[data-letter="${letter}"]`);
+            if (target) target.classList.add('selected');
+            retrySelections[questionId] = letter;
+        }
+
+        async function submitRetry(questionId) {
+            const answer = retrySelections[questionId];
+            if (!answer) {
+                alert('请先选择一个答案');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) { alert('请先登录'); return; }
+
+            const resultEl = document.getElementById('retry-result-' + questionId);
+            if (resultEl) {
+                resultEl.classList.add('show');
+                resultEl.className = 'retry-result show';
+                resultEl.textContent = '提交中...';
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/wrong-answers/${questionId}/retry?answer=${encodeURIComponent(answer)}`, {
+                    method: 'POST',
+                    headers: { 'token': token }
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    const d = data.data;
+                    if (d.is_correct) {
+                        resultEl.className = 'retry-result success show';
+                        resultEl.innerHTML = `🎉 ${data.msg} —— 正确答案: <strong>${d.correct_answer}</strong>`;
+                    } else {
+                        resultEl.className = 'retry-result fail show';
+                        resultEl.innerHTML = `❌ ${data.msg} —— 正确答案: <strong>${d.correct_answer}</strong>，你的答案: <strong>${d.your_answer}</strong>`;
+                    }
+                    // 刷新列表和统计
+                    setTimeout(() => {
+                        loadWrongAnswers();
+                        loadStats();
+                    }, 1500);
+                } else {
+                    resultEl.className = 'retry-result fail show';
+                    resultEl.textContent = data.msg || '提交失败';
+                }
+            } catch (e) {
+                resultEl.className = 'retry-result fail show';
+                resultEl.textContent = '网络错误，请重试';
+            }
+        }
+
+        // ===== 标记攻克 =====
+        async function toggleMaster(questionId, mastered) {
+            const token = localStorage.getItem('token');
+            if (!token) { alert('请先登录'); return; }
+
+            try {
+                const resp = await fetch(`${API_BASE}/wrong-answers/${questionId}/master`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    body: JSON.stringify({ mastered: mastered })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    expandedItemId = null;
+                    loadWrongAnswers();
+                    loadStats();
+                } else {
+                    alert(data.msg || '操作失败');
+                }
+            } catch (e) {
+                alert('网络错误，请重试');
+            }
+        }
+
+        // ===== 分页 =====
+        function renderPagination(total, page, totalPages) {
+            if (totalPages <= 1) {
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            html += `<button class="page-btn" onclick="goPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹ 上一页</button>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                    html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+                } else if (i === page - 3 || i === page + 3) {
+                    html += `<span class="page-info">...</span>`;
+                }
+            }
+
+            html += `<button class="page-btn" onclick="goPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>下一页 ›</button>`;
+            document.getElementById('pagination').innerHTML = html;
+        }
+
+        function goPage(p) {
+            currentPage = p;
+            expandedItemId = null;
+            loadWrongAnswers();
+            document.getElementById('wrongList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ===== 初始化 =====
+        async function init() {
+            // 检查登录
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('wrongList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔒</div>
+                        <div class="empty-title">请先登录</div>
+                        <div class="empty-desc">登录后即可查看您的专属错题集</div>
+                        <button class="btn btn-primary" onclick="window.location.href='../login/login-main.html'">前往登录</button>
+                    </div>`;
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            await loadUserAvatar();
+            await loadStats();
+            await loadWrongAnswers();
+        }
+
+        init();
+    </script>
+</body>
+</html>

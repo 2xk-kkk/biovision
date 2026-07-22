@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>生物视界 - 高中生物教学辅助平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -183,6 +184,7 @@
             color: white;
             overflow: hidden;
             transition: transform 0.2s;
+            object-fit: cover;
         }
 
         .avatar:hover {
@@ -209,6 +211,41 @@
 
         .avatar-wrapper:hover .upload-overlay {
             opacity: 1;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
         }
 
         /* 主内容区 */
@@ -1011,9 +1048,23 @@
             </div>
 
             <div class="user-actions">
-                <div class="avatar-wrapper">
-                    <div class="avatar">👤</div>
+                <div class="avatar-wrapper" id="userAvatarBtn">
+                    <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
                     <div class="upload-overlay">+</div>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="../user-center/main.html" class="user-dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="../user-center/main.html#posts" class="user-dropdown-item">
+                            <i class="fas fa-file-alt"></i> 我的帖子
+                        </a>
+                        <a href="../user-center/main.html#settings" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1028,7 +1079,7 @@
                 <div class="welcome-icon">👤</div>
                 <div>
                     <div class="welcome-text">欢迎回来</div>
-                    <div class="welcome-title" id="welcomeUsername">wwj</div>
+                    <div class="welcome-title" id="welcomeUsername">加载中...</div>
                 </div>
                 <div class="welcome-arrow">›</div>
             </div>
@@ -1398,7 +1449,130 @@
     </div>
 
     <script>
-        // 生成日历热力图
+        const API_BASE = 'http://localhost:8000/api';
+
+        // ===== JWT 解析 =====
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // ===== 头像生成 =====
+        function getDefaultAvatarSVG(username, size = 40) {
+            const avatarChar = (username || '用').trim()[0] || '用';
+            const centerX = Math.floor(size / 2);
+            const centerY = Math.floor(size / 2);
+            const radius = Math.floor(size * 0.45);
+            const fontSize = Math.floor(size * 0.45);
+            const textY = Math.floor(size * 0.65);
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23667eea'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function getGuestAvatarSVG(size = 40) {
+            const centerX = Math.floor(size / 2);
+            const centerY = Math.floor(size / 2);
+            const radius = Math.floor(size * 0.45);
+            const headRadius = Math.floor(size * 0.12);
+            const headY = Math.floor(size * 0.35);
+            const bodyStroke = Math.floor(size * 0.1);
+            const bodyY1 = Math.floor(size * 0.6);
+            const bodyY2 = Math.floor(size * 0.85);
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23d1d5db'/%3E%3Ccircle cx='${centerX}' cy='${headY}' r='${headRadius}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(size * 0.3)} ${bodyY1} Q${centerX} ${bodyY2} ${Math.floor(size * 0.7)} ${bodyY1}' fill='none' stroke='%239ca3af' stroke-width='${bodyStroke}' stroke-linecap='round'/%3E%3C/svg%3E`;
+        }
+
+        // ===== 加载用户头像 =====
+        async function loadUserAvatar() {
+            const token = localStorage.getItem('token');
+            const avatarImg = document.getElementById('userAvatarImg');
+            if (!avatarImg) return;
+
+            const guestAvatar = getGuestAvatarSVG(40);
+
+            if (!token) {
+                avatarImg.src = guestAvatar;
+                return;
+            }
+
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    avatarImg.src = guestAvatar;
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`, {
+                    headers: { 'token': token }
+                });
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const username = result.data.username || '用户';
+                    const userAvatar = result.data.avatar;
+
+                    if (userAvatar) {
+                        let avatarToUse = userAvatar;
+                        if (userAvatar.startsWith('http')) {
+                            avatarToUse = userAvatar + '?t=' + Date.now();
+                        }
+                        avatarImg.src = avatarToUse;
+                    } else {
+                        avatarImg.src = getDefaultAvatarSVG(username, 40);
+                    }
+                } else {
+                    avatarImg.src = getDefaultAvatarSVG('用户', 40);
+                }
+            } catch (error) {
+                console.error('加载用户头像失败:', error);
+                avatarImg.src = getDefaultAvatarSVG('用户', 40);
+            }
+        }
+
+        // ===== 页面初始化：登录检查 + 用户名 + 头像 =====
+        (function initAuth() {
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+
+            // 登录检查
+            if (!token || !username) {
+                alert('请先登录');
+                window.location.href = '../login/login-main.html';
+                return;
+            }
+
+            // 更新欢迎卡片用户名
+            const welcomeEl = document.getElementById('welcomeUsername');
+            if (welcomeEl) {
+                welcomeEl.textContent = username;
+            }
+
+            // 加载头像
+            loadUserAvatar();
+
+            // 头像下拉菜单
+            const userAvatarBtn = document.getElementById('userAvatarBtn');
+            const userDropdownMenu = document.getElementById('userDropdownMenu');
+            if (userAvatarBtn && userDropdownMenu) {
+                userAvatarBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    userDropdownMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', function (event) {
+                    if (!userAvatarBtn.contains(event.target) && !userDropdownMenu.contains(event.target)) {
+                        userDropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+        })();
+
+        // ===== 生成日历热力图 =====
         function generateHeatmap() {
             const grid = document.getElementById('heatmapGrid');
             const days = ['周一', '', '周三', '', '周五', '', '周日'];
@@ -1458,7 +1632,9 @@
         document.querySelectorAll('.beta-item').forEach(item => {
             item.addEventListener('click', function() {
                 const name = this.querySelector('.beta-name').textContent;
-                if (name === '真题大观') {
+                if (name === '错题集') {
+                    window.location.href = 'wrong-answers.html';
+                } else if (name === '真题大观') {
                     window.location.href = 'exams.html';
                 } else if (name === '在线答题') {
                     window.location.href = 'exams.html';

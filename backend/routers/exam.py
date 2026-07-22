@@ -1,6 +1,9 @@
-from fastapi import APIRouter, File, UploadFile, Form, Query
+from fastapi import APIRouter, File, Header, UploadFile, Form, Query
 from service.exam import get_exam_list, get_exam_file, upload_exam_file, import_from_external, delete_exam_file, get_exam_questions
 from fastapi.responses import FileResponse
+from utils.jwt_utils import verify_jwt
+from utils.response import ApiResponse
+from database.db import get_db_connection
 import os
 
 router = APIRouter()
@@ -9,26 +12,59 @@ router = APIRouter()
 def list_exams(year: str = Query(None), region: str = Query(None)):
     return get_exam_list(year=year, region=region)
 
+@router.get("/exams/list")
+def list_exams_simple():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('SELECT id, name, question_count FROM exams ORDER BY id DESC')
+        exams = []
+        for row in cursor.fetchall():
+            exams.append({
+                'id': row[0],
+                'name': row[1],
+                'question_count': row[2]
+            })
+
+        conn.close()
+        return {'success': True, 'data': exams}
+    except Exception as e:
+        conn.close()
+        return {'success': False, 'msg': str(e)}
+
 @router.get("/exams/{exam_id}/questions")
-def get_questions(exam_id: int):
+def get_exam_questions_api(exam_id: int):
     return get_exam_questions(exam_id)
 
 @router.get("/exams/download")
 def download_exam(file_path: str):
     if not os.path.exists(file_path):
         return {"success": False, "msg": "文件不存在"}
-    
+
     return FileResponse(file_path, filename=os.path.basename(file_path))
 
 @router.post("/exams/upload")
-def upload_exam(category: str = Form(...), file: UploadFile = File(...)):
+def upload_exam(category: str = Form(...), file: UploadFile = File(...), token: str = Header(...)):
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+
     contents = file.file.read()
     return upload_exam_file(category, file.filename, contents)
 
 @router.post("/exams/import")
-def import_exams():
+def import_exams(token: str = Header(...)):
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+
     return import_from_external()
 
 @router.delete("/exams/file")
-def delete_exam(file_path: str):
+def delete_exam(file_path: str, token: str = Header(...)):
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+
     return delete_exam_file(file_path)

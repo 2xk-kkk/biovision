@@ -1,9 +1,11 @@
 import os
 import shutil
 import re
+import zipfile
 import sqlite3
 import json
 from utils.response import ApiResponse
+from database.db import get_db_connection
 
 EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "exams")
 EXTERNAL_DIR = r"D:\biology_exams"
@@ -199,7 +201,52 @@ def upload_exam_file(category: str, file_name: str, file_content: bytes):
         with open(file_path, 'wb') as f:
             f.write(file_content)
         
-        return ApiResponse.success(data={"file_path": file_path})
+        total_questions = 0
+        parse_errors = []
+        
+        ext = os.path.splitext(file_name)[1].lower()
+        
+        if ext in ['.pdf', '.docx']:
+            from service.document_parser import parse_and_save
+            parse_result = parse_and_save(file_path, custom_title=category)
+            if parse_result['success']:
+                total_questions = parse_result['question_count']
+            else:
+                parse_errors.append(parse_result.get('msg', '解析失败'))
+        
+        elif ext == '.zip':
+            with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                zip_ref.extractall(category_path)
+            
+            extracted_files = []
+            for root, dirs, filenames in os.walk(category_path):
+                for extracted_file in filenames:
+                    extracted_files.append(os.path.join(root, extracted_file))
+            
+            for extracted_path in extracted_files:
+                if os.path.isfile(extracted_path):
+                    file_ext = os.path.splitext(extracted_path)[1].lower()
+                    if file_ext in ['.pdf', '.docx']:
+                        from service.document_parser import parse_and_save
+                        parse_result = parse_and_save(extracted_path, custom_title=category)
+                        if parse_result['success']:
+                            total_questions += parse_result['question_count']
+                        else:
+                            parse_errors.append(parse_result.get('msg', '解析失败'))
+        
+        if total_questions > 0:
+            msg = f"上传成功，解析出 {total_questions} 道题"
+            if parse_errors:
+                msg += f"（部分文件解析失败：{'; '.join(parse_errors[:3])}）"
+            return ApiResponse.success(data={
+                "file_path": file_path,
+                "question_count": total_questions
+            }, msg=msg)
+        
+        if parse_errors:
+            return ApiResponse.error(msg=f"上传成功但未解析出题目，错误：{'; '.join(parse_errors)}")
+        
+        return ApiResponse.error(msg="上传成功但未解析出题目，请检查文件格式是否正确")
     except Exception as e:
         return ApiResponse.error(msg=f"上传文件失败: {str(e)}")
 
