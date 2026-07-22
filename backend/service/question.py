@@ -54,7 +54,7 @@ def get_exam_questions(exam_id):
     db = get_db_connection()
     try:
         questions = get_questions_by_exam(db, exam_id)
-        return ApiResponse.success(data=questions)
+        return ApiResponse.success(data={'questions': questions, 'exam_id': exam_id})
     except Exception as e:
         return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
     finally:
@@ -70,7 +70,7 @@ def submit_answer(user_id, question_id, answer):
             return ApiResponse.error(msg="题目不存在")
         
         correct_answer = result[0]
-        is_correct = 1 if answer == correct_answer else 0
+        is_correct = 1 if answer.strip().upper() == correct_answer.strip().upper() else 0
         
         save_user_answer(db, user_id, question_id, answer, is_correct)
         

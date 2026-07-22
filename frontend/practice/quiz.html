@@ -110,6 +110,57 @@
             background-color: #f0f6fd;
         }
 
+        /* 下拉菜单样式 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
         .user-actions {
             display: flex;
             align-items: center;
@@ -687,6 +738,10 @@
             .paper-container {
                 padding: 16px;
             }
+
+            .nav-links {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -703,7 +758,19 @@
         <div class="nav-area">
             <div class="nav-links">
                 <a href="../index.html" class="nav-link">首页</a>
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="#" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="#" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="#" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="#" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                    </div>
+                </div>
+                <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
                 <a href="../practice/main.html" class="nav-link active">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
                 <a href="../forum/main.html" class="nav-link">论坛</a>
             </div>
             <div class="user-actions">
@@ -732,7 +799,6 @@
 
     <main class="main-content">
         <div id="selectSection" class="exam-select-section">
-        </div>
         </div>
 
         <div id="quizSection" class="quiz-container">
@@ -906,6 +972,8 @@
             }
 
             quizMode = 'exam';
+            document.getElementById('paperContainer').innerHTML = `
+                <div class="loading">⏳ 正在加载试卷...</div>`;
             try {
                 const response = await fetch(`${API_BASE}/exams/list`);
                 const result = await response.json();
@@ -1008,8 +1076,12 @@
             const count = parseInt(document.getElementById('questionCountSelect').value);
             quizMode = 'random';
 
+            // 显示加载状态，避免闪烁
+            document.getElementById('paperContainer').innerHTML = `
+                <div class="loading">⏳ 正在加载题目...</div>`;
+
             try {
-                const response = await fetch(`http://localhost:8000/api/quiz/random?count=${count}`);
+                const response = await fetch(`${API_BASE}/quiz/random?count=${count}`);
                 const result = await response.json();
 
                 if (!result.success) {
@@ -1136,18 +1208,28 @@
             const token = localStorage.getItem('token');
 
             // 将答案提交到后端
+            let submitErrors = 0;
             for (const q of questions) {
                 const userAnswer = userAnswers[q.id];
                 if (userAnswer) {
                     try {
-                        await fetch(`${API_BASE}/questions/answer?question_id=${q.id}&answer=${encodeURIComponent(userAnswer)}`, {
+                        const resp = await fetch(`${API_BASE}/questions/answer?question_id=${q.id}&answer=${encodeURIComponent(userAnswer)}`, {
                             method: 'POST',
                             headers: { 'token': token }
                         });
+                        const result = await resp.json();
+                        if (!result.success) {
+                            submitErrors++;
+                            console.error('提交答案失败:', q.id, result.msg);
+                        }
                     } catch (e) {
+                        submitErrors++;
                         console.error('提交答案失败:', e);
                     }
                 }
+            }
+            if (submitErrors > 0) {
+                console.warn(`共 ${submitErrors} 道题答案提交失败，错题本可能不完整`);
             }
 
             let correct = 0;
@@ -1190,6 +1272,19 @@
         function backToSelect() {
             window.location.href = 'exams.html';
         }
+
+        // 知识清单下拉菜单
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.dropdown');
+                dropdown.classList.toggle('show');
+            });
+        });
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+        });
 
         document.querySelector('.search-form').addEventListener('submit', function (e) {
             e.preventDefault();

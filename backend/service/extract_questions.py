@@ -176,11 +176,47 @@ def parse_questions(docx_path, exam_name):
                 num_match = re.match(r'^(\d+)[．.、]\s*(.+)$', text)
                 if num_match:
                     answers[int(num_match.group(1))] = num_match.group(2).strip()
-                
+
                 inline_matches = re.findall(r'(\d+)[．.、]\s*([ABCDabcd]+)', text)
                 if inline_matches:
                     for match in inline_matches:
                         answers[int(match[0])] = match[1].strip().upper()
+
+                # 匹配 "1-5 ABDCA" 或 "1~5 ABDCA" 格式的连续答案
+                range_matches = re.findall(r'(\d+)[-~]\s*(\d+)\s*[:：]?\s*([ABCDabcd]+)', text)
+                if range_matches:
+                    for match in range_matches:
+                        start_num = int(match[0])
+                        end_num = int(match[1])
+                        answer_str = match[2].strip()
+                        for offset, ch in enumerate(answer_str):
+                            q_num = start_num + offset
+                            if q_num <= end_num:
+                                answers[q_num] = ch.upper()
+
+    # 如果参考答案区域没有找到答案，尝试在整个文档中搜索内联答案格式
+    if not answers:
+        for elem in elements:
+            if elem['type'] == 'paragraph':
+                text = elem['text'].strip()
+                # 匹配 "1.A 2.B 3.C" 或 "1、A 2、B" 格式（不带数字直接跟选项）
+                if re.match(r'^\d+[.、．]\s*[ABCDabcd]', text):
+                    inline_matches = re.findall(r'(\d+)[.、．]\s*([ABCDabcd]+)', text)
+                    for match in inline_matches:
+                        num = int(match[0])
+                        if num not in answers:
+                            answers[num] = match[1].strip().upper()
+                # 匹配 "1-5: ABDCA" 格式（无参考答案标题的文档）
+                range_matches = re.findall(r'(\d+)[-~]\s*(\d+)\s*[:：]?\s*([ABCDabcd]+)', text)
+                if range_matches:
+                    for match in range_matches:
+                        start_num = int(match[0])
+                        end_num = int(match[1])
+                        answer_str = match[2].strip()
+                        for offset, ch in enumerate(answer_str):
+                            q_num = start_num + offset
+                            if q_num <= end_num and q_num not in answers:
+                                answers[q_num] = ch.upper()
     
     start_index = 0
     found_choice_title = False

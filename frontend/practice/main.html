@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -838,7 +839,7 @@
         .subject-card:hover {
             background: #edffff;
             transform: translateY(-3px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
         .subject-icon {
@@ -980,16 +981,17 @@
             margin: 0 auto;
             padding: 0 20px;
         }
+
         /* 响应式 */
         @media (max-width: 1200px) {
             .top-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .middle-section {
                 grid-template-columns: 1fr 1fr;
             }
-            
+
             .progress-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
@@ -999,21 +1001,22 @@
             .nav-links {
                 display: none;
             }
-            
+
             .top-cards {
                 grid-template-columns: 1fr;
             }
-            
+
             .middle-section {
                 grid-template-columns: 1fr;
             }
-            
+
             .progress-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- 顶部导航栏 -->
     <div class="top">
@@ -1042,7 +1045,7 @@
                 </div>
 
                 <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
-                <a href="../practice/main.html" class="nav-link active" >每日训练</a>
+                <a href="../practice/main.html" class="nav-link active">每日训练</a>
                 <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
                 <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
             </div>
@@ -1061,7 +1064,8 @@
                         <a href="../user-center/main.html#settings" class="user-dropdown-item">
                             <i class="fas fa-cog"></i> 设置
                         </a>
-                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                        <a href="../login/login-main.html" class="user-dropdown-item danger"
+                            onclick="localStorage.clear()">
                             <i class="fas fa-sign-out-alt"></i> 退出登录
                         </a>
                     </div>
@@ -1083,7 +1087,7 @@
                 </div>
                 <div class="welcome-arrow">›</div>
             </div>
-            
+
             <!-- 已做题数卡片 -->
             <div class="card stat-card">
                 <div class="stat-icon green">✓</div>
@@ -1093,7 +1097,7 @@
                     <div class="stat-desc">完成度 0%</div>
                 </div>
             </div>
-            
+
             <!-- 总题目卡片 -->
             <div class="card stat-card">
                 <div class="stat-icon blue">📁</div>
@@ -1103,7 +1107,7 @@
                     <div class="stat-desc">五本教材总计</div>
                 </div>
             </div>
-            
+
             <!-- 通关进度卡片 -->
             <div class="card stat-card">
                 <div class="stat-icon purple">🎯</div>
@@ -1130,7 +1134,7 @@
                         <span class="contribution-stat-value">0</span>
                     </div>
                 </div>
-                
+
                 <div class="heatmap-container">
                     <div class="heatmap-months">
                         <span class="heatmap-month">2月</span>
@@ -1142,7 +1146,7 @@
                         <!-- 热力图格子由JS生成 -->
                     </div>
                 </div>
-                
+
                 <div class="heatmap-legend">
                     <span>少</span>
                     <div class="heatmap-legend-cells">
@@ -1224,15 +1228,15 @@
                     <span class="progress-summary-value">0%</span>
                 </div>
             </div>
-            
+
             <div class="progress-grid">
                 <!-- 必修一：分子与细胞 -->
                 <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=必修一'">
                     <div class="subject-icon">🔬</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1251,14 +1255,14 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 必修二：遗传与进化 -->
                 <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=必修二'">
                     <div class="subject-icon">🧬</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1277,14 +1281,14 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 选修一：稳态与调节 -->
                 <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=选择性必修一'">
                     <div class="subject-icon">⚖️</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1303,14 +1307,14 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 选修二：生物与环境 -->
                 <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=选择性必修二'">
                     <div class="subject-icon">🌿</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1329,14 +1333,14 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 选修三：生物技术与工程 -->
                 <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=选择性必修三'">
                     <div class="subject-icon">🧫</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1357,9 +1361,9 @@
                 </div>
             </div>
         </div>
-    </div>
-    </main>    
-     <!-- 页脚 -->
+        </div>
+    </main>
+    <!-- 页脚 -->
     <div class="footer">
         <div class="container">
             <div class="footer-content">
@@ -1405,7 +1409,7 @@
                 </div>
                 <button class="profile-close" onclick="closeProfileModal()">×</button>
             </div>
-            
+
             <div class="profile-stats">
                 <div class="profile-stat">
                     <div class="stat-num">0</div>
@@ -1424,7 +1428,7 @@
                     <div class="stat-text">收藏数</div>
                 </div>
             </div>
-            
+
             <div class="profile-section">
                 <div class="section-title">个人信息</div>
                 <div class="profile-item">
@@ -1440,7 +1444,7 @@
                     <span class="item-value">暂无简介</span>
                 </div>
             </div>
-            
+
             <div class="profile-actions">
                 <button class="profile-btn">编辑资料</button>
                 <button class="profile-btn">设置</button>
@@ -1577,14 +1581,14 @@
             const grid = document.getElementById('heatmapGrid');
             const days = ['周一', '', '周三', '', '周五', '', '周日'];
             const weeks = 13;
-            
+
             for (let i = 0; i < 7; i++) {
                 const label = document.createElement('div');
                 label.className = 'heatmap-day-label';
                 label.textContent = days[i];
                 grid.appendChild(label);
             }
-            
+
             for (let week = 0; week < weeks; week++) {
                 for (let day = 0; day < 7; day++) {
                     const cell = document.createElement('div');
@@ -1593,14 +1597,14 @@
                 }
             }
         }
-        
+
         generateHeatmap();
 
         const username = localStorage.getItem('username');
         if (username) {
             document.getElementById('welcomeUsername').textContent = username;
         }
-        
+
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
             toggle.addEventListener('click', (e) => {
@@ -1618,42 +1622,42 @@
                 });
             }
         });
-        
+
         // 导航链接点击效果
         document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
+            link.addEventListener('click', function (e) {
                 if (this.classList.contains('dropdown-toggle')) return;
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                 this.classList.add('active');
             });
         });
-        
+
         // Beta功能卡片点击效果
         document.querySelectorAll('.beta-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 const name = this.querySelector('.beta-name').textContent;
                 if (name === '错题集') {
                     window.location.href = 'wrong-answers.html';
                 } else if (name === '真题大观') {
                     window.location.href = 'exams.html';
                 } else if (name === '在线答题') {
-                    window.location.href = 'exams.html';
+                    window.location.href = 'quiz.html';
                 } else {
                     alert(`即将打开: ${name}`);
                 }
             });
         });
-        
+
         // 公告项点击效果
         document.querySelectorAll('.announcement-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 const title = this.querySelector('.announcement-title').textContent.replace('new', '').trim();
                 alert(`即将打开公告: ${title}`);
             });
         });
 
         // 搜索表单提交
-        document.querySelector('.search-form').addEventListener('submit', function(e) {
+        document.querySelector('.search-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const query = this.querySelector('.search-input').value;
             if (query.trim()) {
@@ -1671,11 +1675,12 @@
         }
 
         // 点击遮罩层关闭弹窗
-        document.getElementById('profileModal').addEventListener('click', function(e) {
+        document.getElementById('profileModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeProfileModal();
             }
         });
     </script>
 </body>
+
 </html>

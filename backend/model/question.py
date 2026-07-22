@@ -39,6 +39,10 @@ def get_questions_by_exam(db, exam_id):
     questions = []
     for row in cursor.fetchall():
         images = json.loads(row[8]) if row[8] else []
+        answer = (row[7] or '').strip()
+        # 跳过没有答案的题目（无法判断对错）
+        if not answer:
+            continue
         questions.append({
             'id': row[0],
             'number': row[1],
@@ -49,7 +53,7 @@ def get_questions_by_exam(db, exam_id):
                 'C': row[5],
                 'D': row[6]
             },
-            'answer': row[7],
+            'answer': answer,
             'images': images
         })
     return questions
@@ -140,6 +144,7 @@ def get_random_choice_questions(db, count=10):
         SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, exam_id
         FROM questions
         WHERE option_a IS NOT NULL AND option_a != ''
+          AND answer IS NOT NULL AND answer != ''
         ORDER BY RANDOM()
         LIMIT ?
     ''', (count,))
