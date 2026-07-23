@@ -29,7 +29,6 @@ app.add_middleware(
 #配置静态文件目录（用于上传图片）
 # 使用绝对路径确保所有用户访问同一目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(BASE_DIR)
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 # 创建目录
@@ -37,10 +36,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # 挂载静态文件服务
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
-# 挂载前端静态文件
-FRONTEND_DIR = os.path.join(PROJECT_DIR, "frontend")
-app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
 
 #注册路由
 app.include_router(user.router, prefix="/api", tags=["用户"])
