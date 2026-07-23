@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第1章 走近细胞 - 知识清单</title>
+<style>
+  :root {
+    --primary: #2c8c5a;
+    --primary-light: #e8f5e9;
+    --accent: #f4a236;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a7a3a, #2c8c5a);
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='30' r='2' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='70' cy='60' r='3' fill='rgba(255,255,255,0.08)'/%3E%3Ccircle cx='85' cy='20' r='1.5' fill='rgba(255,255,255,0.12)'/%3E%3Ccircle cx='40' cy='80' r='2.5' fill='rgba(255,255,255,0.06)'/%3E%3Ccircle cx='10' cy='75' r='1' fill='rgba(255,255,255,0.1)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header h1 { font-size: 2em; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; position: relative; z-index: 1; }
+  .header .quote {
+    margin-top: 14px;
+    font-style: italic;
+    font-size: 0.95em;
+    opacity: 0.8;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Memo box */
+  .memo-box {
+    background: #fefefe;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .memo-box .memo-title {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .memo-box p, .memo-box li {
+    font-size: 0.92em;
+    line-height: 1.8;
+    margin-bottom: 4px;
+  }
+  .memo-box .bold-concept {
+    color: #c62828;
+    font-weight: 700;
+  }
+
+  .focus-box {
+    background: #e8f5e9;
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 0.9em;
+  }
+  .focus-box .focus-title {
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+
+  /* Section cards */
+  .section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 16px 24px;
+    background: var(--primary-light);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    transition: var(--transition);
+  }
+  .section-header:hover { background: #daeedc; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: var(--transition);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f0faf3; border-color: #c8e6c9; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #a5d6a7; color: #5a8a6a; }
+  .check-box {
+    width: 22px; height: 22px; min-width: 22px;
+    border: 2px solid #b0bec5;
+    border-radius: 6px;
+    position: relative;
+    transition: var(--transition);
+    margin-top: 1px;
+  }
+  .check-box::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 0;
+    transition: var(--transition);
+  }
+  .label { flex: 1; }
+  .tag {
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e3f2fd; color: #1565c0; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+
+  /* Interactive diagram area */
+  .diagram-box {
+    background: #fafbfc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .diagram-box canvas {
+    max-width: 100%;
+  }
+  .diagram-box .controls {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.88em;
+    font-family: inherit;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #237a4a; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #e09020; }
+
+  /* Comparison table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9em;
+  }
+  th {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid var(--primary);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:hover td { background: #f8fafb; }
+
+  /* Info cards */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .info-card {
+    background: #fafbfc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: var(--transition);
+  }
+  .info-card:hover { border-color: #b0c8b8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+    margin: 16px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary), #a5d6a7);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: #fafbfc;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    top: 14px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .timeline-item .year { font-weight: 700; color: var(--primary); font-size: 0.9em; }
+
+  /* Tooltip */
+  .tooltip-term {
+    color: var(--primary);
+    font-weight: 600;
+    cursor: help;
+    border-bottom: 1px dashed var(--primary);
+    position: relative;
+  }
+  .tooltip-term:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-weight: normal;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* Progress */
+  .progress-bar {
+    height: 6px;
+    background: #e0e6ed;
+    border-radius: 3px;
+    margin: 20px 0 8px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #4caf84);
+    border-radius: 3px;
+    transition: width 0.5s;
+  }
+  .progress-label {
+    font-size: 0.82em;
+    color: var(--text-light);
+    text-align: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .header { padding: 24px 20px; }
+    .header h1 { font-size: 1.4em; }
+    .section-body { padding: 14px;}
+    .info-row { grid-template-columns: 1fr; }
+  }
+
+  /* Anim */
+  .fade-in {
+    animation: fadeIn 0.5s ease both;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .highlight-box {
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 16px 0;
+    font-weight: 500;
+  }
+
+      /* ===== FLOATING SIDEBAR ===== */
+  .sidebar {
+    position: fixed;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 175px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    padding: 16px 0;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .sidebar .nav-title {
+    color: #37474f;
+    font-size: 0.9em;
+    font-weight: 700;
+    padding: 0 14px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #78909c;
+    text-decoration: none;
+    padding: 8px 14px;
+    font-size: 0.82em;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+  }
+  .sidebar a:hover {
+    background: rgba(33,150,243,0.06);
+    color: #37474f;
+  }
+  .sidebar a.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+  .sidebar .ch-num {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 18px;
+    text-align: center;
+  }
+  .main-wrap {
+    /* wraps container - no layout changes needed */
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: static;
+      transform: none;
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 8px;
+      gap: 4px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-title {
+      width: 100%;
+      padding: 4px 0;
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .sidebar a {
+      padding: 5px 8px;
+      font-size: 0.75em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .book-title { width: 100%; padding: 4px 0; }
+    .sidebar a.book-link {
+      padding: 5px 8px;
+      font-size: 0.7em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .nav-divider { width: 100%; margin: 4px 8px; }
+  }
+
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+            <nav class="sidebar">
+    <div class="nav-title">生物学 必修1<br>分子与细胞</div>
+      <a href="1.1.html" class="active"><span class="ch-num">第1章</span>走近细胞</a>
+      <a href="1.2.html"><span class="ch-num">第2章</span>组成细胞的分子</a>
+      <a href="1.3.html"><span class="ch-num">第3章</span>细胞的基本结构</a>
+      <a href="1.4.html"><span class="ch-num">第4章</span>物质输入和输出</a>
+      <a href="1.5.html"><span class="ch-num">第5章</span>能量供应和利用</a>
+      <a href="1.6.html"><span class="ch-num">第6章</span>细胞的生命历程</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link active">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+  <div class="main-wrap">
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>第1章 走近细胞</h1>
+  <div class="subtitle">人教版 · 生物学必修1 · 分子与细胞</div>
+  <div class="quote">"每一个生物科学问题的答案都必须在细胞中寻找。" —— 威尔逊（E.B. Wilson）</div>
+</div>
+
+<!-- 进度条 -->
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 29 个知识点</div>
+
+<!-- ===== 第1节 ===== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 第1节 细胞是生命活动的基本单位</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、细胞学说及其建立过程</h3>
+
+    <!-- 本节聚焦 from textbook -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 细胞学说的内容是什么？有什么意义？<br>
+      ● 细胞学说的建立过程对你有哪些启示？<br>
+      ● 怎样理解细胞是基本的生命系统？
+    </div>
+
+    <!-- 时间轴 -->
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="year">1543年</div>
+        比利时 <strong>维萨里</strong> 发表《人体构造》，揭示器官水平结构
+      </div>
+      <div class="timeline-item">
+        <div class="year">1665年</div>
+        英国 <strong>罗伯特·胡克</strong> 用显微镜观察木栓组织，首次命名 <span class="tooltip-term" data-tip="源自拉丁语 cella，意为"小房间"">"细胞"（cell）</span>
+      </div>
+      <div class="timeline-item">
+        <div class="year">17世纪</div>
+        荷兰 <strong>列文虎克</strong> 用自制显微镜观察细菌、红细胞、精子
+      </div>
+      <div class="timeline-item">
+        <div class="year">1838-1839年</div>
+        德国 <strong>施莱登</strong>（植物学家）和 <strong>施旺</strong>（动物学家）建立<span class="tooltip-term" data-tip="细胞学说是生物学三大基础理论之一，另两个是进化论和遗传学">细胞学说</span>
+      </div>
+    </div>
+
+    <!-- 细胞学说要点 -->
+    <div class="highlight-box">
+      <strong>细胞学说的三个要点（必背）：</strong><br>
+      ① 细胞是一个有机体，<strong>一切动植物都由细胞发育而来</strong>，并由细胞和细胞产物所构成<br>
+      ② 细胞是一个<strong>相对独立</strong>的单位，既有它自己的生命，又对与其他细胞共同组成的整体生命起作用<br>
+      ③ 新细胞是由<strong>老细胞分裂</strong>产生的
+    </div>
+
+    <!-- 细胞学说意义 必背段落 -->
+    <div class="memo-box">
+      <div class="memo-title">📝 必背段落 —— 细胞学说的意义</div>
+      <p><span class="bold-concept">细胞学说揭示了动物和植物的统一性，从而阐明了生物界的统一性。</span>就像原子论之于化学一样，细胞学说对于生物学的发展具有重大的意义。</p>
+      <p>细胞学说使人们认识到植物和动物有着共同的结构基础，从而在思想观念上<strong>打破了在植物学和动物学之间横亘已久的壁垒</strong>，也促使积累已久的解剖学、生理学、胚胎学等学科获得了共同的基础，这些学科的融通和统一<strong>催生了生物学的问世</strong>。</p>
+      <p>细胞学说中关于<strong>细胞是生命活动基本单位</strong>的观点，使人们认识到生物的生长、生殖、发育及各种生理现象的奥秘都需要到细胞中去寻找，生物学的研究随之由器官、组织水平<strong>进入细胞水平</strong>，并为后来进入<strong>分子水平</strong>打下基础。</p>
+      <p>细胞学说中细胞分裂产生新细胞的结论，不仅解释了个体发育，也为后来<strong>生物进化论</strong>的确立埋下了伏笔。被恩格斯列入<strong>19世纪自然科学三大发现</strong>的细胞学说和进化论，作为生物学大厦的基石，赋予生物学不同于其他自然科学的独特韵味。</p>
+    </div>
+
+    <!-- 魏尔肖名言 -->
+    <div class="memo-box">
+      <div class="memo-title">📝 必背名言</div>
+      <p>1858年，德国<strong>魏尔肖</strong>（R.L.C. Virchow）总结出：<span class="bold-concept">"所有的细胞都来源于先前存在的细胞。"</span>（All cells arise from pre-existing cells.）这个断言，至今仍未被推翻。</p>
+    </div>
+
+    <!-- 科学方法：归纳法 -->
+    <div class="memo-box">
+      <div class="memo-title">🔬 科学方法 —— 归纳法</div>
+      <p><span class="bold-concept">归纳法</span>是指由一系列具体事实推出一般结论的思维方法。归纳法分为<strong>完全归纳法</strong>和<strong>不完全归纳法</strong>。科学研究中经常运用不完全归纳法。由不完全归纳得出的结论很可能是可信的，因此可以用来预测和判断，不过也需要注意存在例外的可能。</p>
+    </div>
+
+    <!-- 交互canvas：细胞学说动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🔬 细胞学说三大要点 - 交互演示</h4>
+      <canvas id="cellTheoryCanvas" width="800" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-outline" onclick="stepTheory(0)">要点一</button>
+        <button class="btn btn-outline" onclick="stepTheory(1)">要点二</button>
+        <button class="btn btn-outline" onclick="stepTheory(2)">要点三</button>
+      </div>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、细胞是基本的生命系统</h3>
+
+    <!-- 本节聚焦 -->
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念 —— 细胞是基本的生命系统</div>
+      <p>单细胞生物能够<strong>独立完成</strong>生命活动，多细胞生物依赖<strong>各种分化的细胞密切合作</strong>，共同完成一系列复杂的生命活动。</p>
+      <p>动植物以<strong>细胞代谢</strong>为基础的各种生理活动，以<strong>细胞增殖、分化</strong>为基础的生长发育，以细胞内<strong>基因的传递和变化</strong>为基础的遗传与变异，等等，都说明<span class="bold-concept">细胞是生命活动的基本单位，生命活动离不开细胞。</span></p>
+      <p>细胞虽小，但其结构却复杂而精巧。细胞是一个由各种组分相互配合而组成的<strong>复杂的系统</strong>。细胞是有生命的，是一个<strong>生命系统</strong>。</p>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>生命系统的结构层次</h4>
+        细胞 → 组织 → 器官 → 系统 → 个体 → 种群 → 群落 → 生态系统 → 生物圈
+      </div>
+      <div class="info-card">
+        <h4>为什么细胞是"基本"的？</h4>
+        细胞是<strong>最小的</strong>能独立完成生命活动的结构单位。病毒没有细胞结构，必须寄生在活细胞内才能生活。
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li data-id="1"><span class="check-box"></span><span class="label"><strong>胡克</strong>：1665年用显微镜观察木栓组织，首次命名"细胞"（cell）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="2"><span class="check-box"></span><span class="label"><strong>列文虎克</strong>：用自制的显微镜观察到细菌、红细胞和精子</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="3"><span class="check-box"></span><span class="label"><strong>施莱登</strong>（植物学家）和<strong>施旺</strong>（动物学家）建立了细胞学说</span><span class="tag tag-important">重点</span></li>
+      <li data-id="4"><span class="check-box"></span><span class="label"><strong>魏尔肖</strong>："所有的细胞都来源于先前存在的细胞"</span><span class="tag tag-important">重点</span></li>
+      <li data-id="5"><span class="check-box"></span><span class="label">细胞学说的三个要点（必背）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="6"><span class="check-box"></span><span class="label">细胞学说揭示了动物和植物的<strong>统一性</strong>，阐明了生物界的统一性</span><span class="tag tag-important">重点</span></li>
+      <li data-id="7"><span class="check-box"></span><span class="label">细胞学说被恩格斯列入<strong>19世纪自然科学三大发现</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="8"><span class="check-box"></span><span class="label">细胞是生物体<strong>结构和功能</strong>的基本单位</span><span class="tag tag-important">重点</span></li>
+      <li data-id="9"><span class="check-box"></span><span class="label">生命系统的结构层次（从小到大）：细胞→组织→器官→系统→个体→种群→群落→生态系统→生物圈</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="10"><span class="check-box"></span><span class="label"><strong>病毒</strong>没有细胞结构，必须寄生在活细胞中才能生活</span><span class="tag tag-important">重点</span></li>
+      <li data-id="11"><span class="check-box"></span><span class="label">单细胞生物能独立完成生命活动；多细胞生物依赖细胞分化合作</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="12"><span class="check-box"></span><span class="label"><strong>归纳法</strong>：由一系列具体事实推出一般结论的思维方法</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="13"><span class="check-box"></span><span class="label"><strong>系统</strong>：彼此间相互作用、相互依赖的组分有规律地结合而形成的整体</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== 第2节 ===== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 第2节 细胞的多样性和统一性</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <!-- 本节聚焦 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 原核细胞与真核细胞有什么区别？<br>
+      ● 怎样使用高倍显微镜？<br>
+      ● 细胞的多样性和统一性分别表现在哪些方面？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、原核细胞与真核细胞</h3>
+
+    <!-- 必背：统一性 -->
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念 —— 细胞的统一性</div>
+      <p>细胞的<strong>统一性</strong>表现在：<span class="bold-concept">都有细胞膜、细胞质、核糖体和DNA（遗传物质）。</span></p>
+      <p>细胞的<strong>多样性</strong>表现在：细胞形态、大小、种类和结构各不相同。例如，红细胞呈两面凹的圆盘状，神经细胞有长的突起，精子有尾部等。</p>
+    </div>
+
+    <!-- 必背：原核vs真核 -->
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念 —— 原核细胞与真核细胞</div>
+      <p><span class="bold-concept">原核细胞</span>：没有以核膜为界限的细胞核（称为<strong>拟核</strong>）。细胞器只有<strong>核糖体</strong>。代表：<strong>细菌、蓝细菌（蓝藻）、放线菌、支原体、衣原体</strong>等。</p>
+      <p><span class="bold-concept">真核细胞</span>：有以核膜为界限的<strong>细胞核</strong>。有各种复杂的细胞器。代表：<strong>动物、植物、真菌</strong>等。</p>
+      <p>原核细胞与真核细胞的<strong>统一性</strong>：都具有<strong>细胞膜、细胞质、核糖体</strong>，遗传物质都是<strong>DNA</strong>。</p>
+      <p>注意：<span class="bold-concept">蓝细菌</span>（旧称蓝藻）是原核生物，没有叶绿体，但含有<strong>叶绿素和藻蓝素</strong>，能进行光合作用。常见蓝细菌：<strong>颤藻、念珠藻、发菜</strong>等。</p>
+    </div>
+
+    <!-- 交互式SVG对比 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🔍 原核细胞 vs 真核细胞 - 点击切换对比</h4>
+      <div id="cellCompareSVG" style="min-height:320px;"></div>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="showCell('prokaryote')">原核细胞（细菌）</button>
+        <button class="btn btn-primary" onclick="showCell('eukaryote')">真核细胞（动物）</button>
+        <button class="btn btn-outline" onclick="showCell('both')">并排对比</button>
+      </div>
+    </div>
+
+    <!-- 对比表 -->
+    <table>
+      <tr><th>特征</th><th>原核细胞</th><th>真核细胞</th></tr>
+      <tr><td>细胞核</td><td>无核膜（拟核）</td><td>有核膜包被的细胞核</td></tr>
+      <tr><td>染色体</td><td>无染色体，有环状DNA</td><td>有染色体（DNA+蛋白质）</td></tr>
+      <tr><td>细胞器</td><td>只有核糖体</td><td>有各种复杂的细胞器</td></tr>
+      <tr><td>大小</td><td>较小（1~10μm）</td><td>较大（10~100μm）</td></tr>
+      <tr><td>代表生物</td><td>细菌、蓝细菌（蓝藻）、放线菌</td><td>动物、植物、真菌</td></tr>
+      <tr><td>细胞壁</td><td>有（肽聚糖）</td><td>动物无，植物有（纤维素/果胶）</td></tr>
+    </table>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、高倍显微镜的使用</h3>
+    <div class="highlight-box">
+      <strong>操作流程：</strong> 低倍镜找 → 移到中央 → 转换器换高倍镜 → 细准焦螺旋调焦<br>
+      <strong>放大倍数</strong> = 目镜倍数 × 物镜倍数<br>
+      <strong>注意：</strong>高倍镜下视野变<strong>暗</strong>、细胞数目变<strong>少</strong>、细胞体积变<strong>大</strong>
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 显微镜的使用要点</div>
+      <p>① 必须先用<strong>低倍镜</strong>找到目标，将其移到<strong>视野中央</strong>后，再换<strong>高倍镜</strong></p>
+      <p>② 换高倍镜后，只能调节<strong>细准焦螺旋</strong>（不能转动粗准焦螺旋）</p>
+      <p>③ 高倍镜下视野变暗→应调大光圈或换用<strong>凹面反光镜</strong></p>
+      <p>④ <span class="bold-concept">放大倍数越大，视野中看到的细胞数目越少，细胞体积越大，视野越暗</span></p>
+      <p>⑤ 显微镜下看到的是<strong>倒像</strong>（上下颠倒、左右相反）</p>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li data-id="14"><span class="check-box"></span><span class="label">细胞具有<strong>多样性</strong>（形态各异）和<strong>统一性</strong>（都有细胞膜、细胞质、核糖体、DNA）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="15"><span class="check-box"></span><span class="label"><strong>原核细胞</strong>：没有以核膜为界限的细胞核（拟核），只有核糖体</span><span class="tag tag-important">重点</span></li>
+      <li data-id="16"><span class="check-box"></span><span class="label"><strong>真核细胞</strong>：有核膜包被的细胞核，有各种细胞器</span><span class="tag tag-important">重点</span></li>
+      <li data-id="17"><span class="check-box"></span><span class="label">原核生物种类：<strong>细菌、蓝细菌、放线菌、支原体、衣原体</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="18"><span class="check-box"></span><span class="label"><strong>蓝细菌</strong>（蓝藻）是原核生物，含叶绿素和藻蓝素，能光合作用</span><span class="tag tag-important">重点</span></li>
+      <li data-id="19"><span class="check-box"></span><span class="label">蓝细菌举例：<strong>颤藻、念珠藻（发菜）</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="20"><span class="check-box"></span><span class="label">高倍显微镜的操作方法（低→高→细调，不能动粗准焦螺旋）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="21"><span class="check-box"></span><span class="label">高倍镜下：视野变<strong>暗</strong>、细胞数目变<strong>少</strong>、细胞体积变<strong>大</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="22"><span class="check-box"></span><span class="label">显微镜下看到的是<strong>倒像</strong>（与实物方向相反）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== 补充概念辨析 ===== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>⚡ 易错概念辨析与补充</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card">
+        <h4>❌ 常见错误</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① "一切生物都由细胞构成" → <strong>错！</strong>病毒没有细胞结构<br>
+          ② "细胞是所有生物体结构和功能的基本单位" → <strong>错！</strong>病毒无细胞<br>
+          ③ "原核生物就是细菌" → <strong>错！</strong>还包括蓝细菌、放线菌等<br>
+          ④ "蓝细菌是植物" → <strong>错！</strong>蓝细菌是原核生物<br>
+          ⑤ "拟核就是细胞核" → <strong>错！</strong>拟核没有核膜，没有染色体<br>
+          ⑥ "原核细胞没有细胞核就没有遗传物质" → <strong>错！</strong>有DNA
+        </p>
+      </div>
+      <div class="info-card">
+        <h4>💡 辨析要点</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① 正确表述：<strong>除病毒外</strong>，生物体都由细胞构成<br>
+          ② 原核生物 = 细菌 + 蓝细菌 + 放线菌 + 支原体 + 衣原体等<br>
+          ③ 真核生物 = 动物 + 植物 + 真菌<br>
+          ④ 颤藻、念珠藻、发菜 = 蓝细菌（原核）<br>
+          ⑤ <strong>水华/赤潮</strong> = 水体富营养化导致蓝细菌/藻类大量繁殖<br>
+          ⑥ <strong>支原体</strong>可能是最小的细胞（无细胞壁）
+        </p>
+      </div>
+      <div class="info-card">
+        <h4>📝 必背 —— 19世纪三大发现</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">被恩格斯列入<strong>19世纪自然科学三大发现</strong>：<br>① <strong>细胞学说</strong>（施莱登和施旺）<br>② <strong>进化论</strong>（达尔文）<br>③ <strong>能量守恒与转化定律</strong></p>
+      </div>
+      <div class="info-card">
+        <h4>🗺️ 生物分类速记</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          <strong>原核生物</strong>：三菌（细菌、放线菌、支原体）+一体（衣原体）+一蓝（蓝细菌）<br>
+          <strong>真核生物</strong>：动、植、真菌<br>
+          <strong>非细胞结构生物</strong>：病毒（DNA病毒/RNA病毒）
+        </p>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li data-id="23"><span class="check-box"></span><span class="label">病毒无细胞结构，必须寄生在活细胞中（不能用培养基培养）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="24"><span class="check-box"></span><span class="label">原核生物的种类（细菌、蓝细菌、放线菌、支原体、衣原体）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="25"><span class="check-box"></span><span class="label">蓝细菌 = 蓝藻（颤藻、念珠藻、发菜）——原核生物</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="26"><span class="check-box"></span><span class="label">水华与赤潮的成因（水体富营养化 → N/P过多 → 蓝细菌/藻类大量繁殖）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="27"><span class="check-box"></span><span class="label">真核与原核的统一性：都有细胞膜、细胞质、核糖体、DNA</span><span class="tag tag-important">重点</span></li>
+      <li data-id="28"><span class="check-box"></span><span class="label">19世纪自然科学三大发现：细胞学说、进化论、能量守恒与转化定律</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="29"><span class="check-box"></span><span class="label">"人工合成生命"的探索——体现生命与非生命的界限</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ===== CHECKLIST INTERACTION =====
+function updateProgress() {
+  const total = 29;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+}
+
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function() {
+    this.classList.toggle('checked');
+    updateProgress();
+    // Save state
+    saveCheckState();
+  });
+});
+
+function saveCheckState() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => {
+    state[li.dataset.id] = li.classList.contains('checked');
+  });
+  localStorage.setItem('bio_ch1_checklist', JSON.stringify(state));
+}
+
+function loadCheckState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_ch1_checklist'));
+    if (state) {
+      document.querySelectorAll('.checklist li').forEach(li => {
+        if (state[li.dataset.id]) li.classList.add('checked');
+      });
+    }
+  } catch(e) {}
+  updateProgress();
+}
+loadCheckState();
+
+// ===== CELL THEORY CANVAS ANIMATION =====
+const canvas = document.getElementById('cellTheoryCanvas');
+const ctx = canvas.getContext('2d');
+let theoryStep = 0;
+let animFrame;
+let animT = 0;
+
+function drawTheoryBackground() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#fafbfc';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawCell(x, y, r, color, label, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // nucleus
+  ctx.fillStyle = '#2c3e50';
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  // label
+  ctx.fillStyle = '#2c3e50';
+  ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, x, y + r + 18);
+  ctx.globalAlpha = 1;
+}
+
+function drawArrow(x1, y1, x2, y2, label) {
+  ctx.strokeStyle = '#2c8c5a';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 3]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // arrowhead
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - 10 * Math.cos(angle - 0.5), y2 - 10 * Math.sin(angle - 0.5));
+  ctx.lineTo(x2 - 10 * Math.cos(angle + 0.5), y2 - 10 * Math.sin(angle + 0.5));
+  ctx.fillStyle = '#2c8c5a';
+  ctx.fill();
+  if (label) {
+    ctx.fillStyle = '#2c8c5a';
+    ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, (x1 + x2) / 2, y1 - 12);
+  }
+}
+
+let theoryParticles = [];
+function initParticles() {
+  theoryParticles = [];
+  for (let i = 0; i < 20; i++) {
+    theoryParticles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: (Math.random() - 0.5) * 1.5,
+    });
+  }
+}
+initParticles();
+
+function animateTheory() {
+  drawTheoryBackground();
+  animT += 0.016;
+
+  // Draw particles
+  theoryParticles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    ctx.fillStyle = 'rgba(44,140,90,0.2)';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  if (theoryStep === 0) {
+    // 要点一：细胞是基本单位
+    drawCell(250, 150, 55, '#e8f5e9', '细胞');
+    const pulse = Math.sin(animT * 3) * 0.15 + 0.85;
+    ctx.globalAlpha = pulse;
+    ctx.strokeStyle = '#2c8c5a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(250, 150, 65, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('一切动植物都由细胞发育而来', 250, 250);
+    ctx.fillText('细胞是生物体结构和功能的基本单位', 250, 272);
+
+    // Draw organism silhouettes
+    ctx.fillStyle = '#546e7a';
+    ctx.font = '40px sans-serif';
+    ctx.fillText('🐼', 580, 140);
+    ctx.fillText('🌿', 620, 140);
+    ctx.fillText('🍄', 660, 140);
+    ctx.fillText('🦠', 700, 140);
+    ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('各种生物', 640, 170);
+
+    drawArrow(310, 140, 490, 120, '都由细胞构成');
+
+  } else if (theoryStep === 1) {
+    // 要点二：细胞相对独立
+    for (let i = 0; i < 5; i++) {
+      const x = 140 + i * 110;
+      const y = 130 + Math.sin(animT * 2 + i) * 25;
+      drawCell(x, y, 30, i === 2 ? '#fff3e0' : '#e8f5e9', i === 2 ? '协调中心' : '');
+      if (i < 4) {
+        ctx.strokeStyle = '#90a4ae';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(x + 32, y); ctx.lineTo(x + 78, 130 + Math.sin(animT * 2 + i + 1) * 25);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('每个细胞既独立又互相协作', 400, 230);
+    ctx.fillText('构成统一的整体', 400, 252);
+
+  } else {
+    // 要点三：新细胞由老细胞分裂产生
+    const cx = 350, cy = 150;
+    const splitProgress = (Math.sin(animT * 1.5) + 1) / 2;
+
+    // Mother cell
+    drawCell(cx - 80 * splitProgress, cy, 40 * (1 - splitProgress * 0.3), '#fff3e0', '老细胞', 0.7 + splitProgress * 0.3);
+
+    // Division line
+    if (splitProgress > 0.3) {
+      ctx.strokeStyle = '#e65100';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 3]);
+      const divX = cx - 80 * (splitProgress - 0.3);
+      ctx.beginPath();
+      ctx.moveTo(divX, cy - 30); ctx.lineTo(divX, cy + 30);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Two daughter cells
+    const alpha = Math.min(1, splitProgress * 1.5);
+    drawCell(cx + 70, cy - 20, 30 * splitProgress, '#e8f5e9', '新细胞', alpha);
+    drawCell(cx + 70, cy + 40, 30 * splitProgress, '#e8f5e9', '新细胞', alpha);
+
+    if (splitProgress > 0.7) {
+      ctx.fillStyle = '#2c8c5a';
+      ctx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('一个细胞分裂产生两个新细胞', 400, 250);
+    }
+  }
+
+  animFrame = requestAnimationFrame(animateTheory);
+}
+
+function stepTheory(n) {
+  theoryStep = n;
+}
+animateTheory();
+
+// ===== CELL COMPARISON SVG =====
+function showCell(type) {
+  const container = document.getElementById('cellCompareSVG');
+  const w = 700, h = 300;
+
+  if (type === 'prokaryote') {
+    container.innerHTML = `
+      <svg width="100%" viewBox="0 0 700 300" style="max-width:700px;">
+        <rect x="0" y="0" width="700" height="300" fill="#fafbfc" rx="12"/>
+        <text x="350" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c8c5a">原核细胞（细菌）模式图</text>
+        <!-- Capsule -->
+        <ellipse cx="350" cy="170" rx="140" ry="90" fill="none" stroke="#bbb" stroke-width="4" stroke-dasharray="8,4"/>
+        <text x="500" y="130" font-size="11" fill="#888">荚膜</text>
+        <!-- Cell wall -->
+        <ellipse cx="350" cy="170" rx="120" ry="80" fill="#e8f5e9" stroke="#2c8c5a" stroke-width="3"/>
+        <text x="475" y="145" font-size="11" fill="#2c8c5a">细胞壁</text>
+        <!-- Cell membrane -->
+        <ellipse cx="350" cy="170" rx="108" ry="72" fill="#fff9e8" stroke="#f4a236" stroke-width="2"/>
+        <text x="462" y="158" font-size="11" fill="#f4a236">细胞膜</text>
+        <!-- Cytoplasm -->
+        <ellipse cx="350" cy="170" rx="103" ry="68" fill="#fafbfc"/>
+        <!-- Nucleoid -->
+        <g transform="translate(320,150)">
+          <path d="M0,0 Q30,-40 60,-10 Q90,20 50,40 Q10,60 -20,30 Q-40,10 0,0" fill="none" stroke="#c62828" stroke-width="3"/>
+          <text x="80" y="20" font-size="12" fill="#c62828" font-weight="bold">拟核（DNA）</text>
+        </g>
+        <!-- Ribosomes as dots -->
+        <circle cx="370" cy="120" r="4" fill="#555"/><circle cx="390" cy="140" r="4" fill="#555"/>
+        <circle cx="310" cy="200" r="4" fill="#555"/><circle cx="400" cy="190" r="4" fill="#555"/>
+        <circle cx="340" cy="125" r="4" fill="#555"/><circle cx="280" cy="170" r="4" fill="#555"/>
+        <text x="430" y="235" font-size="11" fill="#555">核糖体</text>
+        <!-- Flagellum -->
+        <path d="M210,170 Q180,140 160,170 Q140,200 120,170" fill="none" stroke="#666" stroke-width="2.5"/>
+        <text x="155" y="115" font-size="11" fill="#666">鞭毛</text>
+      </svg>`;
+  } else if (type === 'eukaryote') {
+    container.innerHTML = `
+      <svg width="100%" viewBox="0 0 700 300" style="max-width:700px;">
+        <rect x="0" y="0" width="700" height="300" fill="#fafbfc" rx="12"/>
+        <text x="350" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c8c5a">真核细胞（动物细胞）模式图</text>
+        <!-- Cell membrane -->
+        <ellipse cx="350" cy="170" rx="160" ry="100" fill="#fff9e8" stroke="#f4a236" stroke-width="3"/>
+        <text x="530" y="100" font-size="12" fill="#f4a236">细胞膜</text>
+        <!-- Nucleus -->
+        <circle cx="380" cy="150" r="40" fill="#fce4ec" stroke="#c62828" stroke-width="2.5"/>
+        <circle cx="380" cy="150" r="12" fill="#c62828"/>
+        <text x="435" y="145" font-size="12" fill="#c62828" font-weight="bold">细胞核</text>
+        <text x="435" y="162" font-size="10" fill="#c62828">(有核膜)</text>
+        <!-- Mitochondria -->
+        <ellipse cx="280" cy="110" rx="22" ry="12" fill="#fff3e0" stroke="#e65100" stroke-width="2" transform="rotate(-15,280,110)"/>
+        <text x="245" y="95" font-size="10" fill="#e65100">线粒体</text>
+        <!-- ER -->
+        <path d="M440,100 Q460,90 450,120 Q440,150 460,170 Q450,190 440,200" fill="none" stroke="#7b1fa2" stroke-width="2"/>
+        <text x="468" y="155" font-size="10" fill="#7b1fa2">内质网</text>
+        <!-- Golgi -->
+        <path d="M260,210 Q280,200 275,215 Q270,230 280,225" fill="none" stroke="#00695c" stroke-width="2"/>
+        <text x="225" y="218" font-size="10" fill="#00695c">高尔基体</text>
+        <!-- Ribosomes -->
+        <circle cx="420" cy="85" r="4" fill="#555"/><circle cx="310" cy="180" r="3.5" fill="#555"/>
+        <circle cx="440" cy="115" r="3.5" fill="#555"/><circle cx="355" cy="85" r="3.5" fill="#555"/>
+        <text x="85" y="55" font-size="10" fill="#555">核糖体</text>
+        <!-- Lysosome -->
+        <circle cx="230" cy="130" r="14" fill="#e1bee7" stroke="#7b1fa2" stroke-width="1.5"/>
+        <text x="195" y="122" font-size="10" fill="#7b1fa2">溶酶体</text>
+        <!-- Centrosome -->
+        <g transform="translate(320,210)">
+          <line x1="-8" y1="0" x2="8" y2="0" stroke="#333" stroke-width="1.5"/>
+          <line x1="0" y1="-8" x2="0" y2="8" stroke="#333" stroke-width="1.5"/>
+        </g>
+        <text x="320" y="235" font-size="10" fill="#333">中心体</text>
+      </svg>`;
+  } else {
+    container.innerHTML = `
+      <svg width="100%" viewBox="0 0 700 300" style="max-width:700px;">
+        <rect x="0" y="0" width="700" height="300" fill="#fafbfc" rx="12"/>
+        <!-- Left: Prokaryote -->
+        <text x="175" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#1565c0">原核细胞（细菌）</text>
+        <ellipse cx="175" cy="160" rx="90" ry="65" fill="#e8f5e9" stroke="#2c8c5a" stroke-width="2.5"/>
+        <ellipse cx="175" cy="160" rx="75" ry="52" fill="#fafbfc"/>
+        <path d="M155,145 Q170,120 190,150 Q210,170 175,175 Q150,170 155,145" fill="none" stroke="#c62828" stroke-width="2.5"/>
+        <text x="175" y="250" text-anchor="middle" font-size="11" fill="#666">无核膜 · 只有核糖体 · 有细胞壁</text>
+
+        <!-- Divider -->
+        <line x1="350" y1="30" x2="350" y2="270" stroke="#ccc" stroke-width="1" stroke-dasharray="6,6"/>
+
+        <!-- Right: Eukaryote -->
+        <text x="525" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#c62828">真核细胞（动物）</text>
+        <ellipse cx="525" cy="160" rx="100" ry="72" fill="#fff9e8" stroke="#f4a236" stroke-width="2.5"/>
+        <circle cx="545" cy="145" r="28" fill="#fce4ec" stroke="#c62828" stroke-width="2.5"/>
+        <circle cx="545" cy="145" r="9" fill="#c62828"/>
+        <ellipse cx="475" cy="120" rx="15" ry="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5" transform="rotate(-15,475,120)"/>
+        <circle cx="480" cy="180" r="3" fill="#555"/><circle cx="510" cy="100" r="3" fill="#555"/>
+        <circle cx="460" cy="155" r="3" fill="#555"/>
+        <text x="525" y="250" text-anchor="middle" font-size="11" fill="#666">有核膜 · 有多种细胞器 · 无细胞壁</text>
+      </svg>`;
+  }
+}
+showCell('both');
+
+// ===== PROGRESS INIT =====
+updateProgress();
+</script>
+
+</div>
+</div>
+</body>
+</html>

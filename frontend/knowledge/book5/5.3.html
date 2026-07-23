@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>第3章 基因工程 - 知识清单</title>
+<style>
+  :root { --primary: #0d47a1; --primary-light: #e3f2fd; --accent: #c62828; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #0a2a6e, #0d47a1); color: #fff; padding: 36px 40px; border-radius: 12px; margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 20px 24px; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e3f2fd; border-color: #90caf9; }
+  .checklist li.checked .check-box { background: #0d47a1; border-color: #0d47a1; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #90caf9; color: #4a5a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .tag-super { background: #ffcdd2; color: #b71c1c; font-weight: 700; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .diagram-box { background: #fafbfc; border: 1px solid #dde4ed; border-radius: 12px; padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid #dde4ed; }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid #dde4ed; border-radius: 12px; padding: 16px; }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: 12px; padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .focus-box { background: #e3f2fd; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#42a5f5); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: #5a6c7d; text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; }
+  .sidebar a:hover { background: rgba(13,71,161,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(13,71,161,0.1); color: #0d47a1; font-weight: 700; border-left-color: #42a5f5; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  .quiz-box { background: #fff; border: 2px solid var(--accent); border-radius: 12px; padding: 18px; margin: 16px 0; }
+  .quiz-box .quiz-title { font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .quiz-option { padding: 8px 14px; margin: 4px 0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .quiz-option:hover { background: #e3f2fd; }
+  .quiz-option.correct { background: #c8e6c9!important; border-color: #4caf50!important; }
+  .quiz-option.wrong { background: #ffcdd2!important; border-color: #f44336!important; }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style></head><body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修3<br>生物技术与工程</div>
+      <a href="5.1.html"><span class="ch-num">第1章</span>发酵工程</a>
+      <a href="5.2.html"><span class="ch-num">第2章</span>细胞工程</a>
+      <a href="5.3.html" class="active"><span class="ch-num">第3章</span>基因工程</a>
+      <a href="5.4.html"><span class="ch-num">第4章</span>生物技术安全</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link active">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap"><div class="container">
+<div class="header"><h1>第3章 基因工程 ⭐ 最重要章节</h1><div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修3 · 高考大题高频出现</div></div>
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 25 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>📖 本章黑体核心概念 — 点击翻牌记背</h2><span class="arrow">▼</span></div>
+<div class="section-body"><div class="concept-grid">
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">限制酶</div><div class="concept-back">"分子手术刀"。识别特定核苷酸序列，在特定部位切断磷酸二酯键。主要来自原核生物。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">DNA连接酶</div><div class="concept-back">"分子缝合针"。连接DNA片段，恢复磷酸二酯键。T₄ DNA连接酶可连黏性末端和平末端。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">质粒</div><div class="concept-back">裸露、环状双链DNA分子，有自我复制能力。载体需有：限制酶切割位点、标记基因。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">启动子</div><div class="concept-back">RNA聚合酶识别和结合的部位，驱动基因转录。位于基因上游。（不是起始密码子！）</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">PCR</div><div class="concept-back">聚合酶链式反应。体外扩增DNA片段。需模板、2种引物、dNTP、Taq酶。变性→退火→延伸。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">蛋白质工程</div><div class="concept-back">预期功能→设计结构→推测序列→改造基因→获得蛋白质。可制造自然界没有的蛋白质。</div></div>
+</div></div></div>
+
+<!-- 第1节 基因工程工具 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第1节 重组DNA技术的基本工具</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="diagram-box"><h4 style="margin-bottom:12px;">🧬 限制酶切割DNA - 交互演示</h4>
+    <canvas id="reCanvas" width="750" height="220"></canvas>
+    <div class="controls"><button class="btn btn-primary" onclick="toggleCut()">演示限制酶切割</button><button class="btn btn-outline" onclick="resetRe()">重置</button></div></div>
+  <table><tr><th>三大工具</th><th>比喻</th><th>功能</th><th>关键点</th></tr>
+    <tr><td>限制酶</td><td>分子手术刀</td><td>识别特定序列，切断磷酸二酯键</td><td>切割结果：黏性末端或平末端</td></tr>
+    <tr><td>DNA连接酶</td><td>分子缝合针</td><td>连接DNA片段，形成磷酸二酯键</td><td>T₄ DNA连接酶功能最强（连平末）</td></tr>
+    <tr><td>质粒/载体</td><td>分子运输车</td><td>将外源基因导入受体细胞</td><td>需有：酶切位点+标记基因+复制起点</td></tr></table>
+  <div class="danger-box"><strong>⚠️ 易错辨析：</strong><br>① DNA连接酶连接<strong>磷酸二酯键</strong>（不是氢键！氢键由碱基互补自动形成）<br>② <strong>启动子</strong>（DNA上）≠ <strong>起始密码子</strong>（mRNA上）<br>③ <strong>DNA聚合酶</strong>：需模板，将单个核苷酸加到3'端 ≠ <strong>DNA连接酶</strong>：连接两个DNA片段，不需模板</div>
+  <div class="highlight-box"><strong>DNA的粗提取与鉴定实验：</strong><br>原理：DNA不溶于酒精（析出白色丝状物）；DNA溶于2mol/L NaCl溶液<br>鉴定：<strong>二苯胺试剂</strong>→沸水浴加热→<strong>蓝色</strong>反应</div>
+  <ul class="checklist" id="cl1">
+    <li><span class="check-box"></span><span class="label"><strong>限制酶</strong>切断磷酸二酯键；<strong>DNA连接酶</strong>恢复磷酸二酯键</span><span class="tag tag-super">必考</span></li>
+    <li><span class="check-box"></span><span class="label">载体必备：<strong>标记基因</strong>（便于筛选重组DNA）</span><span class="tag tag-important">重点</span></li>
+  </ul>
+</div></div>
+
+<!-- 第2节 基因工程操作程序 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第2节 基因工程的基本操作程序 ⭐ 大题核心</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="diagram-box"><h4 style="margin-bottom:12px;">🧬 基因工程四大步骤 - 互动实验平台</h4>
+    <canvas id="geneCanvas" width="750" height="320"></canvas>
+    <div class="controls"><button class="btn btn-primary" onclick="advanceGene()">▶ 下一步</button><button class="btn btn-outline" onclick="resetGene()">重置</button></div></div>
+  <div class="memo-box"><div class="memo-title">🔴 四大步骤——考试答题模板</div>
+    <p><strong>一、目的基因的获取</strong>：PCR扩增、化学合成、基因文库获取</p>
+    <p><strong>二、基因表达载体的构建（核心！）</strong>：目的基因 + <strong>启动子</strong> + <strong>终止子</strong> + <strong>标记基因</strong></p>
+    <p>　→ 常用<strong>两种不同限制酶切割</strong>（双酶切）——防止自身环化和反向连接</p>
+    <p><strong>三、将目的基因导入受体细胞</strong>：植物→农杆菌转化法；动物→显微注射法；微生物→Ca²⁺处理</p>
+    <p><strong>四、目的基因的检测与鉴定</strong>：分子水平（PCR/分子杂交）；个体水平（抗性/功能鉴定）</p></div>
+  <div class="diagram-box"><h4 style="margin-bottom:12px;">⚡ PCR技术 - 动画演示</h4>
+    <canvas id="pcrCanvas" width="750" height="240"></canvas>
+    <div class="controls"><button class="btn btn-primary" onclick="startPCR()">▶ 演示PCR循环</button><button class="btn btn-outline" onclick="resetPCR()">重置</button></div></div>
+  <div class="highlight-box"><strong>PCR三个步骤：</strong>① <strong>变性</strong>（高温~95℃→DNA解旋）→ ② <strong>退火</strong>（~55℃→引物与模板结合）→ ③ <strong>延伸</strong>（~72℃→Taq酶合成新链）<br>★ 为什么需要<strong>2种引物</strong>？DNA两条链反向平行，DNA聚合酶只能从3'端开始延伸。</div>
+  <ul class="checklist" id="cl2">
+    <li><span class="check-box"></span><span class="label"><strong>双酶切</strong>防自身环化和反向连接</span><span class="tag tag-super">必考</span></li>
+    <li><span class="check-box"></span><span class="label"><strong>启动子</strong>：RNA聚合酶结合部位→驱动转录</span><span class="tag tag-super">必考</span></li>
+    <li><span class="check-box"></span><span class="label">PCR三步骤：<strong>变性→退火→延伸</strong>（Taq酶耐高温）</span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">PCR需<strong>2种引物</strong>（DNA双链反向，只能从3'→5'延伸）</span><span class="tag tag-important">重点</span></li>
+  </ul>
+</div></div>
+
+<!-- 第3-4节 基因工程应用+蛋白质工程 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第3-4节 基因工程的应用 & 蛋白质工程</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <table><tr><th>应用领域</th><th>实例</th></tr>
+    <tr><td>医药</td><td>胰岛素、干扰素、生长激素等基因工程药物</td></tr>
+    <tr><td>农业</td><td>抗虫棉（Bt基因）、抗除草剂作物、耐贮藏番茄</td></tr>
+    <tr><td>蛋白质工程</td><td>改造酶的结构→提高热稳定性、改变底物特异性</td></tr></table>
+  <div class="highlight-box"><strong>基因工程 vs 蛋白质工程的区别：</strong><br>基因工程原则上生产<strong>自然界已存在</strong>的蛋白质<br>蛋白质工程可以制造<strong>自然界没有</strong>的蛋白质<br>★ 蛋白质工程通过<strong>改造基因</strong>来改造蛋白质（不是直接改造蛋白质！）<br>流程：预期功能→设计结构→推测序列→<strong>改造或合成基因</strong>→表达获得蛋白质</div>
+  <ul class="checklist" id="cl3">
+    <li><span class="check-box"></span><span class="label">基因工程原理：<strong>基因重组</strong></span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label"><strong>蛋白质工程</strong>：通过改造<strong>基因</strong>来改造蛋白质</span><span class="tag tag-important">重点</span></li>
+  </ul>
+</div></div>
+
+<!-- 速测 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>🎯 基因工程速测</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="quiz-box"><div class="quiz-title">1. 基因工程中"分子手术刀"指的是？</div>
+    <div class="quiz-option" onclick="checkGQ(this,false)">A. DNA连接酶</div><div class="quiz-option" onclick="checkGQ(this,true)">B. 限制酶</div><div class="quiz-option" onclick="checkGQ(this,false)">C. 质粒</div></div>
+  <div class="quiz-box"><div class="quiz-title">2. PCR过程中，退火的目的是？</div>
+    <div class="quiz-option" onclick="checkGQ(this,false)">A. 解旋DNA双链</div><div class="quiz-option" onclick="checkGQ(this,true)">B. 引物与模板链结合</div><div class="quiz-option" onclick="checkGQ(this,false)">C. Taq酶合成新链</div></div>
+  <div class="quiz-box"><div class="quiz-title">3. 与DNA连接酶催化形成的化学键相同的是？</div>
+    <div class="quiz-option" onclick="checkGQ(this,false)">A. 氢键</div><div class="quiz-option" onclick="checkGQ(this,true)">B. 磷酸二酯键</div><div class="quiz-option" onclick="checkGQ(this,false)">C. 肽键</div></div>
+</div></div>
+
+</div></div>
+<script>
+function updateProgress(){
+  const total=12,checked=document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width=(checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent=`已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx3_ch3_ck',JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx3_ch3_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}updateProgress();
+function checkGQ(el,correct){if(el.parentElement.dataset.done)return;el.parentElement.dataset.done='1';if(correct)el.classList.add('correct');else{el.classList.add('wrong');el.parentElement.querySelectorAll('.quiz-option').forEach(o=>{if((o.textContent.includes('限制酶')&&el.parentElement.querySelector('.quiz-title').textContent.includes('1.'))||(o.textContent.includes('引物与模板')&&el.parentElement.querySelector('.quiz-title').textContent.includes('2.'))||(o.textContent.includes('磷酸二酯键')&&el.parentElement.querySelector('.quiz-title').textContent.includes('3.')))o.classList.add('correct');});}}
+
+// RESTRICTION ENZYME
+const reCanvas=document.getElementById('reCanvas'), rectx=reCanvas.getContext('2d');
+let reCut=false;
+function drawRE(){
+  const w=750,h=220;
+  rectx.clearRect(0,0,w,h); rectx.fillStyle='#fafbfc'; rectx.fillRect(0,0,w,h);
+  // DNA double strand
+  rectx.strokeStyle='#1565c0'; rectx.lineWidth=3;
+  rectx.beginPath(); rectx.moveTo(80,80); rectx.lineTo(670,80); rectx.stroke();
+  rectx.strokeStyle='#c62828'; rectx.lineWidth=2.5;
+  rectx.beginPath(); rectx.moveTo(80,120); rectx.lineTo(670,120); rectx.stroke();
+  // Sequence
+  rectx.fillStyle='#2c3e50'; rectx.font='14px "Courier New",monospace'; rectx.textAlign='center';
+  rectx.fillText('5\' ...G A A T T C... 3\'',375,70);
+  rectx.fillText('3\' ...C T T A A G... 5\'',375,135);
+  // Recognition site
+  rectx.fillStyle='#ff9800'; rectx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  rectx.fillText('↑ 识别序列：GAATTC（EcoRⅠ）',375,50);
+  // Enzyme
+  rectx.fillStyle='#e65100'; rectx.strokeStyle='#bf360c'; rectx.lineWidth=2;
+  rectx.beginPath(); rectx.ellipse(375,100,20,35,0,0,Math.PI*2); rectx.fill(); rectx.stroke();
+  rectx.fillStyle='#fff'; rectx.font='bold 10px sans-serif'; rectx.fillText('EcoRⅠ',375,103);
+  if(reCut){
+    rectx.fillStyle='#e65100'; rectx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    rectx.fillText('切割后产生黏性末端 ↓',375,165);
+    rectx.font='14px "Courier New",monospace';
+    rectx.fillText('5\' ...G + AATTC...3\'   3\' ...CTTAA + G...5\'',375,185);
+    rectx.fillStyle='#c62828'; rectx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    rectx.fillText('AATT——单链突出（黏性末端）',375,210);
+  }
+}
+function toggleCut(){reCut=!reCut;drawRE();}
+function resetRe(){reCut=false;drawRE();}
+drawRE();
+
+// GENE ENGINEERING STEPS
+const gCanvas=document.getElementById('geneCanvas'), gctx=gCanvas.getContext('2d');
+let geneStep=0;
+function drawGene(){
+  const w=750,h=320;
+  gctx.clearRect(0,0,w,h); gctx.fillStyle='#fafbfc'; gctx.fillRect(0,0,w,h);
+  const steps=[
+    {x:80,y:120,label:'①目的基因\n获取',desc:'PCR/化学合成\n/基因文库',active:geneStep>=0,color:'#1565c0'},
+    {x:250,y:120,label:'②表达载体\n构建(核心)',desc:'双酶切连接\n+启动子+终止子\n+标记基因',active:geneStep>=1,color:'#c62828',big:true},
+    {x:430,y:120,label:'③导入受\n体细胞',desc:'农杆菌/显微\n注射/Ca²⁺处理',active:geneStep>=2,color:'#2e7d32'},
+    {x:610,y:120,label:'④检测与\n鉴定',desc:'PCR/分子杂交\n个体水平鉴定',active:geneStep>=3,color:'#e65100'},
+  ];
+  steps.forEach((s,i)=>{
+    const a=s.active,r=s.big?36:30;
+    gctx.fillStyle=a?s.color+'80':s.color+'20'; gctx.strokeStyle=s.color; gctx.lineWidth=a?3:1;
+    gctx.beginPath(); gctx.arc(s.x,s.y,r,0,Math.PI*2); gctx.fill(); gctx.stroke();
+    gctx.fillStyle=a?'#fff':'#999'; gctx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif'; gctx.textAlign='center';
+    const ls=s.label.split('\n'); ls.forEach((l,li)=>{gctx.fillText(l,s.x,s.y-8+li*14);});
+    gctx.fillStyle=a?'#2c3e50':'#999'; gctx.font='10px sans-serif';
+    const ds=s.desc.split('\n'); ds.forEach((d,di)=>{gctx.fillText(d,s.x,s.y+r+14+di*14);});
+    if(i<3&&a&&geneStep>i){drawArrowG(gctx,s.x+r+2,s.y,steps[i+1].x-(steps[i+1].big?36:30)-2,steps[i+1].y);}
+  });
+  // Expression construct detail
+  if(geneStep>=1){
+    const ey=260;
+    gctx.fillStyle='#f5f5f5'; gctx.strokeStyle='#c62828'; gctx.lineWidth=2;
+    gctx.beginPath(); roundRectG(gctx,100,ey,550,50,8); gctx.fill(); gctx.stroke();
+    gctx.fillStyle='#c62828'; gctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; gctx.textAlign='center';
+    gctx.fillText('表达载体结构: [启动子] — [目的基因] — [终止子] — [标记基因(如抗性基因)]',375,ey+30);
+  }
+}
+function roundRectG(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+function drawArrowG(ctx,x1,y1,x2,y2){ctx.strokeStyle='#666';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.fillStyle='#666';ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-6,y2-4);ctx.lineTo(x2-6,y2+4);ctx.closePath();ctx.fill();}
+function advanceGene(){geneStep=Math.min(geneStep+1,3);drawGene();}
+function resetGene(){geneStep=0;drawGene();}
+drawGene();
+
+// PCR ANIMATION
+const pCanvas=document.getElementById('pcrCanvas'), pctx=pCanvas.getContext('2d');
+let pcrCycle=0, pcrId, pcrAnimated=false;
+function drawPCR(){
+  const w=750,h=240;
+  pctx.clearRect(0,0,w,h); pctx.fillStyle='#fafbfc'; pctx.fillRect(0,0,w,h);
+  // Two strands
+  pctx.fillStyle='#2c3e50'; pctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.textAlign='center';
+  pctx.fillText(`PCR 3步循环: 变性(95℃)→退火(55℃)→延伸(72℃)  当前: 第${Math.floor(pcrCycle/3)+1}轮 第${(pcrCycle%3)+1}步`,375,22);
+  const phase=pcrCycle%3;
+  // Template DNA
+  const tx=200,ty=100;
+  pctx.strokeStyle='#999'; pctx.lineWidth=2;
+  pctx.beginPath(); pctx.moveTo(tx,ty); pctx.lineTo(tx+300,ty); pctx.stroke();
+  pctx.fillStyle='#999'; pctx.font='11px sans-serif'; pctx.textAlign='center'; pctx.fillText('模板DNA 5\' → 3\'',tx+150,ty-10);
+  pctx.beginPath(); pctx.moveTo(tx,ty+30); pctx.lineTo(tx+300,ty+30); pctx.stroke();
+  pctx.fillText('模板DNA 3\' ← 5\'',tx+150,ty+50);
+
+  if(phase===0){
+    pctx.fillStyle='#ff5722'; pctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.fillText('🔥 变性 — DNA双链解旋为单链',tx+150,ty+80);
+    // Separation
+    pctx.strokeStyle='#ff5722'; pctx.lineWidth=2; pctx.setLineDash([3,3]);
+    pctx.beginPath(); pctx.moveTo(tx,ty+5); pctx.lineTo(tx+300,ty+5); pctx.stroke();
+    pctx.beginPath(); pctx.moveTo(tx,ty+25); pctx.lineTo(tx+300,ty+25); pctx.stroke();
+    pctx.setLineDash([]);
+  } else if(phase===1){
+    // Primers
+    pctx.strokeStyle='#4caf50'; pctx.lineWidth=3;
+    pctx.beginPath(); pctx.moveTo(tx+80,ty+5); pctx.lineTo(tx+100,ty+5); pctx.stroke();
+    pctx.fillStyle='#4caf50'; pctx.font='11px sans-serif'; pctx.fillText('引物1',tx+90,ty-5);
+    pctx.strokeStyle='#2196f3'; pctx.lineWidth=3;
+    pctx.beginPath(); pctx.moveTo(tx+220,ty+25); pctx.lineTo(tx+240,ty+25); pctx.stroke();
+    pctx.fillStyle='#2196f3'; pctx.font='11px sans-serif'; pctx.fillText('引物2',tx+230,ty+42);
+    pctx.fillStyle='#4caf50'; pctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.fillText('❄ 退火 — 引物与模板链结合',tx+150,ty+80);
+  } else {
+    // Extension
+    pctx.strokeStyle='#e65100'; pctx.lineWidth=4;
+    pctx.beginPath(); pctx.moveTo(tx+80,ty+5); pctx.lineTo(tx+280,ty+5); pctx.stroke();
+    pctx.beginPath(); pctx.moveTo(tx+220,ty+25); pctx.lineTo(tx+50,ty+25); pctx.stroke();
+    pctx.fillStyle='#e65100'; pctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.fillText('🧬 延伸 — Taq酶合成新链(5\'→3\')',tx+150,ty+80);
+  }
+  // Cycle info
+  if(pcrAnimated) pctx.fillText(`到第${Math.floor(pcrCycle/3)+1}轮，DNA分子数=2^${Math.floor(pcrCycle/3)+1}`,tx+150,ty+105);
+}
+function animPCR(){pcrCycle++;drawPCR();pcrId=requestAnimationFrame(animPCR);}
+function startPCR(){pcrAnimated=true;animPCR();}
+function resetPCR(){cancelAnimationFrame(pcrId);pcrAnimated=false;pcrCycle=0;drawPCR();}
+drawPCR();
+</script>
+</body></html>

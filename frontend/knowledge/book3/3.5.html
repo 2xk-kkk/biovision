@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第5章 植物生命活动的调节 - 知识清单</title>
+<style>
+  :root { --primary: #2e7d32; --primary-light: #e8f5e9; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e8f5e9; border-color: #a5d6a7; }
+  .checklist li.checked .check-box { background: #2e7d32; border-color: #2e7d32; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #a5d6a7; color: #4a6a4a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2e7d32; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #a5d6a7; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; }
+  .focus-box { background: #e8f5e9; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#66bb6a); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #c62828; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #c62828; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #b71c1c; color: #b71c1c; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(46,125,50,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(46,125,50,0.1); color: #2e7d32; font-weight: 700; border-left-color: #66bb6a; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;margin-bottom:0;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+  @media(max-width:640px){.info-row{grid-template-columns:1fr;}.header h1{font-size:1.4em;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修1<br>稳态与调节</div>
+      <a href="3.1.html"><span class="ch-num">第1章</span>内环境与稳态</a>
+      <a href="3.2.html"><span class="ch-num">第2章</span>神经调节</a>
+      <a href="3.3.html"><span class="ch-num">第3章</span>体液调节</a>
+      <a href="3.4.html"><span class="ch-num">第4章</span>免疫调节</a>
+      <a href="3.5.html" class="active"><span class="ch-num">第5章</span>植物生命活动调节</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link active">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第5章 植物生命活动的调节</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修1 · 稳态与调节</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 30 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">向光性</div><div class="concept-back">植物在单侧光照射下向光弯曲生长的现象。与生长素在背光侧分布较多有关。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生长素（IAA）</div><div class="concept-back">第一种被发现的植物激素。化学本质：吲哚乙酸。由色氨酸转变而来。集中分布于生长旺盛部位。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">极性运输</div><div class="concept-back">生长素只能从形态学上端运输到形态学下端。属于主动运输（需能量，消耗ATP）。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">两重性</div><div class="concept-back">生长素在低浓度促进生长，高浓度抑制生长。不同器官敏感程度不同：根＞芽＞茎。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">顶端优势</div><div class="concept-back">顶芽优先生长而侧芽受抑制。顶芽产生的生长素向下运输积累在侧芽处，浓度过高抑制侧芽生长。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">赤霉素</div><div class="concept-back">合成部位：幼芽、幼根和未成熟种子。促进细胞伸长、种子萌发和果实发育。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">脱落酸</div><div class="concept-back">合成部位：根冠、萎蔫叶片。抑制细胞分裂，促进叶片、果实衰老脱落，维持种子休眠。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">乙烯</div><div class="concept-back">气体激素，植物各部位均可合成。促进果实成熟，促进开花和器官脱落。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">植物生长调节剂</div><div class="concept-back">人工合成的对植物生长发育有调节作用的化学物质。如NAA、2,4-D、乙烯利等。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">光敏色素</div><div class="concept-back">植物接受光信号的分子，主要吸收红光和远红光。参与调控种子萌发、开花等。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 生长素是如何被发现的？科学家做了哪些经典实验？<br>
+  ● 生长素是如何合成、运输和分布的？<br>
+  ● 生长素的生理作用有什么特点？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 植物生长素</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">胚芽鞘向光性实验 - 交互演示</h4>
+      <canvas id="auxinCanvas" width="800" height="400"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleLight()">💡 开关单侧光</button>
+        <button class="btn btn-outline" onclick="resetAuxin()">重置</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>科学家(年份)</th><th>实验</th><th>结论</th></tr>
+      <tr><td><strong>达尔文</strong>(1880)</td><td>单侧光处理胚芽鞘</td><td>尖端产生某种"影响"向下传递，导致背光面比向光面生长快</td></tr>
+      <tr><td><strong>鲍森·詹森</strong>(1913)</td><td>琼脂片插入尖端下方</td><td>尖端产生的"影响"可以透过<strong>琼脂片</strong></td></tr>
+      <tr><td><strong>拜尔</strong>(1918)</td><td>黑暗中将尖端移位</td><td>弯曲生长是由于尖端产生的影响在伸长区<strong>分布不均匀</strong>造成的</td></tr>
+      <tr><td><strong>温特</strong>(1926)</td><td>琼脂块收集尖端物质</td><td>证明"影响"是一种<strong>化学物质</strong>，命名为<strong>生长素</strong></td></tr>
+      <tr><td><strong>郭葛等</strong>(1934)</td><td>分离提取</td><td>从人尿等中分离出生长素——<strong>吲哚乙酸（IAA）</strong></td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>生长素的核心知识：</strong><br>
+      ① <strong>合成部位</strong>：幼嫩的芽、叶和发育中的种子（由色氨酸转变而来）<br>
+      ② <strong>分布</strong>：集中分布在生长旺盛的部位（如胚芽鞘、根尖、茎尖等）<br>
+      ③ <strong>运输方式</strong>：<strong>极性运输</strong>（形态学上端→下端，主动运输，需ATP）<br>
+      ④ <strong>非极性运输</strong>：成熟组织中通过输导组织运输<br>
+      ⑤ <strong>横向运输</strong>：受单侧光、重力等刺激时发生
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:8px;">生长素两重性曲线 - 交互演示</h4>
+      <canvas id="dualityCanvas" width="750" height="280"></canvas>
+      <div class="controls">
+        <button class="btn btn-outline" onclick="toggleRoot()">显示/隐藏根的敏感区域</button>
+      </div>
+    </div>
+
+    <div class="danger-box">
+      <strong>⚠️ 高频易错——两重性判断：</strong><br>
+      ① <strong>体现两重性</strong>：根的向地性、顶端优势<br>
+      ② <strong>不体现两重性</strong>：向光性、茎的背地性（这些只有促进作用）<br>
+      ★ 向光性中背光侧生长素多→促进生长更快，向光侧少→促进弱，两边都是促进，没有抑制！
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label">生长素发现实验：<strong>达尔文→詹森→拜尔→温特</strong>（科学史序列）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">生长素化学本质：<strong>吲哚乙酸（IAA）</strong>，由<strong>色氨酸</strong>转变</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>极性运输</strong>：形态学上端→下端（主动运输）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>两重性</strong>：低浓度促进，高浓度抑制；敏感性：根＞芽＞茎</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>顶端优势</strong>：顶芽生长→侧芽受抑（体现两重性）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">向光性<strong>不体现</strong>两重性（只有促进作用）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">根的向地性体现两重性（近地侧生长素浓度高→抑制根生长）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 除生长素外还有哪些植物激素？<br>
+  ● 各种植物激素是怎样相互作用的？<br>
+  ● 植物激素如何共同调节生命活动？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 其他植物激素</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">五大植物激素 - 交互关系图</h4>
+      <canvas id="hormoneMapCanvas" width="750" height="400"></canvas>
+      <div id="hormoneInfo" style="min-height:36px;margin-top:8px;font-size:0.9em;color:var(--text-light);"></div>
+    </div>
+
+    <table>
+      <tr><th>激素</th><th>合成部位</th><th>主要作用</th><th>记忆口诀</th></tr>
+      <tr><td><strong>生长素（IAA）</strong></td><td>幼嫩芽/叶/种子</td><td>促进细胞伸长生长；两重性</td><td>生促抑</td></tr>
+      <tr><td><strong>赤霉素（GA）</strong></td><td>幼芽/幼根/未成熟种子</td><td>促进细胞伸长、种子萌发、开花和果实发育</td><td>赤长萌</td></tr>
+      <tr><td><strong>细胞分裂素</strong></td><td>主要是根尖</td><td>促进细胞分裂、芽分化、侧枝发育</td><td>裂分芽</td></tr>
+      <tr><td><strong>脱落酸</strong></td><td>根冠/萎蔫叶片</td><td>抑制细胞分裂、促进叶片果实脱落、维持休眠</td><td>脱抑休</td></tr>
+      <tr><td><strong>乙烯</strong></td><td>植物各部位</td><td>促进果实成熟、器官脱落（<strong>气体</strong>激素）</td><td>乙成熟</td></tr>
+      <tr><td><strong>油菜素内酯</strong></td><td>花粉/茎/叶等</td><td>促进细胞伸长分裂、花粉管生长（第六类）</td><td>—</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>激素间的相互作用：</strong><br>
+      ① 生长素与细胞分裂素——协同促进植物生长（生长素促进伸长，细胞分裂素促进分裂）<br>
+      ② 赤霉素与脱落酸——拮抗调节种子萌发（GA促进萌发，ABA抑制萌发）<br>
+      ③ 生长素与乙烯——低浓度生长素促进生长，高浓度生长素诱导乙烯合成→抑制生长<br>
+      ④ 各种激素<strong>相互影响、共同调节</strong>植物的生命活动
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>赤霉素</strong>：促进细胞伸长、种子萌发（赤霉菌→恶苗病）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>脱落酸</strong>：抑制分裂、促进脱落和休眠</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>乙烯</strong>：气体激素，促进果实成熟</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">五大激素：生长素、赤霉素、细胞分裂素、脱落酸、乙烯</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 什么是植物生长调节剂？有哪些应用？<br>
+  ● 环境因素如何参与调节植物的生命活动？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3-4节 植物生长调节剂 & 环境因素的调节</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">环境因素调节植物生命活动 - 互动演示</h4>
+      <canvas id="envPlantCanvas" width="750" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="cycleEnv()">切换环境因素</button>
+        <button class="btn btn-outline" onclick="resetEnvPlant()">重置</button>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card"><h4>光</h4><p><strong>光敏色素</strong>（吸收红光和远红光）感受光信号→调控种子萌发、开花、叶绿素合成等。光敏色素有两种形式：Pr和Pfr，可互相转换。</p></div>
+      <div class="info-card"><h4>温度</h4><p><strong>春化作用</strong>：低温诱导促进开花。如冬小麦需经历低温才能在春季开花。温度还影响种子萌发、生长发育速度。</p></div>
+      <div class="info-card"><h4>重力</h4><p><strong>淀粉—平衡石假说</strong>：平衡石细胞中的淀粉体感受重力方向→影响生长素分布→根的向地性和茎的背地性。</p></div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>植物生长调节剂的应用：</strong><br>
+      ① 促进种子萌发（赤霉素）、促进扦插生根（NAA）<br>
+      ② 促进果实成熟（乙烯利）、培育无子果实（生长素类似物）<br>
+      ③ 除草剂（高浓度2,4-D杀死双子叶杂草）<br>
+      ④ 调控花期（赤霉素/乙烯利等改变开花时间）<br>
+      ★ 需要控制施用的<strong>浓度、时间、部位</strong>和作物的<strong>生育期</strong>
+    </div>
+
+    <div class="danger-box">
+      <strong>⚠️ 核心概念：</strong>植物的生长发育是<strong>基因表达调控、激素调节和环境因素</strong>三者共同作用的结果。
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label"><strong>光敏色素</strong>：吸收红光和远红光，两种可互转形式(Pr/Pfr)</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>春化作用</strong>：低温诱导促进开花</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">淀粉—平衡石假说：感受重力的机制</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">植物生长调节剂：人工合成、需控制浓度和时期</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 17;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx1_ch5_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx1_ch5_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== PHOTOTROPISM DEMO =====
+const aCanvas=document.getElementById('auxinCanvas'), actx=aCanvas.getContext('2d');
+let lightOn=true, auxinT=0, auxinAnimId;
+
+function drawAuxin(){
+  const w=800,h=400;
+  actx.clearRect(0,0,w,h); actx.fillStyle='#fafbfc'; actx.fillRect(0,0,w,h);
+
+  // Light source
+  if(lightOn){
+    actx.fillStyle='#fff9c4'; actx.strokeStyle='#f9a825'; actx.lineWidth=2;
+    actx.beginPath(); actx.arc(90,100,30,0,Math.PI*2); actx.fill(); actx.stroke();
+    for(let i=0;i<12;i++){
+      const angle=-0.3+i*0.6/12;
+      actx.strokeStyle='rgba(249,168,37,0.5)'; actx.lineWidth=1;
+      actx.beginPath(); actx.moveTo(95+Math.cos(angle)*25,100+Math.sin(angle)*25);
+      actx.lineTo(700,50+i*14); actx.stroke();
+    }
+    actx.fillStyle='#e65100'; actx.font='bold 11px sans-serif'; actx.textAlign='center'; actx.fillText('单侧光→',90,140);
+  }
+
+  // Coleoptile - straight or bent
+  const baseX=420,baseY=340;
+  const bend=lightOn?Math.min(auxinT*0.02,0.3):0;
+  const tipX=baseX-Math.sin(bend)*180, tipY=baseY-180;
+
+  actx.strokeStyle='#4caf50'; actx.lineWidth=8; actx.lineCap='round';
+  actx.beginPath(); actx.moveTo(baseX,baseY);
+  actx.quadraticCurveTo(baseX-bend*40,baseY-90, tipX,tipY);
+  actx.stroke();
+
+  // Auxin distribution (right side more)
+  for(let i=0;i<30;i++){
+    const t=i/30;
+    const x=baseX+(tipX-baseX)*t-bend*20*t+5, y=baseY+(tipY-baseY)*t;
+    const amount=lightOn?(0.3+t*0.7):0.5;
+    actx.fillStyle=`rgba(255,152,0,${amount})`;
+    actx.beginPath(); actx.arc(x,y,4,0,Math.PI*2); actx.fill();
+  }
+
+  // Labels
+  if(lightOn){
+    actx.fillStyle='#e65100'; actx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; actx.textAlign='center';
+    actx.fillText('背光侧——生长素多→生长快',550,130);
+    actx.fillText('向光侧——生长素少→生长慢',550,160);
+    actx.fillText('胚芽鞘向光弯曲生长！',420,40);
+  }
+
+  actx.fillStyle='#2c3e50'; actx.font='12px sans-serif'; actx.textAlign='center';
+  actx.fillText('胚芽鞘',320,380);
+  actx.fillText('（含生长素感受区——尖端）',320,395);
+}
+
+function animateAuxin(){auxinT++;drawAuxin();auxinAnimId=requestAnimationFrame(animateAuxin);}
+function toggleLight(){lightOn=!lightOn;if(lightOn){animateAuxin();}else{cancelAnimationFrame(auxinAnimId);auxinT=0;drawAuxin();}}
+function resetAuxin(){cancelAnimationFrame(auxinAnimId);auxinT=0;lightOn=true;drawAuxin();}
+drawAuxin();
+
+// ===== DUALITY CURVE =====
+const duCanvas=document.getElementById('dualityCanvas'), ductx=duCanvas.getContext('2d');
+let showRootZone=false;
+function drawDuality(){
+  const w=750,h=280;
+  ductx.clearRect(0,0,w,h); ductx.fillStyle='#fafbfc'; ductx.fillRect(0,0,w,h);
+
+  // Axes
+  ductx.strokeStyle='#999'; ductx.lineWidth=1;
+  ductx.beginPath(); ductx.moveTo(60,30); ductx.lineTo(60,230); ductx.lineTo(710,230); ductx.stroke();
+  ductx.fillStyle='#2c3e50'; ductx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; ductx.textAlign='center';
+  ductx.fillText('生长素浓度 →',370,255);
+  ductx.save(); ductx.translate(18,140); ductx.rotate(-Math.PI/2); ductx.fillText('促进 ← 生长效应 → 抑制',0,0); ductx.restore();
+
+  // Zero line
+  ductx.strokeStyle='#ccc'; ductx.lineWidth=1; ductx.setLineDash([3,3]);
+  ductx.beginPath(); ductx.moveTo(60,130); ductx.lineTo(710,130); ductx.stroke(); ductx.setLineDash([]);
+  ductx.fillStyle='#999'; ductx.font='10px sans-serif'; ductx.textAlign='right'; ductx.fillText('0（不促进也不抑制）',55,133);
+
+  // Stem curve
+  ductx.strokeStyle='#2e7d32'; ductx.lineWidth=2.5;
+  ductx.beginPath();
+  for(let i=0;i<=100;i++){
+    const x=70+i*6.2, y=130-(Math.sin(i*0.06)*(40-Math.min(i*0.2,30)-Math.max(i-60,0)*0.05));
+    if(i===0)ductx.moveTo(x,y);else ductx.lineTo(x,y);
+  }
+  ductx.stroke();
+
+  // Bud curve
+  ductx.strokeStyle='#1565c0'; ductx.lineWidth=2;
+  ductx.beginPath();
+  for(let i=0;i<=100;i++){
+    const x=70+i*6.2, y=130-(Math.sin(i*0.07)*(25-Math.min(i*0.3,20)-Math.max(i-50,0)*0.15));
+    if(i===0)ductx.moveTo(x,y);else ductx.lineTo(x,y);
+  }
+  ductx.stroke();
+
+  // Root curve
+  ductx.strokeStyle='#c62828'; ductx.lineWidth=2;
+  ductx.beginPath();
+  for(let i=0;i<=100;i++){
+    const x=70+i*6.2, y=130-(Math.sin(i*0.1)*(12-Math.min(i*0.5,10)-Math.max(i-30,0)*0.3));
+    if(i===0)ductx.moveTo(x,y);else ductx.lineTo(x,y);
+  }
+  ductx.stroke();
+
+  // Legend
+  const legendY=260;
+  ductx.strokeStyle='#2e7d32'; ductx.lineWidth=2; ductx.beginPath(); ductx.moveTo(350,legendY); ductx.lineTo(370,legendY); ductx.stroke();
+  ductx.fillStyle='#2e7d32'; ductx.font='11px sans-serif'; ductx.textAlign='left'; ductx.fillText('茎（最不敏感）',375,legendY+4);
+
+  ductx.strokeStyle='#1565c0'; ductx.lineWidth=2; ductx.beginPath(); ductx.moveTo(500,legendY); ductx.lineTo(520,legendY); ductx.stroke();
+  ductx.fillStyle='#1565c0'; ductx.fillText('芽',525,legendY+4);
+
+  ductx.strokeStyle='#c62828'; ductx.lineWidth=2; ductx.beginPath(); ductx.moveTo(580,legendY); ductx.lineTo(600,legendY); ductx.stroke();
+  ductx.fillStyle='#c62828'; ductx.fillText('根（最敏感）',605,legendY+4);
+
+  // Root inhibition zone
+  if(showRootZone){
+    ductx.fillStyle='rgba(198,40,40,0.1)'; ductx.fillRect(170,130,150,100);
+    ductx.fillStyle='#c62828'; ductx.font='bold 11px sans-serif'; ductx.textAlign='center';
+    ductx.fillText('对根的抑制区域',245,220);
+    ductx.fillText('（体现两重性！）',245,235);
+  }
+
+  ductx.fillStyle='#2c3e50'; ductx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; ductx.textAlign='center';
+  ductx.fillText('生长素生理作用具有两重性：低浓度促进，高浓度抑制　｜　敏感程度：根 ＞ 芽 ＞ 茎',375,40);
+}
+function toggleRoot(){showRootZone=!showRootZone;drawDuality();}
+drawDuality();
+
+// ===== PLANT HORMONE MAP =====
+const hmCanvas=document.getElementById('hormoneMapCanvas'), hmctx=hmCanvas.getContext('2d');
+const hormones=[
+  {name:'生长素(IAA)',x:220,y:120,r:28,color:'#e8f5e9',stroke:'#2e7d32',info:'生长素：促进细胞伸长。低浓度促进/高浓度抑制。两重性+极性运输是核心考点。与赤霉素协同促生长。'},
+  {name:'赤霉素(GA)',x:530,y:120,r:28,color:'#fff3e0',stroke:'#e65100',info:'赤霉素：促进细胞伸长和种子萌发。与生长素协同促进生长。与脱落酸拮抗&mdash;共同调控种子休眠与萌发。'},
+  {name:'细胞分裂素',x:375,y:220,r:28,color:'#e3f2fd',stroke:'#1565c0',info:'细胞分裂素：促进细胞分裂、芽的分化和侧枝发育。与生长素协同调控植物生长和形态建成。'},
+  {name:'脱落酸',x:140,y:280,r:28,color:'#fce4ec',stroke:'#c62828',info:'脱落酸：抑制分裂、促进脱落和休眠。与赤霉素在种子萌发上作用相反（拮抗）。"逆境激素"。'},
+  {name:'乙烯',x:600,y:280,r:25,color:'#e0e0e0',stroke:'#666',info:'乙烯：气体激素。促进果实成熟和器官脱落。与生长素有反馈关系&mdash;高浓度生长素可诱导乙烯合成。'},
+];
+
+function drawHormoneMap(){
+  const w=750,h=400;
+  hmctx.clearRect(0,0,w,h); hmctx.fillStyle='#fafbfc'; hmctx.fillRect(0,0,w,h);
+
+  // Title
+  hmctx.fillStyle='#2c3e50'; hmctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; hmctx.textAlign='center';
+  hmctx.fillText('五大植物激素协同/拮抗关系网络',375,30);
+
+  // Connections
+  const connections=[
+    {from:0,to:1,label:'协同',color:'#4caf50'},
+    {from:0,to:2,label:'协同',color:'#4caf50'},
+    {from:0,to:3,label:'拮抗(高浓度IAA→乙烯↑)',color:'#f44336',dashed:true},
+    {from:1,to:3,label:'拮抗(种子萌发)',color:'#f44336',dashed:true},
+    {from:0,to:4,label:'反馈',color:'#ff9800'},
+    {from:1,to:2,label:'协同',color:'#4caf50'},
+  ];
+
+  connections.forEach(c=>{
+    const f=hormones[c.from], t=hormones[c.to];
+    hmctx.strokeStyle=c.color; hmctx.lineWidth=2;
+    if(c.dashed) hmctx.setLineDash([5,3]);
+    hmctx.beginPath(); hmctx.moveTo(f.x,f.y); hmctx.lineTo(t.x,t.y); hmctx.stroke();
+    hmctx.setLineDash([]);
+    const mx=(f.x+t.x)/2, my=(f.y+t.y)/2;
+    hmctx.fillStyle=c.color; hmctx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif'; hmctx.textAlign='center';
+    hmctx.fillText(c.label,mx,my-6);
+  });
+
+  // Hormone circles
+  hormones.forEach(h=>{
+    hmctx.fillStyle=h.color; hmctx.strokeStyle=h.stroke; hmctx.lineWidth=2.5;
+    hmctx.beginPath(); hmctx.arc(h.x,h.y,h.r,0,Math.PI*2); hmctx.fill(); hmctx.stroke();
+    hmctx.fillStyle='#2c3e50'; hmctx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif'; hmctx.textAlign='center';
+    hmctx.fillText(h.name,h.x,h.y+1);
+  });
+
+  // Central note
+  hmctx.fillStyle='#888'; hmctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif'; hmctx.textAlign='center';
+  hmctx.fillText('各种激素相互影响、共同调节植物生命活动',375,370);
+  hmctx.fillText('点击激素查看详情',375,390);
+}
+
+hmCanvas.addEventListener('click',function(e){
+  const rect=hmCanvas.getBoundingClientRect();
+  const sx=750/rect.width, sy=400/rect.height;
+  const mx=(e.clientX-rect.left)*sx, my=(e.clientY-rect.top)*sy;
+  let found=null;
+  hormones.forEach(h=>{
+    const dx=mx-h.x, dy=my-h.y;
+    if(Math.sqrt(dx*dx+dy*dy)<=h.r+10) found=h;
+  });
+  if(found){
+    document.getElementById('hormoneInfo').innerHTML=`<strong>${found.name}</strong>：${found.info}`;
+    document.getElementById('hormoneInfo').style.color='#2e7d32';
+  }
+});
+drawHormoneMap();
+
+// ===== ENVIRONMENTAL FACTORS =====
+const epCanvas=document.getElementById('envPlantCanvas'), epctx=epCanvas.getContext('2d');
+let envStage=0;
+const envLabels=['光（光敏色素）','温度（春化作用）','重力（平衡石）'];
+function drawEnvPlant(){
+  const w=750,h=300;
+  epctx.clearRect(0,0,w,h); epctx.fillStyle='#fafbfc'; epctx.fillRect(0,0,w,h);
+  epctx.fillStyle='#2c3e50'; epctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; epctx.textAlign='center';
+  epctx.fillText(`当前环境因素：${envLabels[envStage]}`,375,25);
+
+  // Plant
+  epctx.strokeStyle='#4caf50'; epctx.lineWidth=3;
+  epctx.beginPath(); epctx.moveTo(375,280); epctx.lineTo(375,180); epctx.stroke();
+  // Leaves
+  epctx.fillStyle='#66bb6a';
+  epctx.beginPath(); epctx.ellipse(375,220,25,8,0.2,0,Math.PI*2); epctx.fill();
+  epctx.beginPath(); epctx.ellipse(375,200,25,8,-0.2,0,Math.PI*2); epctx.fill();
+  // Flower
+  epctx.fillStyle='#ff7043'; epctx.beginPath(); epctx.arc(375,175,10,0,Math.PI*2); epctx.fill();
+
+  if(envStage===0){
+    // Light
+    epctx.fillStyle='#fff9c4'; epctx.beginPath(); epctx.arc(200,60,35,0,Math.PI*2); epctx.fill();
+    epctx.strokeStyle='#f9a825'; epctx.lineWidth=2; epctx.stroke();
+    for(let i=0;i<8;i++){
+      const a=i*Math.PI*2/8;
+      epctx.strokeStyle='rgba(249,168,37,0.4)'; epctx.lineWidth=1;
+      epctx.beginPath(); epctx.moveTo(200+Math.cos(a)*30,60+Math.sin(a)*30);
+      epctx.lineTo(200+Math.cos(a)*70,60+Math.sin(a)*70); epctx.stroke();
+    }
+    epctx.fillStyle='#e65100'; epctx.font='12px sans-serif'; epctx.textAlign='center';
+    epctx.fillText('光 → 光敏色素(Pr⇌Pfr)',200,120);
+    epctx.fillText('调控：种子萌发、',200,140);
+    epctx.fillText('叶绿素合成、开花',200,158);
+    epctx.fillText('Pfr/Pr比值提供昼夜信息',200,175);
+  } else if(envStage===1){
+    epctx.fillStyle='#e3f2fd'; epctx.beginPath(); epctx.ellipse(200,60,45,35,0,0,Math.PI*2); epctx.fill();
+    epctx.strokeStyle='#1565c0'; epctx.lineWidth=2; epctx.stroke();
+    epctx.fillStyle='#1565c0'; epctx.font='12px sans-serif'; epctx.textAlign='center';
+    epctx.fillText('❄ 低温 · 春化作用',200,100);
+    epctx.fillText('冬小麦需经历低温',200,120);
+    epctx.fillText('才能在春季开花',200,140);
+    epctx.fillText('（表观遗传调控）',200,158);
+  } else {
+    epctx.strokeStyle='#666'; epctx.lineWidth=3;
+    epctx.beginPath(); epctx.moveTo(300,290); epctx.lineTo(450,290); epctx.stroke();
+    epctx.fillStyle='#666'; epctx.beginPath(); epctx.arc(370,290,8,0,Math.PI*2); epctx.fill();
+
+    // Statoliths
+    for(let i=0;i<4;i++){
+      epctx.fillStyle='#795548'; epctx.beginPath(); epctx.arc(360+i*12,282,4,0,Math.PI*2); epctx.fill();
+    }
+
+    epctx.fillStyle='#666'; epctx.font='12px sans-serif'; epctx.textAlign='center';
+    epctx.fillText('重力方向 ↓',190,110);
+    epctx.fillText('根冠平衡石细胞中的淀粉体',190,130);
+    epctx.fillText('感受重力→生长素不对称分布',190,150);
+    epctx.fillText('→根的向地性（近地侧抑/远地侧促）',190,168);
+  }
+
+  // Gene-Environment-Hormone summary
+  epctx.fillStyle='#2c3e50'; epctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; epctx.textAlign='center';
+  epctx.fillText('总结：基因表达调控 + 激素调节 + 环境因素 → 共同完成植物生命活动调节',375,295);
+}
+function cycleEnv(){envStage=(envStage+1)%3;drawEnvPlant();}
+function resetEnvPlant(){envStage=0;drawEnvPlant();}
+drawEnvPlant();
+</script>
+</body>
+</html>

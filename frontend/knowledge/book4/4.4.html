@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第4章 人与环境 - 知识清单</title>
+<style>
+  :root { --primary: #6a1b9a; --primary-light: #f3e5f5; --accent: #00838f; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #4a148c, #6a1b9a); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f3e5f5; border-color: #ce93d8; }
+  .checklist li.checked .check-box { background: #6a1b9a; border-color: #6a1b9a; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ce93d8; color: #6a5a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #f3e5f5; color: #6a1b9a; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #b39ddb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .focus-box { background: #f3e5f5; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .success-box { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#ab47bc); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(106,27,154,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(106,27,154,0.1); color: #6a1b9a; font-weight: 700; border-left-color: #ab47bc; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  .quiz-box { background: #fff; border: 2px solid var(--accent); border-radius: var(--radius); padding: 18px; margin: 16px 0; }
+  .quiz-box .quiz-title { font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .quiz-option { padding: 8px 14px; margin: 4px 0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .quiz-option:hover { background: #f3e5f5; }
+  .quiz-option.correct { background: #c8e6c9!important; border-color: #4caf50!important; }
+  .quiz-option.wrong { background: #ffcdd2!important; border-color: #f44336!important; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修2<br>生物与环境</div>
+      <a href="4.1.html"><span class="ch-num">第1章</span>种群及其动态</a>
+      <a href="4.2.html"><span class="ch-num">第2章</span>群落及其演替</a>
+      <a href="4.3.html"><span class="ch-num">第3章</span>生态系统及稳定性</a>
+      <a href="4.4.html" class="active"><span class="ch-num">第4章</span>人与环境</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link active">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第4章 人与环境</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修2 · 生物与环境</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 22 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生态足迹</div><div class="concept-back">指维持某一单位人口生存所需的土地面积和水域面积。生态足迹越大，环境压力越大。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生物多样性</div><div class="concept-back">包括遗传多样性（基因）、物种多样性、生态系统多样性三个层次。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">直接价值</div><div class="concept-back">食用、药用、工业原料、旅游观赏、科学研究等。直接可用。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">间接价值</div><div class="concept-back">调节生态系统功能：防风固沙、水土保持、调节气候、涵养水源等。间接价值远大于直接价值。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">潜在价值</div><div class="concept-back">目前未知但未来可能的价值。如许多植物的药用价值尚未被发现。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">就地保护</div><div class="concept-back">建立自然保护区和国家公园。最有效的保护方式。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">易地保护</div><div class="concept-back">将濒危物种迁出原地，移入植物园、动物园、繁育中心进行特别保护。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生态工程四大原理</div><div class="concept-back">①自生 ②循环 ③协调 ④整体。由马世骏院士提出。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 人类活动对生态环境的影响</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">全球性生态环境问题 - 互动展示</h4>
+      <canvas id="globalCanvas" width="750" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="cycleProblem()">切换环境问题</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>生态足迹：</strong><br>
+      ① 生态足迹越大，对生态环境的影响<strong>越大</strong><br>
+      ② 食用牛肉的生态足迹 > 食用蔬菜（能量逐级递减，肉食消耗更多资源）<br>
+      ③ 生活方式影响：绿色出行、"光盘行动"、节水节能都可以<strong>缩小生态足迹</strong>
+    </div>
+
+    <table>
+      <tr><th>环境问题</th><th>成因</th><th>危害</th></tr>
+      <tr><td><strong>全球气候变化</strong></td><td>化石燃料大量燃烧→CO₂浓度升高→温室效应加剧</td><td>冰川融化、海平面上升</td></tr>
+      <tr><td><strong>臭氧层破坏</strong></td><td>氟氯烃(CFCs)等排放</td><td>紫外线增强→皮肤癌、生态破坏</td></tr>
+      <tr><td><strong>生物多样性丧失</strong></td><td>栖息地破坏、掠夺式利用、外来物种入侵等</td><td>灭绝速率是自然速率的1000倍</td></tr>
+      <tr><td><strong>水资源短缺</strong></td><td>人口剧增、人类活动加剧</td><td>可被人类直接利用的淡水不足1/100</td></tr>
+      <tr><td><strong>土地荒漠化</strong></td><td>人类活动导致干旱半干旱区退化</td><td>除南极洲外各洲均有荒漠化</td></tr>
+      <tr><td><strong>环境污染</strong></td><td>工厂排放、农药化肥等</td><td>雾霾、酸雨、水体富营养化</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>生态足迹</strong>越大→对环境影响越大</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">温室效应加剧的主要气体：<strong>CO₂</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">可持续发展=经济+社会+生态协调</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 生物多样性 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 生物多样性及其保护 ⭐ 高考热点</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="info-row">
+      <div class="info-card"><h4>遗传多样性（基因）</h4><p>每个物种内部的基因多样性。变异越丰富→适应环境能力越强。</p></div>
+      <div class="info-card"><h4>物种多样性</h4><p>地球上物种的丰富程度。包括动物、植物、微生物等。</p></div>
+      <div class="info-card"><h4>生态系统多样性</h4><p>生物圈中各类生态系统类型的多样性。不同生态系统承载不同的生物群落。</p></div>
+    </div>
+
+    <table>
+      <tr><th>价值类型</th><th>含义</th><th>举例</th></tr>
+      <tr><td><strong>直接价值</strong></td><td>可直接利用的价值</td><td>食用（粮食）、药用（青蒿素）、工业原料、旅游观赏</td></tr>
+      <tr><td><strong>间接价值</strong>★</td><td>调节生态系统的功能（<strong>远大于</strong>直接价值）</td><td>防风固沙、水土保持、调节气候、涵养水源、促进物质循环</td></tr>
+      <tr><td><strong>潜在价值</strong></td><td>目前未知但未来可能的价值</td><td>许多野生植物的药用价值尚未被发现</td></tr>
+    </table>
+
+    <div class="danger-box">
+      <strong>⚠️ 生物多样性丧失的主要原因：</strong><br>
+      ① 栖息地丧失和碎片化（最主要原因）<br>
+      ② 掠夺式利用（过度捕捞、滥砍滥伐）<br>
+      ③ 环境污染 ④ 外来物种入侵 ⑤ 农业林业品种单一化
+    </div>
+
+    <div class="success-box">
+      <strong>保护措施：</strong><br>
+      ① <strong>就地保护</strong>（最有效）：建立自然保护区和国家公园<br>
+      ② <strong>易地保护</strong>：植物园、动物园、濒危物种繁育中心<br>
+      ③ 建立精子库、种子库、基因库；保护生物多样性还需要立法、宣传等
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label">生物多样性三层次：<strong>遗传/物种/生态系统</strong>多样性</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>间接价值 > 直接价值</strong>（调节生态功能才是最大的价值）</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>就地保护</strong>最有效（自然保护区/国家公园）</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 生态工程 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 生态工程</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">生态工程四大原理 - 交互展示</h4>
+      <canvas id="engCanvas" width="750" height="280"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="cycleEng()">了解各原理</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>原理</th><th>核心要点</th><th>实例</th></tr>
+      <tr><td><strong>自生</strong></td><td>有效选择生物组分并合理布设，考虑<strong>生态位差异</strong>，创造有益相互关系</td><td>林业建设中避免单一纯林</td></tr>
+      <tr><td><strong>循环</strong></td><td>实现物质的<strong>循环再生</strong>利用，废物资源化</td><td>"桑基鱼塘"——桑叶养蚕→蚕粪养鱼→塘泥肥桑</td></tr>
+      <tr><td><strong>协调</strong></td><td>生物与环境<strong>相适应</strong>，考虑<strong>环境承载力</strong>。引种时要考虑物种对环境的适应性</td><td>西北地区不宜引种需水量大的乔木</td></tr>
+      <tr><td><strong>整体</strong></td><td>遵从自然规律，统筹考虑<strong>自然+经济+社会</strong>综合效益</td><td>退耕还林要兼顾农民生计</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>生态工程的提出：</strong>马世骏院士创造性地提出了<strong>"整体、协调、循环、自生"</strong>等生态工程的基本原理。生态工程的目标是在保护环境的前提下合理利用资源，实现可持续发展。
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">四大原理：<strong>自生、循环、协调、整体</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">"桑基鱼塘"体现<strong>循环</strong>原理</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+
+    <div class="quiz-box"><div class="quiz-title">速测：生物多样性三个层次不包括？</div>
+      <div class="quiz-option" onclick="checkQuiz2(this,false)">A. 遗传多样性</div>
+      <div class="quiz-option" onclick="checkQuiz2(this,false)">B. 物种多样性</div>
+      <div class="quiz-option" onclick="checkQuiz2(this,true)">C. 种群多样性</div>
+      <div class="quiz-option" onclick="checkQuiz2(this,false)">D. 生态系统多样性</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 12;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx2_ch4_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx2_ch4_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+function checkQuiz2(el,correct){if(el.parentElement.dataset.done)return;el.parentElement.dataset.done='1';if(correct)el.classList.add('correct');else{el.classList.add('wrong');el.parentElement.querySelectorAll('.quiz-option')[2].classList.add('correct');}}
+
+// GLOBAL PROBLEMS
+const gCanvas=document.getElementById('globalCanvas'), gctx=gCanvas.getContext('2d');
+let probIdx=0;
+const problems=[
+  {title:'全球气候变暖',icon:'🌍',desc:'化石燃料燃烧+水泥生产→CO₂↑↑',detail:'温室效应加剧→海平面上升、极端天气频发',color:'#ff5722'},
+  {title:'臭氧层破坏',icon:'☀️',desc:'氟氯烃(CFCs)排放→O₃含量下降',detail:'紫外线增强→皮肤癌增加、农作物减产',color:'#9c27b0'},
+  {title:'生物多样性丧失',icon:'🦏',desc:'栖息地破坏→灭绝速率×1000',detail:'约100万物种面临灭绝威胁',color:'#c62828'},
+  {title:'水资源短缺',icon:'💧',desc:'可被人类直接利用的淡水不足1/3',detail:'人口剧增+人类活动→加剧水危机',color:'#1565c0'},
+  {title:'土地荒漠化',icon:'🏜️',desc:'干旱半干旱区土地退化',detail:'除南极洲外各洲均有荒漠化现象',color:'#795548'},
+  {title:'环境污染',icon:'🏭',desc:'大气污染/水体污染/土壤污染',detail:'雾霾、酸雨、水体富营养化、垃圾围城',color:'#546e7a'},
+];
+function drawProblem(){
+  const w=750,h=300,d=problems[probIdx];
+  gctx.clearRect(0,0,w,h); gctx.fillStyle='#fafbfc'; gctx.fillRect(0,0,w,h);
+  gctx.fillStyle=d.color; gctx.font='bold 18px "PingFang SC","Microsoft YaHei",sans-serif'; gctx.textAlign='center';
+  gctx.fillText(`${d.icon} ${d.title}`,375,40);
+  gctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  gctx.fillText(d.desc,375,80);
+  gctx.font='13px "PingFang SC","Microsoft YaHei",sans-serif';
+  gctx.fillText(d.detail,375,110);
+  // Visual
+  gctx.fillStyle=d.color+(probIdx===4||probIdx===5?'30':'50'); gctx.strokeStyle=d.color; gctx.lineWidth=2;
+  gctx.beginPath(); gctx.arc(375,215,50,0,Math.PI*2); gctx.fill(); gctx.stroke();
+  gctx.fillStyle='#fff'; gctx.font='bold 30px sans-serif'; gctx.fillText(d.icon,375,225);
+  gctx.fillStyle='#2c3e50'; gctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  gctx.fillText('"绿水青山就是金山银山" — 建设生态文明，促进人与自然和谐共生',375,285);
+  gctx.fillStyle='#888'; gctx.font='11px sans-serif'; gctx.fillText(`(${probIdx+1}/6) 点击按钮切换`,375,298);
+}
+function cycleProblem(){probIdx=(probIdx+1)%6;drawProblem();}
+drawProblem();
+
+// ECOLOGICAL ENGINEERING
+const ngCanvas=document.getElementById('engCanvas'), ngctx=ngCanvas.getContext('2d');
+let engIdx=0;
+const engData=[
+  {name:'自生',desc:'有效选择生物组分\n合理布设，考虑生态位\n创造有益相互关系',ex:'避免单一纯林\n促进物种多样性',color:'#4caf50'},
+  {name:'循环',desc:'实现物质循环再生\n废物资源化',ex:'桑基鱼塘：\n桑→蚕→鱼→泥→桑',color:'#2196f3'},
+  {name:'协调',desc:'生物与环境相适应\n考虑环境承载力',ex:'西北不宜种需水量大的乔木\n引种要考虑适应性',color:'#ff9800'},
+  {name:'整体',desc:'遵从自然生态规律\n统筹自然+经济+社会',ex:'退耕还林+农民增收\n生态效益+社会效益',color:'#9c27b0'},
+];
+function drawEng(){
+  const w=750,h=280,d=engData[engIdx];
+  ngctx.clearRect(0,0,w,h); ngctx.fillStyle='#fafbfc'; ngctx.fillRect(0,0,w,h);
+  ngctx.fillStyle='#2c3e50'; ngctx.font='bold 16px "PingFang SC","Microsoft YaHei",sans-serif'; ngctx.textAlign='center';
+  ngctx.fillText(`原理：${d.name}`,375,28);
+
+  // Four circles
+  engData.forEach((e,i)=>{
+    const x=120+i*170, y=120, alpha=engIdx===i?1:0.3;
+    ngctx.globalAlpha=alpha;
+    ngctx.fillStyle=e.color; ngctx.strokeStyle='#333'; ngctx.lineWidth=2;
+    ngctx.beginPath(); ngctx.arc(x,y,40,0,Math.PI*2); ngctx.fill(); ngctx.stroke();
+    ngctx.fillStyle='#fff'; ngctx.font='bold 16px "PingFang SC","Microsoft YaHei",sans-serif'; ngctx.fillText(e.name,x,y+6);
+    ngctx.globalAlpha=1;
+  });
+
+  // Detail on right
+  ngctx.fillStyle='#2c3e50'; ngctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; ngctx.textAlign='left';
+  const lines=d.desc.split('\n'); lines.forEach((l,i)=>{ngctx.fillText(l,550,90+i*22);});
+  ngctx.fillStyle='#e65100'; ngctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  ngctx.fillText('实例：',550,175);
+  ngctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; ngctx.fillStyle='#2c3e50';
+  const lines2=d.ex.split('\n'); lines2.forEach((l,i)=>{ngctx.fillText(l,550,195+i*18);});
+
+  // Central philosophy
+  ngctx.fillStyle='#6a1b9a'; ngctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; ngctx.textAlign='center';
+  ngctx.fillText('马世骏："整体、协调、循环、自生"——生态工程四大基本原理',375,270);
+}
+function cycleEng(){engIdx=(engIdx+1)%4;drawEng();}
+drawEng();
+</script>
+</body>
+</html>

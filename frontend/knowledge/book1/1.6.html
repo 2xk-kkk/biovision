@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第6章 细胞的生命历程 - 知识清单</title>
+<style>
+  :root { --primary: #37474f; --primary-light: #eceff1; --accent: #c62828; --green: #2c8c5a; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; --transition: 0.25s ease; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #263238, #37474f); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f5f7f8; border-color: #b0bec5; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #b0bec5; color: #6a7a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #eceff1; color: #37474f; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .diagram-box canvas { max-width: 100%; cursor: pointer; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #263238; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #90a4ae; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #eceff1; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #263238, #607d8b); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 640px) { .info-row { grid-template-columns: 1fr; } .header h1 { font-size: 1.4em; } }
+  
+      /* ===== FLOATING SIDEBAR ===== */
+  .sidebar {
+    position: fixed;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 175px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    padding: 16px 0;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .sidebar .nav-title {
+    color: #37474f;
+    font-size: 0.9em;
+    font-weight: 700;
+    padding: 0 14px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #78909c;
+    text-decoration: none;
+    padding: 8px 14px;
+    font-size: 0.82em;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+  }
+  .sidebar a:hover {
+    background: rgba(33,150,243,0.06);
+    color: #37474f;
+  }
+  .sidebar a.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+  .sidebar .ch-num {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 18px;
+    text-align: center;
+  }
+  .main-wrap {
+    /* wraps container - no layout changes needed */
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: static;
+      transform: none;
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 8px;
+      gap: 4px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-title {
+      width: 100%;
+      padding: 4px 0;
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .sidebar a {
+      padding: 5px 8px;
+      font-size: 0.75em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .book-title { width: 100%; padding: 4px 0; }
+    .sidebar a.book-link {
+      padding: 5px 8px;
+      font-size: 0.7em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .nav-divider { width: 100%; margin: 4px 8px; }
+  }
+
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+            <nav class="sidebar">
+    <div class="nav-title">生物学 必修1<br>分子与细胞</div>
+      <a href="1.1.html"><span class="ch-num">第1章</span>走近细胞</a>
+      <a href="1.2.html"><span class="ch-num">第2章</span>组成细胞的分子</a>
+      <a href="1.3.html"><span class="ch-num">第3章</span>细胞的基本结构</a>
+      <a href="1.4.html"><span class="ch-num">第4章</span>物质输入和输出</a>
+      <a href="1.5.html"><span class="ch-num">第5章</span>能量供应和利用</a>
+      <a href="1.6.html" class="active"><span class="ch-num">第6章</span>细胞的生命历程</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link active">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+  <div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第6章 细胞的生命历程</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学必修1 · 分子与细胞</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 32 个知识点</div>
+
+<!-- 第1节 细胞增殖 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 细胞周期包括哪些阶段？什么是分裂间期？<br>
+      ● 细胞有丝分裂各时期有什么特征？<br>
+      ● 有丝分裂有什么意义？动植物有丝分裂有什么不同？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 细胞的增殖</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <!-- 细胞周期 vs 有丝分裂 动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🧬 有丝分裂动画 - 点击逐步播放</h4>
+      <canvas id="mitosisCanvas" width="750" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="mitosisStep=0; drawMitosis();">间期</button>
+        <button class="btn btn-primary" onclick="mitosisStep=1; drawMitosis();">前期</button>
+        <button class="btn btn-primary" onclick="mitosisStep=2; drawMitosis();">中期</button>
+        <button class="btn btn-primary" onclick="mitosisStep=3; drawMitosis();">后期</button>
+        <button class="btn btn-primary" onclick="mitosisStep=4; drawMitosis();">末期</button>
+        <button class="btn btn-outline" onclick="autoPlayMitosis();">▶ 自动播放</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>细胞周期</strong> = <strong>分裂间期</strong>（约90%~95%时间）+ <strong>分裂期</strong>（M期，约5%~10%）<br>
+      <strong>分裂间期</strong>：完成<strong>DNA的复制</strong>和有关蛋白质的合成（G₁→S→G₂）
+    </div>
+
+    <table>
+      <tr><th>时期</th><th>主要特征</th></tr>
+      <tr><td><strong>间期</strong></td><td>DNA复制和蛋白质合成；染色质形态；有核膜、核仁</td></tr>
+      <tr><td><strong>前期</strong></td><td>染色质→染色体（螺旋化）；<strong>核膜消失、核仁解体</strong>；出现纺锤体</td></tr>
+      <tr><td><strong>中期</strong></td><td>着丝粒排列在<strong>赤道板</strong>上；染色体形态最清晰、数目最易观察</td></tr>
+      <tr><td><strong>后期</strong></td><td><strong>着丝粒分裂</strong>→姐妹染色单体分开→染色体数目<strong>加倍</strong>（4N）</td></tr>
+      <tr><td><strong>末期</strong></td><td>染色体→染色质；<strong>核膜、核仁重新出现</strong>；细胞质分裂→两个子细胞</td></tr>
+    </table>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>植物 vs 动物有丝分裂的区别</h4>
+        <p>植物：无<strong>中心体</strong>参与；末期由高尔基体形成<strong>细胞板</strong>→细胞壁<br>
+        动物：有<strong>中心体</strong>参与（发出星射线形成纺锤体）；末期细胞膜<strong>向内凹陷</strong></p>
+      </div>
+      <div class="info-card">
+        <h4>染色体/DNA数目变化规律</h4>
+        <p>设体细胞为2N个染色体、2C个DNA<br>
+        间期后：2N染色体，<strong>4C DNA</strong>（复制了）<br>
+        后期：<strong>4N染色体</strong>（着丝粒分裂），4C DNA<br>
+        子细胞：2N染色体，2C DNA（恢复）</p>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>细胞周期</strong> = 分裂间期 + 分裂期</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>间期</strong>完成DNA复制和有关蛋白质合成（时间最长）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">各时期特征：前(膜仁消失显两体)、中(形定数清赤道齐)、后(粒裂数增均两极)、末(两消两现重建壁)</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>后期</strong>着丝粒分裂，染色体数目<strong>暂时加倍</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">动物和植物有丝分裂的区别（中心体、细胞板）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">有丝分裂的意义：保持遗传性状的<strong>稳定性</strong></span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">观察有丝分裂的实验材料：<strong>根尖分生区</strong>（洋葱/大蒜）</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 细胞分化 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 什么是细胞分化？细胞分化的实质是什么？<br>
+      ● 细胞分化有什么特点和意义？<br>
+      ● 什么是细胞全能性？干细胞有什么应用价值？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 细胞的分化</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🌳 细胞分化示意图</h4>
+      <canvas id="diffCanvas" width="750" height="220"></canvas>
+    </div>
+
+    <div class="highlight-box">
+      <strong>细胞分化的核心概念：</strong><br>
+      ✓ 在个体发育中，由一个或一种细胞增殖产生的后代，在<strong>形态、结构和生理功能</strong>上发生稳定性差异的过程<br>
+      ✓ 实质：<strong>基因的选择性表达</strong>（遗传物质没有改变！）<br>
+      ✓ 特点：<strong>持久性、稳定性、不可逆性</strong>（一般情况）
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>细胞全能性</h4>
+        <p>已分化的细胞仍具有发育成<strong>完整个体</strong>的潜能<br>
+        受精卵 > 生殖细胞 > 体细胞（全能性依次降低）<br>
+        植物细胞全能性 > 动物细胞核全能性</p>
+      </div>
+      <div class="info-card">
+        <h4>干细胞</h4>
+        <p>具有分裂和分化能力的细胞<br>
+        全能干细胞 → 多能干细胞 → 专能干细胞<br>
+        例：造血干细胞、骨髓中的干细胞</p>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label">细胞分化的实质：<strong>基因的选择性表达</strong>（遗传物质不变！）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">细胞分化的特点：持久性、稳定性</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>细胞全能性</strong>：已分化细胞仍具有发育成完整个体的潜能</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">全能性高低：受精卵 > 生殖细胞 > 体细胞</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 衰老和死亡 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 衰老细胞有哪些特征？<br>
+      ● 细胞凋亡与细胞坏死有什么区别？<br>
+      ● 细胞凋亡有什么生物学意义？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 细胞的衰老和死亡</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card">
+        <h4>细胞衰老的特征</h4>
+        <p>① 水分减少→细胞体积变小<br>
+        ② 酶活性降低→代谢减慢<br>
+        ③ 色素积累（脂褐素等）<br>
+        ④ 细胞核<strong>体积增大</strong>，核膜内折<br>
+        ⑤ 细胞膜<strong>通透性改变</strong></p>
+      </div>
+      <div class="info-card">
+        <h4>细胞凋亡 vs 细胞坏死</h4>
+        <p><strong>凋亡</strong>：<strong>基因控制</strong>的编程性死亡（主动、有序）<br>
+        对机体<strong>有利</strong>，如蝌蚪尾的消失<br>
+        <strong>坏死</strong>：不利因素（外伤、中毒等）<br>
+        导致的被动死亡，对机体<strong>有害</strong></p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>细胞凋亡的意义：</strong>保证多细胞生物体完成正常发育；维持内部环境的稳定；抵御外界各种因素的干扰。<br>
+      <strong>秀丽隐杆线虫</strong>是研究细胞凋亡的重要模式生物。
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">细胞衰老的五大特征</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>细胞凋亡</strong>是基因控制的编程性死亡（主动、有利）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>细胞坏死</strong>是外界不利因素引起的被动死亡（有害）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">凋亡与坏死的区别（基因控制 vs 外界因素）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">秀丽隐杆线虫与细胞凋亡研究</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+// CHECKLIST
+function updateProgress(){
+  const total=32;
+  const c=document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width=(c/total*100)+'%';
+  document.getElementById('progressLabel').textContent=`已掌握: ${c} / ${total} 个知识点`;
+  localStorage.setItem('bio_ch6_ck',JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach((li,i)=>{
+  li.dataset.id=i;
+  li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});
+});
+try{const s=JSON.parse(localStorage.getItem('bio_ch6_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== MITOSIS CANVAS =====
+const mCanvas=document.getElementById('mitosisCanvas'), mctx=mCanvas.getContext('2d');
+let mitosisStep=0;
+
+function drawMitosis(){
+  const w=750,h=300; mctx.clearRect(0,0,w,h); mctx.fillStyle='#fafbfc'; mctx.fillRect(0,0,w,h);
+
+  // Cell outline (circle)
+  const cx=375,cy=160,cr=100;
+
+  mctx.fillStyle='#fff9e8'; mctx.strokeStyle='#f4a236'; mctx.lineWidth=2.5;
+  mctx.beginPath(); mctx.arc(cx,cy,cr,0,Math.PI*2); mctx.fill(); mctx.stroke();
+
+  mctx.fillStyle='#2c3e50'; mctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; mctx.textAlign='center';
+
+  const stages=['间期（DNA复制）','前期（膜仁消失显两体）','中期（形定数清赤道齐）','后期（粒裂数增均两极）','末期（两消两现重建壁）'];
+  mctx.fillText(stages[mitosisStep],cx,30);
+
+  if(mitosisStep===0){
+    // Interphase: chromatin, nuclear membrane, nucleolus
+    mctx.strokeStyle='#37474f'; mctx.lineWidth=1.5;
+    mctx.beginPath(); mctx.arc(cx-10,cy,45,0,Math.PI*2); mctx.stroke(); // nuclear membrane
+    mctx.fillStyle='#3f51b5'; mctx.beginPath(); mctx.arc(cx+5,cy-5,12,0,Math.PI*2); mctx.fill(); // nucleolus
+    // Chromatin (tangled)
+    mctx.strokeStyle='#3f51b5'; mctx.lineWidth=1.5;
+    for(let i=0;i<8;i++){
+      mctx.beginPath();
+      mctx.arc(cx-15+Math.random()*35,cy-10+Math.random()*30,6+Math.random()*10,0,Math.PI*1.5); mctx.stroke();
+    }
+    mctx.fillStyle='#37474f'; mctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+    mctx.fillText('核膜',cx-55,cy-38);
+    mctx.fillText('核仁',cx+25,cy-10);
+    mctx.fillText('染色质',cx-45,cy+50);
+  } else if(mitosisStep===1){
+    // Prophase: chromosomes appear, no nuclear membrane
+    mctx.globalAlpha=0.3; mctx.strokeStyle='#999'; mctx.setLineDash([4,4]);
+    mctx.beginPath(); mctx.arc(cx-10,cy,45,0,Math.PI*2); mctx.stroke(); mctx.setLineDash([]); mctx.globalAlpha=1;
+    mctx.fillStyle='#999'; mctx.font='10px sans-serif'; mctx.fillText('核膜消失',cx-55,cy-38);
+    // Chromosomes
+    for(let i=0;i<4;i++){
+      const bx=cx-30+i*20,by=cy-15+Math.random()*30;
+      drawChromosome(bx,by,0.8);
+    }
+    // Spindle fibers (dashed from poles)
+    mctx.strokeStyle='#90a4ae'; mctx.lineWidth=1; mctx.setLineDash([3,3]);
+    mctx.beginPath(); mctx.moveTo(cx,cy-cr); mctx.lineTo(cx-20,cy); mctx.moveTo(cx,cy-cr); mctx.lineTo(cx+20,cy);
+    mctx.moveTo(cx,cy+cr); mctx.lineTo(cx-20,cy); mctx.moveTo(cx,cy+cr); mctx.lineTo(cx+20,cy);
+    mctx.stroke(); mctx.setLineDash([]);
+    mctx.fillStyle='#90a4ae'; mctx.font='10px sans-serif'; mctx.fillText('纺锤体',cx,cy-cr-10);
+  } else if(mitosisStep===2){
+    // Metaphase: chromosomes aligned at equator
+    mctx.strokeStyle='#90a4ae'; mctx.lineWidth=1.5; mctx.setLineDash([5,3]);
+    mctx.beginPath(); mctx.moveTo(cx-90,cy); mctx.lineTo(cx+90,cy); // equatorial plate
+    mctx.stroke(); mctx.setLineDash([]);
+    mctx.fillStyle='#c62828'; mctx.font='11px sans-serif'; mctx.fillText('赤道板',cx+100,cy+5);
+    for(let i=0;i<4;i++){
+      drawChromosome(cx-35+i*22,cy-3,0.9);
+    }
+  } else if(mitosisStep===3){
+    // Anaphase: sister chromatids separate
+    mctx.strokeStyle='#90a4ae'; mctx.lineWidth=1.5; mctx.setLineDash([5,3]);
+    mctx.beginPath(); mctx.moveTo(cx-90,cy); mctx.lineTo(cx+90,cy); mctx.stroke(); mctx.setLineDash([]);
+    // Pairs separating
+    const sep=25+Math.sin(Date.now()/500)*5;
+    for(let i=0;i<4;i++){
+      const bx=cx-30+i*18;
+      drawSingleChromatid(bx-sep,cy-20,0.9); // upper
+      drawSingleChromatid(bx+sep,cy+20,0.9); // lower
+    }
+    // Arrows
+    mctx.fillStyle='#c62828'; mctx.font='12px sans-serif';
+    mctx.fillText('←着丝粒分裂→',cx,cy-55);
+  } else {
+    // Telophase: two nuclei forming
+    mctx.strokeStyle='#90a4ae'; mctx.lineWidth=2; mctx.setLineDash([4,4]);
+    mctx.beginPath(); mctx.moveTo(cx,cy-cr+10); mctx.lineTo(cx,cy+cr-10); mctx.stroke(); mctx.setLineDash([]);
+    // Two nuclear membranes
+    for(let nx of [cx-35,cx+35]){
+      mctx.strokeStyle='#37474f'; mctx.lineWidth=1.5;
+      mctx.beginPath(); mctx.arc(nx,cy-10,22,0,Math.PI*2); mctx.stroke();
+      mctx.fillStyle='#3f51b5'; mctx.beginPath(); mctx.arc(nx+3,cy-12,7,0,Math.PI*2); mctx.fill();
+    }
+    mctx.fillStyle='#2c8c5a'; mctx.font='11px sans-serif';
+    mctx.fillText('新核膜核仁出现',cx-35,cy-42);
+    mctx.fillText('细胞质分裂',cx+55,cy+55);
+  }
+
+  mctx.fillStyle='#888'; mctx.font='10px sans-serif'; mctx.textAlign='right';
+  mctx.fillText('点击上方按钮切换时期 | 2N=8（以4条染色体示意）',720,290);
+}
+
+function drawChromosome(x,y,scale){
+  const s=scale;
+  mctx.fillStyle='#3f51b5'; mctx.strokeStyle='#1a237e'; mctx.lineWidth=2*s;
+  // Left chromatid
+  mctx.beginPath(); mctx.moveTo(x-10*s,y-20*s); mctx.quadraticCurveTo(x-15*s,y,x-10*s,y+20*s); mctx.stroke();
+  // Right chromatid
+  mctx.beginPath(); mctx.moveTo(x-3*s,y-20*s); mctx.quadraticCurveTo(x+2*s,y,x-3*s,y+20*s); mctx.stroke();
+  // Centromere
+  mctx.fillStyle='#c62828'; mctx.beginPath(); mctx.arc(x-6*s,y,4*s,0,Math.PI*2); mctx.fill();
+}
+
+function drawSingleChromatid(x,y,scale){
+  const s=scale;
+  mctx.fillStyle='#3f51b5'; mctx.strokeStyle='#1a237e'; mctx.lineWidth=2*s;
+  mctx.beginPath(); mctx.moveTo(x-6*s,y-18*s); mctx.quadraticCurveTo(x-10*s,y,x-6*s,y+18*s); mctx.stroke();
+  mctx.fillStyle='#c62828'; mctx.beginPath(); mctx.arc(x-6*s,y,3*s,0,Math.PI*2); mctx.fill();
+}
+
+function autoPlayMitosis(){
+  mitosisStep=0; drawMitosis();
+  let delay=0;
+  [0,1,2,3,4].forEach(s=>{
+    setTimeout(()=>{mitosisStep=s; drawMitosis();},delay);
+    delay+=1500;
+  });
+}
+drawMitosis();
+
+// Cell differentiation canvas
+const dCanvas=document.getElementById('diffCanvas'), dctx=dCanvas.getContext('2d');
+function drawDiff(){
+  const w=750,h=220; dctx.clearRect(0,0,w,h); dctx.fillStyle='#fafbfc'; dctx.fillRect(0,0,w,h);
+
+  // Stem cell
+  dctx.fillStyle='#e3f2fd'; dctx.strokeStyle='#1565c0'; dctx.lineWidth=2.5;
+  dctx.beginPath(); dctx.arc(100,110,30,0,Math.PI*2); dctx.fill(); dctx.stroke();
+  dctx.fillStyle='#1565c0'; dctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; dctx.textAlign='center';
+  dctx.fillText('受精卵',100,115);
+  dctx.fillText('（全能干细胞）',100,155);
+
+  // Branching
+  dctx.strokeStyle='#78909c'; dctx.lineWidth=2;
+  const branches=[
+    {x:220,y:70,label:'神经细胞',color:'#e8f5e9',stroke:'#2c8c5a'},
+    {x:220,y:150,label:'肌肉细胞',color:'#fff3e0',stroke:'#e65100'},
+    {x:400,y:50,label:'红细胞',color:'#fce4ec',stroke:'#c62828'},
+    {x:400,y:170,label:'上皮细胞',color:'#f3e5f5',stroke:'#7b1fa2'},
+    {x:560,y:110,label:'肝细胞',color:'#e0f2f1',stroke:'#00695c'},
+  ];
+
+  dctx.beginPath();
+  dctx.moveTo(130,110);
+  dctx.quadraticCurveTo(170,60,210,70);
+  dctx.moveTo(130,110);
+  dctx.quadraticCurveTo(170,150,210,150);
+  dctx.stroke();
+
+  branches.slice(2).forEach(b=>{
+    dctx.strokeStyle='#78909c'; dctx.lineWidth=1.5;
+    dctx.beginPath();
+    if(b.y<110) dctx.quadraticCurveTo(300,50,b.x,b.y);
+    else dctx.quadraticCurveTo(300,170,b.x,b.y);
+    dctx.stroke();
+  });
+
+  branches.forEach(b=>{
+    dctx.fillStyle=b.color; dctx.strokeStyle=b.stroke; dctx.lineWidth=2;
+    dctx.beginPath();
+    // Different shapes for different cell types
+    if(b.label==='红细胞'){dctx.arc(b.x,b.y,18,0,Math.PI*2);}
+    else if(b.label==='神经细胞'){dctx.arc(b.x,b.y,16,0,Math.PI*2);}
+    else{roundRectM3(dctx,b.x-18,b.y-14,36,28,8);}
+    dctx.fill(); dctx.stroke();
+    dctx.fillStyle='#2c3e50'; dctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif'; dctx.textAlign='center';
+    dctx.fillText(b.label,b.x,b.y+4);
+  });
+
+  dctx.fillStyle='#546e7a'; dctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';
+  dctx.fillText('基因的选择性表达（遗传物质相同）',375,210);
+}
+function roundRectM3(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+drawDiff();
+</script>
+
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第5章 细胞的能量供应和利用 - 知识清单</title>
+<style>
+  :root { --primary: #e65100; --primary-light: #fff3e0; --accent: #2c8c5a; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; --transition: 0.25s ease; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #bf360c, #e65100); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #fff8f0; border-color: #ffcc80; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ffab91; color: #8a6a5a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2c8c5a; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-green { background: var(--accent); color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #ffab91; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #fff3e0; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #bf360c, #ff9800); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 640px) { .info-row { grid-template-columns: 1fr; } .header h1 { font-size: 1.4em; } }
+  .formula-large { display: inline-block; background: #f5f5f5; padding: 10px 16px; border-radius: 8px; font-family: "Courier New", monospace; font-size: 1.05em; border: 2px solid var(--primary); margin: 8px; }
+  .step-flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 12px 0; font-size: 0.9em; }
+  .step-box { background: var(--primary-light); border: 1.5px solid var(--primary); border-radius: 8px; padding: 6px 12px; font-weight: 600; }
+  .step-arrow { color: var(--primary); font-weight: bold; font-size: 1.2em; }
+
+      /* ===== FLOATING SIDEBAR ===== */
+  .sidebar {
+    position: fixed;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 175px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    padding: 16px 0;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .sidebar .nav-title {
+    color: #37474f;
+    font-size: 0.9em;
+    font-weight: 700;
+    padding: 0 14px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #78909c;
+    text-decoration: none;
+    padding: 8px 14px;
+    font-size: 0.82em;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+  }
+  .sidebar a:hover {
+    background: rgba(33,150,243,0.06);
+    color: #37474f;
+  }
+  .sidebar a.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+  .sidebar .ch-num {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 18px;
+    text-align: center;
+  }
+  .main-wrap {
+    /* wraps container - no layout changes needed */
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: static;
+      transform: none;
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 8px;
+      gap: 4px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-title {
+      width: 100%;
+      padding: 4px 0;
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .sidebar a {
+      padding: 5px 8px;
+      font-size: 0.75em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .book-title { width: 100%; padding: 4px 0; }
+    .sidebar a.book-link {
+      padding: 5px 8px;
+      font-size: 0.7em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .nav-divider { width: 100%; margin: 4px 8px; }
+  }
+
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+            <nav class="sidebar">
+    <div class="nav-title">生物学 必修1<br>分子与细胞</div>
+      <a href="1.1.html"><span class="ch-num">第1章</span>走近细胞</a>
+      <a href="1.2.html"><span class="ch-num">第2章</span>组成细胞的分子</a>
+      <a href="1.3.html"><span class="ch-num">第3章</span>细胞的基本结构</a>
+      <a href="1.4.html"><span class="ch-num">第4章</span>物质输入和输出</a>
+      <a href="1.5.html" class="active"><span class="ch-num">第5章</span>能量供应和利用</a>
+      <a href="1.6.html"><span class="ch-num">第6章</span>细胞的生命历程</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link active">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+  <div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第5章 细胞的能量供应和利用</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学必修1 · 分子与细胞</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 45 个知识点</div>
+
+<!-- 第1节 酶 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 酶的作用是什么？酶的本质是什么？<br>
+      ● 酶有哪些特性？影响酶活性的条件有哪些？<br>
+      ● 什么是活化能？酶是怎样降低活化能的？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 降低化学反应活化能的酶</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">⚡ 酶的作用机理 - 降低活化能</h4>
+      <canvas id="enzymeCanvas" width="750" height="240"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="enzymeScene='without'; drawEnzyme();">无酶催化</button>
+        <button class="btn btn-green" onclick="enzymeScene='with'; drawEnzyme();">有酶催化</button>
+        <button class="btn btn-outline" onclick="enzymeScene='compare'; drawEnzyme();">对比</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>酶的本质和作用：</strong><br>
+      ✓ 本质：<strong>蛋白质</strong>或<strong>RNA</strong>（绝大多数是蛋白质）<br>
+      ✓ 作用：<strong>降低</strong>化学反应的<strong>活化能</strong>（不改变平衡点，不改变化学反应的ΔG）<br>
+      ✓ 特性：<strong>高效性、专一性</strong>、作用条件<strong>温和</strong>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>高效性</h4>
+        <p>酶的催化效率比无机催化剂高10⁷ ~ 10¹³倍<br>
+        实验验证：比较H₂O₂在不同条件下的分解</p>
+      </div>
+      <div class="info-card">
+        <h4>专一性</h4>
+        <p>一种酶只能催化<strong>一种或一类</strong>化学反应<br>
+        实验验证：淀粉酶对淀粉和蔗糖的水解</p>
+      </div>
+      <div class="info-card">
+        <h4>条件温和</h4>
+        <p>需要适宜的<strong>温度</strong>和<strong>pH</strong><br>
+        高温、强酸、强碱会使酶<strong>变性失活</strong>（不可逆）<br>
+        低温只是<strong>抑制</strong>酶活性（可恢复）</p>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label">酶的本质：<strong>蛋白质</strong>或<strong>RNA</strong>（绝大多数是蛋白质）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">酶的作用机理：<strong>降低活化能</strong>（不改变平衡！）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">酶的三大特性：<strong>高效性、专一性</strong>、条件温和</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>高温/强酸/强碱</strong>→ 酶变性失活（不可逆）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>低温</strong>→ 酶活性降低但可恢复（不破坏结构）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">最适温度和最适pH的概念</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 ATP -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● ATP的结构是怎样的？为什么说ATP是细胞的能量"货币"？<br>
+      ● ATP与ADP是怎样相互转化的？这有什么意义？<br>
+      ● 细胞中ATP的含量很少，怎样满足生命活动的需要？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 细胞的能量"货币"ATP</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🔋 ATP结构 - 交互演示</h4>
+      <canvas id="atpCanvas" width="750" height="180"></canvas>
+    </div>
+
+    <div class="highlight-box">
+      <strong>ATP全称</strong>：腺苷三磷酸（Adenosine Triphosphate）<br>
+      <strong>结构简式</strong>：A — P ~ P ~ P（"~"代表高能磷酸键）<br>
+      <strong>功能</strong>：细胞生命活动的<strong>直接能源物质</strong>（不是主要能源！葡萄糖是主要能源）<br>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>ATP ↔ ADP 的相互转化</h4>
+        <p style="font-family:monospace;">
+          ATP ⇌ ADP + Pi + 能量<br>
+          （水解酶/合成酶催化）<br>
+          时刻进行，不可逆（酶不同）
+        </p>
+      </div>
+      <div class="info-card">
+        <h4>ATP的来源</h4>
+        <p>
+          动物：<strong>细胞呼吸</strong><br>
+          植物：<strong>细胞呼吸 + 光合作用</strong><br>
+          ATP含量在细胞内很少，但转化极快
+        </p>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label">ATP是细胞生命活动的<strong>直接能源物质</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">ATP结构简式：<strong>A—P~P~P</strong>（2个高能磷酸键）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">ATP与ADP的相互转化（酶不同，不可逆）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">能源物质排序：糖类（主要）> 脂肪（储能多）> ATP（直接）</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 细胞呼吸 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 有氧呼吸和无氧呼吸的过程是怎样的？<br>
+      ● 有氧呼吸与无氧呼吸有什么异同？<br>
+      ● 细胞呼吸的意义是什么？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 细胞呼吸的原理和应用</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🏭 有氧呼吸三阶段 - 交互导图</h4>
+      <canvas id="respirationCanvas" width="750" height="320"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="respStep=1; drawRespiration();">第一阶段</button>
+        <button class="btn btn-primary" onclick="respStep=2; drawRespiration();">第二阶段</button>
+        <button class="btn btn-primary" onclick="respStep=3; drawRespiration();">第三阶段</button>
+        <button class="btn btn-outline" onclick="respStep=0; drawRespiration();">全流程</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>有氧呼吸总方程式：</strong><br>
+      <span class="formula-large">C₆H₁₂O₆ + 6H₂O + 6O₂ → 6CO₂ + 12H₂O + 能量</span>
+    </div>
+
+    <table>
+      <tr><th>阶段</th><th>场所</th><th>反应物</th><th>产物</th><th>产能</th></tr>
+      <tr><td>第一阶段（糖酵解）</td><td>细胞质基质</td><td>葡萄糖</td><td>2丙酮酸 + 4[H]</td><td>少量（2ATP）</td></tr>
+      <tr><td>第二阶段（柠檬酸循环）</td><td>线粒体基质</td><td>丙酮酸 + H₂O</td><td>CO₂ + [H]</td><td>少量（2ATP）</td></tr>
+      <tr><td>第三阶段（氧化磷酸化）</td><td>线粒体内膜</td><td>[H] + O₂</td><td>H₂O</td><td>大量（34ATP）</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>无氧呼吸：</strong><br>
+      ① 产生酒精和CO₂：C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂ + 少量能量（酵母菌、大多数植物）<br>
+      ② 产生乳酸：C₆H₁₂O₆ → 2C₃H₆O₃ + 少量能量（动物、乳酸菌、马铃薯块茎）<br>
+      <strong>第一阶段与有氧呼吸完全相同</strong>，都在细胞质基质中进行
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">有氧呼吸三阶段的<strong>场所</strong>（基质→线粒体基质→线粒体内膜）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">有氧呼吸总方程式（重点：H₂O在反应物和产物中都出现）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">O₂在<strong>第三阶段</strong>参与反应，与[H]结合生成H₂O</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">CO₂产生于<strong>第二阶段</strong>（第一阶段不产生CO₂！）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">无氧呼吸的两种类型（酒精发酵 vs 乳酸发酵）及代表生物</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">无氧呼吸只在<strong>第一阶段</strong>释放少量能量（其余存留在酒精/乳酸中）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">细胞呼吸的意义：为生命活动提供能量</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第4节 光合作用 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 叶绿体中有哪些色素？各有什么颜色和功能？<br>
+      ● 光合作用的光反应和暗反应是怎样进行的？<br>
+      ● 光合作用的原理在生产中有哪些应用？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第4节 光合作用与能量转化</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🌿 光合作用全过程 - 交互导图</h4>
+      <canvas id="photoCanvas" width="750" height="320"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="photoScene='light'; drawPhoto();">光反应</button>
+        <button class="btn btn-primary" onclick="photoScene='dark'; drawPhoto();">暗反应（碳反应）</button>
+        <button class="btn btn-outline" onclick="photoScene='all'; drawPhoto();">全过程</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>光合作用总方程式：</strong><br>
+      <span class="formula-large">6CO₂ + 12H₂O →(光能,叶绿体) C₆H₁₂O₆ + 6O₂ + 6H₂O</span>
+    </div>
+
+    <table>
+      <tr><th>比较项目</th><th>光反应</th><th>暗反应（碳反应）</th></tr>
+      <tr><td>场所</td><td>类囊体薄膜</td><td>叶绿体基质</td></tr>
+      <tr><td>条件</td><td>需要光、色素、酶</td><td>不需光，需要酶、ATP、NADPH</td></tr>
+      <tr><td>过程</td><td>水的光解 + ATP和NADPH的合成</td><td>CO₂的固定 + C₃的还原</td></tr>
+      <tr><td>产物</td><td>O₂、ATP、NADPH</td><td>（CH₂O）、ADP、NADP⁺</td></tr>
+      <tr><td>能量转化</td><td>光能→活跃的化学能</td><td>活跃的化学能→稳定的化学能</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>色素提取与分离：</strong><br>
+      <strong>提取</strong>：用<strong>无水乙醇</strong>（研磨法）→ 溶解色素<br>
+      <strong>分离</strong>：用<strong>层析液</strong>（纸层析法）→ 不同色素在滤纸上扩散速度不同<br>
+      <strong>结果（自上而下）</strong>：胡萝卜素（橙黄）→ 叶黄素（黄）→ 叶绿素a（蓝绿）→ 叶绿素b（黄绿）
+    </div>
+
+    <ul class="checklist" id="cl4">
+      <li><span class="check-box"></span><span class="label">光合作用的场所：<strong>叶绿体</strong>（类囊体薄膜+基质）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">四种光合色素及在层析纸上的顺序</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>光反应</strong>：类囊体薄膜上，水光解产生O₂，生成ATP和NADPH</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>暗反应</strong>：叶绿体基质中，CO₂固定（C₅+CO₂→2C₃），C₃被还原</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">光反应为暗反应提供<strong>ATP</strong>和<strong>NADPH</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">光合作用总方程式（O₂全部来自<strong>H₂O</strong>的光解！）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">影响光合作用的因素：光照强度、CO₂浓度、温度、水等</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+// CHECKLIST
+function updateProgress(){
+  const total=45;
+  const c=document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width=(c/total*100)+'%';
+  document.getElementById('progressLabel').textContent=`已掌握: ${c} / ${total} 个知识点`;
+  localStorage.setItem('bio_ch5_ck',JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach((li,i)=>{
+  li.dataset.id=i;
+  li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});
+});
+try{const s=JSON.parse(localStorage.getItem('bio_ch5_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== ENZYME CANVAS =====
+const eCanvas=document.getElementById('enzymeCanvas'), ectx=eCanvas.getContext('2d');
+let enzymeScene='compare';
+function drawEnzyme(){
+  const w=750,h=240; ectx.clearRect(0,0,w,h); ectx.fillStyle='#fafbfc'; ectx.fillRect(0,0,w,h);
+
+  function drawEnergyCurve(cx,color,isEnzyme){
+    ectx.strokeStyle=color; ectx.lineWidth=3;
+    ectx.beginPath();
+    ectx.moveTo(30,190);
+    ectx.quadraticCurveTo(cx, isEnzyme?60:20, cx+60, isEnzyme?60:20);
+    ectx.quadraticCurveTo(cx+200, isEnzyme?60:20, cx+200,150);
+    ectx.stroke();
+
+    // Baseline products
+    ectx.strokeStyle=color; ectx.setLineDash([4,4]); ectx.lineWidth=1;
+    ectx.beginPath(); ectx.moveTo(30,190); ectx.lineTo(cx+260,190); ectx.setLineDash([]);
+    ectx.beginPath(); ectx.moveTo(cx+200,150); ectx.lineTo(cx+260,150); ectx.setLineDash([]);
+    ectx.stroke();
+
+    // Activation energy arrow
+    const peakY=isEnzyme?60:20;
+    ectx.strokeStyle=color; ectx.setLineDash([3,3]); ectx.lineWidth=1.5;
+    ectx.beginPath(); ectx.moveTo(cx,190); ectx.lineTo(cx,peakY);
+    ectx.stroke(); ectx.setLineDash([]);
+
+    // Arrowhead
+    ectx.fillStyle=color; ectx.beginPath();
+    ectx.moveTo(cx,peakY); ectx.lineTo(cx-5,peakY+10); ectx.lineTo(cx+5,peakY+10); ectx.fill();
+
+    ectx.fillStyle=color; ectx.font='bold 12px sans-serif'; ectx.textAlign='center';
+    ectx.fillText(isEnzyme?'有酶催化（活化能低）':'无酶催化（活化能高）',cx+100,isEnzyme?40:10);
+    ectx.fillText('反应物',18,207);
+    ectx.fillText('产物',cx+260,140);
+    ectx.font='10px sans-serif';
+    ectx.fillText(`活化能${isEnzyme?'低':'(高)'}`,cx,peakY-5);
+  }
+
+  if(enzymeScene==='without'||enzymeScene==='compare') drawEnergyCurve(100,'#c62828',false);
+  if(enzymeScene==='with'||enzymeScene==='compare') drawEnergyCurve(380,'#2c8c5a',true);
+
+  ectx.fillStyle='#2c3e50'; ectx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; ectx.textAlign='center';
+  ectx.fillText('酶通过降低活化能提高反应速率（不改变化学平衡）',375,232);
+}
+drawEnzyme();
+
+// ===== ATP CANVAS =====
+const actx=document.getElementById('atpCanvas').getContext('2d');
+function drawATP(){
+  const w=750,h=180; actx.clearRect(0,0,w,h); actx.fillStyle='#fafbfc'; actx.fillRect(0,0,w,h);
+
+  // A (adenosine)
+  actx.fillStyle='#bbdefb'; actx.strokeStyle='#1565c0'; actx.lineWidth=3;
+  actx.beginPath(); roundRectM2(actx,80,60,80,60,10); actx.fill(); actx.stroke();
+  actx.fillStyle='#1565c0'; actx.font='bold 16px sans-serif'; actx.textAlign='center'; actx.fillText('A',120,98);
+
+  // P1
+  actx.fillStyle='#ffcc80'; actx.strokeStyle='#e65100'; actx.lineWidth=3;
+  actx.beginPath(); roundRectM2(actx,200,65,60,50,8); actx.fill(); actx.stroke();
+  actx.fillStyle='#e65100'; actx.font='bold 15px sans-serif'; actx.fillText('P',230,98);
+
+  // P2
+  actx.fillStyle='#ffab40'; actx.strokeStyle='#e65100'; actx.lineWidth=3;
+  actx.beginPath(); roundRectM2(actx,300,65,60,50,8); actx.fill(); actx.stroke();
+  actx.fillStyle='#e65100'; actx.fillText('P',330,98);
+
+  // P3
+  actx.fillStyle='#ff9100'; actx.strokeStyle='#e65100'; actx.lineWidth=3;
+  actx.beginPath(); roundRectM2(actx,400,65,60,50,8); actx.fill(); actx.stroke();
+  actx.fillStyle='#fff'; actx.fillText('P',430,98);
+
+  // Connecting lines
+  actx.strokeStyle='#333'; actx.lineWidth=2;
+  actx.beginPath(); actx.moveTo(160,90); actx.lineTo(200,90); actx.stroke();
+  actx.beginPath(); actx.moveTo(260,90); actx.lineTo(300,90); actx.stroke();
+  actx.beginPath(); actx.moveTo(360,90); actx.lineTo(400,90); actx.stroke();
+
+  // ~ symbols
+  actx.fillStyle='#c62828'; actx.font='bold 18px sans-serif';
+  actx.fillText('~',280,83);
+  actx.fillText('~',380,83);
+
+  // Labels
+  actx.fillStyle='#2c3e50'; actx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';
+  actx.fillText('腺苷',120,135);
+  actx.fillText('磷酸基团',330,135);
+  actx.fillText('高能磷酸键',330,150);
+  actx.fillStyle='#c62828'; actx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  actx.fillText('A — P ~ P ~ P        结构简式',375,172);
+}
+function roundRectM2(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+drawATP();
+
+// ===== RESPIRATION CANVAS =====
+const rCanvas=document.getElementById('respirationCanvas'), rctx=rCanvas.getContext('2d');
+let respStep=0;
+function drawRespiration(){
+  const w=750,h=320; rctx.clearRect(0,0,w,h); rctx.fillStyle='#fafbfc'; rctx.fillRect(0,0,w,h);
+
+  function alpha(step){return respStep===0||respStep===step?1:0.3;}
+
+  // Stage 1: Cytoplasm matrix
+  rctx.globalAlpha=alpha(1);
+  rctx.fillStyle='#fff3e0'; rctx.strokeStyle='#e65100'; rctx.lineWidth=2.5;
+  rctx.beginPath(); rctx.roundRect(30,40,200,240,12); rctx.fill(); rctx.stroke();
+  rctx.fillStyle='#e65100'; rctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; rctx.textAlign='center';
+  rctx.fillText('第一阶段',130,65);
+  rctx.fillText('细胞质基质',130,85);
+  rctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+  rctx.fillText('葡萄糖 (C₆H₁₂O₆)',130,110);
+  rctx.fillText('↓',130,130);
+  rctx.fillText('2 丙酮酸 + 4 [H]',130,150);
+  rctx.fillText('+ 少量能量 (2 ATP)',130,170);
+
+  // Arrow 1→2
+  rctx.globalAlpha=alpha(2)>0?1:0.3;
+  rctx.strokeStyle='#333'; rctx.lineWidth=2;
+  rctx.beginPath(); drawArrowR(rctx,230,150,280,150); rctx.stroke();
+  rctx.fillStyle='#333'; rctx.font='10px sans-serif'; rctx.fillText('丙酮酸→',255,142);
+
+  // Stage 2: Mitochondrial matrix
+  rctx.globalAlpha=alpha(2);
+  rctx.fillStyle='#fce4ec'; rctx.strokeStyle='#c62828'; rctx.lineWidth=2.5;
+  rctx.beginPath(); rctx.roundRect(280,40,200,240,12); rctx.fill(); rctx.stroke();
+  rctx.fillStyle='#c62828'; rctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  rctx.fillText('第二阶段',380,65);
+  rctx.fillText('线粒体基质',380,85);
+  rctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+  rctx.fillText('2 丙酮酸 + 6 H₂O',380,110);
+  rctx.fillText('↓',380,130);
+  rctx.fillText('6 CO₂ + 20 [H]',380,150);
+  rctx.fillText('+ 少量能量 (2 ATP)',380,170);
+
+  // Arrow 2→3
+  rctx.globalAlpha=alpha(3)>0?1:0.3;
+  rctx.strokeStyle='#333'; rctx.lineWidth=2;
+  rctx.beginPath(); drawArrowR(rctx,480,150,530,150); rctx.stroke();
+  rctx.fillStyle='#333'; rctx.font='10px sans-serif'; rctx.fillText('[H]→',505,142);
+
+  // Stage 3: Inner membrane
+  rctx.globalAlpha=alpha(3);
+  rctx.fillStyle='#e8f5e9'; rctx.strokeStyle='#2c8c5a'; rctx.lineWidth=2.5;
+  rctx.beginPath(); rctx.roundRect(530,40,200,240,12); rctx.fill(); rctx.stroke();
+  rctx.fillStyle='#2c8c5a'; rctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  rctx.fillText('第三阶段',630,65);
+  rctx.fillText('线粒体内膜',630,85);
+  rctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+  rctx.fillText('24 [H] + 6 O₂',630,110);
+  rctx.fillText('↓',630,130);
+  rctx.fillText('12 H₂O',630,150);
+  rctx.fillText('+ 大量能量 (34 ATP)',630,170);
+
+  rctx.globalAlpha=1;
+  // Big arrow summary
+  rctx.fillStyle='#2c3e50'; rctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  rctx.fillText('总反应：C₆H₁₂O₆ + 6H₂O + 6O₂ → 6CO₂ + 12H₂O + 能量（38 ATP）',375,305);
+}
+function drawArrowR(ctx,x1,y1,x2,y2){
+  ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  const angle=Math.atan2(y2-y1,x2-x1);
+  ctx.moveTo(x2,y2); ctx.lineTo(x2-8*Math.cos(angle-0.4),y2-8*Math.sin(angle-0.4));
+  ctx.moveTo(x2,y2); ctx.lineTo(x2-8*Math.cos(angle+0.4),y2-8*Math.sin(angle+0.4));
+}
+drawRespiration();
+
+// ===== PHOTOSYNTHESIS CANVAS =====
+const pCanvas=document.getElementById('photoCanvas'), pctx=pCanvas.getContext('2d');
+let photoScene='all';
+function drawPhoto(){
+  const w=750,h=320; pctx.clearRect(0,0,w,h); pctx.fillStyle='#fafbfc'; pctx.fillRect(0,0,w,h);
+
+  function pAlpha(scene){return photoScene==='all'||photoScene===scene?1:0.3;}
+
+  // Light reaction (left)
+  pctx.globalAlpha=pAlpha('light');
+  pctx.fillStyle='#fff8e1'; pctx.strokeStyle='#f9a825'; pctx.lineWidth=2.5;
+  pctx.beginPath(); pctx.roundRect(30,30,330,270,12); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#f9a825'; pctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.textAlign='center';
+  pctx.fillText('☀ 光反应（类囊体薄膜）',195,55);
+  pctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.fillText('H₂O → 2[H] + ½O₂↑（水的光解）',195,90);
+  pctx.fillText('ADP + Pi → ATP（光能→化学能）',195,115);
+  pctx.fillText('NADP⁺ + [H] → NADPH',195,140);
+  pctx.fillText('产物：O₂（释放）',195,175);
+  pctx.fillText('　　　ATP（供给暗反应）',195,195);
+  pctx.fillText('　　　NADPH（供给暗反应）',195,215);
+
+  // Products flowing to dark
+  pctx.globalAlpha=1;
+  pctx.strokeStyle='#f9a825'; pctx.lineWidth=2; pctx.setLineDash([5,4]);
+  pctx.beginPath(); drawArrowR(pctx,360,170,390,170); pctx.stroke(); pctx.setLineDash([]);
+  pctx.fillStyle='#f9a825'; pctx.font='10px sans-serif'; pctx.fillText('ATP',375,158);
+  pctx.fillText('NADPH',375,188);
+
+  // Dark reaction (right)
+  pctx.globalAlpha=pAlpha('dark');
+  pctx.fillStyle='#e8f5e9'; pctx.strokeStyle='#2c8c5a'; pctx.lineWidth=2.5;
+  pctx.beginPath(); pctx.roundRect(390,30,330,270,12); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#2c8c5a'; pctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.fillText('暗反应/碳反应（叶绿体基质）',555,55);
+  pctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.fillText('CO₂ + C₅ → 2 C₃（CO₂的固定）',555,90);
+  pctx.fillText('2 C₃ + ATP + NADPH → (CH₂O) + C₅',555,115);
+  pctx.fillText('C₃被还原，C₅再生（循环）',555,150);
+  pctx.fillText('产物：(CH₂O) → 最终→葡萄糖',555,185);
+  pctx.fillText('　　　ADP + NADP⁺（返回光反应）',555,210);
+
+  pctx.globalAlpha=1;
+  // Recycled products back
+  pctx.strokeStyle='#2c8c5a'; pctx.lineWidth=1.5; pctx.setLineDash([5,4]);
+  pctx.beginPath(); pctx.moveTo(390,245); pctx.lineTo(360,245); pctx.stroke(); pctx.setLineDash([]);
+  pctx.fillStyle='#2c8c5a'; pctx.font='10px sans-serif'; pctx.fillText('ADP, NADP⁺→',375,238);
+
+  pctx.fillStyle='#2c3e50'; pctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.fillText('光反应与暗反应的联系：光反应为暗反应提供 ATP 和 NADPH；暗反应为光反应提供 ADP 和 NADP⁺',375,305);
+}
+drawPhoto();
+</script>
+
+</div>
+</div>
+</body>
+</html>

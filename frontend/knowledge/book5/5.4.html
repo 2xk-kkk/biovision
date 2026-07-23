@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>第4章 生物技术的安全性与伦理问题 - 知识清单</title>
+<style>
+  :root { --primary: #6a1b9a; --primary-light: #f3e5f5; --accent: #c62828; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #4a148c, #6a1b9a); color: #fff; padding: 36px 40px; border-radius: 12px; margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 20px 24px; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f3e5f5; border-color: #ce93d8; }
+  .checklist li.checked .check-box { background: #6a1b9a; border-color: #6a1b9a; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ce93d8; color: #6a5a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid #dde4ed; border-radius: 12px; padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid #dde4ed; }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid #dde4ed; border-radius: 12px; padding: 16px; }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: 12px; padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .focus-box { background: #f3e5f5; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+  .success-box { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 14px 18px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#ab47bc); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: #5a6c7d; text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; }
+  .sidebar a:hover { background: rgba(106,27,154,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(106,27,154,0.1); color: #6a1b9a; font-weight: 700; border-left-color: #ab47bc; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style></head><body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修3<br>生物技术与工程</div>
+      <a href="5.1.html"><span class="ch-num">第1章</span>发酵工程</a>
+      <a href="5.2.html"><span class="ch-num">第2章</span>细胞工程</a>
+      <a href="5.3.html"><span class="ch-num">第3章</span>基因工程</a>
+      <a href="5.4.html" class="active"><span class="ch-num">第4章</span>生物技术安全</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link active">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap"><div class="container">
+<div class="header"><h1>第4章 生物技术的安全性与伦理问题</h1><div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修3 · 生物技术与工程</div></div>
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 15 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>📖 本章核心概念 — 点击翻牌记背</h2><span class="arrow">▼</span></div>
+<div class="section-body"><div class="concept-grid">
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">转基因安全</div><div class="concept-back">需理性看待。要评估食品安全、环境安全、生物安全等方面，遵循科学原则和严格监管。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生殖性克隆</div><div class="concept-back">即克隆人。我国禁止生殖性克隆人。涉及伦理争议：人的尊严、家庭关系、社会秩序等。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">治疗性克隆</div><div class="concept-back">利用克隆技术培育胚胎，从中提取胚胎干细胞用于疾病治疗。与生殖性克隆有本质区别。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生物武器</div><div class="concept-back">利用致病微生物或毒素制成的武器。禁止研发、生产、储存和使用。我国坚决支持禁止。</div></div>
+</div></div></div>
+
+<!-- 第1节 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第1节 转基因产品的安全性</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="diagram-box"><h4 style="margin-bottom:12px;">转基因安全性评估 - 互动展示</h4>
+    <canvas id="gmoCanvas" width="750" height="280"></canvas>
+    <div class="controls"><button class="btn btn-primary" onclick="cycleGMO()">切换评估维度</button></div></div>
+  <div class="info-row">
+    <div class="info-card"><h4>食品安全</h4><p>转基因食品是否对人体健康有害？是否致敏？营养成分是否改变？——需长期跟踪评估。</p></div>
+    <div class="info-card"><h4>环境安全</h4><p>外源基因是否扩散到自然界（基因漂移）？是否影响非靶标生物？——需严格管控。</p></div>
+    <div class="info-card"><h4>生物安全</h4><p>转基因生物是否会破坏生态平衡？是否会产生"超级杂草"或抗性害虫？</p></div>
+  </div>
+  <div class="highlight-box"><strong>理性看待转基因技术：</strong><br>① 我国对转基因产品实行<strong>严格的安全评估和审批制度</strong><br>② 上市转基因食品须经过<strong>安全性评价</strong>并<strong>标注</strong>"转基因"<br>③ 科学依据是判断安全性的基础，不能以"天然与否"判定好坏</div>
+  <ul class="checklist" id="cl1">
+    <li><span class="check-box"></span><span class="label">转基因安全性评估：<strong>食品安全+环境安全+生物安全</strong></span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">理性看待：科学评估，不盲目反对也不盲目接受</span><span class="tag tag-memorize">记忆</span></li>
+  </ul>
+</div></div>
+
+<!-- 第2节 克隆人与伦理 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第2节 关注生殖性克隆人</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <table><tr><th>类型</th><th>目的</th><th>伦理态度</th></tr>
+    <tr><td><strong>生殖性克隆</strong></td><td>产生完整的克隆人</td><td>❌ 我国<strong>禁止</strong>——违反伦理道德</td></tr>
+    <tr><td><strong>治疗性克隆</strong></td><td>获取胚胎干细胞用于治疗疾病</td><td>⚠️ 有伦理争议但部分国家允许（严格监管）</td></tr></table>
+  <div class="danger-box"><strong>生殖性克隆的伦理争议：</strong><br>① 违背人的<strong>尊严</strong>——人不应被"制造"或"设计"<br>② 扰乱家庭关系和社会秩序（克隆人的身份定位）<br>③ 技术尚不成熟——克隆动物成功率低、畸形率高<br>④ 我国<strong>禁止生殖性克隆人</strong>，但<strong>不反对治疗性克隆</strong>研究</div>
+  <ul class="checklist" id="cl2">
+    <li><span class="check-box"></span><span class="label">我国<strong>禁止生殖性克隆人</strong></span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">治疗性克隆≠生殖性克隆（目的不同：治病 vs 产生个体）</span><span class="tag tag-understand">理解</span></li>
+  </ul>
+</div></div>
+
+<!-- 第3节 禁止生物武器 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第3节 禁止生物武器</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="highlight-box"><strong>生物武器的特点：</strong><br>① 以<strong>致病微生物、毒素</strong>等为杀伤手段<br>② 具有<strong>传染性</strong>——可在人群中传播蔓延<br>③ 危害<strong>范围广、持续时间长</strong><br>④ 研发成本低但破坏力巨大</div>
+  <div class="success-box"><strong>国际公约与中国立场：</strong><br>① 《禁止生物武器公约》（1972年签署，1975年生效）<br>② 中国<strong>在任何情况下不首先使用生物武器</strong>，坚决支持<strong>全面禁止和彻底销毁</strong>一切生物武器<br>③ 我们每个人都有<strong>维护生物安全</strong>的责任</div>
+  <ul class="checklist" id="cl3">
+    <li><span class="check-box"></span><span class="label"><strong>禁止生物武器</strong>——国际公约全面禁止</span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">生物武器特点：<strong>传染性、范围广、持续时间长</strong></span><span class="tag tag-memorize">记忆</span></li>
+  </ul>
+</div></div>
+
+</div></div>
+<script>
+function updateProgress(){
+  const total=8,checked=document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width=(checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent=`已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx3_ch4_ck',JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx3_ch4_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}updateProgress();
+
+// GMO ASSESSMENT
+const gCanvas=document.getElementById('gmoCanvas'), gctx=gCanvas.getContext('2d');
+let gmoIdx=0;
+const gmoData=[
+  {title:'食品安全评估',icon:'🍽️',items:['营养成分分析','毒性/过敏性测试','消化稳定性评估','与常规食品比较'],color:'#e65100'},
+  {title:'环境安全评估',icon:'🌍',items:['基因漂移风险（花粉传播）','对非靶标生物的影响','对生物多样性的影响','是否产生"超级杂草"'],color:'#2e7d32'},
+  {title:'生物安全管理',icon:'🔒',items:['严格审批制度','转基因产品标注','上市后持续监测','实验室/田间分级管理'],color:'#0d47a1'},
+];
+function drawGMO(){
+  const w=750,h=280,d=gmoData[gmoIdx];
+  gctx.clearRect(0,0,w,h); gctx.fillStyle='#fafbfc'; gctx.fillRect(0,0,w,h);
+  gctx.fillStyle=d.color; gctx.font='bold 20px "PingFang SC","Microsoft YaHei",sans-serif'; gctx.textAlign='center';
+  gctx.fillText(`${d.icon} ${d.title}`,375,40);
+  gctx.fillStyle=d.color+'40'; gctx.strokeStyle=d.color; gctx.lineWidth=2;
+  gctx.beginPath(); roundRectGMO(gctx,150,70,450,170,15); gctx.fill(); gctx.stroke();
+  d.items.forEach((item,i)=>{
+    gctx.fillStyle='#2c3e50'; gctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; gctx.textAlign='left';
+    gctx.fillText(`${i+1}. ${item}`,180,105+i*30);
+  });
+  gctx.fillStyle='#888'; gctx.font='11px sans-serif'; gctx.textAlign='center'; gctx.fillText(`(${gmoIdx+1}/3) 点击切换`,375,265);
+}
+function roundRectGMO(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+function cycleGMO(){gmoIdx=(gmoIdx+1)%3;drawGMO();}
+drawGMO();
+</script>
+</body></html>
