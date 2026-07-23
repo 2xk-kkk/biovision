@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +7,6 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>真题大观 - 生物视界</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -118,11 +116,6 @@
             gap: 12px;
         }
 
-        .avatar-wrapper {
-            position: relative;
-            cursor: pointer;
-        }
-
         .avatar {
             width: 36px;
             height: 36px;
@@ -133,70 +126,7 @@
             justify-content: center;
             font-size: 18px;
             color: white;
-            overflow: hidden;
-            transition: transform 0.2s;
-            object-fit: cover;
-        }
-
-        .avatar:hover {
-            transform: scale(1.05);
-        }
-
-        .upload-overlay {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background: #667eea;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 9px;
-            color: white;
-            border: 2px solid white;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .avatar-wrapper:hover .upload-overlay {
-            opacity: 1;
-        }
-
-        .user-dropdown-menu {
-            position: absolute;
-            right: 0;
-            top: 100%;
-            margin-top: 8px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            min-width: 160px;
-            overflow: hidden;
-            display: none;
-            z-index: 1000;
-        }
-
-        .user-dropdown-menu.show {
-            display: block;
-        }
-
-        .user-dropdown-item {
-            padding: 10px 16px;
-            color: #374151;
-            text-decoration: none;
-            font-size: 14px;
-            display: block;
-            transition: background 0.2s;
-        }
-
-        .user-dropdown-item:hover {
-            background: #f1f5f9;
-        }
-
-        .user-dropdown-item.danger {
-            color: #ef4444;
+            cursor: pointer;
         }
 
         .hero-section {
@@ -1033,7 +963,6 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
-
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -1052,15 +981,15 @@
             .nav-links {
                 display: none;
             }
-
+            
             .stats-row {
                 grid-template-columns: repeat(2, 1fr);
             }
-
+            
             .exam-grid {
                 grid-template-columns: 1fr;
             }
-
+            
             .filter-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -1068,7 +997,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="top">
         <div class="logo"></div>
@@ -1084,11 +1012,11 @@
                 <div class="dropdown">
                     <a href="#" class="nav-link dropdown-toggle">知识清单</a>
                     <div class="dropdown-menu">
-                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
-                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
-                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
-                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
-                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                        <a href="#" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="#" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="#" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="#" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="#" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
                     </div>
                 </div>
 
@@ -1098,25 +1026,7 @@
                 <a href="../forum/main.html" class="nav-link">论坛</a>
             </div>
             <div class="user-actions">
-                <div class="avatar-wrapper" id="userAvatarBtn">
-                    <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
-                    <div class="upload-overlay">+</div>
-                    <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <a href="../user-center/main.html" class="user-dropdown-item">
-                            <i class="fas fa-user"></i> 个人中心
-                        </a>
-                        <a href="../user-center/main.html#posts" class="user-dropdown-item">
-                            <i class="fas fa-file-alt"></i> 我的帖子
-                        </a>
-                        <a href="../user-center/main.html#settings" class="user-dropdown-item">
-                            <i class="fas fa-cog"></i> 设置
-                        </a>
-                        <a href="../login/login-main.html" class="user-dropdown-item danger"
-                            onclick="localStorage.clear()">
-                            <i class="fas fa-sign-out-alt"></i> 退出登录
-                        </a>
-                    </div>
-                </div>
+                <div class="avatar">👤</div>
             </div>
         </div>
     </div>
@@ -1191,22 +1101,16 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">选择文件</label>
-                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()"
-                        ondragover="event.preventDefault(); this.classList.add('dragover')"
-                        ondragleave="this.classList.remove('dragover')"
-                        ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
+                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
                         <div class="file-upload-icon">📁</div>
                         <div class="file-upload-text">点击或拖拽文件到此处</div>
                         <div class="file-upload-hint">支持 .docx, .pdf, .doc, .zip 等格式</div>
-                        <input type="file" id="fileInput" style="display: none;"
-                            accept=".docx,.doc,.pdf,.zip,.rar,.jpg,.png" onchange="handleFileSelect(event)">
+                        <input type="file" id="fileInput" style="display: none;" accept=".docx,.doc,.pdf,.zip,.rar,.jpg,.png" onchange="handleFileSelect(event)">
                     </div>
                 </div>
-                <div id="selectedFile"
-                    style="display: none; margin-bottom: 16px; padding: 10px; background: #f3f4f6; border-radius: 8px;">
+                <div id="selectedFile" style="display: none; margin-bottom: 16px; padding: 10px; background: #f3f4f6; border-radius: 8px;">
                     <span id="fileName"></span>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="clearFile()"
-                        style="margin-left: 10px;">清除</button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="clearFile()" style="margin-left: 10px;">清除</button>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">取消</button>
@@ -1236,106 +1140,6 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api';
-
-        // ===== JWT 解析 =====
-        function parseJwt(token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-                ).join(''));
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                return null;
-            }
-        }
-
-        // ===== 头像生成 =====
-        function getDefaultAvatarSVG(username, size = 40) {
-            const avatarChar = (username || '用').trim()[0] || '用';
-            const centerX = Math.floor(size / 2);
-            const centerY = Math.floor(size / 2);
-            const radius = Math.floor(size * 0.45);
-            const fontSize = Math.floor(size * 0.45);
-            const textY = Math.floor(size * 0.65);
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23667eea'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
-        }
-
-        function getGuestAvatarSVG(size = 40) {
-            const centerX = Math.floor(size / 2);
-            const centerY = Math.floor(size / 2);
-            const radius = Math.floor(size * 0.45);
-            const headRadius = Math.floor(size * 0.12);
-            const headY = Math.floor(size * 0.35);
-            const bodyStroke = Math.floor(size * 0.1);
-            const bodyY1 = Math.floor(size * 0.6);
-            const bodyY2 = Math.floor(size * 0.85);
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23d1d5db'/%3E%3Ccircle cx='${centerX}' cy='${headY}' r='${headRadius}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(size * 0.3)} ${bodyY1} Q${centerX} ${bodyY2} ${Math.floor(size * 0.7)} ${bodyY1}' fill='none' stroke='%239ca3af' stroke-width='${bodyStroke}' stroke-linecap='round'/%3E%3C/svg%3E`;
-        }
-
-        async function loadUserAvatar() {
-            const token = localStorage.getItem('token');
-            const avatarImg = document.getElementById('userAvatarImg');
-            if (!avatarImg) return;
-            const guestAvatar = getGuestAvatarSVG(40);
-            if (!token) {
-                avatarImg.src = guestAvatar;
-                return;
-            }
-            try {
-                const payload = parseJwt(token);
-                if (!payload || !payload.user_id) {
-                    avatarImg.src = guestAvatar;
-                    return;
-                }
-                const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`, {
-                    headers: { 'token': token }
-                });
-                const result = await response.json();
-                if (result.success && result.data) {
-                    const username = result.data.username || '用户';
-                    const userAvatar = result.data.avatar;
-                    if (userAvatar) {
-                        avatarImg.src = userAvatar.startsWith('http') ? userAvatar + '?t=' + Date.now() : userAvatar;
-                    } else {
-                        avatarImg.src = getDefaultAvatarSVG(username, 40);
-                    }
-                } else {
-                    avatarImg.src = getDefaultAvatarSVG('用户', 40);
-                }
-            } catch (error) {
-                console.error('加载用户头像失败:', error);
-                avatarImg.src = getDefaultAvatarSVG('用户', 40);
-            }
-        }
-
-        // ===== 登录检查 =====
-        (function initAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('请先登录');
-                window.location.href = '../login/login-main.html';
-                return;
-            }
-            loadUserAvatar();
-
-            const userAvatarBtn = document.getElementById('userAvatarBtn');
-            const userDropdownMenu = document.getElementById('userDropdownMenu');
-            if (userAvatarBtn && userDropdownMenu) {
-                userAvatarBtn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    userDropdownMenu.classList.toggle('show');
-                });
-                document.addEventListener('click', function (event) {
-                    if (!userAvatarBtn.contains(event.target) && !userDropdownMenu.contains(event.target)) {
-                        userDropdownMenu.classList.remove('show');
-                    }
-                });
-            }
-        })();
-
         let selectedFile = null;
         let currentYear = '全部';
         let currentRegion = '全部';
@@ -1345,15 +1149,15 @@
         async function loadExams(year = null, region = null) {
             const container = document.getElementById('examContainer');
             try {
-                let url = `${API_BASE}/exams/list`;
+                let url = 'http://localhost:8000/api/exams';
                 const params = [];
                 if (year && year !== '全部') params.push(`year=${year}`);
                 if (region && region !== '全部') params.push(`region=${encodeURIComponent(region)}`);
                 if (params.length > 0) url += '?' + params.join('&');
-
+                
                 const response = await fetch(url);
                 const result = await response.json();
-
+                
                 if (!result.success) {
                     container.innerHTML = `
                         <div class="empty-state">
@@ -1365,13 +1169,15 @@
                     return;
                 }
 
-                const exams = result.data;
-                stats = { total_exams: exams.length };
-                years = [...new Set(exams.map(e => {
-                    const yearMatch = e.name.match(/(20\d{2})/);
-                    return yearMatch ? yearMatch[1] : '';
-                }).filter(Boolean))];
-                regions = ['全国'];
+                const data = result.data;
+                const exams = data.exams;
+                stats = data.stats || {};
+                years = data.years || [];
+                regions = data.regions || [];
+
+                updateStats(stats);
+                updateYearSelect(years);
+                updateRegionTags(regions);
 
                 if (exams.length === 0) {
                     container.innerHTML = `
@@ -1389,17 +1195,26 @@
                         <div class="exam-card-header">
                             <div class="exam-icon">📝</div>
                             <div class="exam-title">
-                                <div class="exam-name">${exam.name}</div>
+                                <div class="exam-name">${exam.year || ''}年${exam.region}${exam.exam_type || ''}</div>
                             </div>
                         </div>
                         <div class="exam-meta">
                             <div class="meta-item">
+                                <span class="meta-icon">📍</span>
+                                <span class="meta-value">${exam.region}</span>
+                            </div>
+                            <div class="meta-item">
                                 <span class="meta-icon">📄</span>
-                                <span class="meta-value">${exam.question_count || 0}道题</span>
+                                <span class="meta-value">${exam.file_count}份文件</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span class="meta-value">${exam.year}</span>
                             </div>
                         </div>
                         <div class="exam-tags">
                             ${index < 3 ? '<span class="exam-tag tag-new">新增</span>' : ''}
+                            ${['北京', '上海', '广东', '江苏', '浙江'].includes(exam.region) ? '<span class="exam-tag tag-hot">热门</span>' : ''}
                         </div>
                         <div class="exam-footer">
                             <div class="star-rating">
@@ -1412,7 +1227,6 @@
                             <div class="exam-actions">
                                 <button class="btn-preview" onclick="previewExam(${exam.id})">预览</button>
                                 ${exam.has_answers ? `<button class="btn-quiz" onclick="startQuiz(${exam.id})">开始练习</button>` : ''}
-                                <button class="btn-start" onclick="startExam('${exam.name}')">开始答题</button>
                                 <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
                             </div>
                         </div>
@@ -1453,7 +1267,7 @@
         function updateRegionTags(regionList) {
             const container = document.getElementById('regionTags');
             container.innerHTML = '';
-
+            
             const allTag = document.createElement('span');
             allTag.className = `region-tag ${currentRegion === '全部' ? 'active' : ''}`;
             allTag.textContent = '全国';
@@ -1482,22 +1296,13 @@
         function downloadFiles(encodedFiles) {
             const files = JSON.parse(decodeURIComponent(encodedFiles));
             if (files.length === 1) {
-                window.open(`${API_BASE}/exams/download?file_path=${encodeURIComponent(files[0].path)}`, '_blank');
+                window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(files[0].path)}`, '_blank');
             } else {
                 files.forEach(file => {
                     setTimeout(() => {
-                        window.open(`${API_BASE}/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
+                        window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
                     }, 300);
                 });
-            }
-        }
-
-        async function startExam(examName) {
-            try {
-                window.location.href = `quiz.html?exam_name=${encodeURIComponent(examName)}`;
-            } catch (error) {
-                showToast('error', '获取试卷信息失败');
-                console.error('获取试卷信息失败:', error);
             }
         }
 
@@ -1698,13 +1503,11 @@
 
         async function importFromD() {
             try {
-                const token = localStorage.getItem('token');
-                const response = await fetch(`${API_BASE}/exams/import`, {
-                    method: 'POST',
-                    headers: { 'token': token }
+                const response = await fetch('http://localhost:8000/api/exams/import', {
+                    method: 'POST'
                 });
                 const result = await response.json();
-
+                
                 if (result.success) {
                     showToast('success', result.msg);
                     loadExams();
@@ -1717,15 +1520,15 @@
             }
         }
 
-        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
+            
             const category = document.getElementById('categoryInput').value.trim();
             if (!category) {
                 showToast('error', '请输入试卷分类');
                 return;
             }
-
+            
             if (!selectedFile) {
                 showToast('error', '请选择要上传的文件');
                 return;
@@ -1735,38 +1538,23 @@
             formData.append('category', category);
             formData.append('file', selectedFile);
 
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = '上传中...';
-            submitBtn.disabled = true;
-
             try {
-                const token = localStorage.getItem('token');
-                const response = await fetch(`${API_BASE}/exams/upload`, {
+                const response = await fetch('http://localhost:8000/api/exams/upload', {
                     method: 'POST',
-                    headers: { 'token': token },
                     body: formData
                 });
                 const result = await response.json();
-
+                
                 if (result.success) {
-                    const questionCount = result.data?.question_count || 0;
-                    if (questionCount > 0) {
-                        showToast('success', `上传成功！解析出 ${questionCount} 道题`);
-                    } else {
-                        showToast('success', '上传成功');
-                    }
+                    showToast('success', '上传成功');
                     closeUploadModal();
                     loadExams();
                 } else {
-                    showToast('error', result.msg || '上传失败');
+                    showToast('error', result.msg);
                 }
             } catch (error) {
                 showToast('error', '上传失败，请确保后端服务已启动');
                 console.error('上传失败:', error);
-            } finally {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
             }
         });
 
@@ -1775,17 +1563,17 @@
             toast.className = `toast ${type}`;
             toast.textContent = message;
             document.body.appendChild(toast);
-
+            
             setTimeout(() => {
                 toast.remove();
             }, 3000);
         }
 
-        document.querySelector('.search-form').addEventListener('submit', function (e) {
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
             e.preventDefault();
         });
 
-        document.getElementById('uploadModal').addEventListener('click', function (e) {
+        document.getElementById('uploadModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeUploadModal();
             }
@@ -1810,5 +1598,4 @@
         loadExams();
     </script>
 </body>
-
 </html>

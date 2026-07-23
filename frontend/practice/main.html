@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>生物视界 - 高中生物教学辅助平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -185,7 +183,6 @@
             color: white;
             overflow: hidden;
             transition: transform 0.2s;
-            object-fit: cover;
         }
 
         .avatar:hover {
@@ -212,41 +209,6 @@
 
         .avatar-wrapper:hover .upload-overlay {
             opacity: 1;
-        }
-
-        .user-dropdown-menu {
-            position: absolute;
-            right: 0;
-            top: 100%;
-            margin-top: 8px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            min-width: 160px;
-            overflow: hidden;
-            display: none;
-            z-index: 1000;
-        }
-
-        .user-dropdown-menu.show {
-            display: block;
-        }
-
-        .user-dropdown-item {
-            padding: 10px 16px;
-            color: #374151;
-            text-decoration: none;
-            font-size: 14px;
-            display: block;
-            transition: background 0.2s;
-        }
-
-        .user-dropdown-item:hover {
-            background: #f1f5f9;
-        }
-
-        .user-dropdown-item.danger {
-            color: #ef4444;
         }
 
         /* 主内容区 */
@@ -833,13 +795,10 @@
             border-radius: 12px;
             background: #fafafa;
             transition: all 0.3s;
-            cursor: pointer;
         }
 
         .subject-card:hover {
             background: #edffff;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
         .subject-icon {
@@ -981,17 +940,16 @@
             margin: 0 auto;
             padding: 0 20px;
         }
-
         /* 响应式 */
         @media (max-width: 1200px) {
             .top-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
-
+            
             .middle-section {
                 grid-template-columns: 1fr 1fr;
             }
-
+            
             .progress-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
@@ -1001,22 +959,21 @@
             .nav-links {
                 display: none;
             }
-
+            
             .top-cards {
                 grid-template-columns: 1fr;
             }
-
+            
             .middle-section {
                 grid-template-columns: 1fr;
             }
-
+            
             .progress-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
-
 <body>
     <!-- 顶部导航栏 -->
     <div class="top">
@@ -1036,39 +993,24 @@
                 <div class="dropdown">
                     <a href="#" class="nav-link dropdown-toggle">知识清单</a>
                     <div class="dropdown-menu">
-                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
-                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
-                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
-                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
-                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                        <a href="#" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="#" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="#" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="#" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="#" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
                     </div>
                 </div>
 
                 <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
-                <a href="../practice/main.html" class="nav-link active">每日训练</a>
+                <a href="../practice/main.html" class="nav-link active" >每日训练</a>
                 <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
                 <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
             </div>
 
             <div class="user-actions">
-                <div class="avatar-wrapper" id="userAvatarBtn">
-                    <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
+                <div class="avatar-wrapper">
+                    <div class="avatar">👤</div>
                     <div class="upload-overlay">+</div>
-                    <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <a href="../user-center/main.html" class="user-dropdown-item">
-                            <i class="fas fa-user"></i> 个人中心
-                        </a>
-                        <a href="../user-center/main.html#posts" class="user-dropdown-item">
-                            <i class="fas fa-file-alt"></i> 我的帖子
-                        </a>
-                        <a href="../user-center/main.html#settings" class="user-dropdown-item">
-                            <i class="fas fa-cog"></i> 设置
-                        </a>
-                        <a href="../login/login-main.html" class="user-dropdown-item danger"
-                            onclick="localStorage.clear()">
-                            <i class="fas fa-sign-out-alt"></i> 退出登录
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1083,11 +1025,11 @@
                 <div class="welcome-icon">👤</div>
                 <div>
                     <div class="welcome-text">欢迎回来</div>
-                    <div class="welcome-title" id="welcomeUsername">加载中...</div>
+                    <div class="welcome-title" id="welcomeUsername">wwj</div>
                 </div>
                 <div class="welcome-arrow">›</div>
             </div>
-
+            
             <!-- 已做题数卡片 -->
             <div class="card stat-card">
                 <div class="stat-icon green">✓</div>
@@ -1097,7 +1039,7 @@
                     <div class="stat-desc">完成度 0%</div>
                 </div>
             </div>
-
+            
             <!-- 总题目卡片 -->
             <div class="card stat-card">
                 <div class="stat-icon blue">📁</div>
@@ -1107,7 +1049,7 @@
                     <div class="stat-desc">五本教材总计</div>
                 </div>
             </div>
-
+            
             <!-- 通关进度卡片 -->
             <div class="card stat-card">
                 <div class="stat-icon purple">🎯</div>
@@ -1134,7 +1076,7 @@
                         <span class="contribution-stat-value">0</span>
                     </div>
                 </div>
-
+                
                 <div class="heatmap-container">
                     <div class="heatmap-months">
                         <span class="heatmap-month">2月</span>
@@ -1146,7 +1088,7 @@
                         <!-- 热力图格子由JS生成 -->
                     </div>
                 </div>
-
+                
                 <div class="heatmap-legend">
                     <span>少</span>
                     <div class="heatmap-legend-cells">
@@ -1184,7 +1126,7 @@
                         <div class="beta-icon">🏆</div>
                         <div class="beta-name">院校PK</div>
                     </div>
-                    <div class="beta-item" onclick="window.location.href='textbook-trace.html'">
+                    <div class="beta-item">
                         <div class="beta-icon">📚</div>
                         <div class="beta-name">教材溯源</div>
                     </div>
@@ -1228,15 +1170,15 @@
                     <span class="progress-summary-value">0%</span>
                 </div>
             </div>
-
+            
             <div class="progress-grid">
                 <!-- 必修一：分子与细胞 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=必修一'">
+                <div class="subject-card">
                     <div class="subject-icon">🔬</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1255,14 +1197,14 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- 必修二：遗传与进化 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=必修二'">
+                <div class="subject-card">
                     <div class="subject-icon">🧬</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1281,14 +1223,14 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- 选修一：稳态与调节 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=选择性必修一'">
+                <div class="subject-card">
                     <div class="subject-icon">⚖️</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1307,14 +1249,14 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- 选修二：生物与环境 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=选择性必修二'">
+                <div class="subject-card">
                     <div class="subject-icon">🌿</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1333,14 +1275,14 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- 选修三：生物技术与工程 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?id=选择性必修三'">
+                <div class="subject-card">
                     <div class="subject-icon">🧫</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45" />
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0" />
+                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
                         </svg>
                         <div class="subject-ring-text">
                             <div class="subject-ring-percent">0%</div>
@@ -1361,9 +1303,9 @@
                 </div>
             </div>
         </div>
-        </div>
-    </main>
-    <!-- 页脚 -->
+    </div>
+    </main>    
+     <!-- 页脚 -->
     <div class="footer">
         <div class="container">
             <div class="footer-content">
@@ -1409,7 +1351,7 @@
                 </div>
                 <button class="profile-close" onclick="closeProfileModal()">×</button>
             </div>
-
+            
             <div class="profile-stats">
                 <div class="profile-stat">
                     <div class="stat-num">0</div>
@@ -1428,7 +1370,7 @@
                     <div class="stat-text">收藏数</div>
                 </div>
             </div>
-
+            
             <div class="profile-section">
                 <div class="section-title">个人信息</div>
                 <div class="profile-item">
@@ -1444,7 +1386,7 @@
                     <span class="item-value">暂无简介</span>
                 </div>
             </div>
-
+            
             <div class="profile-actions">
                 <button class="profile-btn">编辑资料</button>
                 <button class="profile-btn">设置</button>
@@ -1453,142 +1395,19 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api';
-
-        // ===== JWT 解析 =====
-        function parseJwt(token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-                ).join(''));
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                return null;
-            }
-        }
-
-        // ===== 头像生成 =====
-        function getDefaultAvatarSVG(username, size = 40) {
-            const avatarChar = (username || '用').trim()[0] || '用';
-            const centerX = Math.floor(size / 2);
-            const centerY = Math.floor(size / 2);
-            const radius = Math.floor(size * 0.45);
-            const fontSize = Math.floor(size * 0.45);
-            const textY = Math.floor(size * 0.65);
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23667eea'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
-        }
-
-        function getGuestAvatarSVG(size = 40) {
-            const centerX = Math.floor(size / 2);
-            const centerY = Math.floor(size / 2);
-            const radius = Math.floor(size * 0.45);
-            const headRadius = Math.floor(size * 0.12);
-            const headY = Math.floor(size * 0.35);
-            const bodyStroke = Math.floor(size * 0.1);
-            const bodyY1 = Math.floor(size * 0.6);
-            const bodyY2 = Math.floor(size * 0.85);
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23d1d5db'/%3E%3Ccircle cx='${centerX}' cy='${headY}' r='${headRadius}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(size * 0.3)} ${bodyY1} Q${centerX} ${bodyY2} ${Math.floor(size * 0.7)} ${bodyY1}' fill='none' stroke='%239ca3af' stroke-width='${bodyStroke}' stroke-linecap='round'/%3E%3C/svg%3E`;
-        }
-
-        // ===== 加载用户头像 =====
-        async function loadUserAvatar() {
-            const token = localStorage.getItem('token');
-            const avatarImg = document.getElementById('userAvatarImg');
-            if (!avatarImg) return;
-
-            const guestAvatar = getGuestAvatarSVG(40);
-
-            if (!token) {
-                avatarImg.src = guestAvatar;
-                return;
-            }
-
-            try {
-                const payload = parseJwt(token);
-                if (!payload || !payload.user_id) {
-                    avatarImg.src = guestAvatar;
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE}/user/${payload.user_id}/info`, {
-                    headers: { 'token': token }
-                });
-                const result = await response.json();
-
-                if (result.success && result.data) {
-                    const username = result.data.username || '用户';
-                    const userAvatar = result.data.avatar;
-
-                    if (userAvatar) {
-                        let avatarToUse = userAvatar;
-                        if (userAvatar.startsWith('http')) {
-                            avatarToUse = userAvatar + '?t=' + Date.now();
-                        }
-                        avatarImg.src = avatarToUse;
-                    } else {
-                        avatarImg.src = getDefaultAvatarSVG(username, 40);
-                    }
-                } else {
-                    avatarImg.src = getDefaultAvatarSVG('用户', 40);
-                }
-            } catch (error) {
-                console.error('加载用户头像失败:', error);
-                avatarImg.src = getDefaultAvatarSVG('用户', 40);
-            }
-        }
-
-        // ===== 页面初始化：登录检查 + 用户名 + 头像 =====
-        (function initAuth() {
-            const token = localStorage.getItem('token');
-            const username = localStorage.getItem('username');
-
-            // 登录检查
-            if (!token || !username) {
-                alert('请先登录');
-                window.location.href = '../login/login-main.html';
-                return;
-            }
-
-            // 更新欢迎卡片用户名
-            const welcomeEl = document.getElementById('welcomeUsername');
-            if (welcomeEl) {
-                welcomeEl.textContent = username;
-            }
-
-            // 加载头像
-            loadUserAvatar();
-
-            // 头像下拉菜单
-            const userAvatarBtn = document.getElementById('userAvatarBtn');
-            const userDropdownMenu = document.getElementById('userDropdownMenu');
-            if (userAvatarBtn && userDropdownMenu) {
-                userAvatarBtn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    userDropdownMenu.classList.toggle('show');
-                });
-                document.addEventListener('click', function (event) {
-                    if (!userAvatarBtn.contains(event.target) && !userDropdownMenu.contains(event.target)) {
-                        userDropdownMenu.classList.remove('show');
-                    }
-                });
-            }
-        })();
-
-        // ===== 生成日历热力图 =====
+        // 生成日历热力图
         function generateHeatmap() {
             const grid = document.getElementById('heatmapGrid');
             const days = ['周一', '', '周三', '', '周五', '', '周日'];
             const weeks = 13;
-
+            
             for (let i = 0; i < 7; i++) {
                 const label = document.createElement('div');
                 label.className = 'heatmap-day-label';
                 label.textContent = days[i];
                 grid.appendChild(label);
             }
-
+            
             for (let week = 0; week < weeks; week++) {
                 for (let day = 0; day < 7; day++) {
                     const cell = document.createElement('div');
@@ -1597,14 +1416,9 @@
                 }
             }
         }
-
+        
         generateHeatmap();
-
-        const username = localStorage.getItem('username');
-        if (username) {
-            document.getElementById('welcomeUsername').textContent = username;
-        }
-
+        
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
             toggle.addEventListener('click', (e) => {
@@ -1622,42 +1436,40 @@
                 });
             }
         });
-
+        
         // 导航链接点击效果
         document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function (e) {
+            link.addEventListener('click', function(e) {
                 if (this.classList.contains('dropdown-toggle')) return;
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                 this.classList.add('active');
             });
         });
-
+        
         // Beta功能卡片点击效果
         document.querySelectorAll('.beta-item').forEach(item => {
-            item.addEventListener('click', function () {
+            item.addEventListener('click', function() {
                 const name = this.querySelector('.beta-name').textContent;
-                if (name === '错题集') {
-                    window.location.href = 'wrong-answers.html';
-                } else if (name === '真题大观') {
+                if (name === '真题大观') {
                     window.location.href = 'exams.html';
                 } else if (name === '在线答题') {
-                    window.location.href = 'quiz.html';
+                    window.location.href = 'exams.html';
                 } else {
                     alert(`即将打开: ${name}`);
                 }
             });
         });
-
+        
         // 公告项点击效果
         document.querySelectorAll('.announcement-item').forEach(item => {
-            item.addEventListener('click', function () {
+            item.addEventListener('click', function() {
                 const title = this.querySelector('.announcement-title').textContent.replace('new', '').trim();
                 alert(`即将打开公告: ${title}`);
             });
         });
 
         // 搜索表单提交
-        document.querySelector('.search-form').addEventListener('submit', function (e) {
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const query = this.querySelector('.search-input').value;
             if (query.trim()) {
@@ -1675,12 +1487,11 @@
         }
 
         // 点击遮罩层关闭弹窗
-        document.getElementById('profileModal').addEventListener('click', function (e) {
+        document.getElementById('profileModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeProfileModal();
             }
         });
     </script>
 </body>
-
 </html>
