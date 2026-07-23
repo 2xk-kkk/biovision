@@ -1,5 +1,5 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook
 from utils.response import ApiResponse
 import json
 import os
@@ -101,5 +101,83 @@ def get_user_exam_answers(user_id, exam_id):
         return ApiResponse.success(data=answers)
     except Exception as e:
         return ApiResponse.error(msg=f"获取答题记录失败: {str(e)}")
+    finally:
+        db.close()
+
+def get_wrong_answer_list(user_id, textbook=None, status=None, page=1, page_size=20):
+    db = get_db_connection()
+    try:
+        result = get_wrong_answers(db, user_id, textbook, status, page, page_size)
+        return ApiResponse.success(data=result)
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取错题列表失败: {str(e)}")
+    finally:
+        db.close()
+
+def get_wrong_answer_stats_service(user_id):
+    db = get_db_connection()
+    try:
+        stats = get_wrong_answer_stats(db, user_id)
+        return ApiResponse.success(data=stats)
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取错题统计失败: {str(e)}")
+    finally:
+        db.close()
+
+def submit_retry_answer(user_id, question_id, answer):
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        cursor.execute('SELECT answer FROM questions WHERE id = ?', (question_id,))
+        result = cursor.fetchone()
+        if not result:
+            return ApiResponse.error(msg="题目不存在")
+
+        correct_answer = result[0]
+        is_correct = 1 if answer.strip().upper() == correct_answer.strip().upper() else 0
+
+        retry_wrong_answer(db, user_id, question_id, answer, is_correct)
+
+        cursor.execute(
+            'SELECT wrong_count, mastered FROM user_answers WHERE user_id = ? AND question_id = ?',
+            (user_id, question_id)
+        )
+        row = cursor.fetchone()
+        wrong_count = row[0] if row else 0
+        mastered = row[1] if row else 0
+
+        return ApiResponse.success(data={
+            'question_id': question_id,
+            'your_answer': answer,
+            'correct_answer': correct_answer,
+            'is_correct': is_correct,
+            'wrong_count': wrong_count,
+            'mastered': mastered
+        }, msg="回答正确！已自动标记为已攻克" if is_correct else "回答错误，请继续努力")
+    except Exception as e:
+        return ApiResponse.error(msg=f"提交失败: {str(e)}")
+    finally:
+        db.close()
+
+def toggle_mastered_service(user_id, question_id, mastered=1):
+    db = get_db_connection()
+    try:
+        success = mark_mastered(db, user_id, question_id, mastered)
+        if success:
+            return ApiResponse.success(msg="操作成功")
+        else:
+            return ApiResponse.error(msg="操作失败")
+    except Exception as e:
+        return ApiResponse.error(msg=f"操作失败: {str(e)}")
+    finally:
+        db.close()
+
+def get_questions_by_textbook_service(textbook=None, chapter=None, section=None):
+    db = get_db_connection()
+    try:
+        questions = get_questions_by_textbook(db, textbook, chapter, section)
+        return ApiResponse.success(data=questions)
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
     finally:
         db.close()

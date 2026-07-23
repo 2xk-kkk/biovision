@@ -37,6 +37,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # 挂载静态文件服务
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
+# 挂载前端静态文件目录
+FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
 #注册路由
 app.include_router(user.router, prefix="/api", tags=["用户"])
 app.include_router(post.router, prefix="/api", tags=["发帖"])

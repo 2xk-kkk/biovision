@@ -795,10 +795,13 @@
             border-radius: 12px;
             background: #fafafa;
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .subject-card:hover {
             background: #edffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .subject-icon {
@@ -1173,7 +1176,7 @@
             
             <div class="progress-grid">
                 <!-- 必修一：分子与细胞 -->
-                <div class="subject-card">
+                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('必修一：分子与细胞')">
                     <div class="subject-icon">🔬</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
@@ -1199,7 +1202,7 @@
                 </div>
                 
                 <!-- 必修二：遗传与进化 -->
-                <div class="subject-card">
+                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('必修二：遗传与进化')">
                     <div class="subject-icon">🧬</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
@@ -1225,7 +1228,7 @@
                 </div>
                 
                 <!-- 选修一：稳态与调节 -->
-                <div class="subject-card">
+                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('选修一：稳态与调节')">
                     <div class="subject-icon">⚖️</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
@@ -1251,7 +1254,7 @@
                 </div>
                 
                 <!-- 选修二：生物与环境 -->
-                <div class="subject-card">
+                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('选修二：生物与环境')">
                     <div class="subject-icon">🌿</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
@@ -1277,7 +1280,7 @@
                 </div>
                 
                 <!-- 选修三：生物技术与工程 -->
-                <div class="subject-card">
+                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('选修三：生物技术与工程')">
                     <div class="subject-icon">🧫</div>
                     <div class="subject-ring">
                         <svg viewBox="0 0 100 100">
@@ -1454,6 +1457,10 @@
                     window.location.href = 'exams.html';
                 } else if (name === '在线答题') {
                     window.location.href = 'exams.html';
+                } else if (name === '错题集') {
+                    window.location.href = 'wrong-answers.html';
+                } else if (name === '教材溯源') {
+                    window.location.href = 'textbook-trace.html';
                 } else {
                     alert(`即将打开: ${name}`);
                 }

@@ -554,20 +554,34 @@
 
         async function loadExam() {
             examId = getQueryParam('exam_id');
+            const textbook = getQueryParam('textbook');
+            const chapter = getQueryParam('chapter');
+            const section = getQueryParam('section');
             
-            if (!examId) {
+            if (!examId && !textbook) {
                 document.getElementById('quizPaper').innerHTML = `
                     <div style="text-align: center; padding: 60px;">
                         <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
-                        <div style="font-size: 20px; color: #666;">未选择试卷，请返回选择试卷</div>
+                        <div style="font-size: 20px; color: #666;">未选择试卷或教材章节，请返回选择</div>
                     </div>
                 `;
                 return;
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/exams/${examId}/questions`);
-                const result = await response.json();
+                let response, result;
+                
+                if (examId) {
+                    response = await fetch(`${API_BASE_URL}/exams/${examId}/questions`);
+                    result = await response.json();
+                } else {
+                    const params = new URLSearchParams();
+                    if (textbook) params.append('textbook', textbook);
+                    if (chapter) params.append('chapter', chapter);
+                    if (section) params.append('section', section);
+                    response = await fetch(`${API_BASE_URL}/questions/textbook?${params.toString()}`);
+                    result = await response.json();
+                }
 
                 if (result.success && result.data) {
                     let qs = [];
@@ -578,13 +592,20 @@
                         examName = result.data.exam_name || '试卷练习';
                     } else if (Array.isArray(result.data) && result.data.length > 0) {
                         qs = result.data;
+                        if (section) {
+                            examName = `${textbook} - ${section}`;
+                        } else if (chapter) {
+                            examName = `${textbook} - ${chapter}`;
+                        } else {
+                            examName = textbook;
+                        }
                     }
 
                     if (qs.length === 0) {
                         document.getElementById('quizPaper').innerHTML = `
                             <div style="text-align: center; padding: 60px;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
-                                <div style="font-size: 20px; color: #666;">该试卷暂无题目</div>
+                                <div style="font-size: 20px; color: #666;">该章节暂无题目</div>
                             </div>
                         `;
                         return;
