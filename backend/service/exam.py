@@ -133,9 +133,9 @@ def get_exam_list(year=None, region=None):
                 db_id = db_result[0] if db_result else None
                 db_question_count = db_result[1] if db_result else 0
                 
-                db_cursor.execute('SELECT COUNT(*) FROM questions WHERE exam_id = ? AND answer IS NOT NULL AND answer != ""', (db_id,))
-                answer_count = db_cursor.fetchone()[0] if db_id else 0
-                has_answers = answer_count > 0
+                db_cursor.execute('SELECT COUNT(*) FROM questions WHERE exam_id = ?', (db_id,))
+                question_count = db_cursor.fetchone()[0] if db_id else 0
+                has_answers = question_count > 0
                 
                 all_regions.add(exam_region)
                 if exam_year:
@@ -283,7 +283,7 @@ def get_exam_questions(exam_id: int):
                     'D': row[6] if row[6] else ''
                 },
                 'answer': row[7] if row[7] else '',
-                'images': ','.join(images) if images else ''
+                'images': images if images else []
             })
         
         conn.close()

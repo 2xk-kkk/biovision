@@ -193,6 +193,8 @@ def init_db():
             question_id INTEGER NOT NULL,
             answer TEXT,
             is_correct INTEGER DEFAULT 0,
+            wrong_count INTEGER DEFAULT 0,
+            mastered INTEGER DEFAULT 0,
             create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY(question_id) REFERENCES questions(id) ON DELETE CASCADE,

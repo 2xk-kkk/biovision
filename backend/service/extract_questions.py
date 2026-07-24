@@ -146,6 +146,10 @@ def is_instruction(line):
 def is_fill_question(stem):
     return '____' in stem or re.search(r'（\d+）', stem) or re.search(r'\(\d+\)', stem)
 
+def needs_image(stem):
+    image_keywords = ['图', '如图', '图示', '图表', '示意图', '曲线图', '柱状图', '折线图', '直方图', '坐标图']
+    return any(keyword in stem for keyword in image_keywords)
+
 def parse_questions(docx_path, exam_name):
     extract_images(docx_path, exam_name)
     image_mapping = build_image_mapping(docx_path, exam_name)
@@ -347,12 +351,23 @@ def parse_questions(docx_path, exam_name):
         if question_num in answers:
             answer = answers[question_num]
         
+        final_images = []
+        if needs_image(stem_text):
+            final_images = images
+        else:
+            for img_path in images:
+                img_filename = os.path.basename(img_path).lower()
+                if img_filename.endswith('.wmf'):
+                    continue
+                if any(keyword in stem_text for keyword in ['表', '表格']):
+                    final_images.append(img_path)
+        
         questions.append({
             'number': question_num,
             'stem': stem_text,
             'options': options,
             'answer': answer,
-            'images': images,
+            'images': final_images,
             'type': 'non_choice' if not has_options else 'choice'
         })
     

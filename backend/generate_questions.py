@@ -21,7 +21,7 @@ def add_question(db, exam_id, number, stem, option_a, option_b, option_c, option
     try:
         images_json = json.dumps([])
         cursor.execute('''
-            INSERT OR IGNORE INTO questions 
+            INSERT OR REPLACE INTO questions 
             (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images, textbook, chapter, section)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images_json, textbook, chapter, section))
@@ -75,17 +75,38 @@ def generate_question(template_index, topic, correct, wrong1, wrong2, wrong3):
     template = question_templates[template_index]
     stem = template['stem'].format(topic=topic)
     
-    options_list = [
-        template['options'][0].format(correct_statement=correct),
-        template['options'][1].format(wrong_statement1=wrong1),
-        template['options'][2].format(wrong_statement2=wrong2),
-        template['options'][3].format(wrong_statement3=wrong3)
+    correct_statement = template['options'][0].format(correct_statement=correct)
+    wrong_statement1 = template['options'][1].format(wrong_statement1=wrong1)
+    wrong_statement2 = template['options'][2].format(wrong_statement2=wrong2)
+    wrong_statement3 = template['options'][3].format(wrong_statement3=wrong3)
+    
+    is_error_question = template_index % 2 == 0
+    
+    options_with_flag = [
+        (correct_statement, True),
+        (wrong_statement1, False),
+        (wrong_statement2, False),
+        (wrong_statement3, False)
     ]
     
-    if template_index % 2 == 0:
-        answer = 'A'
+    random.shuffle(options_with_flag)
+    
+    options_list = [item[0] for item in options_with_flag]
+    
+    if is_error_question:
+        answer_index = None
+        for i, item in enumerate(options_with_flag):
+            if not item[1]:
+                answer_index = i
+                break
     else:
-        answer = 'A'
+        answer_index = None
+        for i, item in enumerate(options_with_flag):
+            if item[1]:
+                answer_index = i
+                break
+    
+    answer = ['A', 'B', 'C', 'D'][answer_index]
     
     return {
         'stem': stem,

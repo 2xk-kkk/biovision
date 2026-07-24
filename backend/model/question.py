@@ -77,8 +77,8 @@ def save_user_answer(db, user_id, question_id, answer, is_correct):
             ON CONFLICT(user_id, question_id) DO UPDATE SET
                 answer = excluded.answer,
                 is_correct = excluded.is_correct,
-                wrong_count = user_answers.wrong_count + CASE WHEN excluded.is_correct = 0 AND user_answers.is_correct = 1 THEN 1 ELSE 0 END,
-                mastered = CASE WHEN excluded.is_correct = 1 THEN 0 ELSE user_answers.mastered END,
+                wrong_count = CASE WHEN excluded.is_correct = 0 THEN user_answers.wrong_count + 1 ELSE user_answers.wrong_count END,
+                mastered = CASE WHEN excluded.is_correct = 1 THEN 1 ELSE user_answers.mastered END,
                 create_at = CURRENT_TIMESTAMP
         ''', (user_id, question_id, answer, is_correct, is_correct))
         db.commit()

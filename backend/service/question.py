@@ -5,7 +5,7 @@ import json
 import os
 
 def import_questions():
-    questions_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'questions.json')
+    questions_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'questions.json')
     if not os.path.exists(questions_file):
         return ApiResponse.error(msg="问题文件不存在")
     
@@ -69,7 +69,7 @@ def submit_answer(user_id, question_id, answer):
             return ApiResponse.error(msg="题目不存在")
         
         correct_answer = result[0]
-        is_correct = 1 if answer == correct_answer else 0
+        is_correct = 1 if answer.strip().upper() == correct_answer.strip().upper() else 0
         
         save_user_answer(db, user_id, question_id, answer, is_correct)
         

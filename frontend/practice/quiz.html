@@ -741,8 +741,8 @@
             });
 
             let imageHtml = '';
-            if (question.images) {
-                const imagePaths = question.images.split(',');
+            if (question.images && question.images.length > 0) {
+                const imagePaths = Array.isArray(question.images) ? question.images : question.images.split(',');
                 imagePaths.forEach(imgPath => {
                     imgPath = imgPath.trim();
                     if (imgPath) {
@@ -813,8 +813,8 @@
             }
 
             let imageHtml = '';
-            if (question.images) {
-                const imagePaths = question.images.split(',');
+            if (question.images && question.images.length > 0) {
+                const imagePaths = Array.isArray(question.images) ? question.images : question.images.split(',');
                 imagePaths.forEach(imgPath => {
                     imgPath = imgPath.trim();
                     if (imgPath) {
@@ -877,7 +877,7 @@
             document.getElementById('answeredCount').textContent = answered;
         }
 
-        function submitExam() {
+        async function submitExam() {
             const answeredQuestions = questions.filter(q => {
                 const ans = answers[q.id];
                 return ans !== undefined && ans !== '';
@@ -893,6 +893,7 @@
 
             isSubmitted = true;
             correctCount = 0;
+            const token = localStorage.getItem('token');
 
             questions.forEach(question => {
                 const userAnswer = answers[question.id];
@@ -924,6 +925,22 @@
                     correctCount++;
                 }
             });
+
+            if (token) {
+                for (const question of questions) {
+                    const userAnswer = answers[question.id];
+                    if (userAnswer !== undefined && userAnswer !== '') {
+                        try {
+                            await fetch(`${API_BASE_URL}/questions/answer?question_id=${question.id}&answer=${encodeURIComponent(userAnswer)}`, {
+                                method: 'POST',
+                                headers: { 'token': token }
+                            });
+                        } catch (e) {
+                            console.error('保存答案失败:', e);
+                        }
+                    }
+                }
+            }
 
             document.getElementById('correctCount').textContent = correctCount;
             stopTimer();
