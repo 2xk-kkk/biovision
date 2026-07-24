@@ -284,6 +284,10 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None):
     questions = []
     for row in cursor.fetchall():
         images_str = row[8] if row[8] else ''
+        try:
+            images = json.loads(images_str) if images_str else []
+        except:
+            images = []
         questions.append({
             'id': row[0],
             'number': row[1],
@@ -295,7 +299,7 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None):
                 'D': row[6]
             },
             'answer': row[7],
-            'images': images_str,
+            'images': images,
             'textbook': row[9],
             'chapter': row[10],
             'section': row[11]
