@@ -789,13 +789,26 @@
 
         // 默认头像 SVG（取用户名首字）
         function getDefaultAvatarSVG(username, size = 40) {
+            const colors = [
+                '#4338ca',
+                '#be185d',
+                '#0369a1',
+                '#15803d',
+                '#c2410c',
+                '#7c3aed',
+                '#dc2626',
+                '#b45309'
+            ];
             const avatarChar = (username || '用').trim()[0] || '用';
+            const colorIndex = avatarChar.charCodeAt(0) % colors.length;
+            const avatarColor = colors[colorIndex];
+            
             const centerX = Math.floor(size / 2);
             const centerY = Math.floor(size / 2);
             const radius = Math.floor(size * 0.45);
             const fontSize = Math.floor(size * 0.45);
             const textY = Math.floor(size * 0.65);
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23667eea'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='${encodeURIComponent(avatarColor)}'/%3E%3Ctext x='${centerX}' y='${textY}' text-anchor='middle' font-size='${fontSize}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
         }
 
         // 未登录默认头像 SVG

@@ -211,6 +211,41 @@
             opacity: 1;
         }
 
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
         /* 主内容区 */
         .main-content {
             max-width: 1400px;
@@ -447,6 +482,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+        }
+
+        .welcome-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .welcome-icon span {
             color: white;
             font-size: 20px;
         }
@@ -1011,9 +1056,19 @@
             </div>
 
             <div class="user-actions">
-                <div class="avatar-wrapper">
-                    <div class="avatar">👤</div>
-                    <div class="upload-overlay">+</div>
+                <div class="avatar-wrapper" id="navAvatarBtn">
+                    <div class="avatar" id="navAvatar">👤</div>
+                    <div class="user-dropdown-menu" id="navDropdownMenu">
+                        <a href="../user-center/main.html" class="user-dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="#" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1025,7 +1080,9 @@
         <div class="top-cards">
             <!-- 欢迎卡片 -->
             <div class="card welcome-card" onclick="window.location.href='../user-center/main.html'">
-                <div class="welcome-icon">👤</div>
+                <div class="welcome-icon" id="welcomeAvatar">
+                    <span>👤</span>
+                </div>
                 <div>
                     <div class="welcome-text">欢迎回来</div>
                     <div class="welcome-title" id="welcomeUsername">登录</div>
@@ -1411,13 +1468,36 @@
             }
         }
 
+        function getDefaultAvatar(username) {
+            const colors = [
+                '#4338ca',
+                '#be185d',
+                '#0369a1',
+                '#15803d',
+                '#c2410c',
+                '#7c3aed',
+                '#dc2626',
+                '#b45309'
+            ];
+            const char = (username || '用').trim()[0].toUpperCase();
+            const colorIndex = char.charCodeAt(0) % colors.length;
+            return {
+                color: colors[colorIndex],
+                char: char
+            };
+        }
+
         async function loadUserInfo() {
             const token = localStorage.getItem('token');
             const usernameEl = document.getElementById('welcomeUsername');
+            const welcomeAvatarEl = document.getElementById('welcomeAvatar');
+            const navAvatarEl = document.getElementById('navAvatar');
             if (!usernameEl) return;
             
             if (!token) {
                 usernameEl.textContent = '登录';
+                if (welcomeAvatarEl) welcomeAvatarEl.innerHTML = '<span>👤</span>';
+                if (navAvatarEl) navAvatarEl.innerHTML = '👤';
                 return;
             }
             
@@ -1425,19 +1505,48 @@
                 const payload = parseJwt(token);
                 if (!payload || !payload.user_id) {
                     usernameEl.textContent = '登录';
+                    if (welcomeAvatarEl) welcomeAvatarEl.innerHTML = '<span>👤</span>';
+                    if (navAvatarEl) navAvatarEl.innerHTML = '👤';
                     return;
                 }
                 
                 const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
                 const data = await resp.json();
                 
-                if (data.success && data.data && data.data.username) {
-                    usernameEl.textContent = data.data.username;
+                if (data.success && data.data) {
+                    const username = data.data.username || '用户';
+                    if (username) {
+                        usernameEl.textContent = username;
+                    }
+                    
+                    const defaultAvatar = getDefaultAvatar(username);
+                    
+                    if (welcomeAvatarEl) {
+                        if (data.data.avatar) {
+                            welcomeAvatarEl.innerHTML = `<img src="${data.data.avatar}" alt="头像">`;
+                        } else {
+                            welcomeAvatarEl.style.background = defaultAvatar.color;
+                            welcomeAvatarEl.innerHTML = `<span>${defaultAvatar.char}</span>`;
+                        }
+                    }
+                    
+                    if (navAvatarEl) {
+                        if (data.data.avatar) {
+                            navAvatarEl.innerHTML = `<img src="${data.data.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;">`;
+                        } else {
+                            navAvatarEl.style.background = defaultAvatar.color;
+                            navAvatarEl.textContent = defaultAvatar.char;
+                        }
+                    }
                 } else {
                     usernameEl.textContent = '登录';
+                    if (welcomeAvatarEl) welcomeAvatarEl.innerHTML = '<span>👤</span>';
+                    if (navAvatarEl) navAvatarEl.innerHTML = '👤';
                 }
             } catch (e) {
                 usernameEl.textContent = '登录';
+                if (welcomeAvatarEl) welcomeAvatarEl.innerHTML = '<span>👤</span>';
+                if (navAvatarEl) navAvatarEl.innerHTML = '👤';
             }
         }
 
@@ -1482,7 +1591,21 @@
                     dropdown.classList.remove('show');
                 });
             }
+            const navDropdown = document.getElementById('navDropdownMenu');
+            if (navDropdown && !e.target.closest('#navAvatarBtn')) {
+                navDropdown.classList.remove('show');
+            }
         });
+        
+        // 导航栏头像下拉菜单
+        const navAvatarBtn = document.getElementById('navAvatarBtn');
+        const navDropdown = document.getElementById('navDropdownMenu');
+        if (navAvatarBtn && navDropdown) {
+            navAvatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navDropdown.classList.toggle('show');
+            });
+        }
         
         // 导航链接点击效果
         document.querySelectorAll('.nav-link').forEach(link => {

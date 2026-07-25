@@ -127,6 +127,47 @@
             font-size: 18px;
             color: white;
             cursor: pointer;
+            overflow: hidden;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
         }
 
         .hero-section {
@@ -1026,7 +1067,20 @@
                 <a href="../forum/main.html" class="nav-link">论坛</a>
             </div>
             <div class="user-actions">
-                <div class="avatar">👤</div>
+                <div class="avatar-wrapper" id="navAvatarBtn">
+                    <div class="avatar" id="navAvatar">👤</div>
+                    <div class="user-dropdown-menu" id="navDropdownMenu">
+                        <a href="../user-center/main.html" class="user-dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="#" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1594,7 +1648,95 @@
                     dropdown.classList.remove('show');
                 });
             }
+            const navDropdown = document.getElementById('navDropdownMenu');
+            if (navDropdown && !e.target.closest('#navAvatarBtn')) {
+                navDropdown.classList.remove('show');
+            }
         });
+        
+        // 导航栏头像下拉菜单
+        const navAvatarBtn = document.getElementById('navAvatarBtn');
+        const navDropdown = document.getElementById('navDropdownMenu');
+        if (navAvatarBtn && navDropdown) {
+            navAvatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navDropdown.classList.toggle('show');
+            });
+        }
+        
+        // 解析JWT token
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        // 获取默认头像
+        function getDefaultAvatar(username) {
+            const colors = [
+                '#4338ca',
+                '#be185d',
+                '#0369a1',
+                '#15803d',
+                '#c2410c',
+                '#7c3aed',
+                '#dc2626',
+                '#b45309'
+            ];
+            const char = (username || '用').trim()[0].toUpperCase();
+            const colorIndex = char.charCodeAt(0) % colors.length;
+            return {
+                color: colors[colorIndex],
+                char: char
+            };
+        }
+        
+        // 加载用户信息
+        async function loadUserInfo() {
+            const token = localStorage.getItem('token');
+            const navAvatarEl = document.getElementById('navAvatar');
+            if (!navAvatarEl) return;
+            
+            if (!token) {
+                navAvatarEl.innerHTML = '👤';
+                return;
+            }
+            
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    navAvatarEl.innerHTML = '👤';
+                    return;
+                }
+                
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const data = await resp.json();
+                
+                if (data.success && data.data) {
+                    const username = data.data.username || '用户';
+                    if (data.data.avatar) {
+                        navAvatarEl.innerHTML = `<img src="${data.data.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;">`;
+                    } else {
+                        const defaultAvatar = getDefaultAvatar(username);
+                        navAvatarEl.style.background = defaultAvatar.color;
+                        navAvatarEl.textContent = defaultAvatar.char;
+                    }
+                } else {
+                    navAvatarEl.innerHTML = '👤';
+                }
+            } catch (e) {
+                navAvatarEl.innerHTML = '👤';
+            }
+        }
+        
+        loadUserInfo();
         loadExams();
     </script>
 </body>
