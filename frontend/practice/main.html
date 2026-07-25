@@ -1028,7 +1028,7 @@
                 <div class="welcome-icon">👤</div>
                 <div>
                     <div class="welcome-text">欢迎回来</div>
-                    <div class="welcome-title" id="welcomeUsername">wwj</div>
+                    <div class="welcome-title" id="welcomeUsername">登录</div>
                 </div>
                 <div class="welcome-arrow">›</div>
             </div>
@@ -1398,6 +1398,49 @@
     </div>
 
     <script>
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function loadUserInfo() {
+            const token = localStorage.getItem('token');
+            const usernameEl = document.getElementById('welcomeUsername');
+            if (!usernameEl) return;
+            
+            if (!token) {
+                usernameEl.textContent = '登录';
+                return;
+            }
+            
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    usernameEl.textContent = '登录';
+                    return;
+                }
+                
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const data = await resp.json();
+                
+                if (data.success && data.data && data.data.username) {
+                    usernameEl.textContent = data.data.username;
+                } else {
+                    usernameEl.textContent = '登录';
+                }
+            } catch (e) {
+                usernameEl.textContent = '登录';
+            }
+        }
+
         // 生成日历热力图
         function generateHeatmap() {
             const grid = document.getElementById('heatmapGrid');
@@ -1421,6 +1464,7 @@
         }
         
         generateHeatmap();
+        loadUserInfo();
         
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
