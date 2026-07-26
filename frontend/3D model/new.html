@@ -733,11 +733,11 @@
         }
 
         function phaseDescription(p) {
-          if (p < 0.2) return "染色质松散，DNA 已复制但尚未凝缩成可见染色体";
-          if (p < 0.36) return "染色质开始螺旋化，核膜逐渐解体，纺锤体形成";
-          if (p < 0.58) return "染色体排列在赤道板上，便于平均分配到两端";
-          if (p < 0.82) return "姐妹染色单体分离并向两极移动";
-          return "形成两个子细胞，遗传物质重新分配完成";
+          if (p < 0.2) return "染色质呈细丝状散布于细胞核中，DNA复制完成（S期），为细胞分裂做准备";
+          if (p < 0.36) return "染色质螺旋化缩短变粗→可见染色体（每条含两条姐妹染色单体），核膜核仁逐渐消失，纺锤体形成";
+          if (p < 0.58) return "所有染色体的着丝粒排列在细胞中央的赤道板上，纺锤丝与着丝粒相连，染色体形态最清晰、数目最易观察";
+          if (p < 0.82) return "着丝粒分裂，姐妹染色单体分开成为子染色体，纺锤丝牵引子染色体移向两极；后期末细胞膜从上下两侧向内凹陷（分裂沟）";
+          return "染色体解螺旋→染色质，核膜核仁重新出现，纺锤体消失，两个子细胞已分离并逐渐拉开距离";
         }
 
         function makePolylinePath(points, xFor, yFor) {
@@ -828,197 +828,410 @@
           `;
         }
 
-        function chromosome(x, y, scale, rotate, opacity, opened) {
-          const arm = opened ? 18 : 24;
-          const stroke = 9 * scale;
+        // Draw a duplicated chromosome (X-shaped, two sister chromatids joined at centromere)
+        // Centered at (0,0) in local coords, arms extend ~40px vertically
+        function dupChromosome(armLen, strokeW) {
+          const L = armLen || 38;
+          const sw = strokeW || 8;
           return `
-            <g transform="translate(${x}, ${y}) rotate(${rotate}) scale(${scale})" opacity="${opacity}" filter="url(#softGlow)">
-              <path d="M -${arm} -26 C -10 -10, -10 10, -${arm} 26" fill="none" stroke="url(#chromosomeFill)" stroke-width="${stroke}" stroke-linecap="round" />
-              <path d="M ${arm} -26 C 10 -10, 10 10, ${arm} 26" fill="none" stroke="url(#chromosomeFill)" stroke-width="${stroke}" stroke-linecap="round" />
-              <line x1="-11" y1="-6" x2="11" y2="6" stroke="rgba(255,255,255,0.8)" stroke-width="4" stroke-linecap="round" />
-              <circle cx="0" cy="0" r="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" />
+            <g filter="url(#softGlow)">
+              <!-- Left chromatid: upper + lower arms -->
+              <path d="M -5,0 C -14,-10, -16,-24, -12,-${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
+              <path d="M -5,0 C -14,10, -16,24, -12,${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
+              <!-- Right chromatid: upper + lower arms -->
+              <path d="M 5,0 C 14,-10, 16,-24, 12,-${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
+              <path d="M 5,0 C 14,10, 16,24, 12,${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
+              <!-- Centromere -->
+              <circle cx="0" cy="0" r="6.5" fill="rgba(20,20,40,0.5)" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"/>
+              <circle cx="0" cy="0" r="2.5" fill="rgba(255,255,255,0.7)"/>
             </g>
           `;
         }
 
-        function separatedChromosome(cx, cy, division, bias) {
-          const offsetX = 34 + 22 * division;
-          const offsetY = 28 + 16 * division;
-          const leftX = cx - offsetX * bias;
-          const rightX = cx + offsetX * bias;
-          const topY = cy - offsetY;
-          const bottomY = cy + offsetY;
+        // Draw a single chromatid (after separation), rod-shaped
+        function singleChromatid(armLen, strokeW) {
+          const L = armLen || 38;
+          const sw = strokeW || 8;
           return `
             <g filter="url(#softGlow)">
-              <path d="M ${leftX - 10} ${topY - 24} C ${leftX - 18} ${topY - 4}, ${leftX - 16} ${topY + 12}, ${leftX - 4} ${topY + 26}" fill="none" stroke="url(#chromosomeFill)" stroke-width="7" stroke-linecap="round" />
-              <path d="M ${rightX + 10} ${bottomY + 24} C ${rightX + 18} ${bottomY + 4}, ${rightX + 16} ${bottomY - 12}, ${rightX + 4} ${bottomY - 26}" fill="none" stroke="url(#chromosomeFill)" stroke-width="7" stroke-linecap="round" />
-              <circle cx="${leftX}" cy="${topY}" r="8" fill="#dfe7ff" opacity="0.9" />
-              <circle cx="${rightX}" cy="${bottomY}" r="8" fill="#dfe7ff" opacity="0.9" />
+              <path d="M 0,-${L} C -4,-20, -5,-8, 0,0 C 5,-8, 4,-20, 0,-${L}" fill="url(#chromosomeFill)" stroke="none"/>
+              <ellipse cx="0" cy="0" rx="3.5" ry="5" fill="rgba(20,20,40,0.55)" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>
             </g>
           `;
+        }
+
+        // ---- Persistent DOM references (created once, updated each frame) ----
+        let stageDom = null;
+
+        function buildStageDOM() {
+          // Build the full SVG structure once; each element gets an id for fast updates
+          let html = '<text id="phaseLabel" x="40" y="48" fill="rgba(220,233,255,0.82)" font-size="16"></text>';
+
+          // Membrane: ellipse (pre-cleavage)
+          html += '<ellipse id="membraneOval" cx="400" cy="270" rx="195" ry="178" fill="none" stroke="url(#cellStroke)" stroke-width="7" style="display:block"/>';
+          // Membrane: peanut path (cleavage)
+          html += '<path id="membranePeanut" fill="none" stroke="url(#cellStroke)" stroke-width="7" stroke-linejoin="round" style="display:none"/>';
+          // Membrane: two daughter ellipses
+          html += '<ellipse id="membraneD1" cx="308" cy="270" rx="110" ry="150" stroke="url(#cellStroke)" stroke-width="6" style="display:none"/>';
+          html += '<ellipse id="membraneD2" cx="492" cy="270" rx="110" ry="150" stroke="url(#cellStroke)" stroke-width="6" style="display:none"/>';
+
+          // Spindle poles
+          html += '<g id="poleGroup" style="display:none">';
+          html += '<circle id="poleLOuter" cx="210" cy="270" r="18" fill="rgba(110,231,255,0.2)" stroke="rgba(110,231,255,0.4)" stroke-width="1.8"/>';
+          html += '<circle id="poleLInner" cx="210" cy="270" r="6" fill="rgba(110,231,255,0.5)"/>';
+          html += '<circle id="poleROuter" cx="590" cy="270" r="18" fill="rgba(110,231,255,0.2)" stroke="rgba(110,231,255,0.4)" stroke-width="1.8"/>';
+          html += '<circle id="poleRInner" cx="590" cy="270" r="6" fill="rgba(110,231,255,0.5)"/>';
+          // Astral rays (5 per pole)
+          for (let a = 0; a < 5; a++) {
+            html += `<line id="astralL${a}" stroke="rgba(110,231,255,0.3)" stroke-width="1" stroke-linecap="round"/>`;
+            html += `<line id="astralR${a}" stroke="rgba(110,231,255,0.3)" stroke-width="1" stroke-linecap="round"/>`;
+          }
+          html += '</g>';
+
+          // Spindle fibers: 4 chr × 2 poles = 8 kinetochore fibers + 5 polar fibers
+          html += '<g id="spindleGroup" style="display:none">';
+          for (let i = 0; i < 8; i++) html += `<line id="spinK${i}" stroke="rgba(110,231,255,0.22)" stroke-width="1.6"/>`;
+          for (let i = 0; i < 5; i++) html += `<line id="spinP${i}" stroke="rgba(160,210,255,0.06)" stroke-width="1.2"/>`;
+          html += '</g>';
+
+          // Main nucleus (interphase/prophase): envelope + nucleolus
+          html += '<g id="nucleusMain" style="display:block">';
+          html += '<circle id="nucEnv" cx="400" cy="270" r="105" fill="rgba(145,178,255,0.06)" stroke="rgba(180,213,255,0.45)" stroke-width="2.5"/>';
+          html += '<circle id="nucNucleolus" cx="400" cy="270" r="28" fill="rgba(110,231,255,0.12)" stroke="rgba(110,231,255,0.35)" stroke-width="1.6"/>';
+          html += '</g>';
+
+          // Daughter nuclei (telophase)
+          html += '<g id="nucleusDaughters" style="display:none">';
+          html += '<circle id="nucD1" cx="308" cy="270" r="45" fill="rgba(145,178,255,0.06)" stroke="rgba(180,213,255,0.4)" stroke-width="2.2"/>';
+          html += '<circle id="nucD2" cx="492" cy="270" r="45" fill="rgba(145,178,255,0.06)" stroke="rgba(180,213,255,0.4)" stroke-width="2.2"/>';
+          html += '</g>';
+
+          // Chromatin threads (8 max)
+          html += '<g id="chromatinGroup">';
+          for (let i = 0; i < 8; i++) html += `<path id="chromatin${i}" fill="none" stroke-linecap="round"/>`;
+          html += '</g>';
+
+          // 4 duplicated chromosomes (prophase/metaphase)
+          html += '<g id="dupChromGroup">';
+          for (let i = 0; i < 4; i++) html += `<g id="dupChrom${i}" style="display:none">${dupChromosome(38, 7.5)}</g>`;
+          html += '</g>';
+
+          // 8 single chromatids (anaphase/telophase) — 2 per original chromosome
+          html += '<g id="singleChromGroup">';
+          for (let i = 0; i < 8; i++) html += `<g id="singleChrom${i}" style="display:none">${singleChromatid(36, 7)}</g>`;
+          html += '</g>';
+
+          // Equator line
+          html += '<g id="equatorGroup" style="display:none">';
+          html += '<line id="equatorLine" stroke="rgba(110,231,255,0.35)" stroke-width="2" stroke-dasharray="9 7"/>';
+          html += '<text id="equatorText" x="414" y="234" fill="rgba(200,225,255,0.7)" font-size="12">赤道板</text>';
+          html += '</g>';
+
+          // Cleavage arrows
+          html += '<g id="cleavageGroup" style="display:none">';
+          html += '<path id="cleavArrow1" fill="none" stroke="rgba(255,150,180,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+          html += '<path id="cleavArrow2" fill="none" stroke="rgba(255,150,180,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+          html += '<text id="cleavText" x="434" y="258" fill="rgba(255,180,200,0.75)" font-size="12">分裂沟</text>';
+          html += '</g>';
+
+          // Daughter labels
+          html += '<g id="daughterLabels" style="display:none">';
+          html += '<text id="labelD1" text-anchor="middle" fill="rgba(200,225,255,0.65)" font-size="13">子细胞</text>';
+          html += '<text id="labelD2" text-anchor="middle" fill="rgba(200,225,255,0.65)" font-size="13">子细胞</text>';
+          html += '</g>';
+
+          els.stageRoot.innerHTML = html;
+          stageDom = true;
         }
 
         function renderStage(p) {
-          const cellX = 400;
-          const cellY = 270;
-          const cellR = 184;
+          if (!stageDom) buildStageDOM();
 
-          const chromatin = clamp((p - 0.08) / 0.26, 0, 1);
-          const envelopeBreak = clamp((p - 0.22) / 0.18, 0, 1);
-          const alignment = clamp((p - 0.4) / 0.18, 0, 1);
-          const separation = clamp((p - 0.58) / 0.18, 0, 1);
-          const division = clamp((p - 0.78) / 0.18, 0, 1);
-          const nucleusOpacity = clamp(1 - (p - 0.28) / 0.11, 0, 1);
-          const spindleOpacity = clamp((p - 0.22) / 0.16, 0, 1);
+          const cellX = 400, cellY = 270, baseRX = 195, baseRY = 178;
+          const proPh  = clamp((p - 0.2) / 0.16, 0, 1);
+          const metaPh = clamp((p - 0.36) / 0.22, 0, 1);
+          const anaPh  = clamp((p - 0.58) / 0.24, 0, 1);
+          const teloPh = clamp((p - 0.82) / 0.18, 0, 1);
+          const sPhase = clamp((p - 0.06) / 0.12, 0, 1);
 
-          const chromPositions = [
-            [-92, -56],
-            [94, -50],
-            [-84, 56],
-            [86, 58],
-          ];
+          const envOut  = clamp(1 - proPh * 1.6, 0, 1);
+          const envBack = clamp((teloPh - 0.1) / 0.7, 0, 1);
+          const spinVis = clamp((p - 0.26) / 0.1, 0, 1) * clamp(1 - (p - 0.78) / 0.06, 0, 1);
 
-          const cloud = [];
-          if (chromatin < 0.92) {
-            for (let i = 0; i < 6; i++) {
-              const a = i * 1.08;
-              const dx = Math.cos(a) * 18;
-              const dy = Math.sin(a * 1.2) * 16;
-              cloud.push(`
-                <path d="M ${cellX - 64 + dx} ${cellY - 40 + dy}
-                         C ${cellX - 24 + dx} ${cellY - 74 + dy},
-                           ${cellX + 18 + dx} ${cellY - 34 + dy},
-                           ${cellX + 62 + dx} ${cellY - 54 + dy}
-                         M ${cellX - 66 + dx} ${cellY + 14 + dy}
-                         C ${cellX - 18 + dx} ${cellY - 10 + dy},
-                           ${cellX + 24 + dx} ${cellY + 40 + dy},
-                         ${cellX + 70 + dx} ${cellY + 16 + dy}
-                      fill="none"
-                      stroke="rgba(180, 233, 255, 0.9)"
-                      stroke-width="${1.2 + i * 0.18}"
-                      stroke-linecap="round"
-                      stroke-linejoin="round" />
-              `);
+          const cellRX = baseRX + anaPh * 45;
+          const cellRY = baseRY - anaPh * 12;
+          const poleLX = cellX - cellRX + 4;
+          const poleRX = cellX + cellRX - 4;
+          const poleY = cellY;
+
+          // ---- Phase label ----
+          document.getElementById('phaseLabel').textContent = `${phaseName(p)}：${phaseDescription(p)}`;
+
+          // ---- Membrane ----
+          const memOval = document.getElementById('membraneOval');
+          const memPeanut = document.getElementById('membranePeanut');
+          const memD1 = document.getElementById('membraneD1');
+          const memD2 = document.getElementById('membraneD2');
+          let sepShift = 0;
+
+          // Cleavage: two overlapping ellipses progressively separate (p 0.64→0.82), creates natural furrow
+          const cleavePinch = clamp((p - 0.64) / 0.18, 0, 1);
+
+          if (p < 0.64) {
+            // Pre-cleavage: normal oval / elongating cell
+            memOval.style.display = 'block'; memPeanut.style.display = 'none';
+            memD1.style.display = 'none'; memD2.style.display = 'none';
+            memOval.setAttribute('cx', cellX); memOval.setAttribute('cy', cellY);
+            memOval.setAttribute('rx', cellRX); memOval.setAttribute('ry', cellRY);
+          } else if (p < 0.82) {
+            // Cleavage: two overlapping ellipses with fill to create natural furrow
+            memOval.style.display = 'none'; memPeanut.style.display = 'none';
+            memD1.style.display = 'block'; memD2.style.display = 'block';
+            const sep = cleavePinch * 92;
+            const lobeRX = cellRX * (1 - cleavePinch * 0.15);
+            const lobeRY = cellRY * (1 - cleavePinch * 0.08);
+            // Dark fill to mask overlapping strokes inside each lobe
+            const darkFill = 'rgba(7,14,24,0.92)';
+            [memD1, memD2].forEach(m => m.setAttribute('fill', darkFill));
+            memD1.setAttribute('cx', cellX - sep); memD1.setAttribute('cy', cellY);
+            memD1.setAttribute('rx', lobeRX); memD1.setAttribute('ry', lobeRY);
+            memD2.setAttribute('cx', cellX + sep); memD2.setAttribute('cy', cellY);
+            memD2.setAttribute('rx', lobeRX); memD2.setAttribute('ry', lobeRY);
+          } else {
+            // Two separate daughter cells from p=0.82 (end of anaphase) onwards
+            memOval.style.display = 'none'; memPeanut.style.display = 'none';
+            memD1.style.display = 'block'; memD2.style.display = 'block';
+            const drift = clamp(teloPh * 1.2, 0, 1);
+            sepShift = drift * 28;
+            const dRX = cellRX * 0.55, dRY = cellRY * 0.85;
+            [memD1, memD2].forEach(m => m.setAttribute('fill', 'none'));
+            memD1.setAttribute('cx', cellX - 92 - sepShift); memD1.setAttribute('cy', cellY);
+            memD1.setAttribute('rx', dRX); memD1.setAttribute('ry', dRY);
+            memD2.setAttribute('cx', cellX + 92 + sepShift); memD2.setAttribute('cy', cellY);
+            memD2.setAttribute('rx', dRX); memD2.setAttribute('ry', dRY);
+          }
+
+          // ---- Spindle poles ----
+          const poleG = document.getElementById('poleGroup');
+          if (spinVis > 0.01) {
+            poleG.style.display = 'block';
+            poleG.setAttribute('opacity', (spinVis * 0.9).toFixed(2));
+            document.getElementById('poleLOuter').setAttribute('cx', poleLX);
+            document.getElementById('poleLInner').setAttribute('cx', poleLX);
+            document.getElementById('poleROuter').setAttribute('cx', poleRX);
+            document.getElementById('poleRInner').setAttribute('cx', poleRX);
+            const angles = [-60, -30, 0, 30, 60];
+            for (let a = 0; a < 5; a++) {
+              const rad = angles[a] * Math.PI / 180;
+              const dx = Math.cos(rad) * 28, dy = Math.sin(rad) * 28;
+              document.getElementById(`astralL${a}`).setAttribute('x1', poleLX);
+              document.getElementById(`astralL${a}`).setAttribute('y1', poleY);
+              document.getElementById(`astralL${a}`).setAttribute('x2', poleLX + dx);
+              document.getElementById(`astralL${a}`).setAttribute('y2', poleY + dy);
+              document.getElementById(`astralR${a}`).setAttribute('x1', poleRX);
+              document.getElementById(`astralR${a}`).setAttribute('y1', poleY);
+              document.getElementById(`astralR${a}`).setAttribute('x2', poleRX - dx);
+              document.getElementById(`astralR${a}`).setAttribute('y2', poleY + dy);
+            }
+          } else {
+            poleG.style.display = 'none';
+          }
+
+          // ---- Nuclear envelope ----
+          const nucMain = document.getElementById('nucleusMain');
+          if (envOut > 0.01) {
+            nucMain.style.display = 'block';
+            nucMain.setAttribute('opacity', envOut.toFixed(2));
+            const nr = 105 - proPh * 50;
+            document.getElementById('nucEnv').setAttribute('r', nr);
+            document.getElementById('nucEnv').setAttribute('stroke-dasharray', proPh > 0.6 ? '8 4' : 'none');
+            document.getElementById('nucNucleolus').setAttribute('r', 28 - proPh * 20);
+          } else {
+            nucMain.style.display = 'none';
+          }
+
+          const nucDau = document.getElementById('nucleusDaughters');
+          if (envBack > 0.01) {
+            nucDau.style.display = 'block';
+            nucDau.setAttribute('opacity', envBack.toFixed(2));
+            const dr = 45 + envBack * 30;
+            document.getElementById('nucD1').setAttribute('cx', cellX - 92 - sepShift);
+            document.getElementById('nucD1').setAttribute('r', dr);
+            document.getElementById('nucD2').setAttribute('cx', cellX + 92 + sepShift);
+            document.getElementById('nucD2').setAttribute('r', dr);
+          } else {
+            nucDau.style.display = 'none';
+          }
+
+          // ---- Chromatin ----
+          const chromaVis = clamp(1 - proPh * 2.5, 0, 1);
+          const threadCount = 5 + Math.floor(sPhase * 3);
+          for (let i = 0; i < 8; i++) {
+            const el = document.getElementById(`chromatin${i}`);
+            if (i < threadCount && chromaVis > 0.01) {
+              el.style.display = 'block';
+              const seed = i * 1.7;
+              const ampX = 55 + i * 3, ampY = 38 + i * 2;
+              const cx = cellX + Math.cos(seed) * 12, cy = cellY + Math.sin(seed * 1.3) * 8;
+              const a1 = seed + p * 2, a2 = seed + 1.8 + p * 1.5;
+              const d = `M ${cx + Math.cos(a1) * ampX} ${cy + Math.sin(a2) * ampY} ` +
+                `Q ${cx + Math.cos(a1 + 1.5) * ampX * 0.5} ${cy + Math.sin(a2 + 0.8) * ampY * 0.5},` +
+                  `${cx + Math.cos(a1 + 3) * ampX * 0.3} ${cy + Math.sin(a2 + 2.2) * ampY * 0.3} ` +
+                `T ${cx + Math.cos(a1 + 5.5) * ampX * 0.6} ${cy + Math.sin(a2 + 3.5) * ampY * 0.6}`;
+              el.setAttribute('d', d);
+              el.setAttribute('stroke', `rgba(160,210,255,${0.65 + i * 0.04})`);
+              el.setAttribute('stroke-width', 1.0 + i * 0.15);
+              el.setAttribute('opacity', chromaVis.toFixed(2));
+            } else {
+              el.style.display = 'none';
             }
           }
 
-          const spindle = [];
-          if (p > 0.22) {
-            const poles = [
-              [250, 110],
-              [550, 110],
-              [250, 430],
-              [550, 430],
-            ];
-            const targets = [
-              [-96, -26 - 46 * separation],
-              [96, -24 - 46 * separation],
-              [-96, 26 + 46 * separation],
-              [96, 24 + 46 * separation],
-            ];
+          // ---- Chromosomes ----
+          const equY = [208, 244, 280, 316];
+          const initPos = [[-68, -48], [72, -52], [-58, 44], [66, 50]];
+          const condScaleArr = [], condOpArr = [], congXArr = [], congYArr = [];
+          const leftXArr = [], rightXArr = [], teloDecondArr = [];
+
+          for (let i = 0; i < 4; i++) {
+            const [ix, iy] = initPos[i];
+            condScaleArr[i] = lerp(0.22, 1.0, clamp(proPh * 1.1, 0, 1));
+            condOpArr[i] = lerp(0, 1, clamp(proPh * 1.1, 0, 1));
+            congXArr[i] = lerp(ix * (1 - proPh), 0, metaPh);
+            congYArr[i] = lerp(iy * (1 - proPh), equY[i] - cellY, metaPh);
+            const sepDist = anaPh * 92;
+            leftXArr[i] = congXArr[i] - sepDist;
+            rightXArr[i] = congXArr[i] + sepDist;
+            teloDecondArr[i] = clamp((teloPh - 0.5) / 0.5, 0, 1);
+          }
+
+          // Duplicated chromosomes (prophase/metaphase) — split at p=0.58 (anaphase start)
+          if (p < 0.58) {
+            document.getElementById('dupChromGroup').style.display = 'block';
+            document.getElementById('singleChromGroup').style.display = 'none';
             for (let i = 0; i < 4; i++) {
-              const [sx, sy] = chromPositions[i];
-              const [tx, ty] = targets[i];
-              const x = lerp(sx, tx, separation);
-              const y = lerp(sy, ty, separation);
-              for (const [px, py] of poles) {
-                spindle.push(`<line x1="${cellX + x}" y1="${cellY + y}" x2="${px}" y2="${py}" stroke="url(#spindle)" stroke-width="2.2" />`);
+              const el = document.getElementById(`dupChrom${i}`);
+              const cx = cellX + congXArr[i], cy = cellY + congYArr[i];
+              const sc = condScaleArr[i] * (1 - teloDecondArr[i] * 0.7);
+              const op = condOpArr[i] * (1 - teloDecondArr[i]);
+              if (op > 0.02) {
+                el.style.display = 'block';
+                el.setAttribute('transform', `translate(${cx.toFixed(1)},${cy.toFixed(1)}) scale(${sc.toFixed(3)})`);
+                el.setAttribute('opacity', op.toFixed(2));
+              } else {
+                el.style.display = 'none';
+              }
+            }
+          } else {
+            // Single chromatids (anaphase/telophase)
+            document.getElementById('dupChromGroup').style.display = 'none';
+            document.getElementById('singleChromGroup').style.display = 'block';
+            for (let i = 0; i < 4; i++) {
+              const lx = cellX + leftXArr[i] - sepShift;
+              const rx = cellX + rightXArr[i] + sepShift;
+              const sc = condScaleArr[i] * (1 - teloDecondArr[i] * 0.65) * 0.85;
+              const op = 1 - teloDecondArr[i] * 0.6;
+              const elL = document.getElementById(`singleChrom${i * 2}`);
+              const elR = document.getElementById(`singleChrom${i * 2 + 1}`);
+              if (op > 0.02) {
+                elL.style.display = 'block'; elR.style.display = 'block';
+                elL.setAttribute('transform', `translate(${lx.toFixed(1)},${(cellY + congYArr[i]).toFixed(1)}) scale(${sc.toFixed(3)})`);
+                elR.setAttribute('transform', `translate(${rx.toFixed(1)},${(cellY + congYArr[i]).toFixed(1)}) scale(${sc.toFixed(3)})`);
+                elL.setAttribute('opacity', op.toFixed(2));
+                elR.setAttribute('opacity', op.toFixed(2));
+              } else {
+                elL.style.display = 'none'; elR.style.display = 'none';
               }
             }
           }
 
-          const chromosomeGroup = chromPositions
-            .map((pos, i) => {
-              const bias = i < 2 ? -1 : 1;
-              const phaseX = lerp(pos[0], pos[0] * 0.72, chromatin);
-              const phaseY = lerp(pos[1], pos[1] * 0.72, chromatin);
-              const x = cellX + phaseX + alignment * 18 * bias + separation * 150 * bias;
-              const y = cellY + phaseY + (i % 2 === 0 ? -10 : 10) * separation;
-              const rotate = bias * lerp(-18, 16, separation) + (i % 2 === 0 ? -8 : 8);
-              const scale = lerp(0.72, 1, chromatin);
-              const opacity = lerp(0.55, 1, chromatin);
-              return chromosome(x, y, scale, rotate, opacity, separation > 0.46);
-            })
-            .join("");
+          // ---- Spindle fibers ----
+          const spinG = document.getElementById('spindleGroup');
+          if (spinVis > 0.01) {
+            spinG.style.display = 'block';
+            let fi = 0;
+            for (let i = 0; i < 4; i++) {
+              const cx = cellX + congXArr[i], cy = cellY + congYArr[i];
+              if (p >= 0.58) {
+                const lx = cellX + leftXArr[i] - sepShift;
+                const rx = cellX + rightXArr[i] + sepShift;
+                document.getElementById(`spinK${fi}`).setAttribute('x1', lx);
+                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
+                document.getElementById(`spinK${fi}`).setAttribute('x2', poleLX);
+                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
+                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.25 * spinVis).toFixed(2)})`);
+                document.getElementById(`spinK${fi}`).setAttribute('x1', rx);
+                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
+                document.getElementById(`spinK${fi}`).setAttribute('x2', poleRX);
+                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
+                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.25 * spinVis).toFixed(2)})`);
+              } else {
+                document.getElementById(`spinK${fi}`).setAttribute('x1', cx);
+                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
+                document.getElementById(`spinK${fi}`).setAttribute('x2', poleLX);
+                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
+                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.15 * spinVis).toFixed(2)})`);
+                document.getElementById(`spinK${fi}`).setAttribute('x1', cx);
+                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
+                document.getElementById(`spinK${fi}`).setAttribute('x2', poleRX);
+                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
+                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.15 * spinVis).toFixed(2)})`);
+              }
+            }
+            for (let k = 0; k < 5; k++) {
+              const dy = (k - 2) * 32;
+              const el = document.getElementById(`spinP${k}`);
+              el.setAttribute('x1', poleLX);
+              el.setAttribute('y1', poleY + dy);
+              el.setAttribute('x2', poleRX);
+              el.setAttribute('y2', poleY + dy);
+              el.setAttribute('stroke', `rgba(160,210,255,${(0.06 * spinVis).toFixed(3)})`);
+            }
+          } else {
+            spinG.style.display = 'none';
+          }
 
-          const membrane = `
-            <g>
-              <circle cx="${cellX}" cy="${cellY}" r="${cellR}" fill="none" stroke="url(#cellStroke)" stroke-width="8" />
-              <circle cx="${cellX}" cy="${cellY}" r="${cellR - 9}" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1.2" />
-            </g>
-          `;
+          // ---- Equator ----
+          const eqG = document.getElementById('equatorGroup');
+          if (metaPh > 0.1 && anaPh < 0.3) {
+            eqG.style.display = 'block';
+            eqG.setAttribute('opacity', Math.min(metaPh * 1.2, (1 - anaPh) * 3).toFixed(2));
+            document.getElementById('equatorLine').setAttribute('x1', cellX);
+            document.getElementById('equatorLine').setAttribute('y1', cellY - cellRY + 20);
+            document.getElementById('equatorLine').setAttribute('x2', cellX);
+            document.getElementById('equatorLine').setAttribute('y2', cellY + cellRY - 20);
+            document.getElementById('equatorText').setAttribute('x', cellX + 14);
+            document.getElementById('equatorText').setAttribute('y', cellY - cellRY + 36);
+          } else {
+            eqG.style.display = 'none';
+          }
 
-          const nucleus = `
-            <g opacity="${nucleusOpacity}">
-              <circle cx="${cellX}" cy="${cellY}" r="${118 - 22 * envelopeBreak}" fill="rgba(145,178,255,0.08)" stroke="rgba(180,213,255,0.5)" stroke-width="2.5" />
-              <circle cx="${cellX}" cy="${cellY}" r="${34 - 8 * envelopeBreak}" fill="rgba(110,231,255,0.14)" stroke="rgba(110,231,255,0.42)" stroke-width="1.8" />
-            </g>
-          `;
+          // ---- Cleavage arrows (during anaphase pinching, p 0.67→0.82) ----
+          const cleavG = document.getElementById('cleavageGroup');
+          if (p > 0.67 && p < 0.82) {
+            cleavG.style.display = 'block';
+            cleavG.setAttribute('opacity', (clamp((p - 0.67) / 0.05, 0, 1) * clamp(1 - (p - 0.79) / 0.03, 0, 1)).toFixed(2));
+            const cy1 = cellY - cellRY, cy2 = cellY + cellRY;
+            document.getElementById('cleavArrow1').setAttribute('d', `M ${cellX + 26} ${cy1 + 38} L ${cellX + 10} ${cy1 + 64} L ${cellX + 26} ${cy1 + 50}`);
+            document.getElementById('cleavArrow2').setAttribute('d', `M ${cellX + 26} ${cy2 - 38} L ${cellX + 10} ${cy2 - 64} L ${cellX + 26} ${cy2 - 50}`);
+            document.getElementById('cleavText').setAttribute('x', cellX + 34);
+            document.getElementById('cleavText').setAttribute('y', cellY - 12);
+          } else {
+            cleavG.style.display = 'none';
+          }
 
-          const poleLight = `
-            <g opacity="${spindleOpacity * 0.92}">
-              <circle cx="250" cy="110" r="16" fill="rgba(110,231,255,0.22)" />
-              <circle cx="550" cy="110" r="16" fill="rgba(110,231,255,0.22)" />
-              <circle cx="250" cy="430" r="16" fill="rgba(110,231,255,0.22)" />
-              <circle cx="550" cy="430" r="16" fill="rgba(110,231,255,0.22)" />
-            </g>
-          `;
-
-          const equator = `
-            <g opacity="${alignment}">
-              <line x1="${cellX - 150}" y1="${cellY}" x2="${cellX + 150}" y2="${cellY}" stroke="rgba(110,231,255,0.4)" stroke-width="2" stroke-dasharray="10 10" />
-              <text x="${cellX}" y="${cellY - 18}" text-anchor="middle" fill="rgba(220,233,255,0.72)" font-size="13">赤道板 / 赤道面</text>
-            </g>
-          `;
-
-          const cleavage = `
-            <g opacity="${division}">
-              <path d="M ${cellX - 120 + division * 100} ${cellY - 186}
-                       C ${cellX - 72 + division * 82} ${cellY - 120},
-                         ${cellX - 42 + division * 48} ${cellY + 118},
-                         ${cellX - 16 + division * 10} ${cellY + 186}
-                       M ${cellX + 120 - division * 100} ${cellY - 186}
-                       C ${cellX + 72 - division * 82} ${cellY - 120},
-                         ${cellX + 42 - division * 48} ${cellY + 118},
-                          ${cellX + 16 - division * 10} ${cellY + 186}
-                    fill="none"
-                    stroke="rgba(255,255,255,0.18)"
-                    stroke-width="2"
-                    stroke-dasharray="7 8" />
-            </g>
-          `;
-
-          const daughterNuclei = `
-            <g opacity="${division}">
-              <circle cx="${cellX - 88}" cy="${cellY}" r="${90 - 10 * division}" fill="rgba(145,178,255,0.07)" stroke="rgba(180,213,255,0.34)" stroke-width="2" />
-              <circle cx="${cellX + 88}" cy="${cellY}" r="${90 - 10 * division}" fill="rgba(145,178,255,0.07)" stroke="rgba(180,213,255,0.34)" stroke-width="2" />
-            </g>
-          `;
-
-          const daughterChromosomes = `
-            <g opacity="${division}">
-              ${separatedChromosome(cellX - 88, cellY, division, 1)}
-              ${separatedChromosome(cellX + 88, cellY, division, -1)}
-            </g>
-          `;
-
-          els.stageRoot.innerHTML = `
-            <text x="40" y="48" fill="rgba(220,233,255,0.82)" font-size="16">${phaseName(p)}：${phaseDescription(p)}</text>
-            ${membrane}
-            ${poleLight}
-            ${equator}
-            ${nucleus}
-            ${cloud.join("")}
-            ${spindle.join("")}
-            ${chromosomeGroup}
-            ${cleavage}
-            ${daughterNuclei}
-            ${daughterChromosomes}
-            <g opacity="${division}">
-              <text x="${cellX - 88}" y="${cellY + 138}" text-anchor="middle" fill="rgba(220,233,255,0.7)" font-size="14">子细胞 1</text>
-              <text x="${cellX + 88}" y="${cellY + 138}" text-anchor="middle" fill="rgba(220,233,255,0.7)" font-size="14">子细胞 2</text>
-            </g>
-          `;
+          // ---- Daughter labels (appear near end of anaphase, p ≥ 0.80) ----
+          const dlG = document.getElementById('daughterLabels');
+          if (p >= 0.8) {
+            dlG.style.display = 'block';
+            dlG.setAttribute('opacity', clamp((p - 0.8) / 0.1, 0, 1).toFixed(2));
+            document.getElementById('labelD1').setAttribute('x', cellX - 92 - sepShift);
+            document.getElementById('labelD1').setAttribute('y', cellY + cellRY - 26);
+            document.getElementById('labelD2').setAttribute('x', cellX + 92 + sepShift);
+            document.getElementById('labelD2').setAttribute('y', cellY + cellRY - 26);
+          } else {
+            dlG.style.display = 'none';
+          }
         }
 
         function buildChartsOnce() {
