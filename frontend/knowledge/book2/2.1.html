@@ -682,8 +682,15 @@
 
     <!-- Interactive Canvas for Dihybrid -->
     <div class="diagram-box">
-      <h4 style="margin-bottom:12px;">📊 两对相对性状杂交实验 - F₂ 表型9∶3∶3∶1</h4>
-      <canvas id="dihyCanvas" width="500" height="300"></canvas>
+      <h4 style="margin-bottom:6px;" id="dihyTitle">📊 两对相对性状杂交实验 - F₂ 表型9∶3∶3∶1</h4>
+      <canvas id="dihyCanvas" width="520" height="400"></canvas>
+      <div class="controls" style="margin-top:8px;">
+        <button class="btn btn-primary" id="btnChart" onclick="switchDihyView('chart')">📊 柱状图</button>
+        <button class="btn btn-outline" id="btnPunnett" onclick="switchDihyView('punnett')">🔲 棋盘法</button>
+      </div>
+      <p style="margin-top:6px;font-size:0.85em;color:var(--text-light);" id="dihyCaption">
+        F₂ 四种表型：黄色圆粒315、绿色圆粒108、黄色皱粒101、绿色皱粒32
+      </p>
     </div>
 
     <ul class="checklist" id="cl2">
@@ -912,28 +919,41 @@ function drawMono() {
 }
 drawMono();
 
-// ===== DIHYBRID BAR CHART =====
+// ===== DIHYBRID UNIFIED CANVAS =====
 const dihyCanvas = document.getElementById('dihyCanvas');
 const dihyCtx = dihyCanvas.getContext('2d');
+let dihyView = 'chart';
 
-function drawDihybrid() {
-  dihyCtx.clearRect(0, 0, dihyCanvas.width, dihyCanvas.height);
+function switchDihyView(view) {
+  dihyView = view;
+  document.getElementById('btnChart').className = view === 'chart' ? 'btn btn-primary' : 'btn btn-outline';
+  document.getElementById('btnPunnett').className = view === 'punnett' ? 'btn btn-primary' : 'btn btn-outline';
+  if (view === 'chart') {
+    document.getElementById('dihyTitle').textContent = '📊 两对相对性状杂交实验 - F₂ 表型9∶3∶3∶1';
+    document.getElementById('dihyCaption').innerHTML = 'F₂ 四种表型：黄色圆粒315、绿色圆粒108、黄色皱粒101、绿色皱粒32';
+  } else {
+    document.getElementById('dihyTitle').textContent = '🔲 棋盘法（Punnett Square）— F₁(YyRr) × F₁(YyRr)';
+    document.getElementById('dihyCaption').innerHTML = 'F₁产生4种配子（YR, Yr, yR, yr），雌雄配子随机结合，共16种组合 → <strong>9黄圆 : 3绿圆 : 3黄皱 : 1绿皱</strong>';
+  }
+  drawDihybrid();
+}
+
+function drawBarChart() {
   const data = [
     { label: '黄色圆粒', count: 315, color: '#ffcc02' },
     { label: '绿色圆粒', count: 108, color: '#4caf50' },
     { label: '黄色皱粒', count: 101, color: '#ff9800' },
     { label: '绿色皱粒', count: 32, color: '#2e7d32' }
   ];
-  const maxH = 180, barW = 80, gap = 30, baseY = 260, startX = 70;
+  const maxH = 180, barW = 80, gap = 30, baseY = 290, startX = 70;
   dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
   dihyCtx.textAlign = 'center';
   dihyCtx.fillStyle = '#2c3e50';
-  dihyCtx.fillText('F₂ 性状分离——四种表型的数量', 250, 25);
+  dihyCtx.fillText('F₂ 性状分离——四种表型的数量', 260, 25);
 
   data.forEach((d, i) => {
     const h = d.count / 315 * maxH;
     const x = startX + i * (barW + gap);
-    // Bar
     const grad = dihyCtx.createLinearGradient(x, baseY - h, x, baseY);
     grad.addColorStop(0, d.color);
     grad.addColorStop(1, d.color + '88');
@@ -942,10 +962,8 @@ function drawDihybrid() {
     dihyCtx.strokeStyle = '#333';
     dihyCtx.lineWidth = 1;
     dihyCtx.strokeRect(x, baseY - h, barW, h);
-    // Count
     dihyCtx.fillStyle = '#2c3e50';
     dihyCtx.fillText(d.count, x + barW / 2, baseY - h - 8);
-    // Label
     dihyCtx.fillText(d.label, x + barW / 2, baseY + 20);
     if (i === 0)
       dihyCtx.fillText('9', x + barW / 2, baseY + 38);
@@ -957,7 +975,112 @@ function drawDihybrid() {
 
   dihyCtx.fillStyle = '#e65100';
   dihyCtx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
-  dihyCtx.fillText('比例：9 : 3 : 3 : 1', 250, 295);
+  dihyCtx.fillText('比例：9 : 3 : 3 : 1', 260, 358);
+}
+
+function drawPunnett() {
+  const maleGametes  = ['YR', 'Yr', 'yR', 'yr'];
+  const femaleGametes = ['YR', 'Yr', 'yR', 'yr'];
+  const grid = [
+    [{ g:'YYRR', p:'黄圆', c:'#fff9c4' }, { g:'YYRr', p:'黄圆', c:'#fff9c4' }, { g:'YyRR', p:'黄圆', c:'#fff9c4' }, { g:'YyRr', p:'黄圆', c:'#fff9c4' }],
+    [{ g:'YYRr', p:'黄圆', c:'#fff9c4' }, { g:'YYrr', p:'黄皱', c:'#ffe0b2' }, { g:'YyRr', p:'黄圆', c:'#fff9c4' }, { g:'Yyrr', p:'黄皱', c:'#ffe0b2' }],
+    [{ g:'YyRR', p:'黄圆', c:'#fff9c4' }, { g:'YyRr', p:'黄圆', c:'#fff9c4' }, { g:'yyRR', p:'绿圆', c:'#c8e6c9' }, { g:'yyRr', p:'绿圆', c:'#c8e6c9' }],
+    [{ g:'YyRr', p:'黄圆', c:'#fff9c4' }, { g:'Yyrr', p:'黄皱', c:'#ffe0b2' }, { g:'yyRr', p:'绿圆', c:'#c8e6c9' }, { g:'yyrr', p:'绿皱', c:'#a5d6a7' }]
+  ];
+
+  const cellW = 85, cellH = 52;
+  const startX = 85, startY = 50;
+
+  // Female gamete headers
+  dihyCtx.fillStyle = '#7b1fa2';
+  dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.textAlign = 'center';
+  dihyCtx.fillText('♀ 雌配子 →', startX + cellW * 2, startY - 10);
+  dihyCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+  femaleGametes.forEach((g, i) => {
+    dihyCtx.fillText(g, startX + i * cellW + cellW / 2, startY + 12);
+  });
+
+  // Male gametes label
+  dihyCtx.save();
+  dihyCtx.fillStyle = '#7b1fa2';
+  dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.translate(startX - 52, startY + 24 + cellH * 2);
+  dihyCtx.rotate(-Math.PI / 2);
+  dihyCtx.fillText('♂ 雄配子', 0, 0);
+  dihyCtx.restore();
+
+  // Male gamete labels (left)
+  dihyCtx.fillStyle = '#7b1fa2';
+  dihyCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.textAlign = 'right';
+  maleGametes.forEach((g, i) => {
+    dihyCtx.fillText(g, startX - 10, startY + 24 + i * cellH + cellH / 2 + 5);
+  });
+
+  // Draw grid cells
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      const x = startX + col * cellW;
+      const y = startY + 24 + row * cellH;
+      const cell = grid[row][col];
+
+      dihyCtx.fillStyle = cell.c;
+      dihyCtx.fillRect(x, y, cellW, cellH);
+      dihyCtx.strokeStyle = '#bdbdbd';
+      dihyCtx.lineWidth = 1;
+      dihyCtx.strokeRect(x, y, cellW, cellH);
+
+      dihyCtx.fillStyle = '#2c3e50';
+      dihyCtx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+      dihyCtx.textAlign = 'center';
+      dihyCtx.fillText(cell.g, x + cellW / 2, y + cellH / 2 - 4);
+
+      dihyCtx.fillStyle = '#5a6c7d';
+      dihyCtx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+      dihyCtx.fillText(cell.p, x + cellW / 2, y + cellH / 2 + 15);
+    }
+  }
+
+  // Legend
+  const legendY = startY + 24 + 4 * cellH + 28;
+  const legendItems = [
+    { label: '黄圆 9', color: '#fff9c4' },
+    { label: '绿圆 3', color: '#c8e6c9' },
+    { label: '黄皱 3', color: '#ffe0b2' },
+    { label: '绿皱 1', color: '#a5d6a7' }
+  ];
+  dihyCtx.textAlign = 'center';
+  const totalLegendW = legendItems.length * 95;
+  const legendStartX = (dihyCanvas.width - totalLegendW) / 2;
+
+  legendItems.forEach((item, i) => {
+    const lx = legendStartX + i * 95;
+    dihyCtx.fillStyle = item.color;
+    dihyCtx.fillRect(lx, legendY - 12, 18, 18);
+    dihyCtx.strokeStyle = '#bdbdbd';
+    dihyCtx.strokeRect(lx, legendY - 12, 18, 18);
+    dihyCtx.fillStyle = '#2c3e50';
+    dihyCtx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    dihyCtx.textAlign = 'left';
+    dihyCtx.fillText(item.label, lx + 24, legendY + 2);
+  });
+
+  dihyCtx.fillStyle = '#e65100';
+  dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.textAlign = 'center';
+  dihyCtx.fillText('F₂ 表型比：  9  :  3  :  3  :  1', dihyCanvas.width / 2, legendY + 36);
+}
+
+function drawDihybrid() {
+  dihyCtx.clearRect(0, 0, dihyCanvas.width, dihyCanvas.height);
+  dihyCtx.fillStyle = '#fafbfc';
+  dihyCtx.fillRect(0, 0, dihyCanvas.width, dihyCanvas.height);
+  if (dihyView === 'chart') {
+    drawBarChart();
+  } else {
+    drawPunnett();
+  }
 }
 drawDihybrid();
 </script>
