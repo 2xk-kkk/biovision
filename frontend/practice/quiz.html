@@ -557,6 +557,7 @@
             const textbook = getQueryParam('textbook');
             const chapter = getQueryParam('chapter');
             const section = getQueryParam('section');
+            const questionType = getQueryParam('type') || 'all';
             
             if (!examId && !textbook) {
                 document.getElementById('quizPaper').innerHTML = `
@@ -579,6 +580,7 @@
                     if (textbook) params.append('textbook', textbook);
                     if (chapter) params.append('chapter', chapter);
                     if (section) params.append('section', section);
+                    if (questionType && questionType !== 'all') params.append('type', questionType);
                     response = await fetch(`${API_BASE_URL}/questions/textbook?${params.toString()}`);
                     result = await response.json();
                 }

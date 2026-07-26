@@ -172,10 +172,10 @@ def toggle_mastered_service(user_id, question_id, mastered=1):
     finally:
         db.close()
 
-def get_questions_by_textbook_service(textbook=None, chapter=None, section=None):
+def get_questions_by_textbook_service(textbook=None, chapter=None, section=None, question_type=None):
     db = get_db_connection()
     try:
-        questions = get_questions_by_textbook(db, textbook, chapter, section)
+        questions = get_questions_by_textbook(db, textbook, chapter, section, question_type)
         return ApiResponse.success(data=questions)
     except Exception as e:
         return ApiResponse.error(msg=f"获取题目失败: {str(e)}")

@@ -260,10 +260,10 @@ def get_exam_stats(db, exam_id, user_id):
         'wrong': answered - correct
     }
 
-def get_questions_by_textbook(db, textbook=None, chapter=None, section=None):
+def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, question_type=None):
     cursor = db.cursor()
     
-    query = 'SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, textbook, chapter, section FROM questions WHERE 1=1'
+    query = 'SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, textbook, chapter, section, type FROM questions WHERE 1=1'
     params = []
     
     if textbook:
@@ -277,6 +277,10 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None):
     if section:
         query += ' AND section = ?'
         params.append(section)
+    
+    if question_type:
+        query += ' AND type = ?'
+        params.append(question_type)
     
     query += ' ORDER BY number'
     

@@ -95,6 +95,7 @@ def master_wrong_answer(question_id: int, request: MasterRequest, token: str = H
 def textbook_questions(
     textbook: str = Query(None),
     chapter: str = Query(None),
-    section: str = Query(None)
+    section: str = Query(None),
+    type: str = Query(None)
 ):
-    return get_questions_by_textbook_service(textbook, chapter, section)
+    return get_questions_by_textbook_service(textbook, chapter, section, type)
