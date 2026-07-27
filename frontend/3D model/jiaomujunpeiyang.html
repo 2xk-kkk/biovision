@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>酵母菌的纯培养 — 交互实验平台</title>
+<style>
+:root {
+  --bg:#f0f4fa; --panel:#ffffff; --primary:#1e40af; --primaryL:#3b82f6;
+  --accent:#0891b2; --danger:#dc2626; --text:#1e293b; --textL:#64748b;
+  --border:#bae6fd; --shadow:0 2px 16px rgba(0,0,0,0.06); --r:12px;
+  --bench:#dbeafe; --success:#0891b2;
+  --glass:#e0ecf8; --glass2:#bfd8f0; --glass3:#9cc4e4;
+  --metal:#d0d0d0; --metal2:#b0b0b0; --metal3:#909090;
+  --wood:#93b5d6; --wood2:#6d9cc0;
+  --liquid:#e0ecf8; --liquid2:#bfd8f0;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+  background:linear-gradient(160deg,#c8ddf5 0%,#dce8f6 35%,#edf4fc 60%,#f7faff 100%);
+  min-height:100vh; user-select:none; -webkit-user-select:none;
+  overflow-x:hidden;
+}
+
+/* ===== HEADER ===== */
+.header{
+  background:linear-gradient(135deg,#0c1c4a,#1e40af);
+  color:#fff; padding:10px 24px; display:flex; align-items:center;
+  justify-content:space-between; flex-wrap:wrap; gap:10px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.18);
+}
+.header h1{font-size:1.25rem;font-weight:700;letter-spacing:0.5px;}
+.progress-bar{display:flex;gap:3px;align-items:center;flex-wrap:wrap;}
+.step-dot{
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.3s;
+  position:relative;
+}
+.step-dot:hover{background:rgba(255,255,255,0.35);}
+.step-dot.active{background:var(--accent);color:#fff;transform:scale(1.15);box-shadow:0 0 18px rgba(8,145,178,0.5);}
+.step-dot.done{background:var(--success);color:#fff;}
+.step-connector{width:18px;height:2px;background:rgba(255,255,255,0.3);border-radius:1px;}
+.step-connector.done{background:var(--success);}
+
+/* ===== MAIN LAYOUT ===== */
+.main{
+  display:grid;grid-template-columns:210px 1fr;gap:12px;padding:12px;
+  height:calc(100vh - 110px);max-width:1420px;margin:0 auto;
+}
+.main-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+
+/* ===== EQUIPMENT PANEL (LEFT) ===== */
+.equipment-panel{
+  background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:12px;overflow-y:auto;border:1px solid var(--border);
+}
+.equipment-panel h3{
+  font-size:0.9rem;color:var(--primary);margin-bottom:10px;
+  padding-bottom:8px;border-bottom:2px solid var(--primaryL);
+}
+.equipment-list{display:flex;flex-direction:column;gap:5px;}
+.equipment-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:#fafaf7;border:1.5px solid var(--border);border-radius:8px;
+  cursor:grab;transition:all 0.2s;font-size:0.8rem;color:var(--text);
+  position:relative;
+}
+.equipment-item:hover{border-color:var(--primaryL);box-shadow:0 2px 8px rgba(59,130,246,0.12);transform:translateY(-1px);}
+.equipment-item:active{cursor:grabbing;}
+.equipment-item .eq-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.equipment-item .eq-icon svg{width:32px;height:32px;}
+.equipment-item.selected{border-color:var(--accent);background:#e0f7fb;box-shadow:0 0 0 3px rgba(8,145,178,0.2);}
+.equipment-item.used{opacity:0.4;pointer-events:none;background:#f0f0ea;}
+.equipment-item.used::after{content:'✓';position:absolute;right:10px;color:var(--success);font-weight:700;font-size:1rem;}
+.equipment-item.needed{box-shadow:0 0 0 2px rgba(8,145,178,0.5);}
+
+/* ===== WORKBENCH (CENTER) ===== */
+.workbench{
+  background:linear-gradient(180deg,#f8fafc 0%,#e6eef8 100%);
+  border-radius:var(--r);box-shadow:var(--shadow),inset 0 0 80px rgba(30,64,143,0.04);
+  border:2px solid var(--wood);position:relative;overflow:hidden;
+  flex:1;min-height:340px;touch-action:none;
+}
+.workbench-label{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  font-size:0.75rem;color:#6b89a5;letter-spacing:2px;font-weight:600;
+  pointer-events:none;z-index:1;
+}
+.workbench .grid-overlay{
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(148,170,200,0.1) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(148,170,200,0.1) 1px,transparent 1px);
+  background-size:30px 30px;
+}
+
+/* Workbench placed items */
+.wb-item{
+  position:absolute;cursor:grab;z-index:10;transition:box-shadow 0.2s,transform 0.3s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  animation:itemPlace 0.4s ease;
+}
+@keyframes itemPlace{from{opacity:0;transform:scale(0.3);}to{opacity:1;transform:scale(1);}}
+.wb-item:active{cursor:grabbing;}
+.wb-item.dragging{z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.2);opacity:0.9;transition:none;}
+.wb-item .wb-icon{pointer-events:none;width:72px;height:72px;display:flex;align-items:center;justify-content:center;}
+.wb-item .wb-icon svg{max-width:100%;max-height:100%;display:block;filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.15));}
+.wb-item .wb-label{font-size:0.62rem;color:#4a6a85;pointer-events:none;text-align:center;max-width:85px;line-height:1.2;font-weight:600;}
+
+/* Ghost placement zones */
+.ghost-zone{
+  position:absolute;border:2.5px dashed rgba(60,110,160,0.55);
+  border-radius:14px;background:rgba(180,200,230,0.15);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;
+  color:#4a6885;font-size:0.65rem;font-weight:600;pointer-events:none;z-index:3;
+  animation:ghostPulse 2s ease-in-out infinite;
+  transition:all 0.3s;
+  box-shadow:0 2px 12px rgba(40,80,130,0.12),inset 0 0 30px rgba(150,185,220,0.08);
+}
+.ghost-zone.filled{opacity:0;transform:scale(0.8);pointer-events:none;}
+.ghost-zone .ghost-svg{opacity:0.35;width:44px;height:44px;display:flex;align-items:center;justify-content:center;}
+.ghost-zone .ghost-svg svg{max-width:100%;max-height:100%;}
+@keyframes ghostPulse{
+  0%,100%{border-color:rgba(60,110,160,0.4);box-shadow:0 2px 10px rgba(40,80,130,0.1),inset 0 0 25px rgba(150,185,220,0.06);}
+  50%{border-color:rgba(60,110,160,0.7);box-shadow:0 4px 18px rgba(40,80,130,0.2),inset 0 0 40px rgba(150,185,220,0.15);}
+}
+
+/* Drop hint */
+.drop-hint{
+  position:absolute;inset:30px;border:3px dashed rgba(80,130,180,0.5);
+  border-radius:16px;display:flex;align-items:center;justify-content:center;
+  color:#5a7a95;font-size:1rem;font-weight:600;pointer-events:none;z-index:2;
+  background:rgba(180,200,230,0.06);
+}
+
+/* Demo animation overlays */
+.demo-overlay{
+  position:absolute;inset:0;pointer-events:none;z-index:50;
+}
+.demo-stream{
+  position:absolute;width:4px;background:linear-gradient(180deg,rgba(160,200,235,0.9),rgba(140,180,220,0.7));
+  border-radius:2px;transform-origin:top center;
+  animation:streamFlow 1.5s ease-in;
+}
+@keyframes streamFlow{
+  from{transform:scaleY(0);opacity:0;}
+  to{transform:scaleY(1);opacity:1;}
+}
+.demo-fill{
+  position:absolute;border-radius:50%;background:rgba(160,200,230,0.5);
+  animation:fillSpread 1.8s ease-out;
+}
+@keyframes fillSpread{
+  from{transform:scale(0);opacity:0;}
+  to{transform:scale(1);opacity:1;}
+}
+
+/* ===== INSTRUCTION BAR (BELOW WORKBENCH) ===== */
+.instruction-bar{
+  background:var(--panel);border-radius:var(--r);box-shadow:0 4px 20px rgba(0,0,0,0.1);
+  padding:12px 16px;border:2px solid var(--primary);display:flex;
+  gap:14px;align-items:center;flex-wrap:wrap;
+  position:relative;overflow:hidden;
+}
+.instruction-bar::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(180deg,var(--primary),var(--primaryL),var(--accent));
+  border-radius:0 3px 3px 0;
+}
+.ibar-title{
+  font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;
+  background:linear-gradient(135deg,var(--primary),var(--primaryL));
+  padding:7px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(30,64,175,0.2);
+  min-width:160px;text-align:center;letter-spacing:0.5px;
+}
+.ibar-body{flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px;}
+.ibar-steps{
+  font-size:0.8rem;color:var(--text);line-height:1.6;
+  max-height:70px;overflow-y:auto;
+}
+.ibar-steps ol{padding-left:18px;margin:0;}
+.ibar-steps li{margin-bottom:2px;}
+.ibar-steps strong{color:var(--danger);}
+.ibar-knowledge{
+  display:none;font-size:0.8rem;color:#0c4a6e;line-height:1.5;font-weight:500;
+  background:#f0f7ff;border:1px solid #7ab8e0;border-radius:6px;
+  padding:6px 10px;
+}
+.ibar-right{
+  display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:170px;
+}
+.ibar-hint{
+  font-size:0.75rem;color:#0d6b7a;background:#f0fdff;border:1px solid #7ad8e8;
+  border-radius:6px;padding:6px 10px;max-width:260px;line-height:1.4;
+}
+.ibar-hint .hint-icon{font-size:0.9rem;}
+.ibar-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.ibar-btns .btn{font-size:0.78rem;padding:6px 12px;}
+.ibar-step-badge{font-size:0.75rem;color:#fff;font-weight:700;background:#3b82f6;padding:2px 10px;border-radius:12px;white-space:nowrap;}
+.instruction-panel{display:none;}
+.knowledge-bar{display:none;}
+.btn{
+  padding:9px 16px;border:none;border-radius:8px;font-size:0.85rem;
+  font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;
+  letter-spacing:0.5px;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.btn:active{transform:translateY(0);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primaryL);}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-outline{background:#fff;color:var(--primary);border:2px solid var(--primary);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* Toast */
+.toast{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  padding:10px 24px;border-radius:28px;font-weight:700;font-size:0.9rem;
+  z-index:1000;animation:toastIn 0.3s ease,toastOut 0.3s ease 1.8s forwards;
+  pointer-events:none;white-space:nowrap;
+}
+.toast.success{background:#0891b2;color:#fff;}
+.toast.error{background:var(--danger);color:#fff;}
+.toast.info{background:#3b82f6;color:#fff;}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-16px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes toastOut{from{opacity:1;}to{opacity:0;}}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  display:flex;align-items:center;justify-content:center;z-index:999;
+  animation:fadeIn 0.3s;
+}
+.modal{
+  background:#fff;border-radius:18px;padding:32px;max-width:480px;
+  text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.2);
+}
+.modal h2{font-size:1.4rem;margin-bottom:10px;color:var(--primary);}
+.modal p{color:var(--textL);margin-bottom:16px;line-height:1.6;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* Particle */
+.particle{
+  position:fixed;pointer-events:none;font-size:1.2rem;
+  animation:particleUp 0.9s ease-out forwards;z-index:1000;
+}
+@keyframes particleUp{
+  0%{opacity:1;transform:translateY(0) scale(1);}
+  100%{opacity:0;transform:translateY(-70px) scale(0.2);}
+}
+
+/* Petri dish in observe scene */
+.colony{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 45% 40%,#f8fafe 0%,#e8eef5 50%,#dce4f0 100%);
+  box-shadow:0 2px 5px rgba(0,0,0,0.12);
+  animation:colonyGrow 0.6s ease both;
+}
+@keyframes colonyGrow{from{opacity:0;transform:scale(0);}to{opacity:1;transform:scale(1);}}
+
+/* Canvas for streak */
+#streakCanvas{border-radius:50%;cursor:crosshair;}
+
+/* Responsive */
+@media(max-width:1024px){
+  .main{grid-template-columns:170px 1fr;gap:10px;padding:10px;height:auto;min-height:calc(100vh-110px);}
+}
+@media(max-width:768px){
+  .main{grid-template-columns:1fr;}
+  .equipment-panel{max-height:130px;}
+  .workbench{min-height:320px;}
+  .instruction-bar{flex-direction:column;align-items:stretch;gap:8px;padding:10px;}
+  .ibar-title{min-width:auto;text-align:center;}
+  .ibar-right{flex-direction:row;align-items:center;flex-wrap:wrap;}
+  .header h1{font-size:1rem;}
+  .step-dot{width:26px;height:26px;font-size:0.7rem;}
+}
+.back-link {
+  position: fixed; top: 56px; left: 0; z-index: 100;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px 8px 12px; border-radius: 0 999px 999px 0;
+  border: 1px solid rgba(255,255,255,0.25); border-left: 0;
+  background: rgba(12,28,74,0.88); backdrop-filter: blur(10px);
+  color: #e0ecff; text-decoration: none; font-size: 14px;
+  font-weight: 700; box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+.back-link:hover { background: rgba(20,42,100,0.95); transform: translateX(2px); }
+</style>
+</head>
+<body>
+<a class="back-link" href="main5.html" aria-label="返回上一页">← 返回</a>
+
+<div class="header">
+  <h1>🧬 酵母菌的纯培养 — 交互实验平台</h1>
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="main">
+  <div class="equipment-panel" id="equipmentPanel">
+    <h3>🧪 实验器材</h3>
+    <div class="equipment-list" id="equipmentList"></div>
+  </div>
+
+  <div class="main-col">
+    <div class="workbench" id="workbench">
+      <div class="grid-overlay"></div>
+      <div class="workbench-label">🔬 实验操作台</div>
+    </div>
+    <div class="instruction-bar" id="instructionBar">
+      <div class="ibar-title" id="stepTitle"></div>
+      <div class="ibar-body">
+        <div class="ibar-steps" id="instructionText"></div>
+        <div class="ibar-knowledge" id="knowledgeBox">
+          <span>📖</span> <span id="knowledgeText"></span>
+          <span class="ibar-step-badge" id="knowledgeStep"></span>
+        </div>
+      </div>
+      <div class="ibar-right">
+        <div class="ibar-hint"><span class="hint-icon">💡</span> <span id="hintText"></span></div>
+        <div class="ibar-btns">
+          <button class="btn btn-outline" onclick="prevStep()" id="btnPrev">◀ 上一步</button>
+          <button class="btn btn-primary" onclick="nextStep()" id="btnNext">下一步 ▶</button>
+          <button class="btn btn-accent" onclick="resetAll()">🔄 重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastContainer"></div>
+<div id="modalContainer"></div>
+
+<script>
+// ===== SVG EQUIPMENT ILLUSTRATIONS =====
+// Each returns an SVG string that looks like real lab equipment
+const EquipmentSVG = {
+
+  flask: `<svg viewBox="0 0 70 90" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#eaf4fb"/><stop offset="100%" stop-color="#c5ddf0"/></linearGradient></defs>
+    <path d="M18,8 L22,8 L26,30 L12,68 Q10,78 18,80 L52,80 Q60,78 58,68 L44,30 L48,8 L52,8" fill="url(#fg)" stroke="#7a9ab8" stroke-width="1.8" stroke-linejoin="round"/>
+    <rect x="20" y="0" width="30" height="10" rx="3" fill="none" stroke="#7a9ab8" stroke-width="1.8"/>
+    <ellipse cx="35" cy="35" rx="14" ry="6" fill="none" stroke="#b0c8dd" stroke-width="0.8"/>
+    <line x1="28" y1="16" x2="42" y2="16" stroke="#b0c8dd" stroke-width="0.8"/>
+    <line x1="26" y1="22" x2="44" y2="22" stroke="#b0c8dd" stroke-width="0.8"/>
+    <ellipse cx="35" cy="80" rx="17" ry="5" fill="#d5e8f5" stroke="#7a9ab8" stroke-width="1.5"/>
+    <rect x="28" y="0" width="14" height="6" rx="2" fill="#e0ecf5"/>
+    <text x="35" y="76" text-anchor="middle" font-size="7" fill="#5a7a95">PDA</text>
+  </svg>`,
+
+  beaker: `<svg viewBox="0 0 70 80" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#eef6fb"/><stop offset="100%" stop-color="#d0e2f0"/></linearGradient></defs>
+    <path d="M14,10 L16,4 L54,4 L56,10 L54,66 Q54,72 46,72 L24,72 Q16,72 16,66 Z" fill="url(#bg2)" stroke="#7a9ab8" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M14,10 L20,2 L50,2 L56,10" fill="#f0e8d0" stroke="#7a9ab8" stroke-width="1.8" stroke-linejoin="round"/>
+    <line x1="20" y1="18" x2="50" y2="18" stroke="#b0c8dd" stroke-width="0.8"/>
+    <line x1="22" y1="26" x2="48" y2="26" stroke="#b0c8dd" stroke-width="0.8"/>
+    <line x1="24" y1="34" x2="46" y2="34" stroke="#b0c8dd" stroke-width="0.8"/>
+    <text x="35" y="62" text-anchor="middle" font-size="7" fill="#5a7a95">1000mL</text>
+  </svg>`,
+
+  petriDish: `<svg viewBox="0 0 80 24" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="40" cy="14" rx="38" ry="8" fill="#eef6fb" stroke="#8aa8c0" stroke-width="1.8"/>
+    <ellipse cx="40" cy="12" rx="36" ry="7" fill="#f5f9fc" stroke="#8aa8c0" stroke-width="1.5"/>
+    <ellipse cx="40" cy="10" rx="30" ry="5" fill="#f0f4fa" stroke="#a8bcd0" stroke-width="0.8"/>
+    <path d="M40,2 Q55,-2 60,4" fill="none" stroke="#8aa8c0" stroke-width="1.5" opacity="0.5"/>
+  </svg>`,
+
+  petriDishTop: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="pdg"><stop offset="0%" stop-color="#f8fafe"/><stop offset="60%" stop-color="#e8eef5"/><stop offset="100%" stop-color="#d8e2f0"/></radialGradient></defs>
+    <circle cx="40" cy="40" r="37" fill="#eef6fb" stroke="#8aa8c0" stroke-width="2"/>
+    <circle cx="40" cy="38" r="34" fill="url(#pdg)" stroke="#a8bcd0" stroke-width="1.2"/>
+    <circle cx="40" cy="36" r="31" fill="url(#pdg)" stroke="none"/>
+  </svg>`,
+
+  testTube: `<svg viewBox="0 0 28 90" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="ttg"><stop offset="0%" stop-color="#eef6fb"/><stop offset="100%" stop-color="#c5ddf0"/></linearGradient></defs>
+    <path d="M8,0 L8,18 Q8,22 10,22 L18,22 Q20,22 20,18 L20,0" fill="url(#ttg)" stroke="#7a9ab8" stroke-width="1.5"/>
+    <rect x="8" y="0" width="12" height="6" rx="2" fill="none" stroke="#7a9ab8" stroke-width="1.5"/>
+    <path d="M10,22 Q14,28 10,40 Q8,60 12,78 Q13,84 14,86 Q16,88 14,88 Q10,86 10,80 Q8,60 12,40 Q14,28 10,22" fill="none" stroke="#7a9ab8" stroke-width="1.5"/>
+    <ellipse cx="14" cy="88" rx="5" ry="3" fill="#f5e8c8" stroke="#7a9ab8" stroke-width="1.2"/>
+    <text x="14" y="76" text-anchor="middle" font-size="5" fill="#5a7a95" transform="rotate(-90,14,76)">酵母菌液</text>
+  </svg>`,
+
+  alcoholLamp: `<svg viewBox="0 0 50 70" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="25" cy="56" rx="20" ry="8" fill="#e8dcc0" stroke="#a08060" stroke-width="1.5"/>
+    <path d="M10,56 Q8,40 12,30 L14,20 L36,20 L38,30 Q42,40 40,56" fill="#e8d8c0" stroke="#a08060" stroke-width="1.5"/>
+    <rect x="14" y="14" width="22" height="10" rx="3" fill="#d0c0a0" stroke="#a08060" stroke-width="1.5"/>
+    <rect x="20" y="8" width="10" height="10" rx="2" fill="#c8b890" stroke="#a08060" stroke-width="1.5"/>
+    <rect x="22" y="0" width="6" height="10" rx="2" fill="#888" stroke="#666" stroke-width="1"/>
+  </svg>`,
+
+  alcoholLampLit: `<svg viewBox="0 0 50 85" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="25" cy="56" rx="20" ry="8" fill="#e8dcc0" stroke="#a08060" stroke-width="1.5"/>
+    <path d="M10,56 Q8,40 12,30 L14,20 L36,20 L38,30 Q42,40 40,56" fill="#e8d8c0" stroke="#a08060" stroke-width="1.5"/>
+    <rect x="14" y="14" width="22" height="10" rx="3" fill="#d0c0a0" stroke="#a08060" stroke-width="1.5"/>
+    <rect x="20" y="8" width="10" height="10" rx="2" fill="#c8b890" stroke="#a08060" stroke-width="1.5"/>
+    <rect x="22" y="0" width="6" height="10" rx="2" fill="#888" stroke="#666" stroke-width="1"/>
+    <ellipse cx="20" cy="-12" rx="10" ry="16" fill="#ff9f1c" opacity="0.7"/>
+    <ellipse cx="20" cy="-14" rx="8" ry="12" fill="#ffcc00" opacity="0.8"/>
+    <ellipse cx="20" cy="-16" rx="5" ry="8" fill="#fff8d0" opacity="0.9"/>
+  </svg>`,
+
+  inoculatingLoop: `<svg viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="4" width="50" height="4" rx="2" fill="#b0b0b0" stroke="#808080" stroke-width="0.8"/>
+    <line x1="50" y1="6" x2="60" y2="6" stroke="#a0a0a0" stroke-width="2"/>
+    <circle cx="73" cy="6" r="7" fill="none" stroke="#c0c0c0" stroke-width="1.5"/>
+    <circle cx="73" cy="6" r="5" fill="none" stroke="#d8d8d8" stroke-width="1"/>
+    <rect x="78" y="4" width="2" height="4" fill="#b0b0b0"/>
+  </svg>`,
+
+  glassRod: `<svg viewBox="0 0 80 8" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="grg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0f6fb"/><stop offset="50%" stop-color="#c8ddf0"/><stop offset="100%" stop-color="#a0c8e0"/></linearGradient></defs>
+    <rect x="0" y="1" width="80" height="6" rx="3" fill="url(#grg)" stroke="#8aa8c0" stroke-width="0.8"/>
+    <circle cx="2" cy="4" r="3" fill="#d0e5f5" stroke="#8aa8c0" stroke-width="0.6"/>
+    <circle cx="78" cy="4" r="3" fill="#d0e5f5" stroke="#8aa8c0" stroke-width="0.6"/>
+  </svg>`,
+
+  autoclave: `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="acg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e0e0e0"/><stop offset="100%" stop-color="#a8a8a8"/></linearGradient></defs>
+    <rect x="15" y="15" width="50" height="75" rx="10" fill="url(#acg)" stroke="#707070" stroke-width="2"/>
+    <rect x="18" y="18" width="44" height="35" rx="6" fill="#d0d0d0" stroke="#888" stroke-width="1"/>
+    <circle cx="40" cy="34" r="12" fill="#fff" stroke="#909090" stroke-width="1.5"/>
+    <text x="40" y="37" text-anchor="middle" font-size="7" fill="#333" font-weight="700">121℃</text>
+    <rect x="28" y="60" width="24" height="20" rx="4" fill="#c0c0c0" stroke="#888" stroke-width="1"/>
+    <circle cx="40" cy="80" r="3" fill="#999"/>
+    <ellipse cx="40" cy="90" rx="15" ry="4" fill="#b8b8b8" stroke="#707070" stroke-width="1.5"/>
+    <circle cx="55" cy="25" r="4" fill="#4f4"/>
+  </svg>`,
+
+  dryOven: `<svg viewBox="0 0 70 85" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="10" width="60" height="70" rx="6" fill="#ddd" stroke="#808080" stroke-width="2"/>
+    <rect x="10" y="15" width="50" height="48" rx="3" fill="#eee" stroke="#999" stroke-width="1.2"/>
+    <rect x="20" y="18" width="30" height="20" rx="2" fill="#f5f5f5" stroke="#aaa" stroke-width="0.8"/>
+    <rect x="22" y="20" width="26" height="8" rx="1" fill="none" stroke="#ccc" stroke-width="0.5"/>
+    <rect x="22" y="30" width="26" height="6" rx="1" fill="none" stroke="#ccc" stroke-width="0.5"/>
+    <circle cx="60" cy="22" r="3" fill="#f80"/>
+    <text x="35" y="72" text-anchor="middle" font-size="6" fill="#666">160~170℃</text>
+    <ellipse cx="35" cy="80" rx="18" ry="3" fill="#ccc" stroke="#808080" stroke-width="1"/>
+  </svg>`,
+
+  incubator: `<svg viewBox="0 0 70 90" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="5" width="60" height="80" rx="8" fill="#e0e0e0" stroke="#808080" stroke-width="2"/>
+    <rect x="10" y="10" width="50" height="50" rx="4" fill="#f0f0f0" stroke="#999" stroke-width="1.2"/>
+    <rect x="25" y="66" width="20" height="14" rx="2" fill="#1e40af"/>
+    <text x="35" y="76" text-anchor="middle" font-size="6" fill="#0f0">28℃</text>
+    <rect x="14" y="18" width="18" height="4" rx="2" fill="#d0dce8" stroke="#a0b4c8" stroke-width="0.5"/>
+    <rect x="14" y="26" width="18" height="4" rx="2" fill="#d0dce8" stroke="#a0b4c8" stroke-width="0.5"/>
+    <rect x="14" y="34" width="18" height="4" rx="2" fill="#d0dce8" stroke="#a0b4c8" stroke-width="0.5"/>
+    <ellipse cx="35" cy="85" rx="18" ry="3" fill="#ccc" stroke="#808080" stroke-width="1"/>
+  </svg>`,
+
+  balance: `<svg viewBox="0 0 70 60" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="40" width="10" height="18" rx="2" fill="#c8c8c8" stroke="#888" stroke-width="1.2"/>
+    <line x1="35" y1="38" x2="35" y2="8" stroke="#999" stroke-width="2"/>
+    <line x1="10" y1="12" x2="60" y2="12" stroke="#aaa" stroke-width="2.5"/>
+    <circle cx="35" cy="12" r="2" fill="#666"/>
+    <path d="M10,12 L8,30 L30,30 L28,12" fill="none" stroke="#aaa" stroke-width="1.5"/>
+    <path d="M60,12 L58,30 L40,30 L42,12" fill="none" stroke="#aaa" stroke-width="1.5"/>
+    <rect x="8" y="28" width="22" height="2" rx="1" fill="#aaa"/>
+    <rect x="40" y="28" width="22" height="2" rx="1" fill="#aaa"/>
+    <ellipse cx="35" cy="58" rx="14" ry="3" fill="#ddd" stroke="#999" stroke-width="1"/>
+  </svg>`,
+
+  knife: `<svg viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="10" width="35" height="8" rx="2" fill="#d0c8b8" stroke="#908070" stroke-width="1.2"/>
+    <path d="M35,10 L50,2 L55,3 L52,12 L55,21 L50,22 L35,18" fill="#d8d8d8" stroke="#999" stroke-width="1.2"/>
+    <line x1="50" y1="2" x2="50" y2="22" stroke="#bbb" stroke-width="0.8"/>
+    <rect x="5" y="11" width="25" height="6" rx="1" fill="none" stroke="#b0a898" stroke-width="0.5"/>
+  </svg>`,
+
+  potato: `<svg viewBox="0 0 50 40" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="ptg"><stop offset="0%" stop-color="#d4b896"/><stop offset="100%" stop-color="#a08060"/></radialGradient></defs>
+    <ellipse cx="25" cy="20" rx="22" ry="16" fill="url(#ptg)" stroke="#8a6a4a" stroke-width="1.5"/>
+    <ellipse cx="20" cy="14" rx="3" ry="2" fill="#c0a080" opacity="0.5"/>
+    <ellipse cx="32" cy="18" rx="2" ry="1.5" fill="#c0a080" opacity="0.5"/>
+  </svg>`,
+
+  gauze: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="2" width="36" height="36" rx="2" fill="#fafaf5" stroke="#c0b898" stroke-width="1.2"/>
+    <line x1="8" y1="0" x2="8" y2="40" stroke="#e0d8c0" stroke-width="0.8"/>
+    <line x1="16" y1="0" x2="16" y2="40" stroke="#e0d8c0" stroke-width="0.8"/>
+    <line x1="24" y1="0" x2="24" y2="40" stroke="#e0d8c0" stroke-width="0.8"/>
+    <line x1="32" y1="0" x2="32" y2="40" stroke="#e0d8c0" stroke-width="0.8"/>
+    <line x1="0" y1="8" x2="40" y2="8" stroke="#e0d8c0" stroke-width="0.8"/>
+    <line x1="0" y1="16" x2="40" y2="16" stroke="#e0d8c0" stroke-width="0.8"/>
+    <line x1="0" y1="24" x2="40" y2="24" stroke="#e0d8c0" stroke-width="0.8"/>
+    <line x1="0" y1="32" x2="40" y2="32" stroke="#e0d8c0" stroke-width="0.8"/>
+  </svg>`,
+
+  glucose: `<svg viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="4" width="20" height="34" rx="4" fill="#faf5e8" stroke="#b0a080" stroke-width="1.5"/>
+    <rect x="4" y="2" width="24" height="8" rx="2" fill="#e0d0b0" stroke="#b0a080" stroke-width="1.2"/>
+    <text x="16" y="24" text-anchor="middle" font-size="6" fill="#5a7a95">G</text>
+  </svg>`,
+
+  agar: `<svg viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="4" width="20" height="34" rx="4" fill="#fafaf5" stroke="#a0a080" stroke-width="1.5"/>
+    <rect x="4" y="2" width="24" height="8" rx="2" fill="#d0d8c0" stroke="#a0a080" stroke-width="1.2"/>
+    <text x="16" y="24" text-anchor="middle" font-size="6" fill="#7a8a5a">琼脂</text>
+  </svg>`,
+
+  washBottle: `<svg viewBox="0 0 36 60" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="10" width="24" height="42" rx="5" fill="#f8fafc" stroke="#90a8c0" stroke-width="1.5"/>
+    <rect x="4" y="8" width="28" height="8" rx="3" fill="#d0d8e8" stroke="#90a8c0" stroke-width="1.2"/>
+    <path d="M6,10 L4,4 L32,4 L30,10" fill="none" stroke="#90a8c0" stroke-width="1"/>
+    <text x="18" y="38" text-anchor="middle" font-size="5" fill="#7a9ab8">H₂O</text>
+  </svg>`,
+
+  pHpaper: `<svg viewBox="0 0 50 16" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="2" width="46" height="12" rx="2" fill="#fafaf5" stroke="#aaa" stroke-width="1"/>
+    <rect x="4" y="5" width="4" height="6" fill="#e03030"/>
+    <rect x="9" y="5" width="4" height="6" fill="#f08030"/>
+    <rect x="14" y="5" width="4" height="6" fill="#f0d030"/>
+    <rect x="19" y="5" width="4" height="6" fill="#80c030"/>
+    <rect x="24" y="5" width="4" height="6" fill="#30b050"/>
+    <rect x="29" y="5" width="4" height="6" fill="#30a0c0"/>
+    <rect x="34" y="5" width="4" height="6" fill="#4060d0"/>
+    <rect x="39" y="5" width="4" height="6" fill="#8030c0"/>
+  </svg>`,
+
+  alcoholCotton: `<svg viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="8" width="18" height="28" rx="4" fill="#eef6fb" stroke="#8aa8c0" stroke-width="1.2"/>
+    <ellipse cx="15" cy="26" rx="7" ry="8" fill="#fafaf5" stroke="#c0b8a0" stroke-width="0.8"/>
+    <text x="15" y="14" text-anchor="middle" font-size="5" fill="#7a9ab8">75%</text>
+  </svg>`,
+
+  matches: `<svg viewBox="0 0 50 12" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="3" width="40" height="4" rx="1.5" fill="#e8d8b0" stroke="#c0a878" stroke-width="0.8"/>
+    <circle cx="40" cy="6" r="4" fill="#d04020"/>
+    <rect x="0" y="2" width="38" height="6" rx="1.5" fill="none" stroke="#d0c0a0" stroke-width="0.5"/>
+    <circle cx="39" cy="5" r="3" fill="#e05030"/>
+    <circle cx="38" cy="4" r="1.5" fill="#f07050" opacity="0.5"/>
+  </svg>`,
+};
+
+// ===== EQUIPMENT DATA =====
+const allEquipment = [
+  {id:'potato',name:'马铃薯',svg:'potato',w:55,h:44},
+  {id:'knife',name:'小刀',svg:'knife',w:70,h:35},
+  {id:'balance',name:'天平',svg:'balance',w:75,h:65},
+  {id:'beaker',name:'烧杯',svg:'beaker',w:60,h:70},
+  {id:'flask',name:'锥形瓶',svg:'flask',w:55,h:72},
+  {id:'glassRod',name:'玻璃棒',svg:'glassRod',w:85,h:12},
+  {id:'gauze',name:'纱布',svg:'gauze',w:44,h:44},
+  {id:'glucose',name:'葡萄糖',svg:'glucose',w:36,h:45},
+  {id:'agar',name:'琼脂',svg:'agar',w:36,h:45},
+  {id:'water',name:'蒸馏水',svg:'washBottle',w:40,h:65},
+  {id:'pHpaper',name:'pH试纸',svg:'pHpaper',w:58,h:20},
+  {id:'autoclave',name:'高压蒸汽灭菌锅',svg:'autoclave',w:65,h:82},
+  {id:'dryOven',name:'干热灭菌箱',svg:'dryOven',w:60,h:75},
+  {id:'alcoholLamp',name:'酒精灯',svg:'alcoholLamp',w:45,h:65},
+  {id:'petriDish',name:'培养皿',svg:'petriDishTop',w:70,h:70},
+  {id:'loop',name:'接种环',svg:'inoculatingLoop',w:85,h:14},
+  {id:'yeastTube',name:'酵母菌培养液',svg:'testTube',w:28,h:82},
+  {id:'alcoholCotton',name:'75%酒精棉球',svg:'alcoholCotton',w:34,h:46},
+  {id:'incubator',name:'恒温培养箱',svg:'incubator',w:60,h:78},
+  {id:'matches',name:'火柴',svg:'matches',w:55,h:15},
+];
+
+// ===== STEPS =====
+const steps = [
+  {
+    id:1, title:'步骤一：制备培养基',
+    instruction:`
+      <p><strong>配制马铃薯琼脂培养基（PDA培养基）：</strong></p>
+      <ol>
+        <li>将马铃薯洗净、去皮、切块，称取<strong>200g</strong></li>
+        <li>加入<strong>1000mL蒸馏水</strong>，煮沸30分钟</li>
+        <li>用纱布过滤，保留滤液（马铃薯浸出液）</li>
+        <li>向滤液中加入<strong>葡萄糖20g</strong>、<strong>琼脂15~20g</strong></li>
+        <li>用玻璃棒搅拌，加热至琼脂完全溶解</li>
+        <li>用pH试纸检测，调节pH至<strong>4.0~5.8</strong></li>
+        <li>将培养基分装至锥形瓶中，塞上棉塞</li>
+      </ol>`,
+    hint:'将左侧需要的器材拖到实验台上：马铃薯、小刀、天平、烧杯、纱布、葡萄糖、琼脂、蒸馏水、pH试纸、玻璃棒、锥形瓶',
+    required:['potato','knife','balance','beaker','gauze','glucose','agar','water','pHpaper','glassRod','flask'],
+    layout:[
+      {id:'potato',x:8,y:15},{id:'knife',x:18,y:12},{id:'balance',x:52,y:58},
+      {id:'beaker',x:44,y:10},{id:'water',x:62,y:8},{id:'gauze',x:70,y:55},
+      {id:'flask',x:75,y:18},{id:'glassRod',x:30,y:62},
+      {id:'glucose',x:12,y:62},{id:'agar',x:22,y:62},{id:'pHpaper',x:60,y:72},
+    ],
+  },
+  {
+    id:2, title:'步骤二：灭菌',
+    instruction:`
+      <p><strong>对不同物品采用不同的灭菌方法：</strong></p>
+      <ol>
+        <li>装有培养基的锥形瓶 → <strong>高压蒸汽灭菌锅</strong><br><em>121℃、101kPa，灭菌20分钟（湿热灭菌）</em></li>
+        <li>培养皿 → <strong>干热灭菌箱</strong><br><em>160~170℃，干热灭菌2小时</em></li>
+        <li>用火柴点燃酒精灯，将<strong>接种环</strong>在火焰上灼烧至红热<br><em>灼烧灭菌</em></li>
+        <li>用<strong>75%酒精棉球</strong>擦拭双手<br><em>化学消毒</em></li>
+      </ol>
+      <p style="color:#c62828;margin-top:6px;">⚠ 灭菌后所有物品处于无菌状态！后续操作需严格在酒精灯火焰旁进行！</p>`,
+    hint:'将灭菌锅、干热灭菌箱、酒精灯、锥形瓶(培养基)、培养皿、接种环、酒精棉球、火柴拖到实验台上',
+    required:['autoclave','dryOven','alcoholLamp','flask','petriDish','loop','alcoholCotton','matches'],
+    layout:[
+      {id:'autoclave',x:8,y:15},{id:'flask',x:14,y:8},
+      {id:'dryOven',x:62,y:15},{id:'petriDish',x:70,y:8},
+      {id:'alcoholLamp',x:36,y:50},{id:'matches',x:30,y:68},
+      {id:'loop',x:45,y:55},{id:'alcoholCotton',x:55,y:58},
+    ],
+  },
+  {
+    id:3, title:'步骤三：倒平板',
+    instruction:`
+      <p><strong>在酒精灯火焰旁进行倒平板操作：</strong></p>
+      <ol>
+        <li>待培养基冷却至<strong>50℃左右</strong>（不烫手时）</li>
+        <li>点燃酒精灯，所有操作在火焰旁完成</li>
+        <li>将培养皿盖<strong>微微打开一条缝隙</strong></li>
+        <li>倒入约<strong>20mL培养基</strong>，使其均匀铺满皿底</li>
+        <li>盖上皿盖，水平放置，待冷却凝固</li>
+        <li>平板冷凝后，<strong style="color:#c62828;">将平板倒置！</strong><br>→ 防止皿盖上的水珠落入培养基造成污染</li>
+      </ol>`,
+    hint:'将酒精灯放在中央，在其周围进行倒平板操作。放置锥形瓶(培养基)和培养皿。',
+    required:['alcoholLamp','flask','petriDish','matches'],
+    layout:[
+      {id:'alcoholLamp',x:44,y:58},{id:'matches',x:38,y:74},
+      {id:'flask',x:58,y:18},{id:'petriDish',x:20,y:16},
+    ],
+  },
+  {
+    id:4, title:'步骤四：平板划线接种（核心步骤）',
+    instruction:`
+      <p><strong>平板划线法分离酵母菌：</strong></p>
+      <ol>
+        <li><strong>第一次灼烧接种环</strong> → 烧至红热</li>
+        <li><strong>冷却接种环</strong> → 在火焰旁冷却片刻</li>
+        <li><strong>蘸取菌液</strong> → 伸入酵母菌培养液中蘸取</li>
+        <li><strong>第一次划线</strong> → 在培养基上划3~5条平行线</li>
+        <li><strong>灼烧+冷却</strong> → 每次划线前重复</li>
+        <li><strong>第二次划线</strong> → 从<em>上次划线末端</em>开始</li>
+        <li>重复操作，共划线<strong>3~5次</strong></li>
+        <li style="color:#c62828;">最后一次划线不要与第一次相连！</li>
+        <li>结束后再次灼烧接种环</li>
+      </ol>`,
+    hint:'将左侧器材拖到虚线框中。培养皿已就位，可直接在上面划线。',
+    required:['alcoholLamp','loop','yeastTube','matches'],
+    layout:[
+      {id:'alcoholLamp',x:8,y:58},{id:'matches',x:14,y:74},
+      {id:'yeastTube',x:8,y:12},{id:'loop',x:8,y:34},
+    ],
+    canvas:true,
+    autoPlace:['petriDish'],
+  },
+  {
+    id:5, title:'步骤五：培养酵母菌',
+    instruction:`
+      <p><strong>将接种后的平板放入恒温培养箱：</strong></p>
+      <ol>
+        <li>待菌液被培养基吸收后，<strong>将平板倒置</strong></li>
+        <li>同时准备<strong>1个未接种的平板作为空白对照</strong></li>
+        <li>一般每组做<strong>三组重复实验</strong></li>
+        <li>放入<strong>28℃恒温培养箱</strong>中</li>
+        <li><strong>倒置培养24~48小时</strong></li>
+      </ol>`,
+    hint:'将接种后的平板(倒置)、空白对照平板和恒温培养箱拖到实验台上',
+    required:['petriDish','incubator'],
+    layout:[
+      {id:'incubator',x:40,y:15},
+      {id:'petriDish',x:14,y:28},
+    ],
+  },
+  {
+    id:6, title:'步骤六：观察结果与分析',
+    instruction:`
+      <p><strong>观察并分析实验结果：</strong></p>
+      <ol>
+        <li><strong>空白对照</strong> → 未接种的培养基表面应<strong>无菌落生长</strong></li>
+        <li>如有菌落 → 说明灭菌不彻底或操作时杂菌污染</li>
+        <li><strong>酵母菌菌落特征：</strong></li>
+      </ol>
+      <p style="text-align:center;padding:8px;background:#f0f4fa;border-radius:8px;">
+        🟡 <strong>乳白色、圆形、大而突起<br>表面光滑湿润、不透明</strong>
+      </p>
+      <ol start="4">
+        <li>若菌落颜色、形状、大小<strong>基本一致</strong> → 纯化成功 ✅</li>
+        <li>若出现<strong>不同形态菌落</strong> → 可能菌种不纯或操作污染 ❌</li>
+      </ol>`,
+    hint:'观察并对比左右两个平板：左侧为接种平板（可见酵母菌菌落），右侧为空白对照（无菌落）。',
+    required:[],
+    layout:[],
+    observe:true,
+  },
+];
+
+// ===== STATE =====
+let currentStep = 0;
+let completedSteps = new Set();
+let usedEquipment = new Set();
+let selectedEquipment = null;
+let wbItems = []; // {id, x%, y%} — items on workbench
+let dragging = null; // {id, startMouseX, startMouseY, startX, startY}
+let streakLines = [];
+let streakDone = false;
+
+// ===== INIT =====
+function init(){renderProgressBar();renderEquipment();renderStep();}
+
+function renderProgressBar(){
+  const bar=document.getElementById('progressBar');bar.innerHTML='';
+  steps.forEach((s,i)=>{
+    if(i>0){const c=document.createElement('div');c.className='step-connector'+(completedSteps.has(i-1)?' done':'');bar.appendChild(c);}
+    const d=document.createElement('div');d.className='step-dot';
+    if(i===currentStep)d.classList.add('active');
+    if(completedSteps.has(i))d.classList.add('done');
+    d.textContent=i+1;d.title=s.title;
+    d.addEventListener('click',()=>{if(completedSteps.has(i)||i<currentStep){currentStep=i;selectedEquipment=null;renderStep();}});
+    bar.appendChild(d);
+  });
+}
+
+function renderEquipment(){
+  const list=document.getElementById('equipmentList');list.innerHTML='';
+  const needed=steps[currentStep].required;
+  allEquipment.forEach(eq=>{
+    const div=document.createElement('div');div.className='equipment-item';
+    if(usedEquipment.has(eq.id))div.classList.add('used');
+    if(selectedEquipment===eq.id)div.classList.add('selected');
+    if(needed.includes(eq.id)&&!usedEquipment.has(eq.id))div.classList.add('needed');
+    div.draggable=!usedEquipment.has(eq.id);
+    div.innerHTML=`<span class="eq-icon">${EquipmentSVG[eq.svg]}</span><span>${eq.name}</span>`;
+    div.dataset.id=eq.id;
+
+    div.addEventListener('click',()=>{
+      if(usedEquipment.has(eq.id))return;
+      selectedEquipment=selectedEquipment===eq.id?null:eq.id;
+      renderEquipment();
+    });
+    div.addEventListener('dragstart',e=>{
+      if(usedEquipment.has(eq.id)){e.preventDefault();return;}
+      e.dataTransfer.setData('text/plain',eq.id);div.style.opacity='0.5';
+    });
+    div.addEventListener('dragend',()=>{div.style.opacity='';});
+    list.appendChild(div);
+  });
+}
+
+function renderStep(){
+  const step=steps[currentStep];
+  document.getElementById('stepTitle').textContent=step.title;
+  document.getElementById('instructionText').innerHTML=step.instruction;
+  document.getElementById('hintText').textContent=step.hint;
+  document.getElementById('btnPrev').disabled=currentStep===0;
+  const btnNext=document.getElementById('btnNext');
+  btnNext.textContent=currentStep===steps.length-1?'🏆 完成实验':'下一步 ▶';
+  var kb=document.getElementById('knowledgeBox');if(kb)kb.style.display='none';
+  // Auto-place items for this step
+  if(step.autoPlace){
+    step.autoPlace.forEach(id=>{
+      if(!usedEquipment.has(id)){
+        usedEquipment.add(id);
+        // Don't add to wbItems if step has its own rendering (e.g. streak canvas)
+        if(!step.canvas){
+          var layoutEntry=step.layout?step.layout.find(l=>l.id===id):null;
+          wbItems.push({id:id,x:layoutEntry?layoutEntry.x:40,y:layoutEntry?layoutEntry.y:30});
+        }
+      }
+    });
+  }
+  renderProgressBar();renderEquipment();renderWorkbench();
+}
+
+// ===== WORKBENCH RENDERING =====
+function renderWorkbench(){
+  const wb=document.getElementById('workbench');
+  wb.innerHTML='<div class="grid-overlay"></div><div class="workbench-label">🔬 实验操作台</div>';
+
+  const step=steps[currentStep];
+
+  // Special scenes
+  if(step.canvas){renderStreakCanvas(wb);}
+  if(step.observe){renderObservePlates(wb);}
+
+  // Render ghost zones for items not yet placed
+  if(step.layout && step.layout.length>0){
+    step.layout.forEach(lp=>{
+      if(wbItems.find(it=>it.id===lp.id))return; // already placed
+      const eq=allEquipment.find(e=>e.id===lp.id);
+      if(!eq)return;
+      const gz=document.createElement('div');
+      gz.className='ghost-zone';
+      gz.style.left=lp.x+'%';gz.style.top=lp.y+'%';
+      gz.style.width='80px';gz.style.height='80px';
+      gz.innerHTML=`<div class="ghost-svg">${EquipmentSVG[eq.svg]}</div><span>${eq.name}</span>`;
+      wb.appendChild(gz);
+    });
+  }
+
+  // Hint for empty workbench
+  if(wbItems.length===0 && step.required.length>0){
+    const hint=document.createElement('div');hint.className='drop-hint';
+    hint.textContent='将左侧器材拖到虚线框中';
+    wb.appendChild(hint);
+  }
+
+  // Render placed items (large, visible SVGs)
+  wbItems.forEach(item=>{
+    const eq=allEquipment.find(e=>e.id===item.id);
+    if(!eq)return;
+    const el=document.createElement('div');
+    el.className='wb-item';el.dataset.id=item.id;
+    el.style.left=item.x+'%';el.style.top=item.y+'%';
+    // Size the icon based on equipment aspect ratio
+    var scale=90/Math.max(eq.w,eq.h);
+    var iw=Math.round(eq.w*scale),ih=Math.round(eq.h*scale);
+    el.innerHTML=`<div class="wb-icon" style="width:${iw}px;height:${ih}px;">${EquipmentSVG[eq.svg]}</div><div class="wb-label">${eq.name}</div>`;
+
+    el.addEventListener('mousedown',e=>startDragItem(e,item,el));
+    el.addEventListener('touchstart',e=>startDragItem(e,item,el),{passive:false});
+    wb.appendChild(el);
+  });
+
+  // Check if all items placed → show demo button
+  var allPlaced=step.required.length>0 && step.required.every(id=>usedEquipment.has(id));
+  if(allPlaced && !step.observe && !step.canvas){
+    var demoBtn=document.createElement('button');
+    demoBtn.className='btn btn-accent';
+    demoBtn.style.cssText='position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:20;font-size:0.82rem;padding:8px 18px;';
+    demoBtn.textContent='▶ 演示实验操作';
+    demoBtn.addEventListener('click',e=>{e.stopPropagation();playStepAnimation(currentStep,wb);});
+    demoBtn.addEventListener('mousedown',e=>e.stopPropagation());
+    demoBtn.addEventListener('touchstart',e=>e.stopPropagation());
+    wb.appendChild(demoBtn);
+  }
+
+  // Also show demo button for canvas step
+  if(step.canvas && allPlaced && streakDone){
+    var demoBtn2=document.createElement('button');
+    demoBtn2.className='btn btn-accent';
+    demoBtn2.style.cssText='position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:20;font-size:0.82rem;padding:8px 18px;';
+    demoBtn2.textContent='▶ 演示划线过程';
+    demoBtn2.addEventListener('click',e=>{e.stopPropagation();playStreakDemo(wb);});
+    demoBtn2.addEventListener('mousedown',e=>e.stopPropagation());
+    demoBtn2.addEventListener('touchstart',e=>e.stopPropagation());
+    wb.appendChild(demoBtn2);
+  }
+
+  // Handle drop on workbench
+  wb.addEventListener('dragover',e=>{e.preventDefault();});
+  wb.addEventListener('drop',e=>{
+    e.preventDefault();
+    var eqId=e.dataTransfer.getData('text/plain');
+    if(eqId) addItemToWorkbench(eqId, e.clientX, e.clientY, wb);
+  });
+  wb.addEventListener('click',e=>{
+    if(e.target===wb||e.target.classList.contains('grid-overlay')||e.target.classList.contains('drop-hint')){
+      if(selectedEquipment){
+        addItemToWorkbench(selectedEquipment, e.clientX, e.clientY, wb);
+      }
+    }
+  });
+
+  // Global mouse/touch move for dragging
+  document.onmousemove=e=>moveDragItem(e);
+  document.onmouseup=e=>endDragItem(e);
+  document.ontouchmove=e=>moveDragItem(e);
+  document.ontouchend=e=>endDragItem(e);
+}
+
+function renderStreakCanvas(wb){
+  // Petri dish with canvas for streaking
+  const container=document.createElement('div');
+  container.style.cssText='position:absolute;left:38%;top:10%;';
+  container.innerHTML=`
+    <div style="width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#f8fafd 0%,#e4ecf5 70%,#cdd5e8 100%);border:3px solid #b8c8e0;box-shadow:0 4px 20px rgba(0,0,0,0.12),inset 0 2px 8px rgba(255,255,255,0.6);overflow:hidden;position:relative;">
+      <div style="position:absolute;top:15%;left:15%;width:70%;height:70%;border-radius:50%;background:radial-gradient(circle at 50% 45%,#e8eef8 0%,#d8e2f0 100%);box-shadow:inset 0 2px 6px rgba(0,0,0,0.1);">
+        <canvas id="streakCanvas" width="126" height="126" style="position:absolute;top:0;left:0;border-radius:50%;"></canvas>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:0.7rem;color:#5a7a95;margin-top:4px;">在此划线接种</div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:6px;">
+      <button class="btn btn-accent" onclick="clearStreaks()" style="font-size:0.7rem;padding:4px 10px;">🔄 清除</button>
+      <button class="btn btn-primary" onclick="finishStreaking()" style="font-size:0.7rem;padding:4px 10px;">✅ 完成划线</button>
+    </div>
+  `;
+  wb.appendChild(container);
+  setTimeout(initStreakCanvas,100);
+}
+
+function renderObservePlates(wb){
+  // Inoculated plate with colonies
+  const leftPlate=document.createElement('div');
+  leftPlate.style.cssText='position:absolute;left:6%;top:12%;text-align:center;';
+  leftPlate.innerHTML=`
+    <div style="font-size:0.75rem;font-weight:700;color:var(--primary);margin-bottom:6px;">接种平板</div>
+    <div style="width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#f8fafd 0%,#e4ecf5 70%,#cdd5e8 100%);border:3px solid #b8c8e0;box-shadow:0 4px 20px rgba(0,0,0,0.12);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:15%;left:15%;width:70%;height:70%;border-radius:50%;background:radial-gradient(circle at 50% 45%,#e8eef8 0%,#d8e2f0 100%);position:relative;">
+        ${generateColonies()}
+      </div>
+    </div>
+    <div style="font-size:0.7rem;color:var(--success);margin-top:4px;">✅ 可见单菌落</div>
+  `;
+  wb.appendChild(leftPlate);
+
+  // Blank control
+  const rightPlate=document.createElement('div');
+  rightPlate.style.cssText='position:absolute;right:8%;top:12%;text-align:center;';
+  rightPlate.innerHTML=`
+    <div style="font-size:0.75rem;font-weight:700;color:var(--primary);margin-bottom:6px;">空白对照</div>
+    <div style="width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#f8fafd 0%,#e4ecf5 70%,#cdd5e8 100%);border:3px solid #b8c8e0;box-shadow:0 4px 20px rgba(0,0,0,0.12);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:15%;left:15%;width:70%;height:70%;border-radius:50%;background:radial-gradient(circle at 50% 45%,#e8eef8 0%,#d8e2f0 100%);"></div>
+    </div>
+    <div style="font-size:0.7rem;color:var(--success);margin-top:4px;">✅ 无菌落生长</div>
+  `;
+  wb.appendChild(rightPlate);
+
+  // Legend
+  const legend=document.createElement('div');
+  legend.style.cssText='position:absolute;bottom:8%;left:10%;right:10%;background:#f0f4fa;padding:8px 16px;border-radius:10px;border:1px solid #c8d4e5;font-size:0.78rem;text-align:center;color:var(--textL);';
+  legend.innerHTML='<strong>酵母菌菌落特征：</strong>乳白色 · 圆形 · 大而突起 · 表面光滑湿润 · 不透明';
+  wb.appendChild(legend);
+}
+
+function generateColonies(){
+  let h='';
+const streaks=[
+  'top:20%;left:22%;width:56%;height:3px;background:rgba(100,130,170,0.12);border-radius:2px;transform:rotate(-4deg);',
+  'top:30%;left:20%;width:58%;height:3px;background:rgba(100,130,170,0.1);border-radius:2px;transform:rotate(-3deg);',
+  'top:40%;left:18%;width:60%;height:3px;background:rgba(100,130,170,0.08);border-radius:2px;transform:rotate(-2deg);',
+  'top:50%;left:16%;width:62%;height:3px;background:rgba(100,130,170,0.06);border-radius:2px;transform:rotate(-1deg);',
+];
+streaks.forEach(s=>{h+=`<div style="position:absolute;${s}"></div>`;});
+const colonies=[
+  {x:56,y:28,s:17},{x:62,y:36,s:15},{x:53,y:34,s:16},
+  {x:59,y:42,s:14},{x:66,y:32,s:12},{x:63,y:48,s:15},
+  {x:70,y:40,s:11},{x:55,y:52,s:10},{x:68,y:46,s:9},
+  {x:58,y:56,s:8},{x:72,y:38,s:7},
+];
+colonies.forEach((c,i)=>{
+  h+=`<div class="colony" style="left:${c.x-c.s/2}%;top:${c.y-c.s/2}%;width:${c.s}%;height:${c.s}%;animation-delay:${i*0.08}s;"></div>`;
+});
+return h;
+}
+
+// ===== DRAG ITEMS ON WORKBENCH =====
+function startDragItem(e,item,el){
+  if(e.target.tagName==='BUTTON')return;
+  e.preventDefault();
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const clientY=e.touches?e.touches[0].clientY:e.clientY;
+  dragging={id:item.id,startMouseX:clientX,startMouseY:clientY,startX:item.x,startY:item.y,el:el};
+  el.classList.add('dragging');
+}
+
+function moveDragItem(e){
+  if(!dragging)return;
+  e.preventDefault();
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const clientY=e.touches?e.touches[0].clientY:e.clientY;
+  const wb=document.getElementById('workbench');
+  const rect=wb.getBoundingClientRect();
+  const dx=(clientX-dragging.startMouseX)/rect.width*100;
+  const dy=(clientY-dragging.startMouseY)/rect.height*100;
+  let newX=dragging.startX+dx;
+  let newY=dragging.startY+dy;
+  newX=Math.max(0,Math.min(90,newX));
+  newY=Math.max(0,Math.min(90,newY));
+  dragging.el.style.left=newX+'%';
+  dragging.el.style.top=newY+'%';
+  // Update state
+  const item=wbItems.find(it=>it.id===dragging.id);
+  if(item){item.x=newX;item.y=newY;}
+}
+
+function endDragItem(e){
+  if(!dragging)return;
+  dragging.el.classList.remove('dragging');
+  dragging=null;
+}
+
+function addItemToWorkbench(eqId,clientX,clientY,wb){
+  if(!eqId||usedEquipment.has(eqId))return;
+  if(!steps[currentStep].required.includes(eqId)){
+    showToast('当前步骤不需要此器材，请查看右侧说明','error');
+    return;
+  }
+  const step=steps[currentStep];
+  // Snap to ghost zone if matching layout entry exists
+  var px,py;
+  var layoutEntry=step.layout?step.layout.find(l=>l.id===eqId):null;
+  if(layoutEntry){
+    // Check if another item already occupies this zone
+    var occupied=wbItems.find(it=>{
+      var le=step.layout?step.layout.find(l=>l.id===it.id):null;
+      return le && Math.abs(le.x-layoutEntry.x)<5 && Math.abs(le.y-layoutEntry.y)<5;
+    });
+    if(occupied){
+      // Fallback to free positioning near the zone
+      px=layoutEntry.x+5+Math.random()*8;
+      py=layoutEntry.y+5+Math.random()*8;
+    }else{
+      px=layoutEntry.x;py=layoutEntry.y;
+    }
+  }else if(clientX&&clientY){
+    var rect=wb.getBoundingClientRect();
+    px=((clientX-rect.left)/rect.width)*100;
+    py=((clientY-rect.top)/rect.height)*100;
+  }else{
+    px=25+Math.random()*50;py=15+Math.random()*60;
+  }
+  px=Math.max(2,Math.min(90,px));
+  py=Math.max(2,Math.min(88,py));
+
+  wbItems.push({id:eqId,x:px,y:py});
+  usedEquipment.add(eqId);
+  selectedEquipment=null;
+
+  var eq=allEquipment.find(e=>e.id===eqId);
+  showToast(`✅ 已放置：${eq?.name}`,'success');
+  renderEquipment();renderWorkbench();
+
+  // Auto-demo if all placed
+  var allPlaced=step.required.every(id=>usedEquipment.has(id));
+  if(allPlaced && !step.observe && !step.canvas){
+    setTimeout(()=>{
+      var wb2=document.getElementById('workbench');
+      playStepAnimation(currentStep,wb2);
+    },600);
+  }
+}
+
+// ===== STEP ANIMATION DEMOS =====
+var animState=null; // {seq, idx, wb, timer}
+
+function showKnowledge(msg){
+  var kb=document.getElementById('knowledgeBox');
+  var kt=document.getElementById('knowledgeText');
+  var ks=document.getElementById('knowledgeStep');
+  kb.style.display='block';kt.textContent=msg;
+  if(animState){ks.textContent=(animState.idx+1)+'/'+animState.seq.length;}else{ks.textContent='';}
+}
+
+function playStepAnimation(stepIdx,wb){
+  if(animState)return;
+  var seq;
+  switch(stepIdx){
+    case 0: seq=buildPrepSeq(wb);break;
+    case 1: seq=buildSterilizeSeq(wb);break;
+    case 2: seq=buildPourPlateSeq(wb);break;
+    case 4: seq=buildIncubateSeq(wb);break;
+    default:return;
+  }
+  // Start manual step-through mode
+  animState={seq:seq,idx:-1,wb:wb,timer:null};
+  showAnimNav(wb);
+  advanceAnim();
+}
+
+function showAnimNav(wb){
+  var old=document.getElementById('animNav');if(old)old.remove();
+  var nav=document.createElement('div');nav.id='animNav';
+  nav.style.cssText='position:absolute;top:36px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;z-index:60;background:rgba(255,255,255,0.92);padding:8px 16px;border-radius:24px;box-shadow:0 3px 16px rgba(0,0,0,0.12);border:1px solid #b8c8e0;';
+  nav.innerHTML=`
+    <button class="btn btn-outline" id="animPrev" style="font-size:0.75rem;padding:5px 14px;">◀ 上一环节</button>
+    <span id="animCounter" style="font-size:0.8rem;font-weight:700;color:#1e40af;min-width:56px;text-align:center;">1/${animState.seq.length}</span>
+    <button class="btn btn-primary" id="animNext" style="font-size:0.75rem;padding:5px 14px;">下一环节 ▶</button>`;
+  nav.querySelector('#animPrev').addEventListener('mousedown',function(e){e.stopPropagation();retreatAnim();});
+  nav.querySelector('#animNext').addEventListener('mousedown',function(e){e.stopPropagation();advanceAnim();});
+  nav.querySelector('#animPrev').addEventListener('touchstart',function(e){e.stopPropagation();retreatAnim();});
+  nav.querySelector('#animNext').addEventListener('touchstart',function(e){e.stopPropagation();advanceAnim();});
+  // Hide the initial demo button
+  var demoBtn=wb.querySelector('button');if(demoBtn&&demoBtn.textContent.includes('演示'))demoBtn.style.display='none';
+  wb.appendChild(nav);
+}
+
+function advanceAnim(){
+  if(!animState)return;
+  var seq=animState.seq,wb=animState.wb;
+  // Clear auto-timer
+  if(animState.timer){clearTimeout(animState.timer);animState.timer=null;}
+  // Execute current step's cleanup (if next exists and has undoPrep)
+  var cur=seq[animState.idx];
+  if(cur&&cur.undoPrep)cur.undoPrep();
+
+  animState.idx++;
+  if(animState.idx>=seq.length){
+    finishAnim();return;
+  }
+  var step=seq[animState.idx];
+  if(step.action)step.action();
+  if(step.tip)showKnowledge(step.tip);
+  updateAnimNav();
+  // Auto-advance after 5 seconds (slow enough for reading)
+  if(animState.idx<seq.length-1){
+    animState.timer=setTimeout(function(){advanceAnim();},5000);
+  }
+}
+
+function retreatAnim(){
+  if(!animState||animState.idx<=0)return;
+  var seq=animState.seq,wb=animState.wb;
+  if(animState.timer){clearTimeout(animState.timer);animState.timer=null;}
+  // Reset workbench state: re-render items
+  resetAllItems(wb);
+  // Go back one step
+  animState.idx--;
+  // Replay from start up to current idx
+  for(var i=0;i<=animState.idx;i++){
+    var step=seq[i];
+    if(step.action)step.action();
+    if(step.tip&&i===animState.idx)showKnowledge(step.tip);
+  }
+  updateAnimNav();
+  if(animState.idx<seq.length-1){
+    animState.timer=setTimeout(function(){advanceAnim();},5000);
+  }
+}
+
+function resetAllItems(wb){
+  wbItems.forEach(function(item){
+    var el=wb.querySelector('.wb-item[data-id="'+item.id+'"]');
+    if(el){el.style.transform='';el.style.filter='';el.style.transition='';el.style.zIndex='';el.style.left=item.x+'%';el.style.top=item.y+'%';}
+  });
+  var ov=document.getElementById('demoOverlay');if(ov)ov.remove();
+  // Reset lamp SVG
+  var lampIcon=wb.querySelector('.wb-item[data-id="alcoholLamp"] .wb-icon');
+  if(lampIcon)lampIcon.innerHTML=EquipmentSVG.alcoholLamp;
+  // Reset dish SVG
+  var dishIcon=wb.querySelector('.wb-item[data-id="petriDish"] .wb-icon');
+  if(dishIcon)dishIcon.innerHTML=EquipmentSVG.petriDishTop;
+}
+
+function updateAnimNav(){
+  var cnt=document.getElementById('animCounter');
+  if(cnt)cnt.textContent=(animState.idx+1)+'/'+animState.seq.length;
+  var prev=document.getElementById('animPrev');
+  if(prev)prev.disabled=animState.idx<=0;
+  var next=document.getElementById('animNext');
+  if(next)next.textContent=animState.idx>=animState.seq.length-1?'✅ 完成':'下一环节 ▶';
+}
+
+function finishAnim(){
+  if(!animState)return;
+  var nav=document.getElementById('animNav');if(nav)nav.remove();
+  var seq=animState.seq;
+  var last=seq[seq.length-1];
+  if(last&&last.tip)showKnowledge(last.tip);
+  animState=null;
+  showToast('✅ 演示完成','success');
+  // Re-render to restore demo button and clean state
+  setTimeout(function(){renderWorkbench();},300);
+}
+
+// === Build animation sequences (no auto-timing, step-by-step) ===
+function buildPrepSeq(wb){
+  return [
+    {tip:'🥔 第一步：将马铃薯洗净、去皮',action:function(){
+      glowItem(wb,'potato');showToast('洗净、去皮','info');
+    }},
+    {tip:'🔪 第二步：将马铃薯切成小块，便于煮沸提取出细胞内的营养物质',action:function(){
+      resetItemStyle(wb,'potato');
+      var knife=wb.querySelector('.wb-item[data-id="knife"]');
+      if(knife){knife.style.transition='all 0.6s ease';knife.style.left='14%';knife.style.top='14%';knife.style.zIndex='25';
+        setTimeout(function(){knife.style.left='22%';knife.style.top='15%';},400);
+        setTimeout(function(){knife.style.left='14%';knife.style.top='14%';},800);}
+    },undoPrep:function(){resetItemStyle(wb,'knife');}},
+    {tip:'⚖️ 第三步：用天平称取200g马铃薯块，天平是实验室常用的称量工具',action:function(){
+      resetItemStyle(wb,'knife');glowItem(wb,'balance');glowItem(wb,'potato');
+    }},
+    {tip:'🫙 第四步：将马铃薯块放入烧杯，加入1000mL蒸馏水，加热煮沸30分钟。热水可使马铃薯细胞破裂，释放营养物质',action:function(){
+      resetItemStyle(wb,'balance');resetItemStyle(wb,'potato');
+      var bk=wb.querySelector('.wb-item[data-id="beaker"]');if(bk)bk.style.transform='scale(1.15)';
+      var wtr=wb.querySelector('.wb-item[data-id="water"]');
+      if(wtr){wtr.style.transition='all 0.8s ease';wtr.style.left='48%';wtr.style.top='10%';wtr.style.zIndex='25';wtr.style.transform='rotate(-35deg)';
+        setTimeout(function(){wtr.style.transition='all 0.4s ease';wtr.style.left='62%';wtr.style.top='8%';wtr.style.transform='';wtr.style.zIndex='';},1200);}
+    },undoPrep:function(){resetItemStyle(wb,'beaker');resetItemStyle(wb,'water');}},
+    {tip:'🩹 第五步：用纱布过滤，保留滤液（即马铃薯浸出液）。此步骤去除马铃薯残渣，获得清澈的营养液',action:function(){
+      resetItemStyle(wb,'beaker');resetItemStyle(wb,'water');glowItem(wb,'gauze');
+    }},
+    {tip:'🍬🧈 第六步：向滤液中加入葡萄糖20g（碳源）和琼脂15~20g（凝固剂），用玻璃棒搅拌并加热至琼脂完全溶解',action:function(){
+      resetItemStyle(wb,'gauze');glowItem(wb,'glucose');glowItem(wb,'agar');glowItem(wb,'glassRod');
+    }},
+    {tip:'📏 第七步：用pH试纸检测培养基的pH值，调节至4.0~5.8。酵母菌适宜在弱酸性环境中生长，此pH范围也有利于抑制某些细菌',action:function(){
+      resetItemStyle(wb,'glucose');resetItemStyle(wb,'agar');resetItemStyle(wb,'glassRod');glowItem(wb,'pHpaper');
+    }},
+    {tip:'🧪 第八步：将配制好的PDA培养基分装至锥形瓶中，塞上棉塞，准备灭菌！棉塞允许空气交换但阻挡微生物进入',action:function(){
+      resetItemStyle(wb,'pHpaper');glowItem(wb,'flask');showToast('✅ 培养基配制完成！','success');
+    }},
+    {tip:'✅ 培养基制备完毕！PDA（马铃薯葡萄糖琼脂）培养基已分装至锥形瓶，下一步将进行灭菌处理',action:function(){resetItemStyle(wb,'flask');}},
+  ];
+}
+function buildSterilizeSeq(wb){
+  return [
+    {tip:'♨️ 湿热灭菌：将装有培养基的锥形瓶放入高压蒸汽灭菌锅。条件：121℃、101kPa、灭菌20分钟。湿热灭菌利用高温高压水蒸气穿透力强，能有效杀死包括细菌芽孢在内的所有微生物',action:function(){
+      var ac=wb.querySelector('.wb-item[data-id="autoclave"]');if(ac)ac.style.transform='scale(1.08)';
+      var fl=wb.querySelector('.wb-item[data-id="flask"]');
+      if(fl){fl.style.transition='all 1.5s ease';fl.style.left='14%';fl.style.top='8%';fl.style.zIndex='25';fl.style.transform='scale(0.7)';}
+      showToast('高压蒸汽灭菌 121℃/20min','info');
+    },undoPrep:function(){resetItemStyle(wb,'autoclave');resetItemStyle(wb,'flask');}},
+    {tip:'🔥 干热灭菌：将培养皿放入干热灭菌箱。条件：160~170℃、灭菌2小时。干热灭菌适用于耐高温的玻璃器皿（如培养皿），原理是利用高温使蛋白质变性和氧化',action:function(){
+      var dv=wb.querySelector('.wb-item[data-id="dryOven"]');if(dv)dv.style.transform='scale(1.08)';
+      var pd=wb.querySelector('.wb-item[data-id="petriDish"]');
+      if(pd){pd.style.transition='all 1.5s ease';pd.style.left='68%';pd.style.top='8%';pd.style.zIndex='25';pd.style.transform='scale(0.7)';}
+    },undoPrep:function(){resetItemStyle(wb,'dryOven');resetItemStyle(wb,'petriDish');}},
+    {tip:'🕯️ 灼烧灭菌（接种环）：用火柴点燃酒精灯，将接种环金属丝部分在火焰上灼烧至红热。这是对接种工具最直接有效的灭菌方式，可瞬间杀死环上所有微生物',action:function(){
+      var lamp=wb.querySelector('.wb-item[data-id="alcoholLamp"] .wb-icon');
+      if(lamp)lamp.innerHTML=EquipmentSVG.alcoholLampLit;
+      glowItem(wb,'matches');
+      var loop=wb.querySelector('.wb-item[data-id="loop"]');
+      if(loop){loop.style.transition='all 1s ease';loop.style.left='38%';loop.style.top='48%';loop.style.zIndex='25';
+        setTimeout(function(){loop.style.filter='drop-shadow(0 0 10px rgba(8,145,178,0.8))';},900);}
+    },undoPrep:function(){
+      var lamp=wb.querySelector('.wb-item[data-id="alcoholLamp"] .wb-icon');if(lamp)lamp.innerHTML=EquipmentSVG.alcoholLamp;
+      resetItemStyle(wb,'matches');resetItemStyle(wb,'loop');
+    }},
+    {tip:'🧻 化学消毒：用75%酒精棉球擦拭双手。75%酒精能使微生物蛋白质凝固变性，且渗透力最强，是实验室最常用的皮肤消毒方法',action:function(){
+      resetItemStyle(wb,'loop');glowItem(wb,'alcoholCotton');
+    }},
+    {tip:'⚠ 灭菌完成！所有物品已处于无菌状态。请记住：后续所有操作（倒平板、接种等）必须严格在酒精灯火焰旁的无菌区进行，否则之前的灭菌将前功尽弃',action:function(){
+      resetItemStyle(wb,'alcoholCotton');resetItemStyle(wb,'autoclave');resetItemStyle(wb,'dryOven');
+      showToast('✅ 灭菌完成！所有物品已无菌','success');
+    }},
+  ];
+}
+function buildPourPlateSeq(wb){
+  return [
+    {tip:'🕯️ 首先点燃酒精灯，建立无菌操作区。酒精灯火焰周围半径约10cm范围为无菌区，所有倒平板和接种操作都必须在此区域内完成',action:function(){
+      var lamp=wb.querySelector('.wb-item[data-id="alcoholLamp"] .wb-icon');
+      if(lamp)lamp.innerHTML=EquipmentSVG.alcoholLampLit;
+    },undoPrep:function(){
+      var lamp=wb.querySelector('.wb-item[data-id="alcoholLamp"] .wb-icon');if(lamp)lamp.innerHTML=EquipmentSVG.alcoholLamp;
+    }},
+    {tip:'🌡️ 等待灭菌后的培养基冷却至50℃左右。判断方法：用手触摸锥形瓶外壁，感觉温度下降到"刚刚不烫手"即可。温度过高（>60℃）会烫坏塑料培养皿，温度过低（<45℃）培养基会提前凝固',action:function(){glowItem(wb,'flask');},undoPrep:function(){resetItemStyle(wb,'flask');}},
+    {tip:'🧪→🧫 将锥形瓶移至培养皿上方，准备倒平板。关键操作规范：培养皿盖只能微微打开一条缝隙（刚好能让瓶口伸入），绝不能完全打开皿盖，以防空气中漂浮的杂菌落入培养基',action:function(){
+      resetItemStyle(wb,'flask');
+      var flask=wb.querySelector('.wb-item[data-id="flask"]');
+      if(flask){flask.style.transition='all 1.5s ease';flask.style.left='34%';flask.style.top='6%';flask.style.zIndex='30';flask.style.transform='rotate(-35deg)';}
+    },undoPrep:function(){resetItemStyle(wb,'flask');}},
+    {tip:'💛 倒入约20mL培养基，使其均匀铺满整个皿底。倒入后可以轻轻搖晃培养皿使培养基分布均匀。培养基在皿底形成约3~5mm的均匀薄层即为合适厚度',action:function(){
+      var ov=document.createElement('div');ov.className='demo-overlay';ov.id='demoOverlay';
+      ov.innerHTML='<div class="demo-stream" style="left:42%;top:8%;height:90px;"></div><div class="demo-fill" style="left:18%;top:14%;width:90px;height:90px;"></div>';
+      wb.appendChild(ov);
+    },undoPrep:function(){var ov=document.getElementById('demoOverlay');if(ov)ov.remove();}},
+    {tip:'⏳ 盖上皿盖，将培养皿水平放置在工作台上，等待培养基自然冷却凝固。凝固后培养基变为半透明的凝胶状固体。注意保持水平，否则培养基厚度不均',action:function(){
+      var ov=document.getElementById('demoOverlay');if(ov)ov.remove();
+      var flask=wb.querySelector('.wb-item[data-id="flask"]');
+      if(flask){flask.style.transition='all 0.8s ease';flask.style.left='58%';flask.style.top='18%';flask.style.transform='';flask.style.zIndex='';}
+      var dishIcon=wb.querySelector('.wb-item[data-id="petriDish"] .wb-icon');
+      if(dishIcon)dishIcon.innerHTML=EquipmentSVG.petriDishTop.replace('#e8eef5','#dce8f2').replace('#d8e2f0','#c8d8ea');
+    },undoPrep:function(){resetItemStyle(wb,'flask');}},
+    {tip:'🔄 平板冷凝后，立即将平板倒置！这是微生物实验的"黄金法则"——倒置培养可以：① 防止皿盖内壁的冷凝水珠滴落到培养基表面，造成污染和菌落扩散；② 减缓培养基水分蒸发，防止培养基干裂',action:function(){
+      var dish=wb.querySelector('.wb-item[data-id="petriDish"]');
+      if(dish){dish.style.transition='transform 1.2s ease';dish.style.transform='rotate(180deg)';}
+      showToast('平板倒置！防止水珠污染','info');
+    },undoPrep:function(){var dish=wb.querySelector('.wb-item[data-id="petriDish"]');if(dish)dish.style.transform='';}},
+    {tip:'✅ 倒平板完成！倒置的平板已准备好进行接种。操作要点回顾：全程火焰旁操作、皿盖只开一条缝、冷凝后立即倒置。下一步将进行平板划线接种',action:function(){showToast('✅ 倒平板完成，等待接种','success');}},
+  ];
+}
+function buildIncubateSeq(wb){
+  return [
+    {tip:'🔄 待菌液被培养基完全吸收后（约1~2分钟），将接种后的平板倒置。倒置培养是微生物培养的标准操作，原因同倒平板',action:function(){
+      var dish=wb.querySelector('.wb-item[data-id="petriDish"]');
+      if(dish){dish.style.transition='transform 1s ease';dish.style.transform='rotate(180deg)';}
+    },undoPrep:function(){var dish=wb.querySelector('.wb-item[data-id="petriDish"]');if(dish)dish.style.transform='';}},
+    {tip:'🧫 设置空白对照：同时准备一个未接种的平板放入培养箱。空白对照是实验的"阴性对照"，用于检验培养基灭菌是否彻底。如果空白对照长出菌落，说明灭菌失败或有操作污染，整个实验结果不可信',action:function(){}},
+    {tip:'🌡️ 将所有平板（接种平板+空白对照）放入28℃恒温培养箱中，倒置培养。酵母菌的最适生长温度为28℃左右，在此温度下细胞分裂速度最快，约24~48小时可形成肉眼可见的菌落',action:function(){
+      var dish=wb.querySelector('.wb-item[data-id="petriDish"]');
+      if(dish){dish.style.transition='all 1.5s ease';dish.style.left='36%';dish.style.top='26%';dish.style.transform='rotate(180deg) scale(0.5)';dish.style.zIndex='20';}
+      var incu=wb.querySelector('.wb-item[data-id="incubator"]');
+      if(incu){incu.style.boxShadow='0 0 24px rgba(8,145,178,0.45)';incu.style.transform='scale(1.04)';}
+    },undoPrep:function(){resetItemStyle(wb,'petriDish');resetItemStyle(wb,'incubator');}},
+    {tip:'⏰ 倒置培养24~48小时（约1~2天）。在此期间：① 不要打开培养箱门，防止温度波动和杂菌进入；② 分散在培养基表面的单个酵母菌不断分裂繁殖，逐渐形成肉眼可见的菌落；③ 一个单菌落理论上由一个酵母菌繁殖而来，是纯培养物',action:function(){showToast('⏰ 28°C 倒置培养 24~48h','info');}},
+    {tip:'✅ 培养完成！如果划线操作正确，接种平板上应能看到沿划线方向分布的、由密到疏的菌落。在最后一次划线区域（第⑤区），应有分散的、形态一致的单菌落——这些就是酵母菌的纯培养物',action:function(){
+      var incu=wb.querySelector('.wb-item[data-id="incubator"]');
+      if(incu){incu.style.boxShadow='';incu.style.transform='';}
+      showToast('✅ 培养完成！','success');
+    }},
+  ];
+}
+
+// === STEP 4: Streak demo (auto-play, slower) ===
+function playStreakDemo(wb){
+  showKnowledge('➰ 平板划线法原理：通过接种环在培养基表面连续划线，将菌种逐步稀释分散，最终在最后划线区域获得由单个酵母菌繁殖形成的单菌落（纯培养物）');
+  var canvas=document.getElementById('streakCanvas');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  streakLines=[];
+  var zones=[
+    {x1:20,y1:25,y2:95,lines:5,tip:'第①区：第一次灼烧接种环后蘸取菌液，划3~5条平行线。此区域菌液浓度最高，培养后菌落连成一片'},
+    {x1:34,y1:18,y2:95,lines:5,tip:'第②区：第二次灼烧→冷却→从第①区划线末端开始划线。菌浓度开始降低，可见部分单菌落'},
+    {x1:48,y1:14,y2:92,lines:4,tip:'第③区：第三次灼烧→冷却→从第②区末端开始。菌数进一步减少，单菌落增多'},
+    {x1:62,y1:14,y2:88,lines:4,tip:'第④区：第四次灼烧→冷却→从第③区末端开始。此时菌数已大幅减少，多为单菌落'},
+    {x1:75,y1:18,y2:80,lines:3,tip:'第⑤区：第五次灼烧→冷却→从第④区末端开始。⚠ 关键：此区域不要与第①区相连！若相连则菌数不降反增，无法获得纯培养'},
+  ];
+  var delay=0,tipDelay=0;
+  zones.forEach(function(z,zi){
+    setTimeout(function(){showKnowledge(z.tip);},tipDelay);tipDelay+=3500;
+    for(var i=0;i<z.lines;i++){
+      setTimeout((function(zx,zy1,zy2){return function(){
+        ctx.beginPath();ctx.moveTo(zx+i*3,zy1);ctx.lineTo(zx+i*3,zy2);
+        ctx.strokeStyle='rgba(70,100,140,0.5)';ctx.lineWidth=2.2;ctx.lineCap='round';ctx.stroke();
+        streakLines.push({x1:zx+i*3,y1:zy1,x2:zx+i*3,y2:zy2});
+      };})(z.x1,z.y1,z.y2),delay);
+      delay+=180;
+    }
+  });
+  setTimeout(function(){
+    streakDone=true;
+    showKnowledge('✅ 划线完成！总结：每次灼烧接种环使残留菌数逐级递减，到第⑤区时菌液已被稀释至极低浓度，单个酵母菌细胞被分散在培养基表面，各自繁殖形成单菌落——即纯培养物');
+    showToast('✅ 平板划线演示完成','success');
+  },delay+400);
+}
+
+// === Helper functions ===
+function glowItem(wb,id){
+  var el=wb.querySelector('.wb-item[data-id="'+id+'"]');
+  if(el){el.style.transform='scale(1.15)';el.style.filter='drop-shadow(0 0 14px rgba(8,145,178,0.7))';}
+}
+function resetItemStyle(wb,id){
+  var el=wb.querySelector('.wb-item[data-id="'+id+'"]');
+  if(el){el.style.transform='';el.style.filter='';el.style.transition='';el.style.zIndex='';}
+}
+
+// ===== STREAK CANVAS =====
+function initStreakCanvas(){
+  const canvas=document.getElementById('streakCanvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  redrawAllStreaks(ctx);
+  let drawing=false,lastX,lastY;
+
+  function getPos(e){
+    const rect=canvas.getBoundingClientRect();
+    const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
+    const cx=e.touches?e.touches[0].clientX:e.clientX;
+    const cy=e.touches?e.touches[0].clientY:e.clientY;
+    return {x:(cx-rect.left)*sx,y:(cy-rect.top)*sy};
+  }
+  function start(e){e.preventDefault();drawing=true;const p=getPos(e);lastX=p.x;lastY=p.y;}
+  function move(e){
+    if(!drawing)return;e.preventDefault();
+    const p=getPos(e);
+    streakLines.push({x1:lastX,y1:lastY,x2:p.x,y2:p.y});
+    ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle='rgba(70,100,140,0.5)';ctx.lineWidth=2.2;ctx.lineCap='round';ctx.stroke();
+    lastX=p.x;lastY=p.y;
+  }
+  function end(){drawing=false;}
+  canvas.addEventListener('mousedown',start);
+  canvas.addEventListener('mousemove',move);
+  canvas.addEventListener('mouseup',end);
+  canvas.addEventListener('mouseleave',end);
+  canvas.addEventListener('touchstart',start,{passive:false});
+  canvas.addEventListener('touchmove',move,{passive:false});
+  canvas.addEventListener('touchend',end);
+}
+
+function redrawAllStreaks(ctx){
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  streakLines.forEach(l=>{
+    ctx.beginPath();ctx.moveTo(l.x1,l.y1);ctx.lineTo(l.x2,l.y2);
+    ctx.strokeStyle='rgba(70,100,140,0.5)';ctx.lineWidth=2.2;ctx.lineCap='round';ctx.stroke();
+  });
+}
+
+function clearStreaks(){streakLines=[];const c=document.getElementById('streakCanvas');if(c){const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);}showToast('划线已清除','info');}
+
+function finishStreaking(){
+  if(streakLines.length<3){showToast('请先在培养皿上完成划线！','error');return;}
+  streakDone=true;
+  showToast('🎉 平板划线接种完成！','success');
+}
+
+// ===== NAVIGATION =====
+function prevStep(){
+  if(currentStep>0){cleanupAnim();currentStep--;selectedEquipment=null;wbItems=[];usedEquipment=new Set();streakLines=[];streakDone=false;renderStep();}
+}
+
+function nextStep(){
+  const step=steps[currentStep];
+  if(step.canvas&&!streakDone){showToast('请先在培养皿上完成划线！','error');return;}
+  if(step.required.length>0){
+    const missing=step.required.filter(id=>!usedEquipment.has(id));
+    if(missing.length>0){
+      const names=missing.map(id=>allEquipment.find(e=>e.id===id)?.name).join('、');
+      showToast(`还有器材未放置：${names}`,'error');return;
+    }
+  }
+  completedSteps.add(currentStep);
+  cleanupAnim();
+  if(currentStep<steps.length-1){
+    currentStep++;selectedEquipment=null;streakLines=[];streakDone=false;
+    wbItems=[];usedEquipment=new Set();
+    renderStep();
+    showToast(`✅ 已完成：${step.title}`,'success');
+  }else{
+    showCompletionModal();
+  }
+}
+
+function cleanupAnim(){
+  if(animState){
+    if(animState.timer)clearTimeout(animState.timer);
+    animState=null;
+  }
+  var nav=document.getElementById('animNav');if(nav)nav.remove();
+  var ov=document.getElementById('demoOverlay');if(ov)ov.remove();
+  var kb=document.getElementById('knowledgeBox');if(kb)kb.style.display='none';
+}
+
+function showCompletionModal(){
+  document.getElementById('modalContainer').innerHTML=`
+    <div class="modal-overlay" onclick="this.remove()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <h2>🏆 实验完成！</h2>
+        <p>🎉 恭喜你完成了<strong>酵母菌的纯培养</strong>实验！</p>
+        <p style="font-size:0.82rem;color:var(--textL);line-height:1.8;">
+          你已掌握：<br>
+          ✅ 培养基的配制与灭菌<br>
+          ✅ 倒平板操作<br>
+          ✅ 平板划线法分离纯化<br>
+          ✅ 恒温培养与结果观察
+        </p>
+        <p style="font-size:0.75rem;color:var(--textL);">
+          📝 获得的单菌落理论上由<strong>单个酵母菌</strong>繁殖而来，是纯培养物。
+        </p>
+        <button class="btn btn-primary" onclick="resetAll();document.getElementById('modalContainer').innerHTML='';">
+          🔄 重新实验
+        </button>
+      </div>
+    </div>`;
+}
+
+function resetAll(){
+  cleanupAnim();
+  currentStep=0;completedSteps=new Set();usedEquipment=new Set();
+  selectedEquipment=null;wbItems=[];dragging=null;
+  streakLines=[];streakDone=false;
+  renderStep();showToast('实验已重置','info');
+}
+
+// ===== TOAST =====
+function showToast(msg,type){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;
+  c.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>
