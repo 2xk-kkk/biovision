@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3章 生态系统及其稳定性 - 知识清单</title>
+<style>
+  :root { --primary: #0d47a1; --primary-light: #e3f2fd; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #0a2a6e, #0d47a1); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e3f2fd; border-color: #90caf9; }
+  .checklist li.checked .check-box { background: #0d47a1; border-color: #0d47a1; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #90caf9; color: #4a5a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e3f2fd; color: #0d47a1; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .tag-super { background: #ffcdd2; color: #b71c1c; font-weight: 700; border: 1px solid #ef5350; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #90caf9; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .focus-box { background: #e3f2fd; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#42a5f5); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(13,71,161,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(13,71,161,0.1); color: #0d47a1; font-weight: 700; border-left-color: #42a5f5; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修2<br>生物与环境</div>
+      <a href="4.1.html"><span class="ch-num">第1章</span>种群及其动态</a>
+      <a href="4.2.html"><span class="ch-num">第2章</span>群落及其演替</a>
+      <a href="4.3.html" class="active"><span class="ch-num">第3章</span>生态系统及稳定性</a>
+      <a href="4.4.html"><span class="ch-num">第4章</span>人与环境</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link active">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第3章 生态系统及其稳定性 ⭐ 核心章节</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修2 · 生物与环境 · 高考高频考点</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 30 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生态系统</div><div class="concept-back">一定空间内，由生物群落与非生物环境相互作用而形成的统一整体。最大的是生物圈。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生产者</div><div class="concept-back">自养生物，主要是绿色植物。光合作用将太阳能固定在有机物中。生态系统的基石。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">分解者</div><div class="concept-back">能将动植物遗体和粪便中的有机物分解成无机物，主要是细菌和真菌。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">食物链/食物网</div><div class="concept-back">生态系统的营养结构。是物质循环和能量流动的渠道。食物网越复杂，抵抗干扰能力越强。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">能量流动</div><div class="concept-back">生态系统中能量的输入、传递、转化和散失过程。单向流动、逐级递减（10%-20%）。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">物质循环</div><div class="concept-back">组成生物体的元素在生物群落与非生物环境之间的循环往复。具有全球性。碳在群落与无机环境间以CO₂形式循环。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">碳循环</div><div class="concept-back">碳在生物群落与无机环境间以CO₂形式循环。进入群落途径：光合作用、化能合成。返回途径：呼吸、分解、燃烧。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">抵抗力稳定性</div><div class="concept-back">生态系统抵抗外界干扰并使自身结构和功能保持原状的能力。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">恢复力稳定性</div><div class="concept-back">生态系统受到外界干扰破坏后恢复到原状的能力。一般与抵抗力稳定性呈负相关。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">负反馈调节</div><div class="concept-back">生态系统自我调节能力的基础。如捕食者与猎物的数量相互制约。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 生态系统有哪些主要组成成分？如何构成生态系统？<br>
+  ● 生态系统具有怎样的营养结构？<br>
+  ● 食物网的复杂性有什么生态意义？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 生态系统的结构</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">生态系统结构模型 - 交互演示</h4>
+      <canvas id="ecoCanvas" width="750" height="340"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="cycleEcoComp()">高亮不同组分</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>组成成分</th><th>营养方式</th><th>作用</th><th>地位</th></tr>
+      <tr><td><strong>非生物的物质和能量</strong></td><td>—</td><td>光、热、水、空气、无机盐等</td><td>基础</td></tr>
+      <tr><td><strong>生产者</strong></td><td>自养</td><td>光合作用固定太阳能→有机物</td><td><strong>基石</strong></td></tr>
+      <tr><td><strong>消费者</strong></td><td>异养</td><td>加速物质循环；帮助传粉和种子传播</td><td>非必需</td></tr>
+      <tr><td><strong>分解者</strong></td><td>异养</td><td>分解有机物→无机物</td><td><strong>关键</strong></td></tr>
+    </table>
+
+    <div class="danger-box">
+      <strong>⚠️ 高频易错——生产者与分解者判断：</strong><br>
+      ① 生产者=自养生物：绿色植物、光合细菌、化能合成细菌（硝化细菌等）<br>
+      ② 分解者=营腐生生活的细菌和真菌，也包括某些原生动物<br>
+      ③ 蚯蚓、蜣螂以动植物残体为食，属于<strong>分解者</strong>（不是消费者！）<br>
+      ④ 寄生细菌属于<strong>消费者</strong>（不是分解者！）
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label">生态系统四大组分：非生物环境+<strong>生产者</strong>+消费者+<strong>分解者</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">生产者是生态系统的<strong>基石</strong>（自养生物）</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">食物链/食物网是营养结构，是能量流动和物质循环的<strong>渠道</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">蚯蚓是分解者；寄生生物是消费者（不是分解者！）</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2-3节 能量流动+物质循环 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2-3节 能量流动 & 物质循环 ⭐ 大题高频</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">能量流动金字塔 - 交互演示</h4>
+      <canvas id="energyCanvas" width="750" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleEnergyFlow()">▶ 演示能量流动</button>
+        <button class="btn btn-outline" onclick="resetEnergy()">重置</button>
+      </div>
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">🔴 能量流动核心公式——考试必背！</div>
+      <p>① <strong>摄入量 = 同化量 + 粪便量</strong>（粪便属于上一营养级的能量）</p>
+      <p>② <strong>同化量 = 呼吸消耗 + 用于生长、发育和繁殖</strong></p>
+      <p>③ <strong>生长、发育和繁殖 = 流入下一营养级 + 分解者利用 + 未被利用</strong></p>
+      <p>④ 能量传递效率 = 上一营养级同化量 ÷ 本营养级同化量 = <strong>10%~20%</strong></p>
+    </div>
+
+    <div class="highlight-box">
+      <strong>能量流动特点：</strong><br>
+      ① <strong>单向流动</strong>——能量只能从第一营养级流向最高营养级，不可逆<br>
+      ② <strong>逐级递减</strong>——每一营养级传递到下一营养级的能量为10%~20%<br>
+      ③ <strong>生态金字塔</strong>：能量金字塔（一定上窄下宽）、生物量金字塔（通常上窄下宽）、数量金字塔（可倒置）<br>
+      ④ 流经生态系统的总能量 = <strong>生产者固定的太阳能总量</strong>（有时+人工输入）
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">碳循环示意图 - 互动展示</h4>
+      <canvas id="carbonCanvas" width="750" height="310"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="cycleCarbon()">推演碳循环一步</button>
+        <button class="btn btn-outline" onclick="resetCarbon()">重置</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>物质循环（碳循环）要点：</strong><br>
+      ① 碳在生物群落与无机环境之间以<strong>CO₂</strong>形式循环<br>
+      ② 碳进入生物群落的途径：<strong>光合作用</strong>和<strong>化能合成作用</strong><br>
+      ③ 碳返回无机环境的途径：呼吸作用、微生物分解、<strong>化石燃料燃烧</strong><br>
+      ④ 物质循环具有<strong>全球性</strong>（生物地球化学循环）<br>
+      ⑤ <strong>生物富集</strong>：重金属、DDT等沿食物链积累，营养级越高浓度越高
+    </div>
+
+    <div class="highlight-box">
+      <strong>能量流动和物质循环的关系：</strong><br>
+      ① 物质是能量的<strong>载体</strong>，能量是物质循环的<strong>动力</strong><br>
+      ② 两者<strong>同时进行</strong>，相互依存，不可分割<br>
+      ③ 能量<strong>不能</strong>循环利用，物质<strong>可以</strong>循环利用
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>摄入量=同化量+粪便量</strong>（粪便属上一营养级）</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>同化量=呼吸消耗+生长繁殖</strong></span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>单向流动、逐级递减</strong>，传递效率<strong>10%-20%</strong></span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label">碳在群落与无机环境间以<strong>CO₂</strong>形式循环</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">能量<strong>不能</strong>循环，物质<strong>可以</strong>循环</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第4-5节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第4-5节 信息传递 & 生态系统的稳定性</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>信息类型</th><th>举例</th><th>特点</th></tr>
+      <tr><td><strong>物理信息</strong></td><td>光、声、温度、湿度、磁场等</td><td rowspan="3">信息传递往往是<strong>双向</strong>的，不依赖食物链</td></tr>
+      <tr><td><strong>化学信息</strong></td><td>生物碱、有机酸、性外激素等</td></tr>
+      <tr><td><strong>行为信息</strong></td><td>蜜蜂跳舞、求偶炫耀等</td></tr>
+    </table>
+
+    <div class="info-row">
+      <div class="info-card"><h4>信息传递的作用</h4><p>① 生命活动离不开信息传递<br>② 种群繁衍离不开信息传递<br>③ 调节<strong>种间关系</strong>，维持平衡</p></div>
+      <div class="info-card"><h4>信息传递的应用</h4><p>① 提高农畜产品产量<br>② 有害动物控制（<strong>生物防治</strong>：性引诱剂诱杀雄性→破坏性别比）</p></div>
+      <div class="info-card"><h4>抵抗力稳定性</h4><p>抵抗干扰保持原状的能力。<strong>营养结构越复杂</strong>，抵抗力稳定性越<strong>强</strong>。</p></div>
+      <div class="info-card"><h4>恢复力稳定性</h4><p>受破坏后恢复原状的能力。一般抵抗力稳定性越强，恢复力稳定性越<strong>弱</strong>（负相关）。</p></div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>生态平衡与负反馈调节：</strong><br>
+      ① 生态平衡是生态系统<strong>结构和功能</strong>相对稳定的状态<br>
+      ② <strong>负反馈调节</strong>是生态系统自我调节能力的基础（如捕食者-猎物数量相互制约）<br>
+      ③ 自我调节能力是<strong>有限的</strong>——外界干扰超出限度→稳态被破坏
+    </div>
+
+    <div class="danger-box">
+      <strong>⚠️ 高频易错：</strong><br>
+      ① 北极冻原生态系统的抵抗力稳定性和恢复力稳定性<strong>都很低</strong><br>
+      ② 提高稳定性的措施：控制干扰强度+给予<strong>物质和能量投入</strong><br>
+      ③ 信息传递方向往往<strong>双向</strong>，不依赖食物链/食物网
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">三大信息类型：物理/化学/<strong>行为</strong>信息</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">信息传递往往<strong>双向</strong>，不依赖食物链</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>负反馈调节</strong>是自我调节能力的基础</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">抵抗力稳定性 vs 恢复力稳定性（一般<strong>负相关</strong>）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 17;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx2_ch3_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx2_ch3_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ECOSYSTEM STRUCTURE
+const ecCanvas=document.getElementById('ecoCanvas'), ecctx=ecCanvas.getContext('2d');
+let ecoHl=0;
+function drawEco(){
+  const w=750,h=340;
+  ecctx.clearRect(0,0,w,h); ecctx.fillStyle='#fafbfc'; ecctx.fillRect(0,0,w,h);
+  ecctx.fillStyle='#2c3e50'; ecctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; ecctx.textAlign='center';
+  ecctx.fillText('生态系统四大组分',375,22);
+
+  const comps=[
+    {x:375,y:100,label:'生产者\n(绿色植物等)',r:35,color:'#4caf50',stroke:'#2e7d32'},
+    {x:180,y:220,label:'消费者\n(动物)',r:28,color:'#ff9800',stroke:'#e65100'},
+    {x:570,y:220,label:'分解者\n(细菌、真菌)',r:28,color:'#795548',stroke:'#4e342e'},
+    {x:375,y:280,label:'非生物的物质和能量',r:32,color:'#90caf9',stroke:'#1565c0'},
+  ];
+
+  comps.forEach((c,i)=>{
+    const alpha=(ecoHl===i||ecoHl===4)?1:0.4;
+    ecctx.globalAlpha=alpha;
+    ecctx.fillStyle=c.color; ecctx.strokeStyle=c.stroke; ecctx.lineWidth=2.5;
+    ecctx.beginPath(); ecctx.arc(c.x,c.y,c.r,0,Math.PI*2); ecctx.fill(); ecctx.stroke();
+    ecctx.fillStyle='#fff'; ecctx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif'; ecctx.textAlign='center';
+    const ls=c.label.split('\n'); ls.forEach((l,li)=>{ecctx.fillText(l,c.x,c.y-4+li*14);});
+    ecctx.globalAlpha=1;
+  });
+
+  // Arrows
+  ecctx.strokeStyle='#999'; ecctx.lineWidth=1.2;
+  ecctx.beginPath(); ecctx.moveTo(340,120); ecctx.lineTo(208,194); ecctx.stroke();
+  ecctx.beginPath(); ecctx.moveTo(410,120); ecctx.lineTo(542,194); ecctx.stroke();
+  ecctx.beginPath(); ecctx.moveTo(208,248); ecctx.lineTo(345,260); ecctx.stroke();
+  ecctx.beginPath(); ecctx.moveTo(542,248); ecctx.lineTo(405,260); ecctx.stroke();
+  ecctx.beginPath(); ecctx.moveTo(375,135); ecctx.lineTo(375,250); ecctx.stroke();
+  ecctx.fillStyle='#888'; ecctx.font='11px sans-serif'; ecctx.fillText('点击按钮高亮各组分',375,325);
+}
+function cycleEcoComp(){ecoHl=(ecoHl+1)%5;drawEco();}
+drawEco();
+
+// ENERGY FLOW
+const enCanvas=document.getElementById('energyCanvas'), enctx=enCanvas.getContext('2d');
+let enFlow=false, enId, enPhase=0;
+function drawEnergy(){
+  const w=750,h=300;
+  enctx.clearRect(0,0,w,h); enctx.fillStyle='#fafbfc'; enctx.fillRect(0,0,w,h);
+  // Pyramid
+  const levels=[{x:375,y:40,w:60,color:'#4caf50',label:'第三营养级\n(次级消费者)'},{x:375,y:95,w:140,color:'#66bb6a',label:'第二营养级\n(初级消费者)'},{x:375,y:155,w:240,color:'#81c784',label:'第一营养级\n(生产者)'}];
+  levels.forEach((l,i)=>{
+    const alpha=enFlow?Math.min((enPhase-i*20)/40,1):1;
+    enctx.globalAlpha=Math.max(alpha,0.2);
+    enctx.fillStyle=l.color; enctx.strokeStyle='#333'; enctx.lineWidth=2;
+    enctx.beginPath(); enctx.moveTo(l.x-l.w/2,l.y); enctx.lineTo(l.x+l.w/2,l.y); enctx.lineTo(l.x+l.w/2-20,l.y+50); enctx.lineTo(l.x-l.w/2+20,l.y+50); enctx.closePath(); enctx.fill(); enctx.stroke();
+    enctx.fillStyle='#fff'; enctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; enctx.textAlign='center';
+    const ls=l.label.split('\n'); ls.forEach((t,li)=>{enctx.fillText(t,l.x,l.y+25+li*12);});
+    enctx.globalAlpha=1;
+  });
+  // Sun
+  enctx.fillStyle='#fff9c4'; enctx.strokeStyle='#f9a825'; enctx.lineWidth=2;
+  enctx.beginPath(); enctx.arc(375,290,18,0,Math.PI*2); enctx.fill(); enctx.stroke();
+  enctx.fillStyle='#e65100'; enctx.font='bold 11px sans-serif'; enctx.textAlign='center'; enctx.fillText('太阳能',375,310);
+  if(enFlow){
+    enctx.strokeStyle='#e65100'; enctx.lineWidth=2.5;
+    enctx.beginPath(); enctx.moveTo(375,270); enctx.lineTo(375,215); enctx.stroke();
+    enctx.fillStyle='#e65100'; enctx.font='bold 12px sans-serif'; enctx.fillText('能量流动方向 ↑',150,150);
+    enctx.fillText('每级只有10%-20%传至下一级',150,170);
+    enctx.fillText('单向流动、逐级递减',150,190);
+  }
+}
+function animateEnergy(){enPhase++;drawEnergy();if(enPhase<80)enId=requestAnimationFrame(animateEnergy);}
+function toggleEnergyFlow(){enPhase=0;enFlow=true;animateEnergy();}
+function resetEnergy(){cancelAnimationFrame(enId);enFlow=false;enPhase=0;drawEnergy();}
+drawEnergy();
+
+// CARBON CYCLE
+const caCanvas=document.getElementById('carbonCanvas'), cactx=caCanvas.getContext('2d');
+let carbStep=0;
+function drawCarbon(){
+  const w=750,h=310;
+  cactx.clearRect(0,0,w,h); cactx.fillStyle='#fafbfc'; cactx.fillRect(0,0,w,h);
+  cactx.fillStyle='#2c3e50'; cactx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; cactx.textAlign='center';
+  cactx.fillText('碳循环示意图',375,20);
+
+  // Atmosphere CO2
+  cactx.fillStyle=activeC(0)?'#bbdefb':'rgba(187,222,251,0.3)'; cactx.strokeStyle='#1565c0'; cactx.lineWidth=2;
+  cactx.beginPath(); cactx.ellipse(375,50,80,25,0,0,Math.PI*2); cactx.fill(); cactx.stroke();
+  cactx.fillStyle='#0d47a1'; cactx.font='bold 12px sans-serif'; cactx.textAlign='center'; cactx.fillText('大气中的CO₂',375,54);
+
+  // Plants
+  cactx.fillStyle=activeC(1)?'#c8e6c9':'rgba(200,230,201,0.3)'; cactx.strokeStyle='#2e7d32'; cactx.lineWidth=2;
+  cactx.beginPath(); cactx.arc(180,180,40,0,Math.PI*2); cactx.fill(); cactx.stroke();
+  cactx.fillStyle='#1b5e20'; cactx.font='bold 12px sans-serif'; cactx.fillText('生产者',180,185);
+
+  // Animals
+  cactx.fillStyle=activeC(2)?'#ffe0b2':'rgba(255,224,178,0.3)'; cactx.strokeStyle='#e65100'; cactx.lineWidth=2;
+  cactx.beginPath(); cactx.arc(375,180,35,0,Math.PI*2); cactx.fill(); cactx.stroke();
+  cactx.fillStyle='#bf360c'; cactx.font='bold 12px'; cactx.fillText('消费者',375,185);
+
+  // Decomposers
+  cactx.fillStyle=activeC(3)?'#d7ccc8':'rgba(215,204,200,0.3)'; cactx.strokeStyle='#4e342e'; cactx.lineWidth=2;
+  cactx.beginPath(); cactx.arc(570,180,35,0,Math.PI*2); cactx.fill(); cactx.stroke();
+  cactx.fillStyle='#3e2723'; cactx.font='bold 12px'; cactx.fillText('分解者',570,185);
+
+  // Arrows with labels
+  if(carbStep>=1){drawCarbonArrow(375,75,190,140,'光合作用\n固碳','#4caf50');}
+  if(carbStep>=2){drawCarbonArrow(350,145,380,90,'呼吸作用\n释放CO₂','#c62828');}
+  if(carbStep>=3){drawCarbonArrow(550,150,420,90,'分解作用\n释放CO₂','#c62828');}
+  if(carbStep>=4){drawCarbonArrow(560,200,560,260,'化石燃料燃烧','#795548');cactx.fillStyle='#795548';cactx.beginPath();cactx.arc(560,275,20,0,Math.PI*2);cactx.fill();cactx.fillStyle='#fff';cactx.font='bold 10px';cactx.fillText('化石\n燃料',560,278);drawCarbonArrow(560,253,375,75,'CO₂↑','#795548');}
+
+  cactx.fillStyle='#888'; cactx.font='11px sans-serif'; cactx.textAlign='center';
+  cactx.fillText('碳循环具有全球性｜物质可循环、能量不可循环',375,302);
+}
+function activeC(s){return carbStep>s;}
+function drawCarbonArrow(x1,y1,x2,y2,label,color){
+  cactx.strokeStyle=color; cactx.lineWidth=2; cactx.beginPath(); cactx.moveTo(x1,y1); cactx.lineTo(x2,y2); cactx.stroke();
+  const midX=(x1+x2)/2,midY=(y1+y2)/2;
+  cactx.fillStyle=color; cactx.font='10px sans-serif'; cactx.textAlign='center';
+  const ls=label.split('\n'); ls.forEach((l,i)=>{cactx.fillText(l,midX,midY-8+i*12);});
+}
+function cycleCarbon(){carbStep=Math.min(carbStep+1,4);drawCarbon();}
+function resetCarbon(){carbStep=0;drawCarbon();}
+drawCarbon();
+</script>
+</body>
+</html>

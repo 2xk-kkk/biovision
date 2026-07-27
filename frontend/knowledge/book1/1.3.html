@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3章 细胞的基本结构 - 知识清单</title>
+<style>
+  :root { --primary: #6a1b9a; --primary-light: #f3e5f5; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #4a148c, #6a1b9a); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #faf5fc; border-color: #e1bee7; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ce93d8; color: #6a5a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #f3e5f5; color: #6a1b9a; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #b39ddb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #f3e5f5; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #ab47bc); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 640px) { .info-row { grid-template-columns: 1fr; } .header h1 { font-size: 1.4em; } }
+
+      /* ===== FLOATING SIDEBAR ===== */
+  .sidebar {
+    position: fixed;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 175px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    padding: 16px 0;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .sidebar .nav-title {
+    color: #37474f;
+    font-size: 0.9em;
+    font-weight: 700;
+    padding: 0 14px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #78909c;
+    text-decoration: none;
+    padding: 8px 14px;
+    font-size: 0.82em;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+  }
+  .sidebar a:hover {
+    background: rgba(33,150,243,0.06);
+    color: #37474f;
+  }
+  .sidebar a.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+  .sidebar .ch-num {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 18px;
+    text-align: center;
+  }
+  .main-wrap {
+    /* wraps container - no layout changes needed */
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: static;
+      transform: none;
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 8px;
+      gap: 4px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-title {
+      width: 100%;
+      padding: 4px 0;
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .sidebar a {
+      padding: 5px 8px;
+      font-size: 0.75em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .book-title { width: 100%; padding: 4px 0; }
+    .sidebar a.book-link {
+      padding: 5px 8px;
+      font-size: 0.7em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .nav-divider { width: 100%; margin: 4px 8px; }
+  }
+
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+            <nav class="sidebar">
+    <div class="nav-title">生物学 必修1<br>分子与细胞</div>
+      <a href="1.1.html"><span class="ch-num">第1章</span>走近细胞</a>
+      <a href="1.2.html"><span class="ch-num">第2章</span>组成细胞的分子</a>
+      <a href="1.3.html" class="active"><span class="ch-num">第3章</span>细胞的基本结构</a>
+      <a href="1.4.html"><span class="ch-num">第4章</span>物质输入和输出</a>
+      <a href="1.5.html"><span class="ch-num">第5章</span>能量供应和利用</a>
+      <a href="1.6.html"><span class="ch-num">第6章</span>细胞的生命历程</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link active">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+  <div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第3章 细胞的基本结构</h1>
+  <div class="subtitle" style="margin-top:6px;opacity:0.9;">人教版 · 生物学必修1 · 分子与细胞</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 38 个知识点</div>
+
+<!-- 第1节 细胞膜 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 细胞膜有哪些主要功能？<br>
+      ● 流动镶嵌模型的基本内容是什么？<br>
+      ● 通过对细胞膜结构的探索过程的分析，你对科学的过程和方法有哪些领悟？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 细胞膜的结构和功能</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>细胞膜的功能：</strong><br>
+      ① 将细胞与<strong>外界环境分隔开</strong>（保障内部环境相对稳定）<br>
+      ② 控制物质<strong>进出细胞</strong>（选择透过性）<br>
+      ③ 进行细胞间的<strong>信息交流</strong>
+    </div>
+
+    <!-- 流动镶嵌模型动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">流动镶嵌模型 - 交互演示</h4>
+      <canvas id="membraneCanvas" width="750" height="200"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleFlow()">▶ 演示流动性</button>
+        <button class="btn btn-outline" onclick="resetMembrane()">重置</button>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>磷脂双分子层</h4>
+        <p>细胞膜的<strong>基本支架</strong>。<br>头部<strong>亲水</strong>（向外），尾部<strong>疏水</strong>（向内）</p>
+      </div>
+      <div class="info-card">
+        <h4>蛋白质</h4>
+        <p><strong>镶嵌</strong>或<strong>贯穿</strong>在磷脂双分子层中<br>功能：转运、识别、催化等</p>
+      </div>
+      <div class="info-card">
+        <h4>糖类（糖被/糖萼）</h4>
+        <p>与蛋白质或脂质结合形成<strong>糖蛋白</strong>或<strong>糖脂</strong><br>功能：识别、保护、润滑</p>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label">细胞膜的三大功能</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>流动镶嵌模型</strong>的基本内容</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">磷脂双分子层是膜的<strong>基本支架</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">细胞膜具有<strong>流动性</strong>（结构特点）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">细胞膜具有<strong>选择透过性</strong>（功能特点）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">细胞间信息交流的方式（直接接触、化学信号、通道连接）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 细胞器 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 细胞中有哪些主要的细胞器？各有什么功能？<br>
+      ● 细胞器之间是怎样分工合作的？<br>
+      ● 什么是生物膜系统？它具有什么功能？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 细胞器之间的分工合作</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <!-- 交互式细胞器探索 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🏗️ 细胞器探索 - 点击细胞器查看详情</h4>
+      <canvas id="organelleCanvas" width="800" height="550" style="cursor:pointer;"></canvas>
+      <div id="organelleInfo" style="min-height:40px;margin-top:8px;font-size:0.9em;color:var(--text-light);"></div>
+    </div>
+
+    <table>
+      <tr><th>细胞器</th><th>结构特点</th><th>功能</th><th>分布</th></tr>
+      <tr><td><strong>线粒体</strong></td><td>双层膜，有嵴，含DNA</td><td>有氧呼吸的主要场所（"动力车间"）</td><td>动植物</td></tr>
+      <tr><td><strong>叶绿体</strong></td><td>双层膜，有基粒，含DNA和色素</td><td>光合作用的场所（"养料制造车间"）</td><td>植物</td></tr>
+      <tr><td><strong>内质网</strong></td><td>单层膜，网状</td><td>蛋白质加工、脂质合成</td><td>动植物</td></tr>
+      <tr><td><strong>高尔基体</strong></td><td>单层膜，扁平囊</td><td>加工、分类、包装蛋白质（"发送站"）</td><td>动植物</td></tr>
+      <tr><td><strong>核糖体</strong></td><td><strong>无膜</strong></td><td>蛋白质合成的场所</td><td>所有细胞</td></tr>
+      <tr><td><strong>溶酶体</strong></td><td>单层膜</td><td>含水解酶、"消化车间"</td><td>动物</td></tr>
+      <tr><td><strong>液泡</strong></td><td>单层膜</td><td>调节渗透压、储存物质</td><td>植物</td></tr>
+      <tr><td><strong>中心体</strong></td><td><strong>无膜</strong></td><td>与有丝分裂有关</td><td>动物、低等植物</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>分泌蛋白的合成与运输路径：</strong><br>
+      核糖体 → 内质网（加工）→ 囊泡 → 高尔基体（进一步加工）→ 囊泡 → 细胞膜（胞吐）<br>
+      *此过程需要<strong>线粒体</strong>提供能量，体现了细胞器之间的<strong>协调配合</strong>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label">双层膜的细胞器：<strong>线粒体、叶绿体</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">无膜的细胞器：<strong>核糖体、中心体</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>线粒体</strong>：有氧呼吸主要场所（内膜向内折叠成嵴）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>叶绿体</strong>：光合作用场所（类囊体堆叠成基粒）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>核糖体</strong>：蛋白质合成场所，rRNA+蛋白质组成</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">分泌蛋白的合成与运输路径（核糖体→内质网→高尔基体→细胞膜）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">生物膜系统：细胞膜+细胞器膜+核膜（结构+功能联系）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">差速离心法分离细胞器</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 细胞核 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 细胞核的结构是怎样的？各部分有什么功能？<br>
+      ● 细胞核有什么功能？<br>
+      ● 为什么说细胞核是细胞的"控制中心"？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 细胞核的结构和功能</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">细胞核结构 - 交互导图</h4>
+      <canvas id="nucleusCanvas" width="750" height="300"></canvas>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>核膜</h4>
+        <p><strong>双层膜</strong>，把核内物质与细胞质分开<br>有<strong>核孔</strong>——大分子物质进出通道（mRNA、蛋白质等）</p>
+      </div>
+      <div class="info-card">
+        <h4>核仁</h4>
+        <p>与<strong>核糖体的形成</strong>及某种RNA的合成有关<br>蛋白质合成旺盛的细胞，核仁较大</p>
+      </div>
+      <div class="info-card">
+        <h4>染色质（染色体）</h4>
+        <p>由<strong>DNA + 蛋白质</strong>组成<br>染色质与染色体是<strong>同一种物质</strong>在不同时期的<strong>两种存在状态</strong></p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>细胞核的功能：</strong>是<strong>遗传信息库</strong>，是细胞<strong>代谢和遗传的控制中心</strong>。<br>
+      <strong>经典实验：</strong>①美西螈核移植实验 ②伞藻嫁接与核移植实验 ③蝾螈受精卵横缢实验
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">细胞核是<strong>遗传信息库</strong>，是代谢和遗传的<strong>控制中心</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">核膜是<strong>双层膜</strong>，核孔是大分子进出通道</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>染色质</strong>（间期）和<strong>染色体</strong>（分裂期）是同一物质的不同形态</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">染色体的主要成分：<strong>DNA + 蛋白质</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">核仁与<strong>核糖体的形成</strong>有关</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">伞藻实验说明：<strong>细胞核</strong>控制细胞的形态结构</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+// CHECKLIST
+function updateProgress() {
+  const total = 28;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_ch3_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach((li,i)=>{
+  li.dataset.id=i;
+  li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});
+});
+try{const s=JSON.parse(localStorage.getItem('bio_ch3_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== MEMBRANE FLOW ANIMATION =====
+const mCanvas=document.getElementById('membraneCanvas'), mctx=mCanvas.getContext('2d');
+let mFlow=false, mParticles=[], mAnimId;
+
+function initMParticles(){
+  mParticles=[];
+  for(let i=0;i<30;i++){
+    mParticles.push({x:50+Math.random()*650,y:85+Math.random()*30,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*1.5});
+  }
+}
+initMParticles();
+
+function drawMembrane(){
+  const w=750,h=200;
+  mctx.clearRect(0,0,w,h); mctx.fillStyle='#fafbfc'; mctx.fillRect(0,0,w,h);
+
+  // Heads (outer layer)
+  for(let i=0;i<14;i++){
+    const x=40+i*50, y=70;
+    mctx.fillStyle='#ff9800'; mctx.beginPath(); mctx.arc(x,y-8,8,0,Math.PI*2); mctx.fill();
+    mctx.fillStyle='#1565c0'; mctx.beginPath(); mctx.arc(x,y+6,8,0,Math.PI*2); mctx.fill();
+    // Tail
+    mctx.strokeStyle='#666'; mctx.lineWidth=2;
+    mctx.beginPath(); mctx.moveTo(x,y-1); mctx.lineTo(x,y+1); mctx.stroke();
+  }
+  // Heads (inner layer)
+  for(let i=0;i<14;i++){
+    const x=40+i*50, y=110;
+    mctx.fillStyle='#1565c0'; mctx.beginPath(); mctx.arc(x,y-6,8,0,Math.PI*2); mctx.fill();
+    mctx.fillStyle='#ff9800'; mctx.beginPath(); mctx.arc(x,y+8,8,0,Math.PI*2); mctx.fill();
+    mctx.strokeStyle='#666'; mctx.lineWidth=2;
+    mctx.beginPath(); mctx.moveTo(x,y-1); mctx.lineTo(x,y+1); mctx.stroke();
+  }
+
+  // Proteins
+  mctx.fillStyle='#7b1fa2';
+  roundRectM(mctx,180,62,30,55,5); mctx.fill();
+  mctx.fillStyle='#fff'; mctx.font='10px sans-serif'; mctx.textAlign='center'; mctx.fillText('载体','蛋白',195,100);
+
+  mctx.fillStyle='#00897b';
+  roundRectM(mctx,420,60,28,58,5); mctx.fill();
+  mctx.fillStyle='#fff'; mctx.fillText('通道','蛋白',434,95);
+
+  mctx.fillStyle='#d32f2f';
+  roundRectM(mctx,580,65,22,48,5); mctx.fill();
+  mctx.fillStyle='#fff'; mctx.fillText('糖','蛋白',591,95);
+
+  // Labels
+  mctx.fillStyle='#2c3e50'; mctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  mctx.fillText('细胞外（亲水头部向外）', 375, 28);
+  mctx.fillText('磷脂双分子层（基本支架）', 375, 95);
+  mctx.fillText('细胞内（亲水头部向外）', 375, 175);
+
+  // Flow particles
+  if(mFlow){
+    mParticles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<20||p.x>730)p.vx*=-1;
+      if(p.y<70||p.y>115)p.vy*=-1;
+      mctx.fillStyle='rgba(255,152,0,0.4)'; mctx.beginPath(); mctx.arc(p.x,p.y,3,0,Math.PI*2); mctx.fill();
+    });
+  }
+
+  // Annotations
+  mctx.strokeStyle='#666'; mctx.lineWidth=0.8;
+  mctx.setLineDash([3,3]);
+  mctx.beginPath(); mctx.moveTo(195,120); mctx.lineTo(195,160);
+  mctx.moveTo(434,122); mctx.lineTo(434,160);
+  mctx.moveTo(591,116); mctx.lineTo(591,160);
+  mctx.stroke(); mctx.setLineDash([]);
+  mctx.fillStyle='#444'; mctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+  mctx.fillText('贯穿型蛋白质',195,174);
+  mctx.fillText('通道蛋白',434,174);
+  mctx.fillText('糖蛋白（识别）',591,174);
+}
+
+function roundRectM(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+
+function animateMembrane(){
+  drawMembrane();
+  if(mFlow) mAnimId=requestAnimationFrame(animateMembrane);
+}
+function toggleFlow(){mFlow=!mFlow; if(mFlow) animateMembrane(); else {cancelAnimationFrame(mAnimId); drawMembrane();}}
+function resetMembrane(){cancelAnimationFrame(mAnimId);mFlow=false; initMParticles(); drawMembrane();}
+drawMembrane();
+
+// ===== TWO-CELL COMPARISON CANVAS =====
+const oCanvas=document.getElementById('organelleCanvas'), octx=oCanvas.getContext('2d');
+
+// Animal cell organelles (left cell, bigger and more spread out)
+const animalOrganelles=[
+  {name:'细胞核',    cx:200,cy:165,r:36,color:'#fce4ec',stroke:'#c62828',info:'细胞核：遗传信息库，代谢和遗传的控制中心。双层核膜，有核孔。动植物都有。'},
+  {name:'线粒体',   cx:120,cy:120,rx:26,ry:13,color:'#fff3e0',stroke:'#e65100',info:'线粒体：有氧呼吸主要场所，"动力车间"。双层膜，内膜向内折叠成嵴，含DNA。动植物都有。'},
+  {name:'线粒体2',  cx:275,cy:115,rx:24,ry:12,color:'#fff3e0',stroke:'#e65100',info:'线粒体：有氧呼吸主要场所。动植物都有。'},
+  {name:'内质网',   cx:130,cy:220,color:'#ede7f6',stroke:'#7b1fa2',info:'内质网：蛋白质加工和脂质合成的场所。粗面内质网（附着核糖体）+滑面内质网。动植物都有。'},
+  {name:'高尔基体', cx:270,cy:225,color:'#e0f2f1',stroke:'#00695c',info:'高尔基体：蛋白质的加工、分类和包装，"发送站"。动植物都有。'},
+  {name:'溶酶体',   cx:110,cy:260,r:13,color:'#f3e5f5',stroke:'#7b1fa2',info:'溶酶体："消化车间"，含多种水解酶。分解衰老损伤的细胞器。主要存在于动物细胞。'},
+  {name:'中心体',   cx:170,cy:290,color:'#eeeeee',stroke:'#666',info:'中心体：与有丝分裂有关（形成纺锤体）。由两个垂直排列的中心粒组成。动物和低等植物有，高等植物没有。★★★'},
+  {name:'核糖体',   cx:240,cy:270,r:3.5,color:'#555',stroke:'#333',info:'核糖体：蛋白质合成的场所。无膜结构，由rRNA和蛋白质组成。所有细胞都有。'},
+];
+
+// Plant cell organelles (right cell, bigger and more spread out)
+const plantOrganelles=[
+  {name:'细胞核',    cx:600,cy:145,r:32,color:'#fce4ec',stroke:'#c62828',info:'细胞核：遗传信息库，代谢和遗传的控制中心。动植物都有。'},
+  {name:'线粒体',   cx:530,cy:105,rx:20,ry:10,color:'#fff3e0',stroke:'#e65100',info:'线粒体：有氧呼吸主要场所。动植物都有。'},
+  {name:'叶绿体',   cx:660,cy:95,rx:26,ry:12,color:'#e8f5e9',stroke:'#2c8c5a',info:'叶绿体：光合作用的场所，"养料制造车间"。双层膜，类囊体堆叠成基粒，含DNA和色素。仅植物细胞有。★★★'},
+  {name:'叶绿体2',  cx:685,cy:125,rx:22,ry:10,color:'#e8f5e9',stroke:'#2c8c5a',info:'叶绿体：光合作用场所。仅植物细胞有。★★★'},
+  {name:'内质网',   cx:540,cy:210,color:'#ede7f6',stroke:'#7b1fa2',info:'内质网：蛋白质加工和脂质合成。动植物都有。'},
+  {name:'高尔基体', cx:660,cy:210,color:'#e0f2f1',stroke:'#00695c',info:'高尔基体：加工包装蛋白质。植物中还参与细胞壁形成。'},
+  {name:'液泡',     cx:600,cy:280,r:30,color:'rgba(179,229,252,0.7)',stroke:'#1565c0',info:'液泡（中央大液泡）：调节渗透压，储存物质，使植物细胞保持坚挺。成熟植物细胞特有，可占细胞体积90%。动物细胞无。★★★'},
+  {name:'核糖体',   cx:530,cy:265,r:3.5,color:'#555',stroke:'#333',info:'核糖体：蛋白质合成的场所。所有细胞都有。'},
+];
+
+function drawOrganelles(){
+  const w=800,h=550;
+  octx.clearRect(0,0,w,h); octx.fillStyle='#fafbfc'; octx.fillRect(0,0,w,h);
+
+  // Divider line
+  octx.strokeStyle='#ccc'; octx.lineWidth=1.5; octx.setLineDash([6,6]);
+  octx.beginPath(); octx.moveTo(400,15); octx.lineTo(400,530);
+  octx.stroke(); octx.setLineDash([]);
+
+  // ===== LEFT: ANIMAL CELL =====
+  const ax=200, ay=190;
+  octx.fillStyle='rgba(255,249,232,0.4)'; octx.strokeStyle='#f4a236'; octx.lineWidth=2.5;
+  octx.beginPath(); octx.ellipse(ax,ay,170,148,0,0,Math.PI*2); octx.fill(); octx.stroke();
+
+  // Title - move to far left above cell
+  octx.fillStyle='#f4a236'; octx.font='bold 15px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='center';
+  octx.fillText('动 物 细 胞',ax,42);
+
+  // Feature list - moved to left sidebar area
+  octx.fillStyle='#e65100'; octx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='left';
+  octx.fillText('特征：',8,62);
+  octx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';
+  octx.fillText('无细胞壁 ✗',8,78);
+  octx.fillText('无叶绿体 ✗',8,93);
+  octx.fillText('无大液泡 ✗',8,108);
+  octx.fillStyle='#2c8c5a';
+  octx.fillText('有中心体 ✓',8,123);
+  octx.fillText('有溶酶体 ✓',8,138);
+
+  animalOrganelles.forEach(o=>{ drawOrganelle(octx, o); });
+
+  // Ribosomes scattered
+  for(let j=0;j<6;j++){
+    octx.fillStyle='#555';
+    octx.beginPath(); octx.arc(210+j*14,280,3,0,Math.PI*2); octx.fill();
+  }
+  for(let j=0;j<5;j++){
+    octx.beginPath(); octx.arc(150+j*12,270,3,0,Math.PI*2); octx.fill();
+  }
+
+  // Centriole callout line
+  octx.strokeStyle='#e65100'; octx.lineWidth=1; octx.setLineDash([3,3]);
+  octx.beginPath(); octx.moveTo(170,303); octx.lineTo(170,340); octx.stroke(); octx.setLineDash([]);
+  octx.fillStyle='#e65100'; octx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='center';
+  octx.fillText('↑ 中心体（动物特有）',170,354);
+
+  // Cell membrane label
+  octx.strokeStyle='#f4a236'; octx.lineWidth=1; octx.setLineDash([3,3]);
+  octx.beginPath(); octx.moveTo(ax+165,ay-5); octx.lineTo(ax+178,ay-45); octx.stroke(); octx.setLineDash([]);
+  octx.fillStyle='#f4a236'; octx.font='10px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='left';
+  octx.fillText('细胞膜',ax+178,ay-42);
+  octx.fillText('（磷脂双分子层）',ax+174,ay-29);
+
+  // ===== RIGHT: PLANT CELL =====
+  const px=600, py=195;
+  // Cell wall
+  octx.strokeStyle='#5d4037'; octx.lineWidth=3;
+  octx.beginPath(); roundRectM(octx,px-160,py-140,320,280,20); octx.stroke();
+  octx.fillStyle='rgba(200,200,180,0.25)'; octx.fill();
+  // Cell membrane
+  octx.strokeStyle='#f4a236'; octx.lineWidth=2;
+  octx.beginPath(); roundRectM(octx,px-149,py-129,298,258,12); octx.stroke();
+  octx.fillStyle='rgba(255,249,232,0.3)'; octx.fill();
+
+  // Title
+  octx.fillStyle='#5d4037'; octx.font='bold 15px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='center';
+  octx.fillText('植 物 细 胞',px,42);
+
+  // Feature list - right sidebar
+  octx.fillStyle='#2c8c5a'; octx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='right';
+  octx.fillText('：特征',792,62);
+  octx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';
+  octx.fillText('有细胞壁 ✓',792,78);
+  octx.fillText('有叶绿体 ✓',792,93);
+  octx.fillText('有大液泡 ✓',792,108);
+  octx.fillStyle='#c62828';
+  octx.fillText('无中心体 ✗',792,123);
+  octx.fillText('无溶酶体 ✗',792,138);
+
+  plantOrganelles.forEach(o=>{ drawOrganelle(octx, o); });
+
+  // Ribosomes
+  for(let j=0;j<5;j++){
+    octx.fillStyle='#555';
+    octx.beginPath(); octx.arc(520+j*12,270,3,0,Math.PI*2); octx.fill();
+  }
+
+  // Big vacuole callout
+  octx.strokeStyle='#1565c0'; octx.lineWidth=1; octx.setLineDash([3,3]);
+  octx.beginPath(); octx.moveTo(600,308); octx.lineTo(600,345); octx.stroke(); octx.setLineDash([]);
+  octx.fillStyle='#1565c0'; octx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='center';
+  octx.fillText('↑ 中央大液泡',600,358);
+  octx.fillText('（植物特有，占体积~90%）',600,372);
+
+  // Cell wall callout
+  octx.strokeStyle='#5d4037'; octx.lineWidth=1; octx.setLineDash([3,3]);
+  octx.beginPath(); octx.moveTo(px+160,py-130); octx.lineTo(px+180,py-160); octx.stroke(); octx.setLineDash([]);
+  octx.fillStyle='#5d4037'; octx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='left';
+  octx.fillText('细胞壁',px+178,py-157);
+  octx.fillText('（纤维素+果胶）',px+173,py-144);
+
+  // Chloroplast callout
+  octx.strokeStyle='#2c8c5a'; octx.lineWidth=1; octx.setLineDash([3,3]);
+  octx.beginPath(); octx.moveTo(672,128); octx.lineTo(700,155); octx.stroke(); octx.setLineDash([]);
+  octx.fillStyle='#2c8c5a'; octx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='left';
+  octx.fillText('叶绿体',700,152);
+  octx.fillText('（植物特有）',700,166);
+
+  // ===== BOTTOM SECTION =====
+  // Comparison table at the bottom
+  const by=400;
+  octx.fillStyle='#f5f5f5'; octx.fillRect(30,by,740,130);
+  octx.strokeStyle='#6a1b9a'; octx.lineWidth=2;
+  octx.strokeRect(30,by,740,130);
+
+  octx.fillStyle='#6a1b9a'; octx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='center';
+  octx.fillText('动植物细胞四大区别',400,by+22);
+
+  // Table headers
+  octx.fillStyle='#2c3e50'; octx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif';
+  octx.fillText('比较项目',145,by+44);
+  octx.fillText('动物细胞',400,by+44);
+  octx.fillText('植物细胞',655,by+44);
+  // Dividers
+  octx.strokeStyle='#ccc'; octx.lineWidth=1;
+  octx.beginPath(); octx.moveTo(275,by+12); octx.lineTo(275,by+118); octx.stroke();
+  octx.beginPath(); octx.moveTo(525,by+12); octx.lineTo(525,by+118); octx.stroke();
+
+  const rows=[
+    ['细胞壁','✗ 无（只有细胞膜）','✓ 有（纤维素+果胶）'],
+    ['叶绿体','✗ 无','✓ 有（光合作用场所）'],
+    ['大液泡','✗ 无或很小','✓ 有中央大液泡'],
+    ['中心体','✓ 有','✗ 无（高等植物）'],
+  ];
+  rows.forEach((r,i)=>{
+    octx.fillStyle='#2c3e50'; octx.font='bold 11px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='center';
+    octx.fillText(r[0],145,by+66+i*16);
+    octx.fillText(r[1],400,by+66+i*16);
+    octx.fillText(r[2],655,by+66+i*16);
+  });
+
+  // Hint
+  octx.fillStyle='#888'; octx.font='11px "PingFang SC","Microsoft YaHei",sans-serif'; octx.textAlign='center';
+  octx.fillText('点击细胞器图查看详细信息',400,545);
+}
+
+// Helper: draw one organelle
+function drawOrganelle(ctx, o){
+  ctx.save();
+  if(o.rx && o.ry){
+    // Ellipse organelle (mitochondria, chloroplast)
+    ctx.fillStyle=o.color; ctx.strokeStyle=o.stroke; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(o.cx,o.cy,o.rx,o.ry,o.rangle||0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    // inner detail: cristae for mitochondria
+    if(o.name.startsWith('线粒体')){
+      ctx.strokeStyle=o.stroke; ctx.lineWidth=0.8;
+      ctx.beginPath(); ctx.moveTo(o.cx-10,o.cy-3); ctx.lineTo(o.cx+3,o.cy-5);
+      ctx.moveTo(o.cx-12,o.cy+1); ctx.lineTo(o.cx+5,o.cy); ctx.stroke();
+    }
+    // inner detail: grana for chloroplast
+    if(o.name.startsWith('叶绿体')){
+      ctx.fillStyle=o.stroke;
+      for(let j=0;j<4;j++){ctx.beginPath();ctx.ellipse(o.cx-8+j*5,o.cy-1,3,5,0,0,Math.PI*2);ctx.fill();}
+    }
+    // Label
+    ctx.fillStyle='#2c3e50'; ctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ctx.textAlign='center';
+    ctx.fillText(o.name.replace(/[0-9]/g,''),o.cx,o.cy+o.ry+13);
+  } else if(o.r){
+    // Circle organelle
+    ctx.fillStyle=o.color; ctx.strokeStyle=o.stroke; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(o.cx,o.cy,o.r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    // Inner detail for nucleus (nucleolus)
+    if(o.name==='细胞核' && o.r>15){
+      ctx.fillStyle='#c62828'; ctx.beginPath(); ctx.arc(o.cx+4,o.cy-3,o.r*0.3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#2c3e50'; ctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ctx.textAlign='center';
+      ctx.fillText('细胞核',o.cx,o.cy+o.r+13);
+    } else if(o.name==='液泡'){
+      // Inner liquid
+      ctx.fillStyle='rgba(100,181,246,0.3)'; ctx.beginPath(); ctx.arc(o.cx+2,o.cy-2,o.r*0.7,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#1565c0'; ctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ctx.textAlign='center';
+      ctx.fillText('大液泡',o.cx,o.cy+o.r+13);
+    } else {
+      ctx.fillStyle='#2c3e50'; ctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ctx.textAlign='center';
+      ctx.fillText(o.name.replace(/[0-9]/g,''),o.cx,o.cy+o.r+13);
+    }
+  } else {
+    // Odd shapes
+    ctx.fillStyle=o.color; ctx.strokeStyle=o.stroke; ctx.lineWidth=2;
+    if(o.name==='中心体'){
+      // Perpendicular centrioles
+      ctx.fillStyle='#999'; ctx.strokeStyle='#666'; ctx.lineWidth=1.5;
+      // Vertical
+      ctx.beginPath(); ctx.ellipse(o.cx,o.cy-8,4,10,0,0,Math.PI*2); ctx.stroke();
+      // Horizontal
+      ctx.beginPath(); ctx.ellipse(o.cx+10,o.cy,4,10,Math.PI/2,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle='#2c3e50'; ctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ctx.textAlign='center';
+      ctx.fillText('中心体',o.cx+5,o.cy+18);
+    } else if(o.name==='内质网'){
+      // Draw ER as stacked curved lines
+      for(let k=0;k<4;k++){
+        ctx.strokeStyle=o.stroke; ctx.lineWidth=1.5;
+        ctx.beginPath();
+        ctx.moveTo(o.cx-20,o.cy-6+k*5);
+        ctx.quadraticCurveTo(o.cx,o.cy-2+k*6,o.cx+20,o.cy-4+k*5);
+        ctx.stroke();
+      }
+      ctx.fillStyle='#2c3e50'; ctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ctx.textAlign='center';
+      ctx.fillText('内质网',o.cx,o.cy+18);
+    } else if(o.name==='高尔基体'){
+      // Draw Golgi as stacked flattened sacs
+      for(let k=0;k<4;k++){
+        ctx.strokeStyle=o.stroke; ctx.lineWidth=1.5;
+        ctx.beginPath();
+        ctx.moveTo(o.cx-18,o.cy-5+k*5);
+        ctx.quadraticCurveTo(o.cx,o.cy-7+k*6,o.cx+15,o.cy-3+k*5);
+        ctx.stroke();
+      }
+      ctx.fillStyle='#2c3e50'; ctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ctx.textAlign='center';
+      ctx.fillText('高尔基体',o.cx,o.cy+20);
+    }
+  }
+  ctx.restore();
+}
+
+// Click handler: detect which organelle was clicked
+oCanvas.addEventListener('click',function(e){
+  const rect=oCanvas.getBoundingClientRect();
+  const sx=800/rect.width, sy=550/rect.height;
+  const mx=(e.clientX-rect.left)*sx, my=(e.clientY-rect.top)*sy;
+  let found=null;
+
+  // Check all organelles in both arrays
+  const all = [...animalOrganelles, ...plantOrganelles];
+  all.forEach(o=>{
+    if(o.rx && o.ry){
+      const dx=(mx-o.cx)/o.rx, dy=(my-o.cy)/o.ry;
+      if(dx*dx+dy*dy<=2.0) found=o;
+    } else if(o.r){
+      const dx=mx-o.cx, dy=my-o.cy;
+      if(Math.sqrt(dx*dx+dy*dy)<=o.r+8) found=o;
+    } else {
+      // For irregular shapes (Golgi, ER, centrosome), check bounding box
+      const dx=Math.abs(mx-o.cx), dy=Math.abs(my-o.cy);
+      if(dx<30 && dy<20) found=o;
+    }
+  });
+
+  if(found){
+    const cleanName = found.name.replace(/[0-9]/g,'');
+    document.getElementById('organelleInfo').innerHTML=`<strong>${cleanName}</strong>：${found.info}`;
+    document.getElementById('organelleInfo').style.color='#6a1b9a';
+  }
+});
+drawOrganelles();
+
+// ===== NUCLEUS CANVAS =====
+const nucCanvas=document.getElementById('nucleusCanvas'), nuctx=nucCanvas.getContext('2d');
+function drawNucleus(){
+  const w=750,h=300;
+  nuctx.clearRect(0,0,w,h); nuctx.fillStyle='#fafbfc'; nuctx.fillRect(0,0,w,h);
+
+  // Outer membrane
+  nuctx.strokeStyle='#6a1b9a'; nuctx.lineWidth=3;
+  nuctx.beginPath(); nuctx.ellipse(375,155,180,120,0,0,Math.PI*2); nuctx.stroke();
+  nuctx.strokeStyle='#9c27b0'; nuctx.lineWidth=2; nuctx.setLineDash([4,3]);
+  nuctx.beginPath(); nuctx.ellipse(375,155,165,108,0,0,Math.PI*2); nuctx.stroke(); nuctx.setLineDash([]);
+  nuctx.fillStyle='#fce4ec'; nuctx.fillText('双层核膜', 555, 80);
+
+  // Nuclear pores
+  for(let a=0;a<7;a++){
+    const angle=a*Math.PI/3-0.3, px=375+175*Math.cos(angle), py=155+118*Math.sin(angle);
+    nuctx.fillStyle='#fff'; nuctx.strokeStyle='#6a1b9a'; nuctx.lineWidth=1.5;
+    nuctx.beginPath(); nuctx.arc(px,py,6,0,Math.PI*2); nuctx.fill(); nuctx.stroke();
+    nuctx.fillStyle='#333';
+    nuctx.beginPath(); nuctx.arc(px,py,3,0,Math.PI*2); nuctx.fill();
+  }
+  nuctx.fillStyle='#6a1b9a'; nuctx.font='11px sans-serif'; nuctx.textAlign='left'; nuctx.fillText('核孔',545,110);
+
+  // Chromatin
+  nuctx.fillStyle='#e8eaf6';
+  nuctx.beginPath(); nuctx.ellipse(330,140,60,40,-0.2,0,Math.PI*2); nuctx.fill();
+  nuctx.strokeStyle='#3f51b5'; nuctx.lineWidth=2.5;
+  nuctx.beginPath(); nuctx.ellipse(330,140,60,40,-0.2,0,Math.PI*2); nuctx.stroke();
+  nuctx.fillStyle='#3f51b5'; nuctx.font='12px sans-serif'; nuctx.textAlign='center';
+  nuctx.fillText('染色质',330,145);
+  nuctx.fillText('(DNA+蛋白质)',330,160);
+
+  // Nucleolus
+  nuctx.fillStyle='#ffcdd2'; nuctx.strokeStyle='#c62828'; nuctx.lineWidth=2;
+  nuctx.beginPath(); nuctx.arc(430,135,28,0,Math.PI*2); nuctx.fill(); nuctx.stroke();
+  nuctx.fillStyle='#c62828'; nuctx.font='bold 12px sans-serif'; nuctx.textAlign='center';
+  nuctx.fillText('核仁',430,139);
+
+  // Right side: chromosome comparison
+  nuctx.fillStyle='#2c3e50'; nuctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; nuctx.textAlign='center';
+  nuctx.fillText('染色质（间期）—→ 染色体（分裂期）同一物质，两种形态',375,285);
+
+  // Draw small chromosome on right
+  const cx=600,cy=200;
+  nuctx.fillStyle='#3f51b5'; nuctx.strokeStyle='#1a237e'; nuctx.lineWidth=3;
+  const chrX=cx-30,chrY=cy-25;
+  nuctx.beginPath();
+  nuctx.moveTo(chrX,chrY); nuctx.lineTo(chrX+15,chrY-15); nuctx.lineTo(chrX+15,chrY+10); nuctx.lineTo(chrX,chrY+25);
+  nuctx.lineTo(chrX,chrY+35); nuctx.lineTo(chrX+15,chrY+50); nuctx.lineTo(chrX+15,chrY+75); nuctx.lineTo(chrX,chrY+60);
+  nuctx.stroke();
+  // sister chromatid
+  nuctx.beginPath();
+  nuctx.moveTo(chrX+20,chrY-5); nuctx.lineTo(chrX+5,chrY-20); nuctx.lineTo(chrX+5,chrY+5); nuctx.lineTo(chrX+20,chrY+20);
+  nuctx.lineTo(chrX+20,chrY+30); nuctx.lineTo(chrX+5,chrY+45); nuctx.lineTo(chrX+5,chrY+70); nuctx.lineTo(chrX+20,chrY+55);
+  nuctx.stroke();
+  // Centromere
+  nuctx.fillStyle='#c62828'; nuctx.beginPath(); nuctx.arc(chrX+10,cy+28,5,0,Math.PI*2); nuctx.fill();
+  nuctx.fillStyle='#c62828'; nuctx.font='10px sans-serif'; nuctx.fillText('着丝粒',chrX+10,cy+48);
+}
+drawNucleus();
+</script>
+
+</div>
+</div>
+</body>
+</html>

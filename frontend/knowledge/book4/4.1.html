@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第1章 种群及其动态 - 知识清单</title>
+<style>
+  :root { --primary: #0d6b3d; --primary-light: #e8f5e9; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #0a4a2a, #0d6b3d); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e8f5e9; border-color: #a5d6a7; }
+  .checklist li.checked .check-box { background: #0d6b3d; border-color: #0d6b3d; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #a5d6a7; color: #4a6a4a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #0d6b3d; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .tag-super { background: #ffcdd2; color: #b71c1c; font-weight: 700; border: 1px solid #ef5350; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #a5d6a7; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; }
+  .focus-box { background: #e8f5e9; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#4caf50); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(13,107,61,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(13,107,61,0.1); color: #0d6b3d; font-weight: 700; border-left-color: #4caf50; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  .quiz-box { background: #fff; border: 2px solid var(--accent); border-radius: var(--radius); padding: 18px; margin: 16px 0; }
+  .quiz-box .quiz-title { font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .quiz-option { padding: 8px 14px; margin: 4px 0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .quiz-option:hover { background: #e8f5e9; }
+  .quiz-option.correct { background: #c8e6c9!important; border-color: #4caf50!important; }
+  .quiz-option.wrong { background: #ffcdd2!important; border-color: #f44336!important; }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修2<br>生物与环境</div>
+      <a href="4.1.html" class="active"><span class="ch-num">第1章</span>种群及其动态</a>
+      <a href="4.2.html"><span class="ch-num">第2章</span>群落及其演替</a>
+      <a href="4.3.html"><span class="ch-num">第3章</span>生态系统及稳定性</a>
+      <a href="4.4.html"><span class="ch-num">第4章</span>人与环境</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link active">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第1章 种群及其动态</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修2 · 生物与环境</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 28 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">种群</div><div class="concept-back">在一定的空间范围内，同种生物所有个体形成的集合。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">种群密度</div><div class="concept-back">种群在单位面积或单位体积中的个体数。是种群最基本的数量特征。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">样方法</div><div class="concept-back">随机选取若干个样方，统计每个样方个体数，以平均值作为种群密度估算值。适用于植物和活动能力弱的动物。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">标记重捕法</div><div class="concept-back">N=(第一次捕获数×第二次捕获数)÷被标记个体数。适用于活动能力强、活动范围大的动物。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">出生率和死亡率</div><div class="concept-back">单位时间内新产生/死亡的个体数占种群个体总数的比值。直接决定种群密度。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">年龄结构</div><div class="concept-back">各年龄期个体数的比例。三种类型：增长型、稳定型、衰退型。通过影响出生率和死亡率间接影响种群密度。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">"J"形增长</div><div class="concept-back">理想条件下：食物充裕、气候适宜、无天敌和竞争。Nt=N₀λᵗ。λ>1增长，λ=1稳定，λ<1衰退。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">"S"形增长</div><div class="concept-back">资源和空间有限，种内竞争加剧→增长率随密度增大而减小→稳定在K值附近。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">环境容纳量(K)</div><div class="concept-back">一定的环境条件所能维持的种群最大数量。K值不是固定不变的。保护大熊猫的根本措施是提高K值。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">性别比例</div><div class="concept-back">种群中雌雄个体数的比例。通过影响出生率间接影响种群密度。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 怎样估算种群密度？如何提高估算的准确性？<br>
+  ● 种群的数量特征有哪些？<br>
+  ● 如何根据种群的特征预测其未来的发展趋势？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 种群的数量特征</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">种群数量特征的逻辑关系 - 互动导图</h4>
+      <canvas id="popCanvas" width="750" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="togglePopFlow()">显示/隐藏影响关系</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>调查方法</th><th>适用对象</th><th>关键要点</th></tr>
+      <tr><td><strong>逐个计数法</strong></td><td>分布范围小、个体大</td><td>逐个计数（如珙桐）</td></tr>
+      <tr><td><strong>样方法</strong></td><td>植物、活动能力弱的动物（蚜虫、跳蝻、昆虫卵）</td><td><strong>随机取样</strong>（五点取样/等距取样）；"计上不计下，计左不计右"</td></tr>
+      <tr><td><strong>标记重捕法</strong></td><td>活动能力强、活动范围大的动物</td><td>N=M×n/m；标记物不能影响正常活动，不能脱落</td></tr>
+      <tr><td><strong>黑光灯诱捕法</strong></td><td>有趋光性的昆虫</td><td>利用趋光性估算种群密度</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>种群数量特征的关系链：</strong><br>
+      ① <strong>出生率/死亡率 + 迁入率/迁出率</strong> → <strong>直接决定</strong> 种群密度<br>
+      ② <strong>年龄结构</strong> → 影响出生率和死亡率 → <strong>间接影响</strong> 种群密度<br>
+      ③ <strong>性别比例</strong> → 影响出生率 → <strong>间接影响</strong> 种群密度<br>
+      ★ 种群密度是最基本的数量特征，其他特征是影响种群密度的重要因素
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>种群密度</strong>是最基本的数量特征</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>样方法</strong>：随机取样，"计上不计下，计左不计右"</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>标记重捕法</strong>：N=M×n÷m</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>出生率+死亡率</strong>直接决定种群密度</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>年龄结构</strong>三种类型：增长型/稳定型/衰退型</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 种群数量的变化</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">J形与S形增长曲线 - 交互对比</h4>
+      <canvas id="growthCanvas" width="750" height="320"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleGrowth()">▶ J型增长演示</button>
+        <button class="btn btn-outline" onclick="toggleSCurve()">▶ S型增长演示</button>
+        <button class="btn btn-outline" onclick="resetGrowth()">重置</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>比较</th><th>"J"形增长</th><th>"S"形增长</th></tr>
+      <tr><td>条件</td><td>食物充裕、气候适宜、无天敌和竞争</td><td>资源和空间有限</td></tr>
+      <tr><td>公式</td><td>Nt = N₀λᵗ</td><td>—（增长率随密度增大而减小）</td></tr>
+      <tr><td>K值</td><td>无K值</td><td>有K值（环境容纳量）</td></tr>
+      <tr><td>适用</td><td>入侵初期、实验室理想条件</td><td>自然界大多数种群</td></tr>
+      <tr><td>增长率</td><td>固定（λ-1）</td><td>不断减小</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>K值的实践应用：</strong><br>
+      ① <strong>渔业捕捞</strong>：捕捞后使种群数量维持在<strong>K/2</strong>左右→最大持续捕捞量<br>
+      ② <strong>害虫防治</strong>：在达到K/2<strong>之前</strong>采取措施；通过降低K值控制数量（减少食物/栖息地）<br>
+      ③ <strong>濒危动物保护</strong>：提高K值（扩大栖息地、增加食物资源）
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>J形增长</strong>：理想条件，Nt=N₀λᵗ</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>S形增长</strong>：资源和空间有限，存在K值</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>K值</strong>：环境条件所能维持的种群最大数量</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">λ>1增长，λ=1稳定，λ<1衰退</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">渔业捕捞后维持在<strong>K/2</strong>左右</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">种群数量波动：大多数种群数量处于波动中</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 影响种群数量变化的因素 + 速测</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="info-row">
+      <div class="info-card"><h4>非生物因素</h4><p>阳光、温度、水等。<br>如林下植物种群密度取决于<strong>郁闭度</strong>（光照强度）；干旱可导致东亚飞蝗种群爆发。</p></div>
+      <div class="info-card"><h4>生物因素</h4><p><strong>种内竞争</strong>（密度增大→竞争加剧）；<strong>捕食</strong>（猞猁-雪兔周期性波动）；<strong>种间竞争</strong>（高斯实验）；<strong>寄生和传染病</strong></p></div>
+      <div class="info-card"><h4>密度制约 vs 非密度制约</h4><p><strong>密度制约</strong>：食物、天敌等（与密度相关）；<strong>非密度制约</strong>：气温、干旱、火灾等（与密度无关）</p></div>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">非生物因素：阳光、温度、水（综合作用）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>密度制约</strong>（食物/天敌）vs <strong>非密度制约</strong>（干旱/火灾）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">高斯实验：两种草履虫竞争→一种被排除</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+
+    <div class="quiz-box"><div class="quiz-title">速测：标记重捕法公式中N=？</div>
+      <div class="quiz-option" onclick="checkQuiz1(this,false)">A. N=M×m÷n</div>
+      <div class="quiz-option" onclick="checkQuiz1(this,true)">B. N=M×n÷m</div>
+      <div class="quiz-option" onclick="checkQuiz1(this,false)">C. N=m×n÷M</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 14;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx2_ch1_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx2_ch1_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+function checkQuiz1(el,correct){if(el.parentElement.dataset.done)return;el.parentElement.dataset.done='1';if(correct)el.classList.add('correct');else{el.classList.add('wrong');el.parentElement.querySelectorAll('.quiz-option')[1].classList.add('correct');}}
+
+// POPULATION FEATURES MAP
+const pCanvas=document.getElementById('popCanvas'), pctx=pCanvas.getContext('2d');
+let showPopFlow=true;
+function drawPopMap(){
+  const w=750,h=300;
+  pctx.clearRect(0,0,w,h); pctx.fillStyle='#fafbfc'; pctx.fillRect(0,0,w,h);
+  // Title
+  pctx.fillStyle='#2c3e50'; pctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.textAlign='center';
+  pctx.fillText('种群数量特征的逻辑关系',375,25);
+
+  // Central: 种群密度
+  pctx.fillStyle='#0d6b3d'; pctx.strokeStyle='#0a4a2a'; pctx.lineWidth=3;
+  pctx.beginPath(); pctx.arc(375,170,35,0,Math.PI*2); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#fff'; pctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.fillText('种群密度',375,175);
+
+  // Direct factors
+  pctx.fillStyle='#e65100'; pctx.strokeStyle='#bf360c'; pctx.lineWidth=2;
+  pctx.beginPath(); pctx.arc(200,100,30,0,Math.PI*2); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#fff'; pctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.fillText('出生率',195,96);
+  pctx.fillText('死亡率',195,113);
+
+  pctx.fillStyle='#e65100';
+  pctx.beginPath(); pctx.arc(550,100,30,0,Math.PI*2); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#fff'; pctx.fillText('迁入率',545,96);
+  pctx.fillText('迁出率',545,113);
+
+  // Indirect
+  pctx.fillStyle='#1565c0';
+  pctx.beginPath(); pctx.arc(200,250,30,0,Math.PI*2); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#fff'; pctx.fillText('年龄结构',195,255);
+
+  pctx.fillStyle='#1565c0';
+  pctx.beginPath(); pctx.arc(550,250,30,0,Math.PI*2); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#fff'; pctx.fillText('性别比例',545,255);
+
+  if(showPopFlow){
+    // Arrows
+    const arrows=[{x1:230,y1:100,x2:340,y2:150,label:'直接决定'},{x1:520,y1:100,x2:410,y2:150,label:'直接决定'},{x1:230,y1:230,x2:200,y2:130,label:'影响'},{x1:520,y1:230,x2:550,y2:130,label:'影响'}];
+    arrows.forEach(a=>{
+      drawArrowP(pctx,a.x1,a.y1,a.x2,a.y2,'#666');
+      pctx.fillStyle='#666'; pctx.font='10px sans-serif'; pctx.textAlign='center';
+      pctx.fillText(a.label,(a.x1+a.x2)/2,(a.y1+a.y2)/2-6);
+    });
+  }
+  pctx.fillStyle='#888'; pctx.font='11px sans-serif'; pctx.textAlign='center';
+  pctx.fillText('最基本的数量特征 ← 直接决定因素 → 间接影响因素',375,295);
+}
+function drawArrowP(ctx,x1,y1,x2,y2,color){ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function togglePopFlow(){showPopFlow=!showPopFlow;drawPopMap();}
+drawPopMap();
+
+// GROWTH CURVES
+const gCanvas=document.getElementById('growthCanvas'), gctx=gCanvas.getContext('2d');
+let jCurve=false, sCurve=false, sAnimId, sPhase=0;
+
+function drawGrowth(){
+  const w=750,h=320;
+  gctx.clearRect(0,0,w,h); gctx.fillStyle='#fafbfc'; gctx.fillRect(0,0,w,h);
+  gctx.strokeStyle='#ccc'; gctx.lineWidth=1;
+  gctx.beginPath(); gctx.moveTo(70,30); gctx.lineTo(70,250); gctx.lineTo(710,250); gctx.stroke();
+  gctx.fillStyle='#2c3e50'; gctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; gctx.textAlign='center';
+  gctx.fillText('时间 →',375,278);
+  gctx.save(); gctx.translate(18,150); gctx.rotate(-Math.PI/2); gctx.fillText('种群数量',0,0); gctx.restore();
+
+  // K line
+  gctx.strokeStyle='#999'; gctx.lineWidth=1; gctx.setLineDash([4,4]);
+  gctx.beginPath(); gctx.moveTo(70,60); gctx.lineTo(710,60); gctx.stroke(); gctx.setLineDash([]);
+  gctx.fillStyle='#999'; gctx.font='10px sans-serif'; gctx.textAlign='right'; gctx.fillText('K值',65,63);
+  gctx.strokeStyle='#999'; gctx.lineWidth=1; gctx.setLineDash([3,3]);
+  gctx.beginPath(); gctx.moveTo(70,155); gctx.lineTo(710,155); gctx.stroke(); gctx.setLineDash([]);
+  gctx.fillText('K/2',65,158);
+
+  if(jCurve||sCurve){
+    const maxX=Math.min(sPhase*4,600);
+    // S curve
+    if(sCurve){
+      gctx.strokeStyle='#0d6b3d'; gctx.lineWidth=3;
+      gctx.beginPath(); gctx.moveTo(80,248);
+      for(let i=0;i<=maxX;i++){
+        const t=i/600, sigmoid=1/(1+Math.exp(-(t-0.3)*12));
+        const y=248-(248-55)*sigmoid;
+        if(i===0)gctx.moveTo(80+i,y);else gctx.lineTo(80+i,y);
+      }
+      gctx.stroke();
+      gctx.fillStyle='#0d6b3d'; gctx.font='bold 12px sans-serif'; gctx.fillText('S形增长',300,40);
+    }
+    // J curve
+    if(jCurve){
+      gctx.strokeStyle='#e65100'; gctx.lineWidth=3;
+      gctx.beginPath(); gctx.moveTo(80,248);
+      for(let i=0;i<=maxX;i++){
+        const y=248-(248-55)*Math.exp(i*0.005-4.5);
+        if(i===0)gctx.moveTo(80+i,Math.max(y,50));else gctx.lineTo(80+i,Math.max(y,50));
+      }
+      gctx.stroke();
+      gctx.fillStyle='#e65100'; gctx.font='bold 12px sans-serif'; gctx.fillText('J形增长',500,40);
+    }
+  }
+}
+
+function animateGrowth(){sPhase++;if(sPhase>150)sPhase=150;drawGrowth();sAnimId=requestAnimationFrame(animateGrowth);}
+function toggleGrowth(){jCurve=!jCurve;if(!sCurve&&jCurve){sPhase=0;animateGrowth();}else if(!sCurve)cancelAnimationFrame(sAnimId);drawGrowth();}
+function toggleSCurve(){sCurve=!sCurve;if(!jCurve&&sCurve){sPhase=0;animateGrowth();}else if(!jCurve)cancelAnimationFrame(sAnimId);drawGrowth();}
+function resetGrowth(){cancelAnimationFrame(sAnimId);jCurve=false;sCurve=false;sPhase=0;drawGrowth();}
+drawGrowth();
+</script>
+</body>
+</html>

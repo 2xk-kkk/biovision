@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3章 基因的本质 - 知识清单</title>
+<style>
+  :root {
+    --primary: #00695c;
+    --primary-light: #e0f2f1;
+    --accent: #ff6f00;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #004d40, #00695c);
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='30' r='2' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='70' cy='60' r='3' fill='rgba(255,255,255,0.08)'/%3E%3Ccircle cx='85' cy='20' r='1.5' fill='rgba(255,255,255,0.12)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header h1 { font-size: 2em; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; position: relative; z-index: 1; }
+  .header .quote { margin-top: 14px; font-style: italic; font-size: 0.95em; opacity: 0.85; position: relative; z-index: 1; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+
+  .focus-box { background: #e0f2f1; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; transition: var(--transition); }
+  .section-header:hover { background: #b2dfdb; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e0f2f1; border-color: #80cbc4; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #80cbc4; color: #5a8a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; transition: var(--transition); }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2e7d32; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .diagram-box canvas { max-width: 100%; }
+  .diagram-box .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #004d40; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #e65100; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px 14px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #80cbc4; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  .timeline { position: relative; padding-left: 28px; margin: 16px 0; }
+  .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary), #80cbc4); }
+  .timeline-item { position: relative; margin-bottom: 16px; padding: 10px 14px; background: #fafbfc; border-radius: 8px; border: 1px solid var(--border); }
+  .timeline-item::before { content: ''; position: absolute; left: -22px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--primary); }
+  .timeline-item .year { font-weight: 700; color: var(--primary); font-size: 0.9em; }
+
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #26a69a); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+
+  @media (max-width: 640px) { .header { padding: 24px 20px; } .header h1 { font-size: 1.4em; } .section-body { padding: 14px;} .info-row { grid-template-columns: 1fr; } }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; font-weight: 500; }
+
+  .tooltip-term { color: var(--primary); font-weight: 600; cursor: help; border-bottom: 1px dashed var(--primary); position: relative; }
+  .tooltip-term:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #2c3e50; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.8em; font-weight: normal; white-space: nowrap; z-index: 10; pointer-events: none; }
+
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 180px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: background 0.2s, color 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(0,105,92,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(0,105,92,0.1); color: #00695c; font-weight: 700; border-left-color: #26a69a; }
+  .sidebar .ch-num { font-size: 0.7em; font-weight: 700; color: #90a4ae; min-width: 18px; text-align: center; }
+  @media (max-width: 860px) { .sidebar { position: static; transform: none; width: 100%; max-height: none; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 4px; border-radius: 8px; margin-bottom: 12px; } .sidebar .nav-title { width: 100%; padding: 4px 0; border-bottom: none; margin-bottom: 0; } .sidebar a { padding: 5px 8px; font-size: 0.75em; border-left: none; border-radius: 4px; } }
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+
+      <nav class="sidebar">
+    <div class="nav-title">生物学 必修2<br>遗传与进化</div>
+      <a href="2.1.html"><span class="ch-num">第1章</span>遗传因子的发现</a>
+      <a href="2.2.html"><span class="ch-num">第2章</span>基因和染色体的关系</a>
+      <a href="2.3.html" class="active"><span class="ch-num">第3章</span>基因的本质</a>
+      <a href="2.4.html"><span class="ch-num">第4章</span>基因的表达</a>
+      <a href="2.5.html"><span class="ch-num">第5章</span>基因突变及其他变异</a>
+      <a href="2.6.html"><span class="ch-num">第6章</span>生物的进化</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link active">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第3章 基因的本质</h1>
+  <div class="subtitle">人教版 · 生物学必修2 · 遗传与进化</div>
+  <div class="quote">"揭秘基因的化学本质，解析DNA的优美螺旋。验证DNA的精巧复制，测读ATGC的生命长卷。"</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 30 个知识点</div>
+
+<!-- 第1节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🧪 第1节 DNA是主要的遗传物质</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 科学家是怎样证明DNA是遗传物质的？<br>
+      ● 为什么说DNA是主要的遗传物质？<br>
+      ● 你对科学发现的过程和方法有哪些领悟？
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 早期认识</div>
+      <p>20世纪20年代：认为<span class="bold-concept">蛋白质</span>是遗传物质（氨基酸排列多样=潜在信息载体）</p>
+      <p>20世纪30年代：认识到DNA由脱氧核苷酸聚合而成，含4种碱基（A,T,G,C），但对DNA结构不了解，蛋白质为遗传物质观点仍占主导。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、肺炎链球菌的转化实验</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 格里菲思实验（1928年）</div>
+      <p><span class="bold-concept">S型细菌</span>：有荚膜，菌落光滑（smooth），有致病性→小鼠患败血症死亡</p>
+      <p><span class="bold-concept">R型细菌</span>：无荚膜，菌落粗糙（rough），无致病性→小鼠不死亡</p>
+      <p><strong>第四组（关键）：</strong>R型活菌+加热杀死的S型菌混合注射 → 小鼠死亡，分离出S型活菌。结论：加热杀死的S型菌含有某种促使R型菌<span class="bold-concept">转化</span>为S型活菌的活性物质——<span class="bold-concept">转化因子</span>。</p>
+    </div>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 艾弗里实验（20世纪40年代）</div>
+      <p>将加热杀死的S型菌细胞提取物分别用蛋白酶、RNA酶、酯酶、<span class="bold-concept">DNA酶</span>处理后，只有DNA酶处理组<span class="bold-concept">失去了转化活性</span>。结论：<span class="bold-concept">DNA才是使R型菌产生稳定遗传变化的物质。</span>（运用了自变量控制中的"减法原理"）</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、噬菌体侵染细菌的实验</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 赫尔希和蔡斯实验（1952年）</div>
+      <p><strong>实验材料：</strong>T2噬菌体（头部+尾部外壳=蛋白质，头部含DNA；专门寄生大肠杆菌）</p>
+      <p><strong>方法：</strong><span class="bold-concept">放射性同位素标记技术</span></p>
+      <p>① ³⁵S标记蛋白质：放射性主要在上清液→蛋白质外壳未进入细菌</p>
+      <p>② ³²P标记DNA：放射性主要在沉淀物（细菌）→DNA进入细菌</p>
+      <p>③ 细菌裂解释放的子代噬菌体中检测到³²P，未检测到³⁵S</p>
+      <p><strong>结论：</strong><span class="bold-concept">DNA是噬菌体的遗传物质。</span></p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、DNA是主要的遗传物质</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背</div>
+      <p>有些病毒（如烟草花叶病毒）不含有DNA，只含有蛋白质和<span class="bold-concept">RNA</span>，其遗传物质就是RNA。因为<span class="bold-concept">绝大多数</span>生物的遗传物质是DNA，所以<strong>DNA是主要的遗传物质</strong>。</p>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li data-id="1"><span class="check-box"></span><span class="label"><strong>格里菲思</strong>：R型+热杀S型→转化→S型活菌（转化因子）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="2"><span class="check-box"></span><span class="label"><strong>艾弗里</strong>：用减法原理排除蛋白质/RNA/脂质→证明DNA是转化因子</span><span class="tag tag-important">重点</span></li>
+      <li data-id="3"><span class="check-box"></span><span class="label"><strong>赫尔希和蔡斯</strong>：³⁵S标记蛋白质、³²P标记DNA→DNA进入细菌并遗传</span><span class="tag tag-important">重点</span></li>
+      <li data-id="4"><span class="check-box"></span><span class="label">加法原理：人为增加影响因素；减法原理：人为去除某种影响因素</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="5"><span class="check-box"></span><span class="label"><strong>DNA是主要的遗传物质</strong>（大多数生物）；部分病毒以RNA为遗传物质</span><span class="tag tag-important">重点</span></li>
+      <li data-id="6"><span class="check-box"></span><span class="label">烟草花叶病毒（TMV）的遗传物质是<strong>RNA</strong></span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🔬 第2节 DNA的结构</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 沃森和克里克是怎样揭示DNA的双螺旋结构的？<br>
+      ● DNA的双螺旋结构有哪些主要特点？
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— DNA双螺旋结构的主要特点</div>
+      <p>① DNA由<span class="bold-concept">两条单链</span>组成，按<span class="bold-concept">反向平行</span>方式盘旋成双螺旋结构。</p>
+      <p>② DNA中的<span class="bold-concept">脱氧核糖和磷酸</span>交替连接，排列在<span class="bold-concept">外侧</span>，构成基本骨架；<span class="bold-concept">碱基</span>排列在<span class="bold-concept">内侧</span>。</p>
+      <p>③ 两条链上的碱基通过<span class="bold-concept">氢键</span>连接成碱基对：<span class="bold-concept">A—T配对</span>（2个氢键），<span class="bold-concept">G—C配对</span>（3个氢键）。这一一对应的关系叫作<span class="bold-concept">碱基互补配对原则</span>。</p>
+      <p>④ 查哥夫规律：A=T，G=C，A+G=T+C（嘌呤数=嘧啶数）。</p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item"><div class="year">1951年</div>沃森（美）和克里克（英）在剑桥大学合作研究DNA结构</div>
+      <div class="timeline-item"><div class="year">1952年</div>查哥夫告知：A=T，G=C → 启发碱基配对</div>
+      <div class="timeline-item"><div class="year">1953年</div>富兰克林的X射线衍射图谱→DNA呈螺旋；沃森和克里克发表DNA双螺旋结构模型</div>
+      <div class="timeline-item"><div class="year">1962年</div>沃森、克里克、威尔金斯获<strong>诺贝尔生理学或医学奖</strong></div>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li data-id="7"><span class="check-box"></span><span class="label"><strong>沃森和克里克</strong>1953年发表DNA双螺旋结构模型</span><span class="tag tag-important">重点</span></li>
+      <li data-id="8"><span class="check-box"></span><span class="label">DNA双螺旋三大特点（两条链反向平行、磷酸脱氧核糖在外、碱基互补配对在内）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="9"><span class="check-box"></span><span class="label"><strong>碱基互补配对</strong>：A=T（2氢键）G≡C（3氢键）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="10"><span class="check-box"></span><span class="label"><strong>查哥夫规律</strong>：A=T, G=C, A+G=T+C</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="11"><span class="check-box"></span><span class="label">DNA链方向：<strong>5'→3'</strong>和<strong>3'→5'</strong>（反向平行）</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🔄 第3节 DNA的复制</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 怎样证明DNA是半保留复制的？<br>
+      ● DNA的复制过程是怎样的？<br>
+      ● DNA的半保留复制对遗传信息的稳定传递有什么意义？
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 半保留复制</div>
+      <p><span class="bold-concept">半保留复制</span>：DNA复制时，DNA双螺旋解开，解开的两条单链分别作为模板，游离脱氧核苷酸按碱基互补配对原则结合到模板链上。由于新合成的每个DNA分子中，都保留了原来DNA中的一条链，故称半保留复制。</p>
+      <p><strong>梅塞尔森和斯塔尔</strong>（1958年）：¹⁵N标记大肠杆菌实验→¹⁴N培养→密度梯度离心→证明半保留复制。</p>
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— DNA复制的基本条件</div>
+      <p>① <strong>模板</strong>：解旋后的两条DNA母链</p>
+      <p>② <strong>原料</strong>：游离的4种脱氧核苷酸</p>
+      <p>③ <strong>能量</strong>：ATP供能</p>
+      <p>④ <strong>酶</strong>：解旋酶（解开氢键）、DNA聚合酶（合成新链）</p>
+      <p><strong>复制特点：</strong>边解旋边复制（并非全部解旋后再复制）。</p>
+      <p><strong>复制意义：</strong>DNA通过复制，将遗传信息从亲代细胞传递给子代细胞，保证了<span class="bold-concept">遗传信息的连续性</span>。</p>
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🧬 DNA半保留复制演示</h4>
+      <canvas id="replCanvas" width="700" height="260"></canvas>
+      <div class="controls">
+        <button class="btn btn-outline" onclick="replStep=0">亲代 ¹⁵N/¹⁵N</button>
+        <button class="btn btn-outline" onclick="replStep=1">第1代 ¹⁵N/¹⁴N</button>
+        <button class="btn btn-accent" onclick="replStep=2">第2代 ¹⁵N/¹⁴N + ¹⁴N/¹⁴N</button>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li data-id="12"><span class="check-box"></span><span class="label"><strong>半保留复制</strong>：每条子代DNA含一条母链和一条新合成链</span><span class="tag tag-important">重点</span></li>
+      <li data-id="13"><span class="check-box"></span><span class="label">梅塞尔森和斯塔尔用<strong>¹⁵N</strong>同位素标记+密度梯度离心证明半保留复制</span><span class="tag tag-important">重点</span></li>
+      <li data-id="14"><span class="check-box"></span><span class="label">复制条件：<strong>模板、原料（4种脱氧核苷酸）、能量（ATP）、酶</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="15"><span class="check-box"></span><span class="label">复制特点：<strong>边解旋边复制</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="16"><span class="check-box"></span><span class="label">DNA复制保证<strong>遗传信息的连续性</strong></span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第4节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📜 第4节 基因通常是有遗传效应的DNA片段</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 基因是什么？<br>
+      ● DNA是如何携带遗传信息的？<br>
+      ● 如何理解DNA的多样性和特异性？
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念</div>
+      <p><span class="bold-concept">基因</span>：通常是有遗传效应的DNA片段。对RNA病毒而言，基因就是有遗传效应的RNA片段。</p>
+      <p><strong>一个DNA分子上有许多个基因</strong>（人大约31.6亿碱基对，基因占比不超过2%）。</p>
+      <p><strong>遗传信息</strong>：蕴藏在<span class="bold-concept">4种碱基的排列顺序</span>之中。</p>
+      <p><strong>DNA多样性</strong>：碱基排列顺序的千变万化→构成DNA多样性。</p>
+      <p><strong>DNA特异性</strong>：每个DNA分子碱基特定的排列顺序→构成DNA特异性。</p>
+      <p>DNA的多样性和特异性是<span class="bold-concept">生物体多样性和特异性的物质基础</span>。</p>
+    </div>
+
+    <ul class="checklist" id="cl4">
+      <li data-id="17"><span class="check-box"></span><span class="label"><strong>基因</strong>通常是有遗传效应的<strong>DNA片段</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="18"><span class="check-box"></span><span class="label">遗传信息蕴藏在碱基<strong>排列顺序</strong>中（不是碱基数量！）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="19"><span class="check-box"></span><span class="label"><strong>多样性</strong>：碱基序列千变万化；<strong>特异性</strong>：特定碱基序列（DNA指纹技术基础）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="20"><span class="check-box"></span><span class="label">人类基因组约31.6亿碱基对，基因占比<strong>不超过2%</strong></span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 易错辨析 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>⚡ 易错概念辨析与补充</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card"><h4>❌ 常见错误</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① "DNA是全部生物的遗传物质" → <strong>错！</strong>RNA病毒以RNA为遗传物质 → "DNA是<strong>主要</strong>的遗传物质"<br>
+          ② "A=T，G=C，所以A+G=T+C" → 正确（嘌呤=嘧啶），但A/T和G/C的比值在不同DNA中可能不同<br>
+          ③ "基因就是DNA片段" → <strong>不准确！</strong>基因<strong>通常</strong>是有遗传效应的DNA片段<br>
+          ④ "DNA复制只在细胞核中进行" → <strong>错！</strong>线粒体和叶绿体中也有DNA复制
+        </p>
+      </div>
+      <div class="info-card"><h4>💡 关键计算</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① 若A占20%，则T=20%，G=C=30%<br>
+          ② DNA复制n次：子代DNA总数=2ⁿ，含亲代链的DNA=2个<br>
+          ③ 碱基对排列方式：若含n个碱基对，理论上排列方式=4ⁿ种<br>
+          ④ A+T/G+C比值越高，DNA热稳定性越<strong>低</strong>（A=T只有2个氢键）
+        </p>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>实验</th><th>材料</th><th>方法</th><th>结论</th></tr>
+      <tr><td>格里菲思</td><td>肺炎链球菌+小鼠</td><td>体内转化</td><td>存在转化因子</td></tr>
+      <tr><td>艾弗里</td><td>肺炎链球菌</td><td>体外转化（减法原理）</td><td>DNA是转化因子</td></tr>
+      <tr><td>赫尔希-蔡斯</td><td>T2噬菌体</td><td>同位素标记(³⁵S/³²P)</td><td>DNA是遗传物质</td></tr>
+      <tr><td>梅塞尔森-斯塔尔</td><td>大肠杆菌</td><td>¹⁵N标记+离心</td><td>DNA半保留复制</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl5">
+      <li data-id="21"><span class="check-box"></span><span class="label">DNA复制发生在<strong>细胞分裂前的间期</strong>（随染色体复制完成）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="22"><span class="check-box"></span><span class="label">真核生物DNA主要分布在<strong>细胞核</strong>（线粒体、叶绿体也含有少量DNA）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="23"><span class="check-box"></span><span class="label">一条染色体上有一个DNA分子→复制后有<strong>两个</strong>DNA（着丝粒连接）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="24"><span class="check-box"></span><span class="label">DNA指纹技术原理：DNA的<strong>特异性</strong>（每个人DNA指纹图独一无二）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="25"><span class="check-box"></span><span class="label">生物信息学：核酸与蛋白质序列数据的计算机处理和分析</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📋 本章小结</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>核心线索：</strong>DNA是主要的遗传物质 → DNA双螺旋结构 → 半保留复制 → 基因是有遗传效应的DNA片段。碱基排列顺序蕴藏遗传信息，DNA的多样性+特异性是生物多样性和特异性的物质基础。
+    </div>
+    <ul class="checklist" id="cl6">
+      <li data-id="26"><span class="check-box"></span><span class="label">DNA双螺旋结构为复制提供<strong>精确模板</strong>；碱基互补配对保证复制<strong>准确性</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="27"><span class="check-box"></span><span class="label">基因本质：从"遗传因子"→"基因在染色体上"→"有遗传效应的DNA片段"</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="28"><span class="check-box"></span><span class="label">单细胞基因组测序可用于遗传病筛查（极体测序→推测卵细胞基因）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="29"><span class="check-box"></span><span class="label">薛定谔《生命是什么》第一个把遗传物质设定为信息分子</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="30"><span class="check-box"></span><span class="label">CRISPR/Cas9基因组编辑技术的原理和意义</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 30;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+}
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function() {
+    this.classList.toggle('checked');
+    updateProgress();
+    saveCheckState();
+  });
+});
+function saveCheckState() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => { state[li.dataset.id] = li.classList.contains('checked'); });
+  localStorage.setItem('bio_b2_ch3_checklist', JSON.stringify(state));
+}
+function loadCheckState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_b2_ch3_checklist'));
+    if (state) document.querySelectorAll('.checklist li').forEach(li => { if (state[li.dataset.id]) li.classList.add('checked'); });
+  } catch(e) {}
+  updateProgress();
+}
+loadCheckState();
+
+// ===== DNA REPLICATION CANVAS =====
+const replCanvas = document.getElementById('replCanvas');
+const replCtx = replCanvas.getContext('2d');
+let replStep = 0;
+
+function drawDNALine(x, y, w, color, label) {
+  replCtx.strokeStyle = color;
+  replCtx.lineWidth = 4;
+  replCtx.beginPath();
+  replCtx.moveTo(x, y);
+  replCtx.lineTo(x + w, y);
+  replCtx.stroke();
+  // ladder rungs
+  for (let rx = x + 10; rx < x + w; rx += 25) {
+    replCtx.strokeStyle = '#999';
+    replCtx.lineWidth = 1.5;
+    replCtx.beginPath();
+    replCtx.moveTo(rx, y - 8);
+    replCtx.lineTo(rx, y + 8);
+    replCtx.stroke();
+  }
+  if (label) {
+    replCtx.fillStyle = '#2c3e50';
+    replCtx.font = 'bold 12px sans-serif';
+    replCtx.textAlign = 'center';
+    replCtx.fillText(label, x + w/2, y - 14);
+  }
+}
+
+function drawReplication() {
+  replCtx.clearRect(0, 0, replCanvas.width, replCanvas.height);
+  replCtx.fillStyle = '#fafbfc';
+  replCtx.fillRect(0, 0, replCanvas.width, replCanvas.height);
+
+  replCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  replCtx.textAlign = 'center';
+
+  if (replStep === 0) {
+    replCtx.fillStyle = '#00695c';
+    replCtx.fillText('亲代 DNA（¹⁵N/¹⁵N）—— 重链，离心管底部', 350, 30);
+    drawDNALine(150, 120, 150, '#d32f2f', '¹⁵N旧链');
+    drawDNALine(400, 120, 150, '#1565c0', '¹⁵N旧链');
+    // Centrifuge tube
+    replCtx.fillStyle = '#e0e0e0';
+    replCtx.beginPath();
+    replCtx.moveTo(300, 180);
+    replCtx.lineTo(280, 250);
+    replCtx.lineTo(420, 250);
+    replCtx.lineTo(400, 180);
+    replCtx.closePath();
+    replCtx.fill();
+    replCtx.fillStyle = '#d32f2f';
+    replCtx.fillRect(290, 230, 120, 15);
+    replCtx.fillStyle = '#2c3e50';
+    replCtx.fillText('离心管：底部一条带（重）', 350, 255);
+  } else if (replStep === 1) {
+    replCtx.fillStyle = '#00695c';
+    replCtx.fillText('第1代 DNA（¹⁵N/¹⁴N）—— 杂交链，离心管中部', 350, 25);
+    // Parent
+    drawDNALine(100, 80, 120, '#d32f2f', '¹⁵N旧链');
+    drawDNALine(100, 96, 120, '#4caf50', '¹⁴N新链');
+    drawDNALine(400, 80, 120, '#d32f2f', '¹⁵N旧链');
+    drawDNALine(400, 96, 120, '#4caf50', '¹⁴N新链');
+    replCtx.fillText('半保留复制：每个子代DNA含一条旧链和一条新链', 350, 140);
+    // Tube
+    replCtx.fillStyle = '#e0e0e0';
+    replCtx.beginPath();
+    replCtx.moveTo(300, 170);
+    replCtx.lineTo(280, 250);
+    replCtx.lineTo(420, 250);
+    replCtx.lineTo(400, 170);
+    replCtx.closePath();
+    replCtx.fill();
+    replCtx.fillStyle = '#ff9800';
+    replCtx.fillRect(290, 200, 120, 15);
+    replCtx.fillStyle = '#2c3e50';
+    replCtx.fillText('离心管：中部一条带（中）', 350, 255);
+  } else {
+    replCtx.fillStyle = '#00695c';
+    replCtx.fillText('第2代 DNA—— ¹⁵N/¹⁴N + ¹⁴N/¹⁴N', 350, 25);
+    drawDNALine(50, 60, 100, '#d32f2f', '¹⁵N');
+    drawDNALine(50, 76, 100, '#4caf50', '¹⁴N');
+    drawDNALine(220, 60, 100, '#4caf50', '¹⁴N');
+    drawDNALine(220, 76, 100, '#4caf50', '¹⁴N');
+    drawDNALine(390, 60, 100, '#d32f2f', '¹⁵N');
+    drawDNALine(390, 76, 100, '#4caf50', '¹⁴N');
+    drawDNALine(560, 60, 100, '#4caf50', '¹⁴N');
+    drawDNALine(560, 76, 100, '#4caf50', '¹⁴N');
+    replCtx.fillText('2个杂交链 + 2个轻链', 350, 120);
+    // Tube
+    replCtx.fillStyle = '#e0e0e0';
+    replCtx.beginPath();
+    replCtx.moveTo(300, 155);
+    replCtx.lineTo(280, 250);
+    replCtx.lineTo(420, 250);
+    replCtx.closePath();
+    replCtx.fill();
+    replCtx.fillStyle = '#4caf50';
+    replCtx.fillRect(290, 180, 120, 15);
+    replCtx.fillStyle = '#ff9800';
+    replCtx.fillRect(290, 205, 120, 15);
+    replCtx.fillStyle = '#2c3e50';
+    replCtx.fillText('离心管：两条带（轻+中）', 350, 255);
+  }
+  requestAnimationFrame(drawReplication);
+}
+drawReplication();
+</script>
+
+</div>
+</div>
+</body>
+</html>

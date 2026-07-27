@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教材章节练习 - BioVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #f8fafc;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .sidebar-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .chapter-nav-list {
+            padding: 12px 0;
+        }
+
+        .chapter-nav-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .chapter-nav-item:hover {
+            background: #f1f5f9;
+        }
+
+        .chapter-nav-item.active {
+            background: #e0f2fe;
+            border-left-color: #0ea5e9;
+            color: #0369a1;
+        }
+
+        .chapter-nav-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .chapter-nav-item.active .chapter-nav-item-title {
+            color: #0369a1;
+            font-weight: 600;
+        }
+
+        .chapter-nav-item-count {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .chapter-nav-item.active .chapter-nav-item-count {
+            color: #0284c7;
+        }
+
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            background: #f8fafc;
+        }
+
+        .sidebar-footer-btn {
+            width: 100%;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-footer-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .content-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card.blue {
+            border-left-color: #0ea5e9;
+        }
+
+        .stat-card.green {
+            border-left-color: #22c55e;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .section-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .section-card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-card-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-card-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .difficulty-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .difficulty-tag {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .difficulty-tag.easy {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .difficulty-tag.medium {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .difficulty-tag.hard {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .section-card-body {
+            padding: 16px 24px;
+            background: #fafafa;
+        }
+
+        .section-card-footer {
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .section-card-info {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .section-card-info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .inline-type-filter {
+            display: flex;
+            gap: 6px;
+        }
+
+        .inline-type-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            color: #64748b;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inline-type-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .inline-type-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        .btn-practice {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            text-decoration: none;
+            border: none;
+            outline: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-practice:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-review {
+            padding: 10px 24px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid #667eea;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-left: 12px;
+        }
+
+        .btn-review:hover {
+            background: #f0f6fd;
+        }
+
+        .progress-ring {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .progress-ring::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: #667eea;
+            transform: rotate(0deg);
+        }
+
+        .progress-ring-inner {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 14px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+                max-height: 300px;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .content-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .content-actions {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .btn {
+                flex: 1;
+                min-width: 140px;
+            }
+        }
+
+        /* 题型选择对话框 */
+        .type-select-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .type-select-modal.show {
+            display: flex;
+        }
+
+        .type-select-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .type-select-content {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .type-select-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .type-select-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .type-select-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .type-select-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .type-select-body {
+            padding: 24px 30px 30px;
+        }
+
+        .type-select-desc {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0 0 20px;
+        }
+
+        .type-select-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .type-select-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .type-select-item:hover {
+            background: #f0f7ff;
+            border-color: #e0e7ff;
+        }
+
+        .type-select-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .type-select-item input[type="checkbox"]:checked + .type-icon {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .type-select-item input[type="checkbox"]:checked ~ .type-name {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .type-select-item input[type="checkbox"]:checked ~ .type-select-item {
+            border-color: #667eea;
+            background: #f0f7ff;
+        }
+
+        .type-select-item input[type="checkbox"]:checked + .type-icon + .type-name {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .type-select-item input[type="checkbox"]:checked ~ span.type-icon {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .type-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .type-name {
+            font-size: 15px;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .type-select-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-cancel, .btn-confirm {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-confirm:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="logo"></div>
+
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link" target="_blank">首页</a>
+
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
+                <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper" id="navAvatarBtn">
+                    <div class="avatar" id="navAvatar">👤</div>
+                    <div class="user-dropdown-menu" id="navDropdownMenu">
+                        <a href="../user-center/main.html" class="dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title" id="sidebarTitle">📖 必修一：分子与细胞</div>
+                <div class="sidebar-subtitle">教材同步练习</div>
+            </div>
+
+            <div class="chapter-nav-list" id="chapterNavList">
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="sidebar-footer-btn">
+                    <span>🎯</span> 专项突破
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <div>
+                    <div class="content-title" id="contentTitle">第1章 走近细胞</div>
+                    <div class="content-subtitle" id="contentSubtitle">按照章节进行专项练习，巩固知识点</div>
+                </div>
+                <div class="content-actions">
+                    <button class="btn btn-secondary" onclick="toggleDifficulty()">
+                        ⚙️ 难度设置
+                    </button>
+                    <button class="btn btn-primary" onclick="startQuickPractice()">
+                        ⚡ 快速练习
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">总题数</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-value" id="statCompleted">0</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-value" id="statAccuracy">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+            </div>
+
+            <div class="section-card-list" id="sectionCardList">
+            </div>
+
+            <footer class="footer">
+                <p>© 2026 BioVision 生物视界 - 高中生物教学辅助平台</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        const textbooks = {
+            '必修一：分子与细胞': {
+                name: '分子与细胞',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 走近细胞',
+                        icon: '🔬',
+                        sections: [
+                            { id: 's1-1', title: '第1节 细胞是生命活动的基本单位', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's1-2', title: '第2节 细胞的多样性和统一性', questions: 30, easy: 12, medium: 12, hard: 6 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 组成细胞的分子',
+                        icon: '🧪',
+                        sections: [
+                            { id: 's2-1', title: '第1节 细胞中的元素和化合物', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's2-2', title: '第2节 细胞中的无机物', questions: 18, easy: 7, medium: 7, hard: 4 },
+                            { id: 's2-3', title: '第3节 细胞中的糖类和脂质', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's2-4', title: '第4节 蛋白质是生命活动的主要承担者', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's2-5', title: '第5节 核酸是遗传信息的携带者', questions: 25, easy: 10, medium: 10, hard: 5 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 细胞的基本结构',
+                        icon: '🏠',
+                        sections: [
+                            { id: 's3-1', title: '第1节 细胞膜的结构和功能', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's3-2', title: '第2节 细胞器之间的分工合作', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's3-3', title: '第3节 细胞核的结构和功能', questions: 20, easy: 8, medium: 8, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 细胞的物质输入和输出',
+                        icon: '🔄',
+                        sections: [
+                            { id: 's4-1', title: '第1节 被动运输', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's4-2', title: '第2节 主动运输与胞吞、胞吐', questions: 22, easy: 9, medium: 9, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c5',
+                        title: '第5章 细胞的能量供应和利用',
+                        icon: '⚡',
+                        sections: [
+                            { id: 's5-1', title: '第1节 降低化学反应活化能的酶', questions: 30, easy: 12, medium: 12, hard: 6 },
+                            { id: 's5-2', title: '第2节 细胞的能量“货币”ATP', questions: 18, easy: 7, medium: 7, hard: 4 },
+                            { id: 's5-3', title: '第3节 细胞呼吸的原理和应用', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's5-4', title: '第4节 光合作用与能量转化', questions: 32, easy: 13, medium: 13, hard: 6 }
+                        ]
+                    },
+                    {
+                        id: 'c6',
+                        title: '第6章 细胞的生命历程',
+                        icon: '⏳',
+                        sections: [
+                            { id: 's6-1', title: '第1节 细胞的增殖', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's6-2', title: '第2节 细胞的分化', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's6-3', title: '第3节 细胞的衰老和死亡', questions: 18, easy: 7, medium: 7, hard: 4 }
+                        ]
+                    }
+                ]
+            },
+            '必修二：遗传与进化': {
+                name: '遗传与进化',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 遗传因子的发现',
+                        icon: '🧬',
+                        sections: [
+                            { id: 's1-1', title: '第1节 孟德尔的豌豆杂交实验（一）', questions: 30, easy: 12, medium: 12, hard: 6 },
+                            { id: 's1-2', title: '第2节 孟德尔的豌豆杂交实验（二）', questions: 35, easy: 14, medium: 14, hard: 7 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 基因和染色体的关系',
+                        icon: '🧫',
+                        sections: [
+                            { id: 's2-1', title: '第1节 减数分裂和受精作用', questions: 30, easy: 12, medium: 12, hard: 6 },
+                            { id: 's2-2', title: '第2节 基因在染色体上', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's2-3', title: '第3节 伴性遗传', questions: 28, easy: 11, medium: 12, hard: 5 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 基因的本质',
+                        icon: '📊',
+                        sections: [
+                            { id: 's3-1', title: '第1节 DNA是主要的遗传物质', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's3-2', title: '第2节 DNA的结构', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's3-3', title: '第3节 DNA的复制', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's3-4', title: '第4节 基因通常是有遗传效应的DNA片段', questions: 18, easy: 7, medium: 7, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 基因的表达',
+                        icon: '📝',
+                        sections: [
+                            { id: 's4-1', title: '第1节 基因指导蛋白质的合成', questions: 30, easy: 12, medium: 12, hard: 6 },
+                            { id: 's4-2', title: '第2节 基因表达与性状的关系', questions: 25, easy: 10, medium: 10, hard: 5 }
+                        ]
+                    },
+                    {
+                        id: 'c5',
+                        title: '第5章 基因突变及其他变异',
+                        icon: '🔀',
+                        sections: [
+                            { id: 's5-1', title: '第1节 基因突变和基因重组', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's5-2', title: '第2节 染色体变异', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's5-3', title: '第3节 人类遗传病', questions: 20, easy: 8, medium: 8, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c6',
+                        title: '第6章 生物的进化',
+                        icon: '🦖',
+                        sections: [
+                            { id: 's6-1', title: '第1节 生物有共同祖先的证据', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's6-2', title: '第2节 自然选择与适应的形成', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's6-3', title: '第3节 种群基因组成的变化与物种的形成', questions: 30, easy: 12, medium: 12, hard: 6 },
+                            { id: 's6-4', title: '第4节 协同进化与生物多样性的形成', questions: 22, easy: 9, medium: 9, hard: 4 }
+                        ]
+                    }
+                ]
+            },
+            '选修一：稳态与调节': {
+                name: '稳态与调节',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 人体的内环境与稳态',
+                        icon: '🧠',
+                        sections: [
+                            { id: 's1-1', title: '第1节 细胞生活的环境', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's1-2', title: '第2节 内环境的稳态', questions: 25, easy: 10, medium: 10, hard: 5 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 神经调节',
+                        icon: '⚡',
+                        sections: [
+                            { id: 's2-1', title: '第1节 神经调节的结构基础', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's2-2', title: '第2节 神经调节的基本方式', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's2-3', title: '第3节 神经冲动的产生和传导', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's2-4', title: '第4节 神经系统的分级调节', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's2-5', title: '第5节 人脑的高级功能', questions: 20, easy: 8, medium: 8, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 体液调节',
+                        icon: '🧪',
+                        sections: [
+                            { id: 's3-1', title: '第1节 激素与内分泌系统', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's3-2', title: '第2节 激素调节的过程', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's3-3', title: '第3节 神经调节与体液调节的关系', questions: 22, easy: 9, medium: 9, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 免疫调节',
+                        icon: '🛡️',
+                        sections: [
+                            { id: 's4-1', title: '第1节 免疫系统的组成和功能', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's4-2', title: '第2节 特异性免疫', questions: 30, easy: 12, medium: 12, hard: 6 },
+                            { id: 's4-3', title: '第3节 免疫失调', questions: 25, easy: 10, medium: 10, hard: 5 }
+                        ]
+                    },
+                    {
+                        id: 'c5',
+                        title: '第5章 植物生命活动的调节',
+                        icon: '🌱',
+                        sections: [
+                            { id: 's5-1', title: '第1节 植物生长素', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's5-2', title: '第2节 其他植物激素', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's5-3', title: '第3节 植物生长调节剂的应用', questions: 18, easy: 7, medium: 7, hard: 4 }
+                        ]
+                    }
+                ]
+            },
+            '选修二：生物与环境': {
+                name: '生物与环境',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 种群及其动态',
+                        icon: '🐦',
+                        sections: [
+                            { id: 's1-1', title: '第1节 种群的数量特征', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's1-2', title: '第2节 种群数量的变化', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's1-3', title: '第3节 影响种群数量变化的因素', questions: 20, easy: 8, medium: 8, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 群落及其演替',
+                        icon: '🌳',
+                        sections: [
+                            { id: 's2-1', title: '第1节 群落的结构', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's2-2', title: '第2节 群落的主要类型', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's2-3', title: '第3节 群落的演替', questions: 22, easy: 9, medium: 9, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 生态系统及其稳定性',
+                        icon: '🌍',
+                        sections: [
+                            { id: 's3-1', title: '第1节 生态系统的结构', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's3-2', title: '第2节 生态系统的能量流动', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's3-3', title: '第3节 生态系统的物质循环', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's3-4', title: '第4节 生态系统的信息传递', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's3-5', title: '第5节 生态系统的稳定性', questions: 25, easy: 10, medium: 10, hard: 5 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 人与环境',
+                        icon: '👥',
+                        sections: [
+                            { id: 's4-1', title: '第1节 人类活动对生态环境的影响', questions: 22, easy: 9, medium: 9, hard: 4 },
+                            { id: 's4-2', title: '第2节 生物多样性及其保护', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's4-3', title: '第3节 生态工程', questions: 20, easy: 8, medium: 8, hard: 4 }
+                        ]
+                    }
+                ]
+            },
+            '选修三：生物技术与工程': {
+                name: '生物技术与工程',
+                chapters: [
+                    {
+                        id: 'c1',
+                        title: '第1章 发酵工程',
+                        icon: '🍺',
+                        sections: [
+                            { id: 's1-1', title: '第1节 传统发酵技术的应用', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's1-2', title: '第2节 微生物的培养技术及应用', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's1-3', title: '第3节 发酵工程及其应用', questions: 22, easy: 9, medium: 9, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        title: '第2章 细胞工程',
+                        icon: '🧫',
+                        sections: [
+                            { id: 's2-1', title: '第1节 植物细胞工程', questions: 28, easy: 11, medium: 12, hard: 5 },
+                            { id: 's2-2', title: '第2节 动物细胞工程', questions: 30, easy: 12, medium: 12, hard: 6 }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        title: '第3章 基因工程',
+                        icon: '🔬',
+                        sections: [
+                            { id: 's3-1', title: '第1节 重组DNA技术的基本工具', questions: 25, easy: 10, medium: 10, hard: 5 },
+                            { id: 's3-2', title: '第2节 基因工程的基本操作程序', questions: 30, easy: 12, medium: 12, hard: 6 },
+                            { id: 's3-3', title: '第3节 基因工程的应用', questions: 22, easy: 9, medium: 9, hard: 4 }
+                        ]
+                    },
+                    {
+                        id: 'c4',
+                        title: '第4章 生物技术的安全性与伦理问题',
+                        icon: '⚖️',
+                        sections: [
+                            { id: 's4-1', title: '第1节 转基因产品的安全性', questions: 20, easy: 8, medium: 8, hard: 4 },
+                            { id: 's4-2', title: '第2节 关注生殖性克隆人', questions: 18, easy: 7, medium: 7, hard: 4 },
+                            { id: 's4-3', title: '第3节 禁止生物武器', questions: 15, easy: 6, medium: 6, hard: 3 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        let currentChapterIndex = 0;
+        let currentQuestionType = 'all';
+
+        const questionTypeNames = {
+            'all': '全部',
+            'choice': '选择题',
+            'fill': '填空题',
+            'essay': '大题',
+            'comprehensive': '综合题'
+        };
+
+        function getUrlParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function renderChapterNav() {
+            const textbookId = getUrlParam('textbook') || '必修一：分子与细胞';
+            const textbook = textbooks[textbookId];
+            
+            if (!textbook) {
+                document.getElementById('chapterNavList').innerHTML = '<div style="padding: 40px; text-align: center; color: #999;">未找到该教材</div>';
+                return;
+            }
+
+            document.getElementById('sidebarTitle').textContent = `📖 ${textbookId}`;
+            
+            const navList = document.getElementById('chapterNavList');
+            navList.innerHTML = '';
+
+            textbook.chapters.forEach((chapter, index) => {
+                const totalQuestions = chapter.sections.reduce((sum, s) => sum + s.questions, 0);
+                
+                const navItem = document.createElement('div');
+                navItem.className = `chapter-nav-item ${index === 0 ? 'active' : ''}`;
+                navItem.onclick = () => selectChapter(index);
+                
+                navItem.innerHTML = `
+                    <div class="chapter-nav-item-title">${chapter.icon} ${chapter.title}</div>
+                    <div class="chapter-nav-item-count">${chapter.sections.length}节 · ${totalQuestions}题</div>
+                `;
+                
+                navList.appendChild(navItem);
+            });
+
+            if (textbook.chapters.length > 0) {
+                renderSectionCards(0);
+            }
+        }
+
+        function selectChapter(index) {
+            currentChapterIndex = index;
+            
+            const navItems = document.querySelectorAll('.chapter-nav-item');
+            navItems.forEach((item, i) => {
+                item.classList.remove('active');
+                if (i === index) {
+                    item.classList.add('active');
+                }
+            });
+
+            renderSectionCards(index);
+        }
+
+        function renderSectionCards(chapterIndex) {
+            const textbookId = getUrlParam('textbook') || '必修一：分子与细胞';
+            const textbook = textbooks[textbookId];
+            
+            if (!textbook || !textbook.chapters[chapterIndex]) {
+                return;
+            }
+
+            const chapter = textbook.chapters[chapterIndex];
+            
+            document.getElementById('contentTitle').textContent = chapter.title;
+            
+            const totalQuestions = chapter.sections.reduce((sum, s) => sum + s.questions, 0);
+            const typeName = questionTypeNames[currentQuestionType];
+            
+            document.getElementById('contentSubtitle').textContent = `共 ${chapter.sections.length} 节 · ${totalQuestions} 题 · 当前筛选：${typeName}`;
+            document.getElementById('statTotal').textContent = totalQuestions;
+            document.getElementById('statCompleted').textContent = 0;
+            document.getElementById('statAccuracy').textContent = '0%';
+
+            const cardList = document.getElementById('sectionCardList');
+            cardList.innerHTML = '';
+
+            chapter.sections.forEach((section, index) => {
+                const card = document.createElement('div');
+                card.className = 'section-card';
+                
+                const difficultyTags = [];
+                if (section.easy > 0) difficultyTags.push('<span class="difficulty-tag easy">基础</span>');
+                if (section.medium > 0) difficultyTags.push('<span class="difficulty-tag medium">中等</span>');
+                if (section.hard > 0) difficultyTags.push('<span class="difficulty-tag hard">困难</span>');
+
+                card.innerHTML = `
+                    <div class="section-card-header">
+                        <div class="section-card-title">${section.title}</div>
+                        <div class="difficulty-tags">${difficultyTags.join('')}</div>
+                    </div>
+                    <div class="section-card-body">
+                        <div style="color: #64748b; font-size: 14px; line-height: 1.6;">
+                            本节主要练习${section.title}相关知识点，包括核心概念理解、原理应用和拓展延伸。
+                        </div>
+                    </div>
+                    <div class="section-card-footer">
+                        <div class="section-card-info">
+                            <div class="section-card-info-item">
+                                <span>📝</span> ${section.questions}题
+                            </div>
+                            <div class="section-card-info-item">
+                                <span>✅</span> 正确率 0%
+                            </div>
+                            <div class="section-card-info-item">
+                                <span>📊</span> 练习次数 0
+                            </div>
+                        </div>
+                        <div class="section-card-actions">
+                            <button class="btn-practice" onclick="openTypeSelectModal('${textbookId}', '${chapter.title}', '${section.title}')">
+                                <span>▶️</span> 开始练习
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                cardList.appendChild(card);
+            });
+        }
+
+        function toggleDifficulty() {
+            alert('难度设置功能开发中...');
+        }
+
+        function selectQuestionType(type) {
+            currentQuestionType = type;
+            
+            document.querySelectorAll('.type-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
+                }
+            });
+
+            renderSectionCards(currentChapterIndex);
+        }
+
+        function startQuickPractice() {
+            const textbookId = getUrlParam('textbook') || '必修一：分子与细胞';
+            const textbook = textbooks[textbookId];
+            if (textbook && textbook.chapters.length > 0) {
+                const chapter = textbook.chapters[currentChapterIndex];
+                if (chapter && chapter.sections.length > 0) {
+                    const section = chapter.sections[0];
+                    window.location.href = `quiz.html?textbook=${encodeURIComponent(textbookId)}&chapter=${encodeURIComponent(chapter.title)}&section=${encodeURIComponent(section.title)}&type=${currentQuestionType}`;
+                }
+            }
+        }
+
+        renderChapterNav();
+
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+            const navDropdown = document.getElementById('navDropdownMenu');
+            if (navDropdown && !e.target.closest('#navAvatarBtn')) {
+                navDropdown.classList.remove('show');
+            }
+        });
+        
+        const navAvatarBtn = document.getElementById('navAvatarBtn');
+        const navDropdown = document.getElementById('navDropdownMenu');
+        if (navAvatarBtn && navDropdown) {
+            navAvatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navDropdown.classList.toggle('show');
+            });
+        }
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function loadUserInfo() {
+            const token = localStorage.getItem('token');
+            const avatarEl = document.getElementById('navAvatar');
+            if (!avatarEl) return;
+            
+            if (!token) {
+                avatarEl.textContent = '👤';
+                return;
+            }
+            
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    avatarEl.textContent = '👤';
+                    return;
+                }
+                
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const data = await resp.json();
+                
+                if (data.success && data.data) {
+                    const username = data.data.username || '用户';
+                    const avatar = data.data.avatar;
+                    
+                    if (avatar && avatar.startsWith('data:image')) {
+                        avatarEl.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;">`;
+                    } else {
+                        const colors = ['#4338ca', '#be185d', '#0369a1', '#15803d', '#c2410c', '#7c3aed', '#dc2626', '#b45309'];
+                        const char = username.trim()[0].toUpperCase();
+                        const colorIndex = char.charCodeAt(0) % colors.length;
+                        avatarEl.style.background = colors[colorIndex];
+                        avatarEl.textContent = char;
+                    }
+                }
+            } catch (e) {
+                avatarEl.textContent = '👤';
+            }
+        }
+
+        loadUserInfo();
+
+        // 题型选择对话框相关
+        let currentPracticeInfo = null;
+
+        function openTypeSelectModal(textbookId, chapterTitle, sectionTitle) {
+            currentPracticeInfo = {
+                textbookId,
+                chapterTitle,
+                sectionTitle
+            };
+            document.getElementById('typeSelectModal').classList.add('show');
+        }
+
+        function closeTypeSelectModal() {
+            document.getElementById('typeSelectModal').classList.remove('show');
+            currentPracticeInfo = null;
+        }
+
+        function confirmTypeSelection() {
+            const selectedType = document.querySelector('input[name="questionType"]:checked');
+            
+            if (!selectedType) {
+                alert('请选择一种题型');
+                return;
+            }
+            
+            if (!currentPracticeInfo) return;
+            
+            const { textbookId, chapterTitle, sectionTitle } = currentPracticeInfo;
+            const questionType = selectedType.value;
+            
+            window.location.href = `quiz.html?textbook=${encodeURIComponent(textbookId)}&chapter=${encodeURIComponent(chapterTitle)}&section=${encodeURIComponent(sectionTitle)}&type=${encodeURIComponent(questionType)}`;
+        }
+    </script>
+
+    <!-- 题型选择对话框 -->
+    <div class="type-select-modal" id="typeSelectModal">
+        <div class="type-select-overlay" onclick="closeTypeSelectModal()"></div>
+        <div class="type-select-content">
+            <div class="type-select-header">
+                <h3>📝 选择题型</h3>
+                <button class="type-select-close" onclick="closeTypeSelectModal()">✕</button>
+            </div>
+            <div class="type-select-body">
+                <p class="type-select-desc">请选择随机练习中包含的题型（可多选）</p>
+                <div class="type-select-grid">
+                    <label class="type-select-item">
+                        <input type="radio" name="questionType" value="choice" checked>
+                        <span class="type-icon">✅</span>
+                        <span class="type-name">选择题</span>
+                    </label>
+                    <label class="type-select-item">
+                        <input type="radio" name="questionType" value="fill">
+                        <span class="type-icon">✏️</span>
+                        <span class="type-name">填空题</span>
+                    </label>
+                    <label class="type-select-item">
+                        <input type="radio" name="questionType" value="essay">
+                        <span class="type-icon">📝</span>
+                        <span class="type-name">大题</span>
+                    </label>
+                    <label class="type-select-item">
+                        <input type="radio" name="questionType" value="comprehensive">
+                        <span class="type-icon">🎯</span>
+                        <span class="type-name">综合题</span>
+                    </label>
+                </div>
+                <div class="type-select-actions">
+                    <button class="btn-cancel" onclick="closeTypeSelectModal()">取消</button>
+                    <button class="btn-confirm" onclick="confirmTypeSelection()">确认开始</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

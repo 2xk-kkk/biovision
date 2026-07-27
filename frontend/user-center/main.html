@@ -1,0 +1,4495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>用户主页面 - 生物视界</title>
+    <style>
+        /* =========================
+           全局主题变量
+           修改这里可以统一调整整页配色
+        ========================= */
+        :root {
+            --bg-1: #eef8ff;
+            --bg-2: #f7fbff;
+            --panel: rgba(255, 255, 255, 0.86);
+            --panel-strong: rgba(255, 255, 255, 0.96);
+            --border: rgba(148, 163, 184, 0.18);
+            --text: #1f2937;
+            --muted: #64748b;
+            --brand: #1fb6a6;
+            --brand-dark: #159382;
+            --brand-soft: rgba(31, 182, 166, 0.12);
+            --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+        }
+
+        /* 基础重置 */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* 页面整体背景与字体 */
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(31, 182, 166, 0.14), transparent 28%),
+                radial-gradient(circle at top right, rgba(102, 126, 234, 0.12), transparent 26%),
+                linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 55%, #f7fafc 100%);
+            min-height: 100%;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* =========================
+           顶部导航栏
+           这里控制导航栏高度、透明度和阴影
+        ========================= */
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .avatar-wrapper:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        /* =========================*/
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .carousel-container {
+            display: flex;
+            transition: transform 0.5s ease;
+            height: 100%;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            height: 100%;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-title {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            z-index: 10;
+        }
+
+        .carousel-title h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            margin: 0;
+        }
+
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+
+        .indicator.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .subtitle-section {
+            margin-left: 40px;
+            margin-bottom: 40px;
+        }
+
+        .subtitle-section p {
+            font-size: 1.3rem;
+            color: #4a5568;
+            line-height: 1.6;
+            font-weight: 500;
+            transform: translateY(-20px);
+            animation: fadeInDown 0.8s 0s forwards;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        /* =========================
+           页面主体
+        ========================= */
+        .page {
+            width: min(1360px, calc(100% - 32px));
+            margin: 24px auto 40px;
+        }
+
+        /* 顶部个人主页横幅 */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            min-height: 260px;
+            background:
+                radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.75), transparent 18%),
+                radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.55), transparent 12%),
+                linear-gradient(135deg, #72d7ea 0%, #8ee1e7 38%, #d9f1ff 100%);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.42);
+        }
+
+        /* 横幅叠加的亮光效果 */
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.35)),
+                radial-gradient(circle at 70% 32%, rgba(255, 244, 214, 0.9), transparent 9%),
+                radial-gradient(circle at 18% 68%, rgba(255, 255, 255, 0.35), transparent 7%);
+            pointer-events: none;
+        }
+
+        /* 主页头部布局：左边信息，右边数据 */
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.45fr 0.95fr;
+            gap: 24px;
+            padding: 28px;
+            align-items: end;
+            min-height: 260px;
+        }
+
+        /* 用户资料卡 */
+        .profile-card {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            padding: 22px 22px 18px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        /* 用户大头像 */
+        .profile-avatar {
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            color: #ff4d4f;
+            font-size: 2.6rem;
+            background: #2f2a26;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+        }
+
+        /* 用户主信息区域 */
+        .profile-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* 姓名、等级、标签一行 */
+        .profile-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .profile-name {
+            font-size: 1.7rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* 小标签：等级、身份等 */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(62, 255, 242, 0.12);
+            color: var(--brand-dark);
+        }
+
+        /* 身份标签：老师时蓝底白字 */
+        .badge.role-teacher {
+            background: linear-gradient(135deg, #4f8df7, #6ba6ff);
+            color: #fff;
+        }
+
+        .badge2 {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(240, 166, 166, 0.12);
+            color: #ea1515;
+        }
+
+        /* 个人简介文字 */
+        .profile-meta {
+            margin: 10px 0 0;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        /* 个人标签行 */
+        .meta-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        /* 标签块 */
+        .meta-chip {
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            color: #475569;
+            font-size: 0.84rem;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        /* 右侧统计和按钮区域 */
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-self: stretch;
+            justify-content: end;
+        }
+
+        /* 数据概览四宫格 */
+        .stat-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        /* 单个统计卡片 */
+        .stat-box {
+            padding: 16px 12px;
+            text-align: center;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.52);
+            backdrop-filter: blur(14px);
+        }
+
+        /* 统计卡标题 */
+        .stat-box .label {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        /* 统计数字 */
+        .stat-box .value {
+            margin-top: 6px;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        /* 可点击的统计框 */
+        .stat-box-clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .stat-box-clickable:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        /* 模态框遮罩 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        /* 模态框内容 */
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 70vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 模态框头部 */
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1a1a2e;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #666;
+        }
+
+        /* 模态框列表 */
+        .modal-list {
+            padding: 12px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        /* 用户项 */
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-item:hover {
+            background: #f5f7fa;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .user-avatar-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-avatar-container {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        .user-avatar-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .user-info {
+            margin-left: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1a1a2e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-id {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* 右侧按钮组 */
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* =========================
+           右侧区域 CSS
+           这一组专门控制右边学习中心的布局和卡片样式
+        ========================= */
+
+        /* 右侧栏整体布局：右侧容器本身 */
+        .sidebar {
+            display: grid;
+            gap: 16px;
+            align-content: start;
+        }
+
+        /* 通用列表容器：错题提醒、推荐内容都会用到 */
+        .summary-list {
+            display: grid;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        /* 通用单条信息卡：列表里的每一行 */
+        .summary-item {
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .summary-item strong {
+            display: block;
+            font-size: 0.97rem;
+        }
+
+        .summary-item small {
+            color: var(--muted);
+        }
+
+        /* 学习数据区域：三张纵向指标卡的外层 */
+        .data-stack {
+            display: grid;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        /* 单条学习数据卡：时长、做题数、错题比 */
+        .data-card {
+            padding: 16px 16px 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        /* 数据卡头部：左边名称，右边数值 */
+        .data-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        /* 数据名称 */
+        .data-name {
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 0.98rem;
+        }
+
+        /* 数据数值 */
+        .data-value {
+            font-weight: 800;
+            color: var(--brand-dark);
+            font-size: 1rem;
+        }
+
+        /* 直线进度条底槽 */
+        .progress-track {
+            width: 100%;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.16);
+            overflow: hidden;
+        }
+
+        /* 直线进度条填充 */
+        .progress-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(135deg, #77dde2, #45f7f7);
+        }
+
+        /* 数据说明文字 */
+        .data-desc {
+            margin-top: 8px;
+            font-size: 0.86rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* 错题比区域：圆环和说明文字横向排列 */
+        .ring-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* 环形进度条外圈 */
+        .ring {
+            --value: 18%;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background:
+                conic-gradient(#45f7f7 0 var(--value), rgba(148, 163, 184, 0.18) var(--value) 100%);
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        /* 环形进度条中间空心部分 */
+        .ring::before {
+            content: "";
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+        }
+
+        /* 环形中间的百分比文字 */
+        .ring-label {
+            position: absolute;
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* 右侧合并大板块：一个大卡片内部再切成三段 */
+        .sidebar-combined {
+            display: grid;
+            gap: 16px;
+        }
+
+        /* 右侧大卡片中的每个分区 */
+        .sidebar-section {
+            padding: 0 20px 4px;
+        }
+
+        /* 分区之间的分隔线 */
+        .sidebar-section+.sidebar-section {
+            border-top: 1px solid rgba(148, 163, 184, 0.12);
+            padding-top: 16px;
+        }
+
+        /* 通用按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            border: 0;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* 主按钮：强调操作 */
+        .btn-primary {
+            background: linear-gradient(135deg, #77dde2, #45f7f7);
+            color: white;
+            box-shadow: 0 12px 26px rgba(31, 182, 166, 0.24);
+        }
+
+        /* 次按钮：弱化一点 */
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.88);
+            color: #15a2b1;
+            border: 1px solid rgba(31, 182, 166, 0.18);
+        }
+
+        /* 目标设置弹窗触发按钮 */
+        .btn-goal {
+            min-width: 110px;
+        }
+
+        /* =========================
+           目标设置弹窗
+           点击后显示，背景会变暗
+        ========================= */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .goal-modal {
+            width: min(680px, 100%);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            overflow: hidden;
+        }
+
+        .goal-modal-header {
+            padding: 20px 22px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        }
+
+        .goal-modal-title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .goal-modal-close {
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.06);
+            color: #334155;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .goal-modal-body {
+            padding: 18px 22px 22px;
+        }
+
+        .goal-group {
+            margin-bottom: 18px;
+        }
+
+        .goal-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .goal-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .goal-input-row {
+            margin-bottom: 12px;
+        }
+
+        .goal-input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(248, 250, 252, 0.96);
+            color: #0f172a;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .goal-input:focus {
+            border-color: rgba(31, 182, 166, 0.55);
+            box-shadow: 0 0 0 4px rgba(31, 182, 166, 0.08);
+        }
+
+        .goal-help {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .goal-options {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .goal-option {
+            position: relative;
+            display: grid;
+            place-items: center;
+            min-height: 52px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(248, 250, 252, 0.92);
+            color: #334155;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.18s ease;
+            user-select: none;
+        }
+
+        .goal-option:hover {
+            border-color: rgba(31, 182, 166, 0.38);
+            transform: translateY(-1px);
+        }
+
+        .goal-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .goal-option.selected {
+            border-color: transparent;
+            background: linear-gradient(135deg, #77dde2, #45f7f7);
+            color: white;
+            box-shadow: 0 12px 24px rgba(31, 182, 166, 0.18);
+        }
+
+        .goal-modal-footer {
+            padding: 0 22px 22px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(148, 163, 184, 0.14);
+            padding-top: 18px;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        /* =========================
+           图片裁剪功能
+        ========================= */
+        .crop-modal {
+            max-width: 600px;
+        }
+
+        .crop-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .crop-area {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f3f4f6;
+        }
+
+        .crop-area img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: move;
+        }
+
+        .crop-box {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 2px dashed #3b82f6;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .crop-box+.crop-overlay {
+            background: none;
+        }
+
+        .crop-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* =========================
+           资料编辑弹窗
+           结构和目标设置弹窗保持一致
+        ========================= */
+        .profile-form-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .profile-avatar-editor {
+            display: grid;
+            gap: 12px;
+            justify-items: center;
+        }
+
+        .profile-avatar-preview {
+            width: 108px;
+            height: 108px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea, #45f7f7);
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+            border: 4px solid rgba(255, 255, 255, 0.9);
+        }
+
+        .profile-upload-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(31, 182, 166, 0.18);
+            color: #0f766e;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .profile-upload-btn input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .profile-fields {
+            display: grid;
+            gap: 14px;
+        }
+
+        .profile-field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .profile-field label {
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .custom-combobox {
+            position: relative;
+            width: 100%;
+        }
+
+        .combobox-input {
+            padding-right: 35px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .combobox-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: auto;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 0.7rem;
+            transition: color 0.2s;
+            user-select: none;
+        }
+
+        .combobox-arrow:hover {
+            color: #334155;
+        }
+
+        .combobox-dropdown {
+            position: fixed;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            max-height: 400px;
+            overflow: hidden;
+            display: none;
+            border: 1px solid #e2e8f0;
+            width: 320px;
+            max-width: calc(100vw - 20px);
+        }
+
+        .combobox-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 12px 16px;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .dropdown-search {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .dropdown-search input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .dropdown-search input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .dropdown-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .dropdown-group {
+            margin-bottom: 4px;
+        }
+
+        .group-label {
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .group-items {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0 8px;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #334155;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .dropdown-item:hover {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .dropdown-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .profile-input,
+        .profile-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(248, 250, 252, 0.96);
+            color: #0f172a;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .profile-input:focus,
+        .profile-select:focus {
+            border-color: rgba(31, 182, 166, 0.55);
+            box-shadow: 0 0 0 4px rgba(31, 182, 166, 0.08);
+        }
+
+        .profile-help {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* 主体下半部分：左内容，右侧栏 */
+        .layout {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: minmax(0, 2.25fr) minmax(280px, 0.65fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* 通用面板 */
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        /* 面板头部 */
+        .panel-header {
+            padding: 18px 20px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .panel-subtitle {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        /* 面板里的小导航栏 */
+        .mini-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 0 20px 20px;
+        }
+
+        /* 小导航按钮 */
+        .mini-nav-item {
+            padding: 11px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            color: #334155;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .mini-nav-item:hover {
+            background: rgba(31, 182, 166, 0.08);
+            color: var(--brand-dark);
+        }
+
+        /* 当前选中的小导航 */
+        .mini-nav-item.active {
+            background: linear-gradient(135deg, #77dde2, #45f7f7);
+            color: white;
+            box-shadow: 0 12px 24px rgba(31, 182, 166, 0.2);
+        }
+
+        /* 统一的内容容器，默认隐藏，激活时显示 */
+        .content-box {
+            display: none;
+            padding: 0 20px 20px;
+        }
+
+        .content-box.active {
+            display: block;
+        }
+
+        /* 近期发帖卡片 */
+        .post-card {
+            padding: 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        /* 发帖顶部：头像 + 信息 */
+        .post-top {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        /* 帖子头像 */
+        .post-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 1.5rem;
+            flex: 0 0 auto;
+            background: linear-gradient(135deg, #34495e, #1fb6a6);
+        }
+
+        /* 发帖时间和附加信息 */
+        .post-meta {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin-top: 4px;
+        }
+
+        /* 帖子正文 */
+        .post-text {
+            margin: 12px 0 0;
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        /* 帖子底部操作区 */
+        .post-actions {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* 点赞、评论、收藏等快捷信息 */
+        .post-tools {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .post-tools span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 模型 / PPT / 错题本使用的网格卡片 */
+        .tag-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        /* 单个功能卡 */
+        .tag-card {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .tag-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        /* 卡片头部布局 */
+        .tag-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        /* 卡片右侧图标块 */
+        .tag-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: var(--brand-soft);
+            color: var(--brand-dark);
+            font-size: 1.2rem;
+        }
+
+        .tag-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        /* 卡片描述文字 */
+        .tag-desc {
+            margin: 8px 0 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        /* 右侧栏整体布局 */
+        .sidebar {
+            display: grid;
+            gap: 16px;
+            align-content: start;
+        }
+
+        /* 右侧列表 */
+        .summary-list {
+            display: grid;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        /* 右侧单条信息 */
+        .summary-item {
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .summary-item strong {
+            display: block;
+            font-size: 0.97rem;
+        }
+
+        .summary-item small {
+            color: var(--muted);
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h4 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        /* 响应式：平板和窄屏时改成单列 */
+        @media (max-width: 1100px) {
+
+            .hero-content,
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-buttons {
+                justify-content: flex-start;
+            }
+        }
+
+        /* 响应式：手机端布局优化 */
+        @media (max-width: 768px) {
+            .topbar {
+                height: auto;
+                padding: 12px 0;
+            }
+
+            .topbar-inner {
+                width: min(1360px, calc(100% - 20px));
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .brand {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .page {
+                width: min(1360px, calc(100% - 20px));
+                margin-top: 16px;
+            }
+
+            .hero-content,
+            .panel-header {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .hero-content {
+                padding-top: 18px;
+                padding-bottom: 18px;
+            }
+
+            .profile-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-head,
+            .meta-row {
+                justify-content: center;
+            }
+
+            .stat-strip {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tag-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mini-nav {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航栏：保持浅色独立层，和页面背景区分开 -->
+    <div class="top">
+        <div class="logo"></div>
+
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索">
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link" target="_blank">首页</a>
+
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" data-module="必修一" style="color: #90b2e6;">🔬必修一：分子与细胞</a>
+                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" data-module="必修二" style="color: #a194e3;">🧬必修二：遗传与进化</a>
+                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" data-module="选修一" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" data-module="选修二" style="color: burlywood;">🌿选修二：生物与环境</a>
+                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" data-module="选修三" style="color: #6bd3b1;">🧫选修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="#" class="nav-link" target="_blank">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link" target="_blank">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
+                <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper" id="userAvatarBtn">
+                    <img src="../images/touxiang.png" alt="Avatar" class="avatar" id="topbarAvatarImage" />
+                    <div class="upload-overlay">+</div>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="main.html" class="user-dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="#" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+    <main class="page">
+        <!-- 主页头部：个人信息 + 数据概览 + 快捷操作 -->
+        <section class="hero">
+            <div class="hero-content">
+                <!-- 左侧：用户基础信息区 -->
+                <div class="profile-card">
+                    <img src="../images/touxiang.png" alt="Avatar" class="profile-avatar" id="profileAvatarImage" />
+                    <div class="profile-main">
+                        <div class="profile-head">
+                            <h1 class="profile-name" id="profileNameText">未登录</h1>
+                            <span class="badge">Lv.0</span>
+                            <span class="badge" id="roleBadgeText">未登录</span>
+                        </div>
+                        <p class="profile-meta" id="profileIntroduction">
+                            <span style="font-weight: 600;">个人简介：</span>请先登录以查看个人信息。<br>
+                        </p>
+                        <div class="meta-row">
+                            <span class="meta-chip" id="gradeChipText">-</span>
+                            <span class="meta-chip" id="schoolChipText">🏫:-</span>
+                            <span class="meta-chip" id="ipChipText">📍IP：-</span>
+                            <span class="meta-chip">已关注 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：统计数据和主操作按钮 -->
+                <div class="profile-actions">
+                    <div class="stat-strip">
+                        <div class="stat-box stat-box-clickable" id="likeBox">
+                            <div class="label">获赞</div>
+                            <div class="value" id="likeCount">0</div>
+                        </div>
+                        <div class="stat-box stat-box-clickable" id="followerBox">
+                            <div class="label">粉丝</div>
+                            <div class="value" id="followerCount">0</div>
+                        </div>
+                        <div class="stat-box stat-box-clickable" id="followingBox">
+                            <div class="label">关注</div>
+                            <div class="value" id="followingCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">看过我</div>
+                            <div class="value" id="viewCount">0</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-buttons">
+                        <button class="btn btn-secondary btn-goal" id="goalSettingsBtn" type="button">目标设置</button>
+                        <button class="btn btn-primary" id="editProfileBtn" type="button">编辑资料</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主内容区：左侧内容切换 + 右侧信息栏 -->
+        <section class="layout">
+            <!-- 左侧主面板：通过小导航切换不同内容 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">我的内容</h2>
+                    </div>
+                </div>
+
+                <div class="mini-nav" id="miniNav">
+                    <!-- data-target 对应下面的 content-box 的 id -->
+                    <button class="mini-nav-item active" data-target="post">近期发帖</button>
+                    <button class="mini-nav-item" data-target="favorite">帖子收藏</button>
+                    <button class="mini-nav-item" data-target="model">收藏模型</button>
+                    <button class="mini-nav-item" data-target="ppt">已下载PPT</button>
+                    <button class="mini-nav-item" data-target="wrong">错题本</button>
+                </div>
+
+                <!-- 近期发帖：默认展示的内容模块 -->
+                <div class="content-box active" id="post">
+                    <div id="postsContainer">
+                        <div class="loading" style="text-align: center; padding: 40px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
+                            <div style="color: #64748b;">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 帖子收藏：默认展示的内容模块 -->
+                <div class="content-box" id="favorite">
+                    <div id="collectsContainer">
+                        <div class="loading" style="text-align: center; padding: 40px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
+                            <div style="color: #64748b;">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 收藏模型：你后面可以替换为真实模型列表 -->
+                <div class="content-box" id="model">
+                    <div class="tag-grid">
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">动物细胞</h3>
+                                    <p class="tag-desc">无细胞壁，含线粒体、内质网等细胞器，以有丝分裂方式增殖</p>
+                                </div>
+                                <div class="tag-icon"><img src="../images/animal-cell.png" alt="动物细胞" width="30"
+                                        height="30"></div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">DNA的复制</h3>
+                                    <p class="tag-desc">在细胞分裂前，DNA双链解开，以每条链为模板，按碱基互补配对原则合成新链，形成两个完全相同的DNA分子。</p>
+                                </div>
+                                <div class="tag-icon"><img src="../images/dna.png" alt="DNA" width="30" height="30">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">哺乳动物受精过程</h3>
+                                    <p class="tag-desc">精子与卵子融合，形成受精卵。</p>
+                                </div>
+                                <div class="tag-icon"><img src="../images/reproduction.png" alt="精子细胞" width="30"
+                                        height="30"></div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">突触</h3>
+                                    <p class="tag-desc">神经元之间或神经元与效应器之间传递信息的结构，通过神经递质实现信号的化学传递。</p>
+                                </div>
+                                <div class="tag-icon">⚡</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 已下载的 PPT：可替换为接口返回的数据 -->
+                <div class="content-box" id="ppt">
+                    <div class="tag-grid">
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《细胞结构与功能》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-18 21:14 · 适合课堂展示。</p>
+                                </div>
+                                <div class="tag-icon">📊</div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《遗传与进化》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-18 19:30 · 已标注重点页码。</p>
+                                </div>
+                                <div class="tag-icon">🧠</div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《稳态与调节》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-17 16:05 · 带动画版讲解稿。</p>
+                                </div>
+                                <div class="tag-icon">🩺</div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《生物与环境》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-16 22:48 · 适用于小组汇报。</p>
+                                </div>
+                                <div class="tag-icon">🌏</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 错题本：建议后续接题目详情页或错题统计 -->
+                <div class="content-box" id="wrong">
+                    <div class="summary-list">
+                        <div class="summary-item">
+                            <div>
+                                <strong>2026-05-19 · 细胞膜运输</strong>
+                                <small>错因：主动运输与协助扩散混淆</small>
+                            </div>
+                            <span class="badge">待复习</span>
+                        </div>
+                        <div class="summary-item">
+                            <div>
+                                <strong>2026-05-18 · DNA 复制</strong>
+                                <small>错因：半保留复制概念不清</small>
+                            </div>
+                            <span class="badge">已标记</span>
+                        </div>
+                        <div class="summary-item">
+                            <div>
+                                <strong>2026-05-17 · 生态系统能量流动</strong>
+                                <small>错因：能量传递效率计算错误</small>
+                            </div>
+                            <span class="badge">待巩固</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧辅助面板：学习数据、错题提醒、推荐内容 -->
+            <aside class="sidebar">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title">学习中心</h2>
+                            <p class="panel-subtitle">学习数据、错题提醒和推荐内容</p>
+                        </div>
+                    </div>
+                    <div class="sidebar-combined">
+                        <div class="sidebar-section">
+                            <div class="data-stack" style="padding: 0;">
+                                <div class="data-card">
+                                    <div class="data-card-head">
+                                        <span class="data-name">累计学习时长</span>
+                                        <span class="data-value" id="studyHoursValue">2 小时</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill" id="studyHoursBar" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="data-desc" id="studyHoursDesc">本周学习目标：8 小时</div>
+                                </div>
+
+                                <div class="data-card">
+                                    <div class="data-card-head">
+                                        <span class="data-name">做题数量</span>
+                                        <span class="data-value" id="questionCountValue">0 题</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill" id="questionCountBar" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="data-desc" id="questionCountDesc">本周做题目标：100 题</div>
+                                </div>
+
+                                <div class="data-card">
+                                    <div class="data-card-head">
+                                        <span class="data-name">错题比</span>
+                                        <span class="data-value">18%</span>
+                                    </div>
+                                    <div class="ring-wrap">
+                                        <div class="ring" style="--value: 18%;">
+                                            <span class="ring-label">18%</span>
+                                        </div>
+                                        <div class="data-desc" style="margin-top: 0;">
+                                            错题占比较低，继续保持，建议优先复习最近一周错题。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="panel-header" style="padding: 0 0 12px;">
+                                <div>
+                                    <h2 class="panel-title" style="font-size: 1rem;">错题提醒</h2>
+                                    <p class="panel-subtitle">最近需要优先复习的知识点</p>
+                                </div>
+                            </div>
+                            <div class="summary-list" style="padding: 0;">
+                                <div class="summary-item">
+                                    <div>
+                                        <strong>细胞膜运输</strong>
+                                        <small>主动运输与协助扩散混淆</small>
+                                    </div>
+                                    <span class="badge2">今日</span>
+                                </div>
+                                <div class="summary-item">
+                                    <div>
+                                        <strong>DNA 复制</strong>
+                                        <small>半保留复制概念不清</small>
+                                    </div>
+                                    <span class="badge2">3天前</span>
+                                </div>
+                                <div class="summary-item">
+                                    <div>
+                                        <strong>生态系统能量流动</strong>
+                                        <small>能量传递效率计算错误</small>
+                                    </div>
+                                    <span class="badge2">4天前</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="panel-header" style="padding: 0 0 12px;">
+                                <div>
+                                    <h2 class="panel-title" style="font-size: 1rem;">好课推荐</h2>
+                                    <p class="panel-subtitle">B站优质up生物教学视频推荐</p>
+                                </div>
+                            </div>
+                            <div class="summary-list" style="padding: 0;">
+                                <a class="summary-item"
+                                    href="https://www.bilibili.com/video/BV1M3Lz6AEgj/?spm_id_from=333.337.search-card.all.click"
+                                    target="_blank">
+                                    <div>
+                                        <strong>李林高三一轮复习</strong>
+                                        <small>适合高二升高三的学生准备复习</small>
+                                    </div>
+                                    <span>›</span>
+                                </a>
+                                <a class="summary-item"
+                                    href="https://www.bilibili.com/video/BV1tc41157TW/?spm_id_from=333.337.search-card.all.click"
+                                    target="_blank">
+                                    <div>
+                                        <strong>DNA复制动画</strong>
+                                        <small>帮助理解DNA复制过程</small>
+                                    </div>
+                                    <span>›</span>
+                                </a>
+                                <a class="summary-item"
+                                    href="https://www.bilibili.com/video/BV1tVfPBTE8q/?spm_id_from=333.337.search-card.all.click"
+                                    target="_blank">
+                                    <div>
+                                        <strong>高中生物必修二（一生儿）</strong>
+                                        <small>从基础到拔高</small>
+                                    </div>
+                                    <span>›</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </section>
+    </main>
+    <!-- 页脚 -->
+    <div class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h4>关于我们</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">平台介绍</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>用户之声</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">意见反馈</a></li>
+                        <li><a href="#">常见问题</a></li>
+                        <li><a href="#">指正反馈</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>应用菜单</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">首页</a></li>
+                        <li><a href="#">PPT快搭</a></li>
+                        <li><a href="#">论坛</a></li>
+                        <li><a href="#">交感模型</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 目标设置弹窗 -->
+    <div class="modal-overlay" id="goalModalOverlay" aria-hidden="true">
+        <div class="goal-modal" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">
+            <div class="goal-modal-header">
+                <h3 class="goal-modal-title" id="goalModalTitle">目标设置</h3>
+                <button class="goal-modal-close" id="goalModalCloseBtn" type="button" aria-label="关闭弹窗">×</button>
+            </div>
+
+            <div class="goal-modal-body">
+                <div class="goal-group">
+                    <span class="goal-label">已完成学习时长</span>
+                    <div class="goal-input-row">
+                        <input class="goal-input" id="doneStudyHoursInput" type="number" min="0" step="0.5" value="2"
+                            placeholder="请输入已完成的学习时长（小时）">
+                        <div class="goal-help">保存后会更新右侧“累计学习时长”数值和进度条。</div>
+                    </div>
+                </div>
+
+                <div class="goal-group">
+                    <span class="goal-label">一周学习时长</span>
+                    <div class="goal-options" id="studyHoursOptions">
+                        <label class="goal-option selected">
+                            <input type="radio" name="studyHours" value="3小时" checked>
+                            3 小时
+                        </label>
+                        <label class="goal-option">
+                            <input type="radio" name="studyHours" value="6小时">
+                            6 小时
+                        </label>
+                        <label class="goal-option">
+                            <input type="radio" name="studyHours" value="9小时">
+                            9 小时
+                        </label>
+                        <label class="goal-option">
+                            <input type="radio" name="studyHours" value="12小时">
+                            12 小时
+                        </label>
+                    </div>
+                </div>
+
+                <div class="goal-group">
+                    <span class="goal-label">已完成做题数量</span>
+                    <div class="goal-input-row">
+                        <input class="goal-input" id="doneQuestionCountInput" type="number" min="0" step="1" value="0"
+                            placeholder="请输入已完成的做题数量">
+                        <div class="goal-help">保存后会更新右侧“做题数量”数值和进度条。</div>
+                    </div>
+                </div>
+
+                <div class="goal-group">
+                    <span class="goal-label">一周做题数量</span>
+                    <div class="goal-options" id="questionCountOptions">
+                        <label class="goal-option selected">
+                            <input type="radio" name="questionCount" value="20题" checked>
+                            20 题
+                        </label>
+                        <label class="goal-option">
+                            <input type="radio" name="questionCount" value="40题">
+                            40 题
+                        </label>
+                        <label class="goal-option">
+                            <input type="radio" name="questionCount" value="60题">
+                            60 题
+                        </label>
+                        <label class="goal-option">
+                            <input type="radio" name="questionCount" value="80题">
+                            80 题
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="goal-modal-footer">
+                <button class="btn btn-secondary" id="goalModalCancelBtn" type="button">取消</button>
+                <button class="btn btn-primary" id="goalModalSaveBtn" type="button">保存目标</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 资料编辑弹窗 -->
+    <div class="modal-overlay" id="profileModalOverlay" aria-hidden="true">
+        <div class="goal-modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+            <div class="goal-modal-header">
+                <h3 class="goal-modal-title" id="profileModalTitle">编辑资料</h3>
+                <button class="goal-modal-close" id="profileModalCloseBtn" type="button" aria-label="关闭弹窗">×</button>
+            </div>
+            <div class="goal-modal-body">
+
+                <!-- 头像裁剪弹窗 -->
+                <div class="modal-overlay" id="cropModalOverlay" aria-hidden="true">
+                    <div class="goal-modal crop-modal" role="dialog" aria-modal="true" aria-labelledby="cropModalTitle">
+                        <div class="goal-modal-header">
+                            <h3 class="goal-modal-title" id="cropModalTitle">裁剪头像</h3>
+                            <button class="goal-modal-close" id="cropModalCloseBtn" type="button"
+                                aria-label="关闭弹窗">×</button>
+                        </div>
+                        <div class="goal-modal-body">
+                            <div class="crop-container">
+                                <div class="crop-area">
+                                    <img id="cropImage" alt="裁剪图片" />
+                                    <div class="crop-box"></div>
+                                    <div class="crop-overlay"></div>
+                                </div>
+                                <div class="crop-controls">
+                                    <button class="btn btn-secondary" id="cropRotateBtn">
+                                        <i class="fas fa-rotate-right"></i> 旋转
+                                    </button>
+                                    <button class="btn btn-secondary" id="cropZoomInBtn">
+                                        <i class="fas fa-search-plus"></i> 放大
+                                    </button>
+                                    <button class="btn btn-secondary" id="cropZoomOutBtn">
+                                        <i class="fas fa-search-minus"></i> 缩小
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="goal-modal-footer">
+                            <button class="btn btn-secondary" id="cancelCropBtn">取消</button>
+                            <button class="btn btn-primary" id="confirmCropBtn">确认裁剪</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-form-grid">
+                    <div class="profile-avatar-editor">
+                        <img src="../images/touxiang.png" alt="头像预览" class="profile-avatar-preview"
+                            id="profileAvatarPreview">
+                        <label class="profile-upload-btn">
+                            上传头像
+                            <input type="file" id="profileAvatarInput" accept="image/*">
+                        </label>
+                    </div>
+
+                    <div class="profile-fields">
+                        <div class="profile-field">
+                            <label for="profileUsernameInput">用户名 <span
+                                    style="color: #ef4444; font-size: 0.8rem;">(点击下方按钮可更改)</span></label>
+                            <input class="profile-input" id="profileUsernameInput" type="text" value=""
+                                placeholder="请输入新用户名" disabled>
+                            <button class="btn btn-secondary" id="changeUsernameBtn" type="button"
+                                style="margin-top: 8px;">更改用户名</button>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileIntroductionInput">个人简介</label>
+                            <textarea class="profile-input" id="profileIntroductionInput" rows="3"
+                                placeholder="请输入个人简介"></textarea>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileSchoolInput">学校</label>
+                            <input class="profile-input" id="profileSchoolInput" type="text" value="成都东软学院"
+                                placeholder="请输入学校">
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileGradeSelect">年级</label>
+                            <select class="profile-select" id="profileGradeSelect">
+                                <option value="高一">高一</option>
+                                <option value="高二">高二</option>
+                                <option value="高三">高三</option>
+                            </select>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileRoleSelect">身份</label>
+                            <select class="profile-select" id="profileRoleSelect">
+                                <option value="学生">学生</option>
+                                <option value="老师">老师</option>
+                            </select>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profileIpInput">IP地址 <span style="color: #6b7280; font-size: 0.8rem;">(可选择或手动输入)</span></label>
+                            <div class="custom-combobox">
+                                <input class="profile-input combobox-input" id="profileIpInput" type="text" 
+                                    placeholder="请输入或选择城市" autocomplete="off" />
+                                <span class="combobox-arrow" onclick="toggleIpDropdown()">▼</span>
+                                <div class="combobox-dropdown" id="ipDropdown">
+                                    <div class="dropdown-header">选择城市</div>
+                                    <div class="dropdown-search">
+                                        <input type="text" id="ipSearchInput" placeholder="搜索城市..." />
+                                    </div>
+                                    <div class="dropdown-content" id="ipDropdownContent">
+                                        <div class="dropdown-group">
+                                            <div class="group-label">热门城市</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="北京">北京</div>
+                                                <div class="dropdown-item" data-value="上海">上海</div>
+                                                <div class="dropdown-item" data-value="广州">广州</div>
+                                                <div class="dropdown-item" data-value="深圳">深圳</div>
+                                                <div class="dropdown-item" data-value="杭州">杭州</div>
+                                                <div class="dropdown-item" data-value="成都">成都</div>
+                                                <div class="dropdown-item" data-value="重庆">重庆</div>
+                                                <div class="dropdown-item" data-value="武汉">武汉</div>
+                                                <div class="dropdown-item" data-value="南京">南京</div>
+                                                <div class="dropdown-item" data-value="西安">西安</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华北地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="北京">北京</div>
+                                                <div class="dropdown-item" data-value="天津">天津</div>
+                                                <div class="dropdown-item" data-value="石家庄">石家庄</div>
+                                                <div class="dropdown-item" data-value="太原">太原</div>
+                                                <div class="dropdown-item" data-value="呼和浩特">呼和浩特</div>
+                                                <div class="dropdown-item" data-value="唐山">唐山</div>
+                                                <div class="dropdown-item" data-value="秦皇岛">秦皇岛</div>
+                                                <div class="dropdown-item" data-value="邯郸">邯郸</div>
+                                                <div class="dropdown-item" data-value="保定">保定</div>
+                                                <div class="dropdown-item" data-value="张家口">张家口</div>
+                                                <div class="dropdown-item" data-value="承德">承德</div>
+                                                <div class="dropdown-item" data-value="廊坊">廊坊</div>
+                                                <div class="dropdown-item" data-value="沧州">沧州</div>
+                                                <div class="dropdown-item" data-value="衡水">衡水</div>
+                                                <div class="dropdown-item" data-value="邢台">邢台</div>
+                                                <div class="dropdown-item" data-value="大同">大同</div>
+                                                <div class="dropdown-item" data-value="阳泉">阳泉</div>
+                                                <div class="dropdown-item" data-value="长治">长治</div>
+                                                <div class="dropdown-item" data-value="晋城">晋城</div>
+                                                <div class="dropdown-item" data-value="朔州">朔州</div>
+                                                <div class="dropdown-item" data-value="晋中">晋中</div>
+                                                <div class="dropdown-item" data-value="运城">运城</div>
+                                                <div class="dropdown-item" data-value="忻州">忻州</div>
+                                                <div class="dropdown-item" data-value="临汾">临汾</div>
+                                                <div class="dropdown-item" data-value="吕梁">吕梁</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">东北地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="沈阳">沈阳</div>
+                                                <div class="dropdown-item" data-value="大连">大连</div>
+                                                <div class="dropdown-item" data-value="长春">长春</div>
+                                                <div class="dropdown-item" data-value="哈尔滨">哈尔滨</div>
+                                                <div class="dropdown-item" data-value="鞍山">鞍山</div>
+                                                <div class="dropdown-item" data-value="抚顺">抚顺</div>
+                                                <div class="dropdown-item" data-value="本溪">本溪</div>
+                                                <div class="dropdown-item" data-value="丹东">丹东</div>
+                                                <div class="dropdown-item" data-value="锦州">锦州</div>
+                                                <div class="dropdown-item" data-value="营口">营口</div>
+                                                <div class="dropdown-item" data-value="阜新">阜新</div>
+                                                <div class="dropdown-item" data-value="辽阳">辽阳</div>
+                                                <div class="dropdown-item" data-value="盘锦">盘锦</div>
+                                                <div class="dropdown-item" data-value="铁岭">铁岭</div>
+                                                <div class="dropdown-item" data-value="朝阳">朝阳</div>
+                                                <div class="dropdown-item" data-value="葫芦岛">葫芦岛</div>
+                                                <div class="dropdown-item" data-value="吉林">吉林</div>
+                                                <div class="dropdown-item" data-value="四平">四平</div>
+                                                <div class="dropdown-item" data-value="辽源">辽源</div>
+                                                <div class="dropdown-item" data-value="通化">通化</div>
+                                                <div class="dropdown-item" data-value="白山">白山</div>
+                                                <div class="dropdown-item" data-value="松原">松原</div>
+                                                <div class="dropdown-item" data-value="白城">白城</div>
+                                                <div class="dropdown-item" data-value="齐齐哈尔">齐齐哈尔</div>
+                                                <div class="dropdown-item" data-value="鸡西">鸡西</div>
+                                                <div class="dropdown-item" data-value="鹤岗">鹤岗</div>
+                                                <div class="dropdown-item" data-value="双鸭山">双鸭山</div>
+                                                <div class="dropdown-item" data-value="大庆">大庆</div>
+                                                <div class="dropdown-item" data-value="伊春">伊春</div>
+                                                <div class="dropdown-item" data-value="佳木斯">佳木斯</div>
+                                                <div class="dropdown-item" data-value="七台河">七台河</div>
+                                                <div class="dropdown-item" data-value="牡丹江">牡丹江</div>
+                                                <div class="dropdown-item" data-value="黑河">黑河</div>
+                                                <div class="dropdown-item" data-value="绥化">绥化</div>
+                                                <div class="dropdown-item" data-value="大兴安岭">大兴安岭</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华东地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="上海">上海</div>
+                                                <div class="dropdown-item" data-value="南京">南京</div>
+                                                <div class="dropdown-item" data-value="苏州">苏州</div>
+                                                <div class="dropdown-item" data-value="无锡">无锡</div>
+                                                <div class="dropdown-item" data-value="常州">常州</div>
+                                                <div class="dropdown-item" data-value="镇江">镇江</div>
+                                                <div class="dropdown-item" data-value="扬州">扬州</div>
+                                                <div class="dropdown-item" data-value="泰州">泰州</div>
+                                                <div class="dropdown-item" data-value="南通">南通</div>
+                                                <div class="dropdown-item" data-value="盐城">盐城</div>
+                                                <div class="dropdown-item" data-value="淮安">淮安</div>
+                                                <div class="dropdown-item" data-value="连云港">连云港</div>
+                                                <div class="dropdown-item" data-value="宿迁">宿迁</div>
+                                                <div class="dropdown-item" data-value="杭州">杭州</div>
+                                                <div class="dropdown-item" data-value="宁波">宁波</div>
+                                                <div class="dropdown-item" data-value="温州">温州</div>
+                                                <div class="dropdown-item" data-value="嘉兴">嘉兴</div>
+                                                <div class="dropdown-item" data-value="湖州">湖州</div>
+                                                <div class="dropdown-item" data-value="绍兴">绍兴</div>
+                                                <div class="dropdown-item" data-value="金华">金华</div>
+                                                <div class="dropdown-item" data-value="衢州">衢州</div>
+                                                <div class="dropdown-item" data-value="舟山">舟山</div>
+                                                <div class="dropdown-item" data-value="台州">台州</div>
+                                                <div class="dropdown-item" data-value="丽水">丽水</div>
+                                                <div class="dropdown-item" data-value="合肥">合肥</div>
+                                                <div class="dropdown-item" data-value="芜湖">芜湖</div>
+                                                <div class="dropdown-item" data-value="蚌埠">蚌埠</div>
+                                                <div class="dropdown-item" data-value="淮南">淮南</div>
+                                                <div class="dropdown-item" data-value="马鞍山">马鞍山</div>
+                                                <div class="dropdown-item" data-value="淮北">淮北</div>
+                                                <div class="dropdown-item" data-value="铜陵">铜陵</div>
+                                                <div class="dropdown-item" data-value="安庆">安庆</div>
+                                                <div class="dropdown-item" data-value="黄山">黄山</div>
+                                                <div class="dropdown-item" data-value="滁州">滁州</div>
+                                                <div class="dropdown-item" data-value="阜阳">阜阳</div>
+                                                <div class="dropdown-item" data-value="宿州">宿州</div>
+                                                <div class="dropdown-item" data-value="六安">六安</div>
+                                                <div class="dropdown-item" data-value="亳州">亳州</div>
+                                                <div class="dropdown-item" data-value="池州">池州</div>
+                                                <div class="dropdown-item" data-value="宣城">宣城</div>
+                                                <div class="dropdown-item" data-value="福州">福州</div>
+                                                <div class="dropdown-item" data-value="厦门">厦门</div>
+                                                <div class="dropdown-item" data-value="莆田">莆田</div>
+                                                <div class="dropdown-item" data-value="三明">三明</div>
+                                                <div class="dropdown-item" data-value="泉州">泉州</div>
+                                                <div class="dropdown-item" data-value="漳州">漳州</div>
+                                                <div class="dropdown-item" data-value="南平">南平</div>
+                                                <div class="dropdown-item" data-value="龙岩">龙岩</div>
+                                                <div class="dropdown-item" data-value="宁德">宁德</div>
+                                                <div class="dropdown-item" data-value="济南">济南</div>
+                                                <div class="dropdown-item" data-value="青岛">青岛</div>
+                                                <div class="dropdown-item" data-value="淄博">淄博</div>
+                                                <div class="dropdown-item" data-value="枣庄">枣庄</div>
+                                                <div class="dropdown-item" data-value="东营">东营</div>
+                                                <div class="dropdown-item" data-value="烟台">烟台</div>
+                                                <div class="dropdown-item" data-value="潍坊">潍坊</div>
+                                                <div class="dropdown-item" data-value="济宁">济宁</div>
+                                                <div class="dropdown-item" data-value="泰安">泰安</div>
+                                                <div class="dropdown-item" data-value="威海">威海</div>
+                                                <div class="dropdown-item" data-value="日照">日照</div>
+                                                <div class="dropdown-item" data-value="莱芜">莱芜</div>
+                                                <div class="dropdown-item" data-value="临沂">临沂</div>
+                                                <div class="dropdown-item" data-value="德州">德州</div>
+                                                <div class="dropdown-item" data-value="聊城">聊城</div>
+                                                <div class="dropdown-item" data-value="滨州">滨州</div>
+                                                <div class="dropdown-item" data-value="菏泽">菏泽</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华中地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="武汉">武汉</div>
+                                                <div class="dropdown-item" data-value="黄石">黄石</div>
+                                                <div class="dropdown-item" data-value="十堰">十堰</div>
+                                                <div class="dropdown-item" data-value="宜昌">宜昌</div>
+                                                <div class="dropdown-item" data-value="襄阳">襄阳</div>
+                                                <div class="dropdown-item" data-value="鄂州">鄂州</div>
+                                                <div class="dropdown-item" data-value="荆门">荆门</div>
+                                                <div class="dropdown-item" data-value="孝感">孝感</div>
+                                                <div class="dropdown-item" data-value="荆州">荆州</div>
+                                                <div class="dropdown-item" data-value="黄冈">黄冈</div>
+                                                <div class="dropdown-item" data-value="咸宁">咸宁</div>
+                                                <div class="dropdown-item" data-value="随州">随州</div>
+                                                <div class="dropdown-item" data-value="恩施">恩施</div>
+                                                <div class="dropdown-item" data-value="仙桃">仙桃</div>
+                                                <div class="dropdown-item" data-value="天门">天门</div>
+                                                <div class="dropdown-item" data-value="潜江">潜江</div>
+                                                <div class="dropdown-item" data-value="神农架">神农架</div>
+                                                <div class="dropdown-item" data-value="郑州">郑州</div>
+                                                <div class="dropdown-item" data-value="开封">开封</div>
+                                                <div class="dropdown-item" data-value="洛阳">洛阳</div>
+                                                <div class="dropdown-item" data-value="平顶山">平顶山</div>
+                                                <div class="dropdown-item" data-value="安阳">安阳</div>
+                                                <div class="dropdown-item" data-value="鹤壁">鹤壁</div>
+                                                <div class="dropdown-item" data-value="新乡">新乡</div>
+                                                <div class="dropdown-item" data-value="焦作">焦作</div>
+                                                <div class="dropdown-item" data-value="濮阳">濮阳</div>
+                                                <div class="dropdown-item" data-value="许昌">许昌</div>
+                                                <div class="dropdown-item" data-value="漯河">漯河</div>
+                                                <div class="dropdown-item" data-value="三门峡">三门峡</div>
+                                                <div class="dropdown-item" data-value="商丘">商丘</div>
+                                                <div class="dropdown-item" data-value="周口">周口</div>
+                                                <div class="dropdown-item" data-value="驻马店">驻马店</div>
+                                                <div class="dropdown-item" data-value="南阳">南阳</div>
+                                                <div class="dropdown-item" data-value="信阳">信阳</div>
+                                                <div class="dropdown-item" data-value="济源">济源</div>
+                                                <div class="dropdown-item" data-value="长沙">长沙</div>
+                                                <div class="dropdown-item" data-value="株洲">株洲</div>
+                                                <div class="dropdown-item" data-value="湘潭">湘潭</div>
+                                                <div class="dropdown-item" data-value="衡阳">衡阳</div>
+                                                <div class="dropdown-item" data-value="邵阳">邵阳</div>
+                                                <div class="dropdown-item" data-value="岳阳">岳阳</div>
+                                                <div class="dropdown-item" data-value="常德">常德</div>
+                                                <div class="dropdown-item" data-value="张家界">张家界</div>
+                                                <div class="dropdown-item" data-value="益阳">益阳</div>
+                                                <div class="dropdown-item" data-value="郴州">郴州</div>
+                                                <div class="dropdown-item" data-value="永州">永州</div>
+                                                <div class="dropdown-item" data-value="怀化">怀化</div>
+                                                <div class="dropdown-item" data-value="娄底">娄底</div>
+                                                <div class="dropdown-item" data-value="湘西">湘西</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">华南地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="广州">广州</div>
+                                                <div class="dropdown-item" data-value="深圳">深圳</div>
+                                                <div class="dropdown-item" data-value="珠海">珠海</div>
+                                                <div class="dropdown-item" data-value="汕头">汕头</div>
+                                                <div class="dropdown-item" data-value="佛山">佛山</div>
+                                                <div class="dropdown-item" data-value="韶关">韶关</div>
+                                                <div class="dropdown-item" data-value="湛江">湛江</div>
+                                                <div class="dropdown-item" data-value="肇庆">肇庆</div>
+                                                <div class="dropdown-item" data-value="江门">江门</div>
+                                                <div class="dropdown-item" data-value="茂名">茂名</div>
+                                                <div class="dropdown-item" data-value="惠州">惠州</div>
+                                                <div class="dropdown-item" data-value="梅州">梅州</div>
+                                                <div class="dropdown-item" data-value="汕尾">汕尾</div>
+                                                <div class="dropdown-item" data-value="河源">河源</div>
+                                                <div class="dropdown-item" data-value="阳江">阳江</div>
+                                                <div class="dropdown-item" data-value="清远">清远</div>
+                                                <div class="dropdown-item" data-value="东莞">东莞</div>
+                                                <div class="dropdown-item" data-value="中山">中山</div>
+                                                <div class="dropdown-item" data-value="潮州">潮州</div>
+                                                <div class="dropdown-item" data-value="揭阳">揭阳</div>
+                                                <div class="dropdown-item" data-value="云浮">云浮</div>
+                                                <div class="dropdown-item" data-value="南宁">南宁</div>
+                                                <div class="dropdown-item" data-value="柳州">柳州</div>
+                                                <div class="dropdown-item" data-value="桂林">桂林</div>
+                                                <div class="dropdown-item" data-value="梧州">梧州</div>
+                                                <div class="dropdown-item" data-value="北海">北海</div>
+                                                <div class="dropdown-item" data-value="防城港">防城港</div>
+                                                <div class="dropdown-item" data-value="钦州">钦州</div>
+                                                <div class="dropdown-item" data-value="贵港">贵港</div>
+                                                <div class="dropdown-item" data-value="玉林">玉林</div>
+                                                <div class="dropdown-item" data-value="百色">百色</div>
+                                                <div class="dropdown-item" data-value="贺州">贺州</div>
+                                                <div class="dropdown-item" data-value="河池">河池</div>
+                                                <div class="dropdown-item" data-value="来宾">来宾</div>
+                                                <div class="dropdown-item" data-value="崇左">崇左</div>
+                                                <div class="dropdown-item" data-value="海口">海口</div>
+                                                <div class="dropdown-item" data-value="三亚">三亚</div>
+                                                <div class="dropdown-item" data-value="三沙">三沙</div>
+                                                <div class="dropdown-item" data-value="儋州">儋州</div>
+                                                <div class="dropdown-item" data-value="五指山">五指山</div>
+                                                <div class="dropdown-item" data-value="琼海">琼海</div>
+                                                <div class="dropdown-item" data-value="文昌">文昌</div>
+                                                <div class="dropdown-item" data-value="万宁">万宁</div>
+                                                <div class="dropdown-item" data-value="东方">东方</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">西南地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="成都">成都</div>
+                                                <div class="dropdown-item" data-value="自贡">自贡</div>
+                                                <div class="dropdown-item" data-value="攀枝花">攀枝花</div>
+                                                <div class="dropdown-item" data-value="泸州">泸州</div>
+                                                <div class="dropdown-item" data-value="德阳">德阳</div>
+                                                <div class="dropdown-item" data-value="绵阳">绵阳</div>
+                                                <div class="dropdown-item" data-value="广元">广元</div>
+                                                <div class="dropdown-item" data-value="遂宁">遂宁</div>
+                                                <div class="dropdown-item" data-value="内江">内江</div>
+                                                <div class="dropdown-item" data-value="乐山">乐山</div>
+                                                <div class="dropdown-item" data-value="南充">南充</div>
+                                                <div class="dropdown-item" data-value="眉山">眉山</div>
+                                                <div class="dropdown-item" data-value="宜宾">宜宾</div>
+                                                <div class="dropdown-item" data-value="广安">广安</div>
+                                                <div class="dropdown-item" data-value="达州">达州</div>
+                                                <div class="dropdown-item" data-value="雅安">雅安</div>
+                                                <div class="dropdown-item" data-value="巴中">巴中</div>
+                                                <div class="dropdown-item" data-value="资阳">资阳</div>
+                                                <div class="dropdown-item" data-value="阿坝">阿坝</div>
+                                                <div class="dropdown-item" data-value="甘孜">甘孜</div>
+                                                <div class="dropdown-item" data-value="凉山">凉山</div>
+                                                <div class="dropdown-item" data-value="重庆">重庆</div>
+                                                <div class="dropdown-item" data-value="万州">万州</div>
+                                                <div class="dropdown-item" data-value="涪陵">涪陵</div>
+                                                <div class="dropdown-item" data-value="渝中">渝中</div>
+                                                <div class="dropdown-item" data-value="大渡口">大渡口</div>
+                                                <div class="dropdown-item" data-value="江北">江北</div>
+                                                <div class="dropdown-item" data-value="沙坪坝">沙坪坝</div>
+                                                <div class="dropdown-item" data-value="九龙坡">九龙坡</div>
+                                                <div class="dropdown-item" data-value="南岸">南岸</div>
+                                                <div class="dropdown-item" data-value="北碚">北碚</div>
+                                                <div class="dropdown-item" data-value="綦江">綦江</div>
+                                                <div class="dropdown-item" data-value="大足">大足</div>
+                                                <div class="dropdown-item" data-value="渝北">渝北</div>
+                                                <div class="dropdown-item" data-value="巴南">巴南</div>
+                                                <div class="dropdown-item" data-value="黔江">黔江</div>
+                                                <div class="dropdown-item" data-value="长寿">长寿</div>
+                                                <div class="dropdown-item" data-value="江津">江津</div>
+                                                <div class="dropdown-item" data-value="合川">合川</div>
+                                                <div class="dropdown-item" data-value="永川">永川</div>
+                                                <div class="dropdown-item" data-value="南川">南川</div>
+                                                <div class="dropdown-item" data-value="昆明">昆明</div>
+                                                <div class="dropdown-item" data-value="曲靖">曲靖</div>
+                                                <div class="dropdown-item" data-value="玉溪">玉溪</div>
+                                                <div class="dropdown-item" data-value="保山">保山</div>
+                                                <div class="dropdown-item" data-value="昭通">昭通</div>
+                                                <div class="dropdown-item" data-value="丽江">丽江</div>
+                                                <div class="dropdown-item" data-value="普洱">普洱</div>
+                                                <div class="dropdown-item" data-value="临沧">临沧</div>
+                                                <div class="dropdown-item" data-value="德宏">德宏</div>
+                                                <div class="dropdown-item" data-value="怒江">怒江</div>
+                                                <div class="dropdown-item" data-value="迪庆">迪庆</div>
+                                                <div class="dropdown-item" data-value="大理">大理</div>
+                                                <div class="dropdown-item" data-value="楚雄">楚雄</div>
+                                                <div class="dropdown-item" data-value="红河">红河</div>
+                                                <div class="dropdown-item" data-value="文山">文山</div>
+                                                <div class="dropdown-item" data-value="西双版纳">西双版纳</div>
+                                                <div class="dropdown-item" data-value="贵阳">贵阳</div>
+                                                <div class="dropdown-item" data-value="六盘水">六盘水</div>
+                                                <div class="dropdown-item" data-value="遵义">遵义</div>
+                                                <div class="dropdown-item" data-value="安顺">安顺</div>
+                                                <div class="dropdown-item" data-value="毕节">毕节</div>
+                                                <div class="dropdown-item" data-value="铜仁">铜仁</div>
+                                                <div class="dropdown-item" data-value="黔西南">黔西南</div>
+                                                <div class="dropdown-item" data-value="黔东南">黔东南</div>
+                                                <div class="dropdown-item" data-value="黔南">黔南</div>
+                                                <div class="dropdown-item" data-value="拉萨">拉萨</div>
+                                                <div class="dropdown-item" data-value="日喀则">日喀则</div>
+                                                <div class="dropdown-item" data-value="昌都">昌都</div>
+                                                <div class="dropdown-item" data-value="林芝">林芝</div>
+                                                <div class="dropdown-item" data-value="山南">山南</div>
+                                                <div class="dropdown-item" data-value="那曲">那曲</div>
+                                                <div class="dropdown-item" data-value="阿里">阿里</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">西北地区</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="西安">西安</div>
+                                                <div class="dropdown-item" data-value="铜川">铜川</div>
+                                                <div class="dropdown-item" data-value="宝鸡">宝鸡</div>
+                                                <div class="dropdown-item" data-value="咸阳">咸阳</div>
+                                                <div class="dropdown-item" data-value="渭南">渭南</div>
+                                                <div class="dropdown-item" data-value="延安">延安</div>
+                                                <div class="dropdown-item" data-value="汉中">汉中</div>
+                                                <div class="dropdown-item" data-value="榆林">榆林</div>
+                                                <div class="dropdown-item" data-value="安康">安康</div>
+                                                <div class="dropdown-item" data-value="商洛">商洛</div>
+                                                <div class="dropdown-item" data-value="兰州">兰州</div>
+                                                <div class="dropdown-item" data-value="嘉峪关">嘉峪关</div>
+                                                <div class="dropdown-item" data-value="金昌">金昌</div>
+                                                <div class="dropdown-item" data-value="白银">白银</div>
+                                                <div class="dropdown-item" data-value="天水">天水</div>
+                                                <div class="dropdown-item" data-value="武威">武威</div>
+                                                <div class="dropdown-item" data-value="张掖">张掖</div>
+                                                <div class="dropdown-item" data-value="平凉">平凉</div>
+                                                <div class="dropdown-item" data-value="酒泉">酒泉</div>
+                                                <div class="dropdown-item" data-value="庆阳">庆阳</div>
+                                                <div class="dropdown-item" data-value="定西">定西</div>
+                                                <div class="dropdown-item" data-value="陇南">陇南</div>
+                                                <div class="dropdown-item" data-value="临夏">临夏</div>
+                                                <div class="dropdown-item" data-value="甘南">甘南</div>
+                                                <div class="dropdown-item" data-value="西宁">西宁</div>
+                                                <div class="dropdown-item" data-value="海东">海东</div>
+                                                <div class="dropdown-item" data-value="海北">海北</div>
+                                                <div class="dropdown-item" data-value="黄南">黄南</div>
+                                                <div class="dropdown-item" data-value="海南">海南</div>
+                                                <div class="dropdown-item" data-value="果洛">果洛</div>
+                                                <div class="dropdown-item" data-value="玉树">玉树</div>
+                                                <div class="dropdown-item" data-value="海西">海西</div>
+                                                <div class="dropdown-item" data-value="银川">银川</div>
+                                                <div class="dropdown-item" data-value="石嘴山">石嘴山</div>
+                                                <div class="dropdown-item" data-value="吴忠">吴忠</div>
+                                                <div class="dropdown-item" data-value="固原">固原</div>
+                                                <div class="dropdown-item" data-value="中卫">中卫</div>
+                                                <div class="dropdown-item" data-value="乌鲁木齐">乌鲁木齐</div>
+                                                <div class="dropdown-item" data-value="克拉玛依">克拉玛依</div>
+                                                <div class="dropdown-item" data-value="吐鲁番">吐鲁番</div>
+                                                <div class="dropdown-item" data-value="哈密">哈密</div>
+                                                <div class="dropdown-item" data-value="昌吉">昌吉</div>
+                                                <div class="dropdown-item" data-value="博尔塔拉">博尔塔拉</div>
+                                                <div class="dropdown-item" data-value="巴音郭楞">巴音郭楞</div>
+                                                <div class="dropdown-item" data-value="阿克苏">阿克苏</div>
+                                                <div class="dropdown-item" data-value="克孜勒苏">克孜勒苏</div>
+                                                <div class="dropdown-item" data-value="喀什">喀什</div>
+                                                <div class="dropdown-item" data-value="和田">和田</div>
+                                                <div class="dropdown-item" data-value="伊犁">伊犁</div>
+                                                <div class="dropdown-item" data-value="塔城">塔城</div>
+                                                <div class="dropdown-item" data-value="阿勒泰">阿勒泰</div>
+                                                <div class="dropdown-item" data-value="石河子">石河子</div>
+                                                <div class="dropdown-item" data-value="阿拉尔">阿拉尔</div>
+                                                <div class="dropdown-item" data-value="图木舒克">图木舒克</div>
+                                                <div class="dropdown-item" data-value="五家渠">五家渠</div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-group">
+                                            <div class="group-label">港澳台及海外</div>
+                                            <div class="group-items">
+                                                <div class="dropdown-item" data-value="香港">香港</div>
+                                                <div class="dropdown-item" data-value="澳门">澳门</div>
+                                                <div class="dropdown-item" data-value="台湾">台湾</div>
+                                                <div class="dropdown-item" data-value="台北">台北</div>
+                                                <div class="dropdown-item" data-value="高雄">高雄</div>
+                                                <div class="dropdown-item" data-value="海外">海外</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="goal-modal-footer">
+                <button class="btn btn-secondary" id="profileModalCancelBtn" type="button">取消</button>
+                <button class="btn btn-primary" id="profileModalSaveBtn" type="button">保存资料</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================
+           后端API配置
+        ========================= */
+        const API_BASE_URL = 'http://localhost:8000/api';
+
+        /* =========================
+           全局状态管理
+        ========================= */
+        let currentUser = null;
+        let currentToken = null;
+
+        /* =========================
+           工具函数
+        ========================= */
+        function getTokenFromStorage() {
+            return localStorage.getItem('token') || sessionStorage.getItem('token');
+        }
+
+        function parseToken(token) {
+            try {
+                const payload = token.split('.')[1];
+                return JSON.parse(atob(payload));
+            } catch {
+                return null;
+            }
+        }
+
+        async function fetchWithToken(url, options = {}) {
+            const token = getTokenFromStorage();
+            if (!token) {
+                return { success: false, data: null, msg: '未登录' };
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'token': token,
+                ...options.headers
+            };
+
+            try {
+                const response = await fetch(url, { ...options, headers });
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API请求失败:', error);
+                return { success: false, data: null, msg: '网络错误' };
+            }
+        }
+
+        /* =========================
+           用户信息获取
+        ========================= */
+        async function loadUserStats(userId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/stats`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    document.getElementById('likeCount').textContent = result.data.like_count || 0;
+                    document.getElementById('followerCount').textContent = result.data.follower_count || 0;
+                    document.getElementById('followingCount').textContent = result.data.following_count || 0;
+                    document.getElementById('viewCount').textContent = result.data.view_count || 0;
+                }
+            } catch (error) {
+                console.error('加载用户统计数据失败:', error);
+            }
+        }
+
+        async function incrementProfileView(userId) {
+            try {
+                const token = localStorage.getItem('token');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    headers['token'] = token;
+                }
+                await fetch(`${API_BASE_URL}/user/${userId}/view`, {
+                    method: 'POST',
+                    headers: headers
+                });
+            } catch (error) {
+                console.error('增加浏览量失败:', error);
+            }
+        }
+
+        async function loadUserInfo() {
+            // 清除之前存储的头像缓存，确保刷新时不会看到旧头像
+            localStorage.removeItem('user_avatar');
+
+            currentToken = getTokenFromStorage();
+
+            if (!currentToken) {
+                console.log('未登录：没有找到token');
+                showNotLoggedIn();
+                return;
+            }
+
+            const payload = parseToken(currentToken);
+            if (!payload || !payload.user_id) {
+                console.log('未登录：token无效');
+                showNotLoggedIn();
+                return;
+            }
+
+            const userId = payload.user_id;
+            const response = await fetchWithToken(`${API_BASE_URL}/user/${userId}/info`);
+
+            if (response.success && response.data) {
+                currentUser = response.data;
+                updateUserInfo(response.data);
+                await loadUserStats(userId);
+                await loadUserPosts(userId);
+                await loadUserCollects(userId);
+            } else {
+                console.log('未登录：API调用失败或返回错误');
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                showNotLoggedIn();
+            }
+        }
+
+        function showNotLoggedIn() {
+            document.getElementById('profileNameText').textContent = '未登录';
+            document.getElementById('roleBadgeText').textContent = '未登录';
+            document.getElementById('roleBadgeText').classList.remove('role-teacher');
+            document.getElementById('gradeChipText').textContent = '-';
+            document.getElementById('schoolChipText').textContent = '🏫:-';
+            document.getElementById('ipChipText').textContent = '📍IP：-';
+            document.getElementById('profileIntroduction').innerHTML = '<span style="font-weight: 600;">个人简介：</span>请先登录以查看个人信息。<br>';
+
+            const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d1d5db'/%3E%3Ccircle cx='50' cy='35' r='12' fill='%239ca3af'/%3E%3Cpath d='M30 60 Q50 85 70 60' fill='none' stroke='%239ca3af' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E`;
+            const profileAvatarImage = document.getElementById('profileAvatarImage');
+            const topbarAvatarImage = document.getElementById('topbarAvatarImage');
+            if (profileAvatarImage) {
+                profileAvatarImage.src = defaultAvatar;
+            }
+            if (topbarAvatarImage) {
+                topbarAvatarImage.src = defaultAvatar;
+            }
+            savedAvatarDataUrl = defaultAvatar;
+
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            if (editProfileBtn) {
+                editProfileBtn.textContent = '请先登录后再编辑';
+                editProfileBtn.style.opacity = '0.7';
+                editProfileBtn.style.cursor = 'not-allowed';
+                editProfileBtn.disabled = true;
+            }
+
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+                    <h3 style="color: #374151; margin-bottom: 8px;">请先登录</h3>
+                    <p style="color: #64748b;">登录后才能查看和管理您的帖子</p>
+                    <a href="../login/login-main.html" class="btn btn-primary" style="margin-top: 20px;">立即登录</a>
+                </div>
+            `;
+
+            const collectsContainer = document.getElementById('collectsContainer');
+            collectsContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+                    <h3 style="color: #374151; margin-bottom: 8px;">请先登录</h3>
+                    <p style="color: #64748b;">登录后才能查看您收藏的帖子</p>
+                    <a href="../login/login-main.html" class="btn btn-primary" style="margin-top: 20px;">立即登录</a>
+                </div>
+            `;
+        }
+
+        function updateStudyData(user) {
+            // 更新学习时长
+            const studyHoursValue = document.getElementById('studyHoursValue');
+            const studyHoursBar = document.getElementById('studyHoursBar');
+            const studyHoursDesc = document.getElementById('studyHoursDesc');
+            
+            const studyHours = parseFloat(user.study_hours) || 0;
+            const studyGoal = 8; // 每周目标8小时
+            const hoursRate = studyGoal ? Math.min((studyHours / studyGoal) * 100, 100) : 0;
+            
+            if (studyHoursValue) {
+                studyHoursValue.textContent = `${studyHours} 小时`;
+            }
+            if (studyHoursBar) {
+                studyHoursBar.style.width = `${hoursRate}%`;
+            }
+            if (studyHoursDesc) {
+                studyHoursDesc.textContent = `已完成 ${studyHours} 小时 / 目标 ${studyGoal} 小时`;
+            }
+            
+            // 更新做题数量
+            const questionCountValue = document.getElementById('questionCountValue');
+            const questionCountBar = document.getElementById('questionCountBar');
+            const questionCountDesc = document.getElementById('questionCountDesc');
+            
+            const questionCount = parseInt(user.question_count) || 0;
+            const questionGoal = 100; // 每周目标100题
+            const questionRate = questionGoal ? Math.min((questionCount / questionGoal) * 100, 100) : 0;
+            
+            if (questionCountValue) {
+                questionCountValue.textContent = `${questionCount} 题`;
+            }
+            if (questionCountBar) {
+                questionCountBar.style.width = `${questionRate}%`;
+            }
+            if (questionCountDesc) {
+                questionCountDesc.textContent = `已完成 ${questionCount} 题 / 目标 ${questionGoal} 题`;
+            }
+            
+            // 更新错题比
+            const wrongRateValue = document.querySelector('.data-card .data-value:last-child');
+            const wrongRing = document.querySelector('.ring');
+            const wrongRingLabel = document.querySelector('.ring-label');
+            const wrongDesc = document.querySelector('.ring-wrap + p');
+            
+            const wrongCount = parseInt(user.wrong_count) || 0;
+            const wrongRate = questionCount > 0 ? Math.round((wrongCount / questionCount) * 100) : 18;
+            
+            if (wrongRateValue) {
+                wrongRateValue.textContent = `${wrongRate}%`;
+            }
+            if (wrongRing) {
+                wrongRing.style.setProperty('--value', `${wrongRate}%`);
+            }
+            if (wrongRingLabel) {
+                wrongRingLabel.textContent = `${wrongRate}%`;
+            }
+            if (wrongDesc) {
+                let advice = '';
+                if (wrongRate < 20) {
+                    advice = '错题占比较低，继续保持，建议优先复习最近一周错题。';
+                } else if (wrongRate < 40) {
+                    advice = '错题比例适中，建议加强薄弱知识点的复习。';
+                } else {
+                    advice = '错题占比较高，建议系统性地复习错题，找出薄弱环节。';
+                }
+                wrongDesc.textContent = advice;
+            }
+        }
+
+        function updateUserInfo(user) {
+            const profileNameText = document.getElementById('profileNameText');
+            const roleBadgeText = document.getElementById('roleBadgeText');
+            const gradeChipText = document.getElementById('gradeChipText');
+            const schoolChipText = document.getElementById('schoolChipText');
+            const ipChipText = document.getElementById('ipChipText');
+            const profileAvatarImage = document.getElementById('profileAvatarImage');
+            const topbarAvatarImage = document.getElementById('topbarAvatarImage');
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            
+            // 更新学习数据
+            updateStudyData(user);
+
+            if (profileNameText) {
+                profileNameText.textContent = user.username || '未设置';
+            }
+            if (roleBadgeText) {
+                roleBadgeText.textContent = user.role || '学生';
+                roleBadgeText.classList.remove('role-teacher');
+                if (user.role === '老师') {
+                    roleBadgeText.classList.add('role-teacher');
+                }
+            }
+            if (gradeChipText) {
+                gradeChipText.textContent = user.grade || '未设置';
+            }
+            if (schoolChipText) {
+                schoolChipText.textContent = user.school ? `🏫:${user.school}` : '🏫:未设置';
+            }
+            if (ipChipText) {
+                ipChipText.textContent = user.ip_address ? `📍${user.ip_address}` : '📍:未设置';
+            }
+
+            const profileIntroduction = document.getElementById('profileIntroduction');
+            if (profileIntroduction) {
+                const intro = user.introduction;
+                if (intro && intro.trim()) {
+                    profileIntroduction.innerHTML = `<span style="font-weight: 600;">个人简介：</span>${intro.replace(/\n/g, '<br>')}`;
+                } else {
+                    profileIntroduction.innerHTML = '<span style="font-weight: 600;">个人简介：</span>还没写个人简介<br>';
+                }
+            }
+
+            if (editProfileBtn) {
+                editProfileBtn.textContent = '编辑资料';
+                editProfileBtn.style.opacity = '1';
+                editProfileBtn.style.cursor = 'pointer';
+                editProfileBtn.disabled = false;
+            }
+
+            const avatarFromDb = user.avatar;
+            const username = user.username || '用户';
+            const avatarChar = username.trim()[0] || '用';
+            
+            const colors = [
+                '#4338ca',
+                '#be185d',
+                '#0369a1',
+                '#15803d',
+                '#c2410c',
+                '#7c3aed',
+                '#dc2626',
+                '#b45309'
+            ];
+            const colorIndex = avatarChar.charCodeAt(0) % colors.length;
+            const avatarColor = colors[colorIndex];
+
+            const defaultAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='${encodeURIComponent(avatarColor)}'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='40' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+
+            let avatarToUse;
+            if (avatarFromDb) {
+                // 优先使用后端返回的用户头像
+                avatarToUse = avatarFromDb;
+            } else {
+                // 用户没有上传头像，显示首字母头像
+                avatarToUse = defaultAvatar;
+            }
+
+            if (avatarToUse && avatarToUse.startsWith('http')) {
+                // 如果是远程图片，添加时间戳防止浏览器缓存
+                avatarToUse = avatarToUse + '?t=' + Date.now();
+            }
+
+            if (profileAvatarImage) {
+                profileAvatarImage.src = avatarToUse;
+            }
+            if (topbarAvatarImage) {
+                topbarAvatarImage.src = avatarToUse;
+            }
+            savedAvatarDataUrl = avatarToUse;
+        }
+
+        /* =========================
+           用户帖子加载
+        ========================= */
+        async function loadUserPosts(userId) {
+            const postsContainer = document.getElementById('postsContainer');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/posts`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    postsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">该用户还未发布帖子</h3>
+                            <p style="color: #64748b;">成为第一个分享知识的人吧！</p>
+                            <a href="../forum/make-post.html" class="btn btn-primary" style="margin-top: 20px;">去发帖</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const posts = result.data || [];
+
+                if (!posts || posts.length === 0) {
+                    postsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">该用户还未发布帖子</h3>
+                            <p style="color: #64748b;">成为第一个分享知识的人吧！</p>
+                            <a href="../forum/make-post.html" class="btn btn-primary" style="margin-top: 20px;">去发帖</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderPosts(posts);
+            } catch (error) {
+                console.error('加载用户帖子失败:', error);
+                postsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">加载失败</h3>
+                        <p style="color: #64748b;">网络错误，请稍后重试</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getDefaultAvatar(username) {
+            const avatarChar = (username || '用').trim()[0] || '用';
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23667eea'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='40' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function renderPosts(posts) {
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = posts.map(post => {
+                const username = post.username || currentUser?.username || '用户';
+                const avatar = post.avatar || savedAvatarDataUrl || getDefaultAvatar(username);
+                return `
+                <div class="post-card">
+                    <div class="post-top">
+                        <img src="${avatar}" alt="Avatar" class="post-avatar" />
+                        <div>
+                            <strong style="font-size: 1.02rem;">${username}</strong>
+                            <div class="post-meta">${post.create_at || '未知时间'} · 发布于论坛</div>
+                        </div>
+                    </div>
+                    <p class="post-text">${post.content || ''}</p>
+                    <div class="post-actions">
+                        <div class="post-tools">
+                            <span>👁 ${post.view_count || 0}</span>
+                            <span>👍 ${post.like_count || 0}</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
+                        </div>
+                        <button class="btn btn-secondary delete-post-btn" style="padding: 10px 14px;" data-post-id="${post.post_id}">删除</button>
+                    </div>
+                </div>
+            `}).join('');
+
+            bindDeletePostEvents();
+        }
+
+        function bindDeletePostEvents() {
+            document.querySelectorAll('.delete-post-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const postId = this.dataset.postId;
+                    if (!confirm('确定要删除这篇帖子吗？')) return;
+
+                    const response = await fetchWithToken(`${API_BASE_URL}/post/${postId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.success) {
+                        this.closest('.post-card').remove();
+                        if (document.querySelectorAll('.post-card').length === 0) {
+                            document.getElementById('postsContainer').innerHTML = `
+                                <div style="text-align: center; padding: 60px 20px;">
+                                    <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                                    <h3 style="color: #374151; margin-bottom: 8px;">该用户还未发布帖子</h3>
+                                    <p style="color: #64748b;">成为第一个分享知识的人吧！</p>
+                                    <a href="../forum/make-post.html" class="btn btn-primary" style="margin-top: 20px;">去发帖</a>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        alert(response.msg || '删除失败');
+                    }
+                });
+            });
+        }
+
+        /* =========================
+           用户收藏帖子加载
+        ========================= */
+        async function loadUserCollects(userId) {
+            const collectsContainer = document.getElementById('collectsContainer');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/collects`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    collectsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📌</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">还没有收藏任何帖子</h3>
+                            <p style="color: #64748b;">去论坛看看有什么有趣的内容吧！</p>
+                            <a href="../forum/main.html" class="btn btn-primary" style="margin-top: 20px;">去逛逛</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const posts = result.data || [];
+
+                if (!posts || posts.length === 0) {
+                    collectsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📌</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">还没有收藏任何帖子</h3>
+                            <p style="color: #64748b;">去论坛看看有什么有趣的内容吧！</p>
+                            <a href="../forum/main.html" class="btn btn-primary" style="margin-top: 20px;">去逛逛</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderCollects(posts);
+            } catch (error) {
+                console.error('加载用户收藏失败:', error);
+                collectsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">加载失败</h3>
+                        <p style="color: #64748b;">网络错误，请稍后重试</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCollects(posts) {
+            const collectsContainer = document.getElementById('collectsContainer');
+            collectsContainer.innerHTML = posts.map(post => {
+                const username = post.username || '用户';
+                const avatar = post.avatar || getDefaultAvatar(username);
+                return `
+                <div class="post-card">
+                    <div class="post-top">
+                        <img src="${avatar}" alt="Avatar" class="post-avatar" />
+                        <div>
+                            <strong style="font-size: 1.02rem;">${username}</strong>
+                            <div class="post-meta">${post.create_at || '未知时间'} · 发布于论坛</div>
+                        </div>
+                    </div>
+                    <p class="post-text">${post.content || ''}</p>
+                    <div class="post-actions">
+                        <div class="post-tools">
+                            <span>👁 ${post.view_count || 0}</span>
+                            <span>👍 ${post.like_count || 0}</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
+                        </div>
+                        <button class="btn btn-secondary cancel-collect-btn" style="padding: 10px 14px;" data-post-id="${post.post_id}">取消收藏</button>
+                    </div>
+                </div>
+            `}).join('');
+
+            bindCancelCollectEvents();
+        }
+
+        function bindCancelCollectEvents() {
+            document.querySelectorAll('.cancel-collect-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const postId = this.dataset.postId;
+                    if (!confirm('确定要取消收藏这篇帖子吗？')) return;
+
+                    const response = await fetchWithToken(`${API_BASE_URL}/post/${postId}/collect`, {
+                        method: 'POST'
+                    });
+
+                    if (response.success) {
+                        this.closest('.post-card').remove();
+                        if (document.querySelectorAll('.post-card').length === 0) {
+                            document.getElementById('collectsContainer').innerHTML = `
+                                <div style="text-align: center; padding: 60px 20px;">
+                                    <div style="font-size: 3rem; margin-bottom: 16px;">📌</div>
+                                    <h3 style="color: #374151; margin-bottom: 8px;">还没有收藏任何帖子</h3>
+                                    <p style="color: #64748b;">去论坛看看有什么有趣的内容吧！</p>
+                                    <a href="../forum/main.html" class="btn btn-primary" style="margin-top: 20px;">去逛逛</a>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        alert(response.msg || '取消收藏失败');
+                    }
+                });
+            });
+        }
+
+        /* =========================
+           图片裁剪功能
+        ========================= */
+        let cropImageSrc = '';
+        let cropScale = 1;
+        let cropRotate = 0;
+        let cropOffsetX = 0;
+        let cropOffsetY = 0;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+
+        function openCropModal(imageSrc) {
+            cropImageSrc = imageSrc;
+            cropScale = 1;
+            cropRotate = 0;
+            cropOffsetX = 0;
+            cropOffsetY = 0;
+
+            const cropModal = document.getElementById('cropModalOverlay');
+            const cropImg = document.getElementById('cropImage');
+
+            if (cropModal && cropImg) {
+                cropImg.src = imageSrc;
+                updateCropImage();
+                cropModal.classList.add('show');
+                cropModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function closeCropModal() {
+            const cropModal = document.getElementById('cropModalOverlay');
+            if (cropModal) {
+                cropModal.classList.remove('show');
+                cropModal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        function updateCropImage() {
+            const cropImg = document.getElementById('cropImage');
+            if (cropImg) {
+                cropImg.style.transform = `translate(-50%, -50%) scale(${cropScale}) rotate(${cropRotate}deg) translate(${cropOffsetX}px, ${cropOffsetY}px)`;
+            }
+        }
+
+        async function applyCrop() {
+            const cropImg = document.getElementById('cropImage');
+            if (!cropImg || !cropImageSrc) return;
+
+            const canvas = document.createElement('canvas');
+            const size = 200; // 裁剪后的头像大小
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = cropImageSrc;
+            });
+
+            ctx.save();
+            ctx.translate(size / 2, size / 2);
+            ctx.rotate((cropRotate * Math.PI) / 180);
+            
+            const cropAreaSize = 150;
+            const sourceX = (img.width / 2) - (cropAreaSize / (2 * cropScale)) + (cropOffsetX / cropScale);
+            const sourceY = (img.height / 2) - (cropAreaSize / (2 * cropScale)) + (cropOffsetY / cropScale);
+            const sourceSize = cropAreaSize / cropScale;
+
+            ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, -size / 2, -size / 2, size, size);
+            ctx.restore();
+
+            const croppedDataUrl = canvas.toDataURL('image/png');
+            pendingAvatarDataUrl = croppedDataUrl;
+
+            if (profileAvatarPreview) {
+                profileAvatarPreview.src = croppedDataUrl;
+            }
+
+            closeCropModal();
+        }
+
+        // 绑定裁剪相关事件
+        function bindCropEvents() {
+            const cropModal = document.getElementById('cropModalOverlay');
+            const cropCloseBtn = document.getElementById('cropModalCloseBtn');
+            const cancelBtn = document.getElementById('cancelCropBtn');
+            const confirmBtn = document.getElementById('confirmCropBtn');
+            const rotateBtn = document.getElementById('cropRotateBtn');
+            const zoomInBtn = document.getElementById('cropZoomInBtn');
+            const zoomOutBtn = document.getElementById('cropZoomOutBtn');
+            const cropArea = document.querySelector('.crop-area');
+            const cropImg = document.getElementById('cropImage');
+
+            // 点击遮罩关闭
+            if (cropModal) {
+                cropModal.addEventListener('click', (e) => {
+                    if (e.target === cropModal) {
+                        closeCropModal();
+                    }
+                });
+            }
+
+            // 关闭按钮
+            if (cropCloseBtn) {
+                cropCloseBtn.addEventListener('click', closeCropModal);
+            }
+
+            // 取消按钮
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeCropModal);
+            }
+
+            // 确认裁剪按钮
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', applyCrop);
+            }
+
+            // 旋转按钮
+            if (rotateBtn) {
+                rotateBtn.addEventListener('click', () => {
+                    cropRotate += 90;
+                    updateCropImage();
+                });
+            }
+
+            // 放大按钮
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                    cropScale = Math.min(cropScale + 0.2, 3);
+                    updateCropImage();
+                });
+            }
+
+            // 缩小按钮
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                    cropScale = Math.max(cropScale - 0.2, 0.5);
+                    updateCropImage();
+                });
+            }
+
+            // 拖拽功能
+            if (cropArea && cropImg) {
+                cropArea.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    dragStartX = e.clientX - cropOffsetX;
+                    dragStartY = e.clientY - cropOffsetY;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        cropOffsetX = e.clientX - dragStartX;
+                        cropOffsetY = e.clientY - dragStartY;
+                        updateCropImage();
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // 触摸拖拽支持
+                cropArea.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    dragStartX = touch.clientX - cropOffsetX;
+                    dragStartY = touch.clientY - cropOffsetY;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        const touch = e.touches[0];
+                        cropOffsetX = touch.clientX - dragStartX;
+                        cropOffsetY = touch.clientY - dragStartY;
+                        updateCropImage();
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
+            }
+        }
+
+        /* =========================
+           页面加载时初始化
+        ========================= */
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            bindCropEvents();
+        });
+
+        /* =========================
+           小导航切换逻辑
+           点击上方按钮，显示对应内容模块
+        ========================= */
+        // 小导航切换逻辑：点击按钮后，显示对应内容区
+        const miniNav = document.getElementById('miniNav');
+        const navItems = Array.from(document.querySelectorAll('.mini-nav-item'));
+        const contentBoxes = Array.from(document.querySelectorAll('.content-box'));
+
+        // 切换指定 tab：同步更新按钮高亮和内容显示
+        function activateTab(targetId) {
+            navItems.forEach((item) => {
+                item.classList.toggle('active', item.dataset.target === targetId);
+            });
+
+            contentBoxes.forEach((box) => {
+                box.classList.toggle('active', box.id === targetId);
+            });
+        }
+
+        // 事件委托：只在一个容器上监听，方便后续继续加 tab
+        if (miniNav) {
+            miniNav.addEventListener('click', (event) => {
+                const button = event.target.closest('.mini-nav-item');
+                if (!button) return;
+                activateTab(button.dataset.target);
+            });
+        }
+
+        // 页面加载时根据 URL hash 自动切换标签页或打开设置弹窗
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1); // 去掉 #
+            if (hash === 'posts') {
+                activateTab('posts');
+            } else if (hash === 'collections') {
+                activateTab('collections');
+            } else if (hash === 'downloads') {
+                activateTab('downloads');
+            } else if (hash === 'wrongBook') {
+                activateTab('wrongBook');
+            } else if (hash === 'settings') {
+                // 打开编辑资料弹窗（使用统一的打开函数，确保数据同步且能正常关闭）
+                openProfileModal();
+            }
+        }
+
+        // 页面加载时执行一次（使用 setTimeout 确保所有函数已定义）
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(handleHashChange, 100);
+        });
+        // 监听 hash 变化
+        window.addEventListener('hashchange', handleHashChange);
+
+        // 用户下拉菜单
+        const userAvatarBtn = document.getElementById('userAvatarBtn');
+        const dropdown = document.getElementById('userDropdownMenu');
+
+        if (userAvatarBtn && dropdown) {
+            userAvatarBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!dropdown.contains(event.target) && event.target !== userAvatarBtn) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.dropdown');
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        /* =========================
+           目标设置弹窗逻辑
+           点击按钮打开弹窗，外部区域变暗
+        ========================= */
+        const goalSettingsBtn = document.getElementById('goalSettingsBtn');
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        const goalModalOverlay = document.getElementById('goalModalOverlay');
+        const goalModalCloseBtn = document.getElementById('goalModalCloseBtn');
+        const goalModalCancelBtn = document.getElementById('goalModalCancelBtn');
+        const goalModalSaveBtn = document.getElementById('goalModalSaveBtn');
+        const profileModalOverlay = document.getElementById('profileModalOverlay');
+        const profileModalCloseBtn = document.getElementById('profileModalCloseBtn');
+        const profileModalCancelBtn = document.getElementById('profileModalCancelBtn');
+        const profileModalSaveBtn = document.getElementById('profileModalSaveBtn');
+        const profileAvatarPreview = document.getElementById('profileAvatarPreview');
+        const profileAvatarInput = document.getElementById('profileAvatarInput');
+        const profileUsernameInput = document.getElementById('profileUsernameInput');
+        const changeUsernameBtn = document.getElementById('changeUsernameBtn');
+        const profileIntroductionInput = document.getElementById('profileIntroductionInput');
+        const profileSchoolInput = document.getElementById('profileSchoolInput');
+        const profileGradeSelect = document.getElementById('profileGradeSelect');
+        const profileRoleSelect = document.getElementById('profileRoleSelect');
+        const profileIpInput = document.getElementById('profileIpInput');
+        const studyHoursValue = document.getElementById('studyHoursValue');
+        const studyHoursBar = document.getElementById('studyHoursBar');
+        const studyHoursDesc = document.getElementById('studyHoursDesc');
+        const questionCountValue = document.getElementById('questionCountValue');
+        const questionCountBar = document.getElementById('questionCountBar');
+        const questionCountDesc = document.getElementById('questionCountDesc');
+        const doneStudyHoursInput = document.getElementById('doneStudyHoursInput');
+        const doneQuestionCountInput = document.getElementById('doneQuestionCountInput');
+        const topbarAvatarImage = document.getElementById('topbarAvatarImage');
+        const profileAvatarImage = document.getElementById('profileAvatarImage');
+        const profileNameText = document.getElementById('profileNameText');
+        const roleBadgeText = document.getElementById('roleBadgeText');
+        const gradeChipText = document.getElementById('gradeChipText');
+        const schoolChipText = document.getElementById('schoolChipText');
+        const ipChipText = document.getElementById('ipChipText');
+        const postAuthorNames = document.querySelectorAll('.post-card .post-top strong');
+        let savedAvatarDataUrl = '';
+        let pendingAvatarDataUrl = '';
+
+        function openGoalModal() {
+            if (!goalModalOverlay) return;
+            goalModalOverlay.classList.add('show');
+            goalModalOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeGoalModal() {
+            if (!goalModalOverlay) return;
+            goalModalOverlay.classList.remove('show');
+            goalModalOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+        }
+
+        function openProfileModal() {
+            if (!currentToken) {
+                alert('请先登录后再编辑资料');
+                window.location.href = '../login/login-main.html';
+                return;
+            }
+
+            if (!profileModalOverlay) return;
+            if (profileUsernameInput && profileNameText) {
+                profileUsernameInput.value = profileNameText.textContent.trim();
+                profileUsernameInput.disabled = false;
+            }
+            if (profileRoleSelect) {
+                profileRoleSelect.value = currentUser.role || '学生';
+            }
+            if (profileIpInput) {
+                profileIpInput.value = currentUser.ip_address || '';
+            }
+            if (profileSchoolInput) {
+                profileSchoolInput.value = currentUser.school || '';
+            }
+            if (profileGradeSelect) {
+                profileGradeSelect.value = currentUser.grade || '高一';
+            }
+            if (profileIntroductionInput) {
+                profileIntroductionInput.value = currentUser.introduction || '';
+            }
+            if (profileAvatarPreview) {
+                profileAvatarPreview.src = pendingAvatarDataUrl || savedAvatarDataUrl || (topbarAvatarImage ? topbarAvatarImage.src : '../images/touxiang.png');
+            }
+            profileModalOverlay.classList.add('show');
+            profileModalOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeProfileModal() {
+            if (!profileModalOverlay) return;
+            pendingAvatarDataUrl = '';
+            profileModalOverlay.classList.remove('show');
+            profileModalOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            // 关闭弹窗时移除 URL hash
+            if (window.location.hash === '#settings') {
+                history.replaceState(null, '', window.location.pathname);
+            }
+        }
+
+        async function applyProfileUpdates() {
+            const school = profileSchoolInput ? profileSchoolInput.value.trim() : '';
+            const grade = profileGradeSelect ? profileGradeSelect.value : '';
+            const role = profileRoleSelect ? profileRoleSelect.value : '';
+            const ipAddress = profileIpInput ? profileIpInput.value.trim() : '';
+            const introduction = profileIntroductionInput ? profileIntroductionInput.value.trim() : '';
+            const avatarSrc = pendingAvatarDataUrl || savedAvatarDataUrl || (topbarAvatarImage ? topbarAvatarImage.src : '');
+
+            // 更新头像（如果有新头像）
+            if (avatarSrc && pendingAvatarDataUrl) {
+                const payload = parseToken(currentToken);
+                if (payload && payload.user_id) {
+                    const response = await fetch(`${API_BASE_URL}/user/${payload.user_id}/avatar`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'token': currentToken
+                        },
+                        body: JSON.stringify({ avatar_data: avatarSrc })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('头像上传成功');
+                    } else {
+                        console.error('头像上传失败:', result.msg);
+                    }
+                }
+                pendingAvatarDataUrl = null;
+            }
+
+            // 统一更新其他用户信息
+            const payload = parseToken(currentToken);
+            if (payload && payload.user_id) {
+                const infoResponse = await fetch(`${API_BASE_URL}/user/${payload.user_id}/info`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': currentToken
+                    },
+                    body: JSON.stringify({ 
+                        school: school || null, 
+                        grade: grade || null, 
+                        role: role || null, 
+                        introduction: introduction || null, 
+                        ip_address: ipAddress || null 
+                    })
+                });
+                const infoResult = await infoResponse.json();
+                if (infoResult.success) {
+                    console.log('用户信息保存成功');
+                } else {
+                    console.error('用户信息保存失败:', infoResult.msg);
+                }
+            }
+
+            // 重新加载用户信息，确保显示正确
+            await loadUserInfo();
+        }
+
+        if (roleBadgeText) {
+            roleBadgeText.classList.toggle('role-teacher', roleBadgeText.textContent.trim() === '老师');
+        }
+
+        function bindOptionGroup(selector) {
+            const labels = document.querySelectorAll(selector);
+            const refresh = () => {
+                labels.forEach((label) => {
+                    const input = label.querySelector('input');
+                    if (input) {
+                        label.classList.toggle('selected', input.checked);
+                    }
+                });
+            };
+
+            labels.forEach((label) => {
+                const input = label.querySelector('input');
+                if (!input) return;
+                input.addEventListener('change', refresh);
+            });
+
+            refresh();
+        }
+
+        function getSelectedNumber(name) {
+            const checked = document.querySelector(`input[name="${name}"]:checked`);
+            if (!checked) return 0;
+            return parseInt(checked.value, 10) || 0;
+        }
+
+        function getInputNumber(inputElement) {
+            if (!inputElement) return 0;
+            const value = parseFloat(inputElement.value);
+            return Number.isFinite(value) && value >= 0 ? value : 0;
+        }
+
+        function updateGoalSummary() {
+            const hours = getSelectedNumber('studyHours');
+            const questions = getSelectedNumber('questionCount');
+            const doneHours = getInputNumber(doneStudyHoursInput);
+            const doneQuestions = getInputNumber(doneQuestionCountInput);
+            const hoursRate = hours ? Math.min((doneHours / hours) * 100, 100) : 0;
+            const questionRate = questions ? Math.min((doneQuestions / questions) * 100, 100) : 0;
+
+            if (studyHoursValue) {
+                studyHoursValue.textContent = `${doneHours} 小时`;
+            }
+            if (studyHoursBar) {
+                studyHoursBar.style.width = `${hoursRate}%`;
+            }
+            if (studyHoursDesc) {
+                studyHoursDesc.textContent = `已完成 ${doneHours} 小时 / 目标 ${hours} 小时`;
+            }
+
+            if (questionCountValue) {
+                questionCountValue.textContent = `${doneQuestions} 题`;
+            }
+            if (questionCountBar) {
+                questionCountBar.style.width = `${questionRate}%`;
+            }
+            if (questionCountDesc) {
+                questionCountDesc.textContent = `已完成 ${doneQuestions} 题 / 目标 ${questions} 题`;
+            }
+        }
+
+        bindOptionGroup('#studyHoursOptions .goal-option');
+        bindOptionGroup('#questionCountOptions .goal-option');
+
+        if (goalSettingsBtn) {
+            goalSettingsBtn.addEventListener('click', openGoalModal);
+        }
+        if (editProfileBtn) {
+            editProfileBtn.addEventListener('click', openProfileModal);
+        }
+        if (goalModalCloseBtn) {
+            goalModalCloseBtn.addEventListener('click', closeGoalModal);
+        }
+        if (goalModalCancelBtn) {
+            goalModalCancelBtn.addEventListener('click', closeGoalModal);
+        }
+        if (goalModalSaveBtn) {
+            goalModalSaveBtn.addEventListener('click', () => {
+                updateGoalSummary();
+                closeGoalModal();
+            });
+        }
+        if (goalModalOverlay) {
+            goalModalOverlay.addEventListener('click', (event) => {
+                if (event.target === goalModalOverlay) {
+                    closeGoalModal();
+                }
+            });
+        }
+        if (profileAvatarInput && profileAvatarPreview) {
+            profileAvatarInput.addEventListener('change', () => {
+                const file = profileAvatarInput.files && profileAvatarInput.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // 先打开裁剪弹窗
+                    openCropModal(String(reader.result || ''));
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (changeUsernameBtn && profileUsernameInput) {
+            changeUsernameBtn.addEventListener('click', async () => {
+                const newUsername = profileUsernameInput.value.trim();
+                if (!newUsername) {
+                    alert('请输入新用户名');
+                    return;
+                }
+
+                if (newUsername.length < 2 || newUsername.length > 20) {
+                    alert('用户名长度必须在2到20个字符之间');
+                    return;
+                }
+
+                const payload = parseToken(currentToken);
+                if (!payload || !payload.user_id) {
+                    alert('请先登录');
+                    return;
+                }
+
+                const userId = payload.user_id;
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/username`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': currentToken
+                    },
+                    body: JSON.stringify({ new_username: newUsername })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('用户名修改成功');
+                    localStorage.setItem('token', result.data.token);
+                    sessionStorage.setItem('token', result.data.token);
+                    currentToken = result.data.token;
+                    profileUsernameInput.value = '';
+                    profileUsernameInput.disabled = true;
+
+                    if (profileNameText) {
+                        profileNameText.textContent = result.data.username;
+                    }
+
+                    const postAuthorNames = document.querySelectorAll('.post-card .post-top strong');
+                    postAuthorNames.forEach((name) => {
+                        name.textContent = result.data.username;
+                    });
+                } else {
+                    alert(result.msg || '修改失败');
+                }
+            });
+
+            profileUsernameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    changeUsernameBtn.click();
+                }
+            });
+        }
+        if (profileModalCloseBtn) {
+            profileModalCloseBtn.addEventListener('click', closeProfileModal);
+        }
+        if (profileModalCancelBtn) {
+            profileModalCancelBtn.addEventListener('click', closeProfileModal);
+        }
+        if (profileModalSaveBtn) {
+            profileModalSaveBtn.addEventListener('click', () => {
+                applyProfileUpdates();
+                closeProfileModal();
+            });
+        }
+
+        // IP地址下拉框交互
+        let ipDropdown;
+        let ipSearchInput;
+
+        function initIpDropdown() {
+            ipDropdown = document.getElementById('ipDropdown');
+            ipSearchInput = document.getElementById('ipSearchInput');
+
+            // 点击输入框显示下拉框（只使用 click 事件，避免与 focus 事件冲突）
+            if (profileIpInput) {
+                profileIpInput.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleIpDropdown();
+                });
+            }
+
+            // 点击城市项
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    if (profileIpInput) {
+                        profileIpInput.value = value;
+                    }
+                    hideIpDropdown();
+                });
+            });
+
+            // 搜索功能
+            if (ipSearchInput) {
+                ipSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const groups = document.querySelectorAll('.dropdown-group');
+                    groups.forEach(group => {
+                        const items = group.querySelectorAll('.dropdown-item');
+                        let hasVisibleItem = false;
+                        items.forEach(item => {
+                            const text = item.textContent.toLowerCase();
+                            if (text.includes(searchTerm)) {
+                                item.style.display = 'block';
+                                hasVisibleItem = true;
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                        const label = group.querySelector('.group-label');
+                        group.style.display = hasVisibleItem ? 'block' : 'none';
+                    });
+                });
+            }
+
+            // 点击外部关闭下拉框
+            document.addEventListener('click', function(event) {
+                const combobox = document.querySelector('.custom-combobox');
+                if (combobox && !combobox.contains(event.target)) {
+                    hideIpDropdown();
+                }
+            });
+        }
+
+        function toggleIpDropdown() {
+            if (ipDropdown && profileIpInput) {
+                ipDropdown.classList.toggle('show');
+                if (ipDropdown.classList.contains('show')) {
+                    // 设置下拉框位置 - 默认显示在上方
+                    const rect = profileIpInput.getBoundingClientRect();
+                    ipDropdown.style.left = `${rect.left}px`;
+                    ipDropdown.style.width = `${rect.width}px`;
+                    
+                    // 先计算高度
+                    ipDropdown.style.top = `${rect.top + 1000}px`; // 临时位置计算高度
+                    const dropdownHeight = ipDropdown.offsetHeight;
+                    
+                    // 默认显示在上方
+                    ipDropdown.style.top = `${rect.top - dropdownHeight - 8}px`;
+                    
+                    // 如果下拉框超出视口顶部，向下显示
+                    const dropdownRect = ipDropdown.getBoundingClientRect();
+                    if (dropdownRect.top < 0) {
+                        ipDropdown.style.top = `${rect.bottom + 8}px`;
+                    }
+                    
+                    if (ipSearchInput) {
+                        ipSearchInput.value = '';
+                        ipSearchInput.focus();
+                        // 重置显示所有项
+                        const groups = document.querySelectorAll('.dropdown-group');
+                        groups.forEach(group => {
+                            group.style.display = 'block';
+                            const items = group.querySelectorAll('.dropdown-item');
+                            items.forEach(item => {
+                                item.style.display = 'block';
+                            });
+                        });
+                    }
+                }
+            }
+        }
+
+        function hideIpDropdown() {
+            if (ipDropdown) {
+                ipDropdown.classList.remove('show');
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', initIpDropdown);
+
+        // 全局函数供onclick调用
+        window.toggleIpDropdown = toggleIpDropdown;
+
+        if (profileModalOverlay) {
+            profileModalOverlay.addEventListener('click', (event) => {
+                if (event.target === profileModalOverlay) {
+                    closeProfileModal();
+                }
+            });
+        }
+        if (doneStudyHoursInput) {
+            doneStudyHoursInput.addEventListener('input', updateGoalSummary);
+        }
+        if (doneQuestionCountInput) {
+            doneQuestionCountInput.addEventListener('input', updateGoalSummary);
+        }
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeGoalModal();
+                closeFollowingModal();
+            }
+        });
+
+        updateGoalSummary();
+
+        // ==================== 关注列表功能 =====================
+        // 在DOM完全加载后再获取元素
+        const followingBox = document.getElementById('followingBox');
+        
+        // 打开关注列表模态框
+        function openFollowingModal() {
+            const followingModalOverlay = document.getElementById('followingModalOverlay');
+            const followingModalList = document.getElementById('followingModalList');
+            
+            if (!followingModalOverlay || !followingModalList) {
+                console.error('模态框元素未找到');
+                return;
+            }
+            
+            followingModalOverlay.classList.add('show');
+            loadFollowingList();
+        }
+
+        // 关闭关注列表模态框
+        function closeFollowingModal() {
+            const followingModalOverlay = document.getElementById('followingModalOverlay');
+            if (!followingModalOverlay) return;
+            followingModalOverlay.classList.remove('show');
+        }
+
+        // 加载关注列表
+        async function loadFollowingList() {
+            const followingModalList = document.getElementById('followingModalList');
+            if (!followingModalList) {
+                console.error('模态框列表元素未找到');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const payload = parseToken(token);
+            const userId = payload && payload.user_id;
+            
+            if (!userId) {
+                followingModalList.innerHTML = '<div class="empty-state">请先登录</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/following`, {
+                    headers: { token }
+                });
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    renderFollowingList(result.data);
+                } else {
+                    followingModalList.innerHTML = '<div class="empty-state">暂无关注用户</div>';
+                }
+            } catch (error) {
+                console.error('加载关注列表失败:', error);
+                followingModalList.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+            }
+        }
+
+        // 渲染关注列表
+        function renderFollowingList(following) {
+            const followingModalList = document.getElementById('followingModalList');
+            if (!followingModalList) {
+                console.error('模态框列表元素未找到');
+                return;
+            }
+
+            followingModalList.innerHTML = '';
+            
+            following.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                
+                // 判断是否有真实头像
+                let avatarHtml;
+                if (user.avatar && user.avatar !== 'null' && user.avatar !== 'undefined') {
+                    let avatarUrl = user.avatar;
+                    
+                    // 判断是否是 base64 图片（以 data:image 开头）
+                    if (avatarUrl.startsWith('data:image')) {
+                        // 直接使用 base64 图片，不需要添加时间戳
+                        avatarHtml = `<img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />`;
+                    } else {
+                        // 如果头像路径不是完整URL且不以上传目录开头，则添加前缀
+                        if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+                            avatarUrl = `/uploads/${avatarUrl}`;
+                        }
+                        avatarUrl = avatarUrl + '?t=' + Date.now();
+                        avatarHtml = `
+                            <div class="user-avatar-container">
+                                <img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />
+                                <div class="user-avatar-fallback">${user.username.charAt(0).toUpperCase()}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    avatarHtml = `<div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                item.innerHTML = `
+                    ${avatarHtml}
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-id">ID: ${user.user_id}</div>
+                    </div>
+                `;
+                
+                // 添加图片加载失败的处理
+                const img = item.querySelector('.user-avatar-img');
+                if (img) {
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        const fallback = item.querySelector('.user-avatar-fallback');
+                        if (fallback) fallback.style.display = 'flex';
+                    };
+                }
+                item.addEventListener('click', () => goToUserProfile(user.user_id));
+                followingModalList.appendChild(item);
+            });
+        }
+
+        // 跳转到用户主页
+        function goToUserProfile(userId) {
+            const token = localStorage.getItem('token');
+            const payload = parseToken(token);
+            const currentUserId = payload && payload.user_id;
+            
+            if (currentUserId == userId) {
+                window.location.href = './main.html';
+            } else {
+                window.location.href = `./other_main.html?userId=${userId}`;
+            }
+            closeFollowingModal();
+        }
+
+        // 绑定关注框点击事件
+        if (followingBox) {
+            followingBox.addEventListener('click', openFollowingModal);
+        }
+
+        // 打开获赞列表模态框
+        function openLikersModal() {
+            const likersModalOverlay = document.getElementById('likersModalOverlay');
+            const likersModalList = document.getElementById('likersModalList');
+            
+            if (!likersModalOverlay || !likersModalList) {
+                console.error('获赞模态框元素未找到');
+                return;
+            }
+            
+            likersModalOverlay.classList.add('show');
+            loadLikersList();
+        }
+
+        // 关闭获赞列表模态框
+        function closeLikersModal() {
+            const likersModalOverlay = document.getElementById('likersModalOverlay');
+            if (!likersModalOverlay) return;
+            likersModalOverlay.classList.remove('show');
+        }
+
+        // 加载获赞列表
+        async function loadLikersList() {
+            const likersModalList = document.getElementById('likersModalList');
+            if (!likersModalList) {
+                console.error('获赞模态框列表元素未找到');
+                return;
+            }
+
+            const payload = parseToken(currentToken);
+            const userId = payload && payload.user_id;
+            
+            if (!userId) {
+                likersModalList.innerHTML = '<div class="empty-state">请先登录</div>';
+                return;
+            }
+
+            likersModalList.innerHTML = '<div class="empty-state">加载中...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/likers`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    renderLikersList(result.data);
+                } else {
+                    likersModalList.innerHTML = '<div class="empty-state">暂无获赞用户</div>';
+                }
+            } catch (error) {
+                console.error('加载获赞列表失败:', error);
+                likersModalList.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+            }
+        }
+
+        // 渲染获赞列表
+        function renderLikersList(likers) {
+            const likersModalList = document.getElementById('likersModalList');
+            if (!likersModalList) {
+                console.error('获赞模态框列表元素未找到');
+                return;
+            }
+
+            likersModalList.innerHTML = '';
+            
+            likers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                
+                let avatarHtml;
+                if (user.avatar && user.avatar !== 'null' && user.avatar !== 'undefined') {
+                    let avatarUrl = user.avatar;
+                    if (avatarUrl.startsWith('data:image')) {
+                        avatarHtml = `<img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />`;
+                    } else {
+                        if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+                            avatarUrl = `/uploads/${avatarUrl}`;
+                        }
+                        avatarUrl = avatarUrl + '?t=' + Date.now();
+                        avatarHtml = `
+                            <div class="user-avatar-container">
+                                <img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />
+                                <div class="user-avatar-fallback">${user.username.charAt(0).toUpperCase()}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    avatarHtml = `<div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                item.innerHTML = `
+                    ${avatarHtml}
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-id">ID: ${user.user_id}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => goToUserProfile(user.user_id));
+                likersModalList.appendChild(item);
+            });
+        }
+
+        // 绑定模态框事件（在DOM加载完成后绑定）
+        document.addEventListener('DOMContentLoaded', () => {
+            // 关注模态框关闭事件
+            const closeBtn = document.getElementById('followingModalClose');
+            const overlay = document.getElementById('followingModalOverlay');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeFollowingModal);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', (event) => {
+                    if (event.target === overlay) {
+                        closeFollowingModal();
+                    }
+                });
+            }
+            
+            // 获赞模态框关闭事件
+            const likersCloseBtn = document.getElementById('likersModalClose');
+            const likersOverlay = document.getElementById('likersModalOverlay');
+            
+            if (likersCloseBtn) {
+                likersCloseBtn.addEventListener('click', closeLikersModal);
+            }
+            
+            if (likersOverlay) {
+                likersOverlay.addEventListener('click', (event) => {
+                    if (event.target === likersOverlay) {
+                        closeLikersModal();
+                    }
+                });
+            }
+            
+            // 点击获赞框打开获赞列表
+            const likeBox = document.getElementById('likeBox');
+            if (likeBox) {
+                likeBox.addEventListener('click', openLikersModal);
+            }
+            
+            // 点击粉丝框打开粉丝列表
+            const followerBox = document.getElementById('followerBox');
+            if (followerBox) {
+                followerBox.addEventListener('click', openFollowersModal);
+            }
+        });
+
+        // 打开粉丝列表模态框
+        function openFollowersModal() {
+            const followersModalOverlay = document.getElementById('followersModalOverlay');
+            const followersModalList = document.getElementById('followersModalList');
+            
+            if (!followersModalOverlay || !followersModalList) {
+                console.error('粉丝模态框元素未找到');
+                return;
+            }
+            
+            followersModalOverlay.classList.add('show');
+            loadFollowersList();
+        }
+
+        // 关闭粉丝列表模态框
+        function closeFollowersModal() {
+            const followersModalOverlay = document.getElementById('followersModalOverlay');
+            if (!followersModalOverlay) return;
+            followersModalOverlay.classList.remove('show');
+        }
+
+        // 加载粉丝列表
+        async function loadFollowersList() {
+            const followersModalList = document.getElementById('followersModalList');
+            if (!followersModalList) {
+                console.error('粉丝模态框列表元素未找到');
+                return;
+            }
+
+            const payload = parseToken(currentToken);
+            const userId = payload && payload.user_id;
+            
+            if (!userId) {
+                followersModalList.innerHTML = '<div class="empty-state">请先登录</div>';
+                return;
+            }
+
+            followersModalList.innerHTML = '<div class="empty-state">加载中...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/followers`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    renderFollowersList(result.data);
+                } else {
+                    followersModalList.innerHTML = '<div class="empty-state">暂无粉丝</div>';
+                }
+            } catch (error) {
+                console.error('加载粉丝列表失败:', error);
+                followersModalList.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+            }
+        }
+
+        // 渲染粉丝列表
+        function renderFollowersList(followers) {
+            const followersModalList = document.getElementById('followersModalList');
+            if (!followersModalList) {
+                console.error('粉丝模态框列表元素未找到');
+                return;
+            }
+
+            followersModalList.innerHTML = '';
+            
+            followers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                
+                let avatarHtml;
+                if (user.avatar && user.avatar !== 'null' && user.avatar !== 'undefined') {
+                    let avatarUrl = user.avatar;
+                    if (avatarUrl.startsWith('data:image')) {
+                        avatarHtml = `<img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />`;
+                    } else {
+                        if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/uploads/')) {
+                            avatarUrl = `/uploads/${avatarUrl}`;
+                        }
+                        avatarUrl = avatarUrl + '?t=' + Date.now();
+                        avatarHtml = `
+                            <div class="user-avatar-container">
+                                <img src="${avatarUrl}" alt="${user.username}" class="user-avatar-img" />
+                                <div class="user-avatar-fallback">${user.username.charAt(0).toUpperCase()}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    avatarHtml = `<div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                item.innerHTML = `
+                    ${avatarHtml}
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-id">ID: ${user.user_id}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => goToUserProfile(user.user_id));
+                followersModalList.appendChild(item);
+            });
+        }
+
+        // 绑定粉丝模态框事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const followersCloseBtn = document.getElementById('followersModalClose');
+            const followersOverlay = document.getElementById('followersModalOverlay');
+            
+            if (followersCloseBtn) {
+                followersCloseBtn.addEventListener('click', closeFollowersModal);
+            }
+            
+            if (followersOverlay) {
+                followersOverlay.addEventListener('click', (event) => {
+                    if (event.target === followersOverlay) {
+                        closeFollowersModal();
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- 关注列表模态框 -->
+    <div class="modal-overlay" id="followingModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>我的关注</h3>
+                <button class="modal-close" id="followingModalClose">&times;</button>
+            </div>
+            <div class="modal-list" id="followingModalList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 获赞列表模态框 -->
+    <div class="modal-overlay" id="likersModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>获赞用户</h3>
+                <button class="modal-close" id="likersModalClose">&times;</button>
+            </div>
+            <div class="modal-list" id="likersModalList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 粉丝列表模态框 -->
+    <div class="modal-overlay" id="followersModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>我的粉丝</h3>
+                <button class="modal-close" id="followersModalClose">&times;</button>
+            </div>
+            <div class="modal-list" id="followersModalList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

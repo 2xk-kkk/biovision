@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第4章 细胞的物质输入和输出 - 知识清单</title>
+<style>
+  :root { --primary: #00838f; --primary-light: #e0f7fa; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; --transition: 0.25s ease; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #006064, #00838f); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f0fcfd; border-color: #b2ebf2; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #80deea; color: #4a8a8a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e0f7fa; color: #00838f; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #80cbc4; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #e0f7fa; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #4dd0e1); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 640px) { .info-row { grid-template-columns: 1fr; } .header h1 { font-size: 1.4em; } }
+  
+      /* ===== FLOATING SIDEBAR ===== */
+  .sidebar {
+    position: fixed;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 175px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    padding: 16px 0;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .sidebar .nav-title {
+    color: #37474f;
+    font-size: 0.9em;
+    font-weight: 700;
+    padding: 0 14px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #78909c;
+    text-decoration: none;
+    padding: 8px 14px;
+    font-size: 0.82em;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+  }
+  .sidebar a:hover {
+    background: rgba(33,150,243,0.06);
+    color: #37474f;
+  }
+  .sidebar a.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+  .sidebar .ch-num {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 18px;
+    text-align: center;
+  }
+  .main-wrap {
+    /* wraps container - no layout changes needed */
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: static;
+      transform: none;
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 8px;
+      gap: 4px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-title {
+      width: 100%;
+      padding: 4px 0;
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .sidebar a {
+      padding: 5px 8px;
+      font-size: 0.75em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .book-title { width: 100%; padding: 4px 0; }
+    .sidebar a.book-link {
+      padding: 5px 8px;
+      font-size: 0.7em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .nav-divider { width: 100%; margin: 4px 8px; }
+  }
+
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+            <nav class="sidebar">
+    <div class="nav-title">生物学 必修1<br>分子与细胞</div>
+      <a href="1.1.html"><span class="ch-num">第1章</span>走近细胞</a>
+      <a href="1.2.html"><span class="ch-num">第2章</span>组成细胞的分子</a>
+      <a href="1.3.html"><span class="ch-num">第3章</span>细胞的基本结构</a>
+      <a href="1.4.html" class="active"><span class="ch-num">第4章</span>物质输入和输出</a>
+      <a href="1.5.html"><span class="ch-num">第5章</span>能量供应和利用</a>
+      <a href="1.6.html"><span class="ch-num">第6章</span>细胞的生命历程</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link active">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+  <div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第4章 细胞的物质输入和输出</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学必修1 · 分子与细胞</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 28 个知识点</div>
+
+<!-- 第1节 被动运输 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 被动运输有哪些类型？各有什么特点？<br>
+      ● 植物细胞的质壁分离和复原现象说明了什么？<br>
+      ● 自由扩散和协助扩散有什么区别？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 被动运输</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <!-- 渗透作用动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">💧 渗透作用与质壁分离 - 交互动画</h4>
+      <canvas id="osmosisCanvas" width="750" height="260"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="osmosisScene='normal'; drawOsmosis();">正常状态</button>
+        <button class="btn btn-accent" onclick="osmosisScene='plasmolysis'; drawOsmosis();">质壁分离</button>
+        <button class="btn btn-outline" onclick="osmosisScene='recovery'; drawOsmosis();">质壁分离复原</button>
+      </div>
+    </div>
+
+    <!-- 运输方式对比动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🚪 跨膜运输方式对比</h4>
+      <canvas id="transportCanvas" width="750" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="drawTransport('free')">自由扩散</button>
+        <button class="btn btn-primary" onclick="drawTransport('facilitated')">协助扩散</button>
+        <button class="btn btn-primary" onclick="drawTransport('active')">主动运输</button>
+        <button class="btn btn-outline" onclick="drawTransport('all')">全部对比</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>运输方式</th><th>方向</th><th>载体/通道</th><th>能量</th><th>举例</th></tr>
+      <tr><td>自由扩散</td><td>高→低</td><td>不需要</td><td>不耗能</td><td>O₂、CO₂、甘油、乙醇</td></tr>
+      <tr><td>协助扩散</td><td>高→低</td><td>需要（载体/通道蛋白）</td><td>不耗能</td><td>葡萄糖进红细胞、水(水通道蛋白)</td></tr>
+      <tr><td>主动运输</td><td><strong>低→高</strong></td><td>需要（载体蛋白）</td><td><strong>消耗ATP</strong></td><td>Na⁺/K⁺、葡萄糖进小肠上皮细胞</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>质壁分离实验要点：</strong><br>
+      ✓ 材料：<strong>紫色洋葱鳞片叶外表皮</strong>（有紫色大液泡，易观察）<br>
+      ✓ 外界溶液 > 细胞液浓度 → 细胞失水 → <strong>质壁分离</strong><br>
+      ✓ 外界溶液 < 细胞液浓度 → 细胞吸水 → <strong>质壁分离复原</strong><br>
+      ✗ 死细胞、动物细胞不能发生质壁分离
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>被动运输</strong> = 自由扩散 + 协助扩散（顺浓度梯度，不耗能）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">自由扩散：不需要转运蛋白，顺浓度梯度</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">协助扩散：需要转运蛋白（载体/通道），顺浓度梯度</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">水分子主要通过<strong>水通道蛋白</strong>以协助扩散方式进出细胞</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>原生质层</strong> = 细胞膜 + 液泡膜 + 两层膜之间的细胞质（相当于半透膜）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">质壁分离的条件和复原原理</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">载体蛋白与通道蛋白的区别（构象改变 vs 不结合）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 主动运输与胞吞胞吐 -->
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 主动运输与被动运输有什么区别？<br>
+      ● 胞吞、胞吐有什么特点？对于细胞的生命活动有什么意义？<br>
+      ● 物质跨膜运输的方式与细胞膜的结构有什么关系？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 主动运输与胞吞、胞吐</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card">
+        <h4>主动运输</h4>
+        <p>物质<strong>逆浓度梯度</strong>（低→高）<br>
+        需要<strong>载体蛋白</strong>协助<br>
+        需要消耗<strong>能量（ATP）</strong><br>
+        体现了细胞膜的<strong>选择透过性</strong></p>
+      </div>
+      <div class="info-card">
+        <h4>胞吞</h4>
+        <p>大分子/颗粒物进入细胞<br>
+        细胞膜向内凹陷包围 → 囊泡<br>
+        消耗能量<br>
+        例：白细胞吞噬细菌、变形虫摄取食物</p>
+      </div>
+      <div class="info-card">
+        <h4>胞吐</h4>
+        <p>大分子排出细胞<br>
+        囊泡与细胞膜融合 → 释放内容物<br>
+        消耗能量<br>
+        例：分泌蛋白（消化酶、抗体、激素）</p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>胞吞与胞吐的结构基础：</strong>细胞膜的<strong>流动性</strong>（不是选择透过性！）<br>
+      此过程需要消耗能量，但不需载体蛋白，不属于跨膜运输。
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>主动运输</strong>：逆浓度梯度，需载体蛋白，消耗ATP</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">主动运输体现了细胞膜的<strong>选择透过性</strong></span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>胞吞</strong>和<strong>胞吐</strong>利用细胞膜的流动性</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">胞吞胞吐消耗能量但不需载体，不属于跨膜运输</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">三种跨膜运输方式的判断方法</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+// CHECKLIST
+function updateProgress(){
+  const total=28;
+  const c=document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width=(c/total*100)+'%';
+  document.getElementById('progressLabel').textContent=`已掌握: ${c} / ${total} 个知识点`;
+  localStorage.setItem('bio_ch4_ck',JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach((li,i)=>{
+  li.dataset.id=i;
+  li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});
+});
+try{const s=JSON.parse(localStorage.getItem('bio_ch4_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== OSMOSIS CANVAS =====
+const osmCanvas=document.getElementById('osmosisCanvas'), osmctx=osmCanvas.getContext('2d');
+let osmosisScene='normal';
+function drawOsmosis(){
+  const w=750,h=260; osmctx.clearRect(0,0,w,h); osmctx.fillStyle='#fafbfc'; osmctx.fillRect(0,0,w,h);
+
+  // Cell wall outline
+  const wallX=250,wallY=130,wallW=160,wallH=160;
+  osmctx.strokeStyle='#333'; osmctx.lineWidth=2.5;
+  osmctx.strokeRect(wallX,wallY-wallH/2,wallW,wallH);
+
+  // Cell membrane (protoplast)
+  let memShrink=0;
+  if(osmosisScene==='plasmolysis') memShrink=20;
+  if(osmosisScene==='recovery') memShrink=3;
+
+  const memX=wallX+memShrink, memW=wallW-memShrink*2, memH=wallH-memShrink;
+  osmctx.fillStyle='rgba(255,255,255,0.7)'; osmctx.strokeStyle='#f4a236'; osmctx.lineWidth=2;
+  osmctx.fillRect(memX+2,wallY-memH/2+2,memW-4,memH-4);
+  osmctx.strokeRect(memX,wallY-memH/2,memW,memH);
+
+  // Vacuole
+  const vacShrink=osmosisScene==='plasmolysis'?30:5;
+  const vacX=wallX+vacShrink, vacW=wallW-vacShrink*2, vacH=wallH-vacShrink-10;
+  osmctx.fillStyle='rgba(206,147,216,0.6)'; osmctx.fillRect(vacX,wallY-vacH/2,vacW,vacH);
+
+  // Nucleus
+  osmctx.fillStyle='#fce4ec'; osmctx.strokeStyle='#c62828'; osmctx.lineWidth=2;
+  osmctx.beginPath(); osmctx.arc(memX+35,wallY-15,14,0,Math.PI*2); osmctx.fill(); osmctx.stroke();
+
+  // Labels
+  osmctx.fillStyle='#2c3e50'; osmctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif'; osmctx.textAlign='center';
+  osmctx.fillText('细胞壁',wallX+wallW/2,wallY-wallH/2-8);
+  osmctx.fillText('原生质层',memX+memW/2,wallY-memH/2-8);
+  osmctx.fillText('液泡',vacX+vacW/2,wallY);
+  osmctx.fillText('细胞核',memX+35,wallY-35);
+
+  // External solution
+  osmctx.fillStyle='#e3f2fd';
+  for(let i=0;i<20;i++){
+    for(let j=0;j<6;j++){
+      if((i>2&&i<12&&j>1&&j<4)) continue;
+      osmctx.beginPath(); osmctx.arc(60+i*15,80+j*15,4,0,Math.PI*2); osmctx.fill();
+    }
+  }
+  osmctx.fillStyle='#1565c0'; osmctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';
+  osmctx.fillText(osmosisScene==='plasmolysis'?'高浓度蔗糖溶液':'清水/低浓度溶液',160,175);
+
+  // Arrow showing water movement
+  if(osmosisScene==='plasmolysis'){
+    osmctx.strokeStyle='#c62828'; osmctx.lineWidth=2;
+    drawArrowM(osmctx,wallX+wallW/2,wallY-25,wallX+wallW/2,wallY-50,'水分子外出→');
+  } else if(osmosisScene==='recovery'){
+    osmctx.strokeStyle='#2c8c5a'; osmctx.lineWidth=2;
+    drawArrowM(osmctx,wallX+wallW/2,wallY-50,wallX+wallW/2,wallY-25,'水分子进入→');
+  }
+
+  // Status label
+  osmctx.fillStyle='#2c3e50'; osmctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  const status=osmosisScene==='normal'?'正常状态':(osmosisScene==='plasmolysis'?'质壁分离':'质壁分离复原');
+  osmctx.fillText(status=== '正常状态'?'正常状态（细胞液浓度≈外界浓度）':(status==='质壁分离'?'质壁分离（外界浓度>细胞液浓度）':'质壁分离复原（外界浓度<细胞液浓度）'),375,245);
+}
+
+function drawArrowM(ctx,x1,y1,x2,y2,label){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  const angle=Math.atan2(y2-y1,x2-x1);
+  ctx.lineTo(x2-8*Math.cos(angle-0.5),y2-8*Math.sin(angle-0.5));
+  ctx.moveTo(x2,y2); ctx.lineTo(x2-8*Math.cos(angle+0.5),y2-8*Math.sin(angle+0.5));
+  ctx.stroke();
+  if(label){ctx.fillStyle=ctx.strokeStyle; ctx.font='10px sans-serif'; ctx.textAlign='center'; ctx.fillText(label,x2,y2-12);}
+}
+drawOsmosis();
+
+// ===== TRANSPORT COMPARISON CANVAS =====
+const tCanvas=document.getElementById('transportCanvas'), tctx=tCanvas.getContext('2d');
+function drawTransport(mode){
+  const w=750,h=300; tctx.clearRect(0,0,w,h); tctx.fillStyle='#fafbfc'; tctx.fillRect(0,0,w,h);
+
+  function drawMembraneLayer(y){
+    tctx.fillStyle='#fff9c4'; tctx.fillRect(0,y,750,20);
+    tctx.strokeStyle='#f4a236'; tctx.lineWidth=2.5; tctx.strokeRect(0,y,750,20);
+    tctx.fillStyle='#f4a236'; tctx.font='10px sans-serif'; tctx.textAlign='right'; tctx.fillText('细胞膜',750,y+15);
+    // Phospholipid icons
+    for(let i=0;i<37;i++){
+      tctx.fillStyle='#ff9800'; tctx.beginPath(); tctx.arc(i*20+10,y+5,3.5,0,Math.PI*2); tctx.fill();
+      tctx.fillStyle='#1565c0'; tctx.beginPath(); tctx.arc(i*20+10,y+15,3.5,0,Math.PI*2); tctx.fill();
+    }
+  }
+
+  drawMembraneLayer(130);
+
+  // Labels
+  tctx.fillStyle='#2c3e50'; tctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; tctx.textAlign='center';
+  tctx.fillText('细胞外（高浓度）',375,28);
+  tctx.fillText('细胞内（低浓度）',375,285);
+
+  if(mode==='free'||mode==='all'){
+    // Free diffusion
+    tctx.fillStyle='#2c8c5a'; tctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; tctx.textAlign='center';
+    tctx.fillText('自由扩散',120,110);
+    for(let i=0;i<6;i++){
+      const px=60+i*22, py=65+Math.random()*50;
+      tctx.fillStyle='#2c8c5a'; tctx.beginPath(); tctx.arc(px,py,5,0,Math.PI*2); tctx.fill();
+    }
+    tctx.strokeStyle='#2c8c5a'; tctx.setLineDash([3,3]); tctx.lineWidth=1.5;
+    tctx.beginPath(); tctx.moveTo(120,115); tctx.lineTo(120,185); tctx.stroke(); tctx.setLineDash([]);
+    for(let i=0;i<5;i++){
+      const px=65+i*22, py=175+Math.random()*50;
+      tctx.fillStyle='#81c784'; tctx.beginPath(); tctx.arc(px,py,5,0,Math.PI*2); tctx.fill();
+    }
+    tctx.fillStyle='#2c8c5a'; tctx.font='10px sans-serif'; tctx.fillText('O₂, CO₂, 甘油',120,250);
+    tctx.fillText('（无需载体，不耗能）',120,266);
+  }
+
+  if(mode==='facilitated'||mode==='all'){
+    const fx=380;
+    tctx.fillStyle='#e65100'; tctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; tctx.textAlign='center';
+    tctx.fillText('协助扩散',fx,110);
+    // Carrier protein
+    tctx.fillStyle='#fff3e0'; tctx.strokeStyle='#e65100'; tctx.lineWidth=2;
+    tctx.fillRect(fx-25,125,50,30); tctx.strokeRect(fx-25,125,50,30);
+    tctx.fillStyle='#e65100'; tctx.font='9px sans-serif'; tctx.fillText('载体/通道',fx,143);
+    // Particles above
+    for(let i=0;i<5;i++){tctx.fillStyle='#e65100'; tctx.beginPath(); tctx.arc(fx-20+i*10,90+Math.random()*20,4.5,0,Math.PI*2); tctx.fill();}
+    // Particles below
+    for(let i=0;i<4;i++){tctx.fillStyle='#ffab91'; tctx.beginPath(); tctx.arc(fx-15+i*10,180+Math.random()*30,4.5,0,Math.PI*2); tctx.fill();}
+    tctx.fillStyle='#e65100'; tctx.font='10px sans-serif'; tctx.fillText('水、葡萄糖进红细胞',fx,250);
+    tctx.fillText('（需载体，不耗能）',fx,266);
+  }
+
+  if(mode==='active'||mode==='all'){
+    const ax=620;
+    tctx.fillStyle='#c62828'; tctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; tctx.textAlign='center';
+    tctx.fillText('主动运输',ax,110);
+    // Carrier protein with ATP
+    tctx.fillStyle='#fce4ec'; tctx.strokeStyle='#c62828'; tctx.lineWidth=2;
+    tctx.fillRect(ax-30,125,60,30); tctx.strokeRect(ax-30,125,60,30);
+    tctx.fillStyle='#c62828'; tctx.font='9px sans-serif'; tctx.fillText('载体蛋白',ax,143);
+    // ATP icon
+    tctx.fillStyle='#ffc107'; tctx.beginPath(); tctx.arc(ax+35,108,12,0,Math.PI*2); tctx.fill();
+    tctx.fillStyle='#333'; tctx.font='9px sans-serif'; tctx.fillText('ATP',ax+35,112);
+    // Particles ABOVE (low con - going to high)
+    for(let i=0;i<4;i++){tctx.fillStyle='#c62828'; tctx.beginPath(); tctx.arc(ax-15+i*10,175+Math.random()*25,4.5,0,Math.PI*2); tctx.fill();}
+    // Particles below
+    for(let i=0;i<3;i++){tctx.fillStyle='#ef9a9a'; tctx.beginPath(); tctx.arc(ax-10+i*10,90+Math.random()*15,4,0,Math.PI*2); tctx.fill();}
+    tctx.fillStyle='#c62828'; tctx.font='10px sans-serif'; tctx.fillText('Na⁺/K⁺, 葡萄糖进小肠',ax,250);
+    tctx.fillText('（需载体，消耗ATP）',ax,266);
+    // Arrow UP (low→high)
+    tctx.strokeStyle='#c62828'; tctx.lineWidth=2;
+    tctx.beginPath(); tctx.moveTo(ax,175); tctx.lineTo(ax,90);
+    const angle=-Math.PI/2;
+    tctx.lineTo(ax+6,100); tctx.moveTo(ax,90); tctx.lineTo(ax-6,100);
+    tctx.stroke();
+  }
+}
+drawTransport('all');
+</script>
+
+</div>
+</div>
+</body>
+</html>

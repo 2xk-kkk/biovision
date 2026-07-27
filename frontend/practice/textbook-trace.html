@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教材溯源 - BioVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 32px;
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .textbook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .textbook-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .textbook-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .textbook-cover {
+            height: 200px;
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .textbook-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .textbook-cover .placeholder {
+            color: white;
+            font-size: 60px;
+            opacity: 0.8;
+        }
+
+        .textbook-info {
+            padding: 20px;
+        }
+
+        .textbook-info h3 {
+            font-size: 18px;
+            color: #1a237e;
+            margin-bottom: 8px;
+        }
+
+        .textbook-info p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .textbook-info .btn-view {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .textbook-info .btn-view:hover {
+            background: #1565c0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #1a237e;
+        }
+
+        .modal-header .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .download-section {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 10px 30px;
+            background: #4caf50;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #388e3c;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="logo"></div>
+
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link" target="_blank">首页</a>
+
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
+                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
+                <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper" id="navAvatarBtn">
+                    <div class="avatar" id="navAvatar">👤</div>
+                    <div class="user-dropdown-menu" id="navDropdownMenu">
+                        <a href="../user-center/main.html" class="user-dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="#" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>📚 教材溯源</h1>
+            <p>查看高中生物学全套教材，深入理解知识点</p>
+        </div>
+
+        <div class="textbook-grid">
+            <div class="textbook-card" onclick="openTextbook('必修1', '分子与细胞')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b必修1.jpg" alt="必修1" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🧬</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>必修1：分子与细胞</h3>
+                    <p>探索细胞的结构与功能，理解生命的基本单位</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('必修1', '分子与细胞')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('必修2', '遗传与进化')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b必修2.jpg" alt="必修2" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🧬</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>必修2：遗传与进化</h3>
+                    <p>学习遗传规律，探索生物进化的奥秘</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('必修2', '遗传与进化')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('选择性必修1', '稳态与调节')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b选择性必修1.jpg" alt="选择性必修1" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>⚖️</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>选择性必修1：稳态与调节</h3>
+                    <p>理解生命系统的稳态调节机制</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('选择性必修1', '稳态与调节')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('选择性必修2', '生物与环境')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b选择性必修2.jpg" alt="选择性必修2" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🌍</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>选择性必修2：生物与环境</h3>
+                    <p>研究生物与环境的相互关系</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('选择性必修2', '生物与环境')">查看教材</a>
+                </div>
+            </div>
+
+            <div class="textbook-card" onclick="openTextbook('选择性必修3', '生物技术与工程')">
+                <div class="textbook-cover">
+                    <img src="../textbooks/cover_b选择性必修3.jpg" alt="选择性必修3" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=placeholder>🔬</div>'">
+                </div>
+                <div class="textbook-info">
+                    <h3>选择性必修3：生物技术与工程</h3>
+                    <p>掌握现代生物技术的原理与应用</p>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation(); openTextbook('选择性必修3', '生物技术与工程')">查看教材</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="textbookModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">教材查看</h3>
+                <span class="close-btn" onclick="closeModal()">×</span>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfFrame" class="pdf-viewer" src=""></iframe>
+            </div>
+            <div class="download-section">
+                <a id="downloadLink" href="#" class="download-btn">📥 下载教材</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 BioVision 生物视界 - 高中生物教学辅助平台</p>
+    </footer>
+
+    <script>
+        const textbooks = {
+            '必修1': {
+                name: '分子与细胞',
+                pdf: '../textbooks/普通高中教科书-生物学必修1-分子与细胞.pdf',
+                download: '../textbooks/普通高中教科书-生物学必修1-分子与细胞.pdf'
+            },
+            '必修2': {
+                name: '遗传与进化',
+                pdf: '../textbooks/普通高中教科书-生物学必修2-遗传与进化.pdf',
+                download: '../textbooks/普通高中教科书-生物学必修2-遗传与进化.pdf'
+            },
+            '选择性必修1': {
+                name: '稳态与调节',
+                pdf: '../textbooks/普通高中教科书-生物学选择性必修1-稳态与调节.pdf',
+                download: '../textbooks/普通高中教科书-生物学选择性必修1-稳态与调节.pdf'
+            },
+            '选择性必修2': {
+                name: '生物与环境',
+                pdf: '../textbooks/普通高中教科书-生物学选择性必修2-生物与环境.pdf',
+                download: '../textbooks/普通高中教科书-生物学选择性必修2-生物与环境.pdf'
+            },
+            '选择性必修3': {
+                name: '生物技术与工程',
+                pdf: '../textbooks/普通高中教科书-生物学选择性必修3-生物技术与工程.pdf',
+                download: '../textbooks/普通高中教科书-生物学选择性必修3-生物技术与工程.pdf'
+            }
+        };
+
+        function openTextbook(bookId, bookName) {
+            const book = textbooks[bookId];
+            if (book) {
+                document.getElementById('modalTitle').textContent = `${bookId}：${book.name}`;
+                document.getElementById('pdfFrame').src = book.pdf;
+                document.getElementById('downloadLink').href = book.download;
+                document.getElementById('textbookModal').classList.add('show');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('textbookModal').classList.remove('show');
+            document.getElementById('pdfFrame').src = '';
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('textbookModal')) {
+                closeModal();
+            }
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+            const navDropdown = document.getElementById('navDropdownMenu');
+            if (navDropdown && !e.target.closest('#navAvatarBtn')) {
+                navDropdown.classList.remove('show');
+            }
+        });
+        
+        const navAvatarBtn = document.getElementById('navAvatarBtn');
+        const navDropdown = document.getElementById('navDropdownMenu');
+        if (navAvatarBtn && navDropdown) {
+            navAvatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navDropdown.classList.toggle('show');
+            });
+        }
+        
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        function getDefaultAvatar(username) {
+            const colors = [
+                '#4338ca',
+                '#be185d',
+                '#0369a1',
+                '#15803d',
+                '#c2410c',
+                '#7c3aed',
+                '#dc2626',
+                '#b45309'
+            ];
+            const char = (username || '用').trim()[0].toUpperCase();
+            const colorIndex = char.charCodeAt(0) % colors.length;
+            return {
+                color: colors[colorIndex],
+                char: char
+            };
+        }
+        
+        async function loadUserInfo() {
+            const token = localStorage.getItem('token');
+            const navAvatarEl = document.getElementById('navAvatar');
+            if (!navAvatarEl) return;
+            
+            if (!token) {
+                navAvatarEl.innerHTML = '👤';
+                return;
+            }
+            
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    navAvatarEl.innerHTML = '👤';
+                    return;
+                }
+                
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const data = await resp.json();
+                
+                if (data.success && data.data) {
+                    const username = data.data.username || '用户';
+                    if (data.data.avatar) {
+                        navAvatarEl.innerHTML = `<img src="${data.data.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;">`;
+                    } else {
+                        const defaultAvatar = getDefaultAvatar(username);
+                        navAvatarEl.style.background = defaultAvatar.color;
+                        navAvatarEl.textContent = defaultAvatar.char;
+                    }
+                } else {
+                    navAvatarEl.innerHTML = '👤';
+                }
+            } catch (e) {
+                navAvatarEl.innerHTML = '👤';
+            }
+        }
+        
+        loadUserInfo();
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.classList.contains('dropdown-toggle')) return;
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

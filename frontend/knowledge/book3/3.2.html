@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2章 神经调节 - 知识清单</title>
+<style>
+  :root { --primary: #6a1b9a; --primary-light: #f3e5f5; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #4a148c, #6a1b9a); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f3e5f5; border-color: #ce93d8; }
+  .checklist li.checked .check-box { background: #6a1b9a; border-color: #6a1b9a; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ce93d8; color: #6a5a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #f3e5f5; color: #6a1b9a; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #b39ddb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; }
+  .focus-box { background: #f3e5f5; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#ab47bc); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #c62828; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #c62828; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #b71c1c; color: #b71c1c; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(106,27,154,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(106,27,154,0.1); color: #6a1b9a; font-weight: 700; border-left-color: #ab47bc; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;margin-bottom:0;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+  @media(max-width:640px){.info-row{grid-template-columns:1fr;}.header h1{font-size:1.4em;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修1<br>稳态与调节</div>
+      <a href="3.1.html"><span class="ch-num">第1章</span>内环境与稳态</a>
+      <a href="3.2.html" class="active"><span class="ch-num">第2章</span>神经调节</a>
+      <a href="3.3.html"><span class="ch-num">第3章</span>体液调节</a>
+      <a href="3.4.html"><span class="ch-num">第4章</span>免疫调节</a>
+      <a href="3.5.html"><span class="ch-num">第5章</span>植物生命活动调节</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link active">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第2章 神经调节</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修1 · 稳态与调节</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 32 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">中枢神经系统</div><div class="concept-back">包括脑（大脑、脑干、小脑、下丘脑）和脊髓，大量神经细胞聚集形成不同神经中枢。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">外周神经系统</div><div class="concept-back">包括与脑相连的脑神经（12对）和与脊髓相连的脊神经（31对），含传入神经和传出神经。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">自主神经系统</div><div class="concept-back">支配内脏、血管和腺体的传出神经，不受意识支配。分为交感神经和副交感神经，作用通常相反。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">神经元</div><div class="concept-back">神经系统结构和功能的基本单位。由胞体、树突和轴突组成。树突接收信息，轴突传出信息。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">反射</div><div class="concept-back">在中枢神经系统参与下，机体对内外刺激所产生的规律性应答反应。是神经调节的基本方式。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">反射弧</div><div class="concept-back">完成反射的结构基础。包括：感受器→传入神经→神经中枢→传出神经→效应器。缺一不可。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">静息电位</div><div class="concept-back">神经未受刺激时膜两侧的电位差，表现为内负外正。由K⁺外流引起（协助扩散）。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">动作电位</div><div class="concept-back">神经受刺激时膜两侧的暂时性电位变化，表现为内正外负。由Na⁺内流引起（协助扩散）。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">突触</div><div class="concept-back">两个神经元相接触的结构。包括突触前膜、突触间隙、突触后膜。兴奋在此处单向传递。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">神经递质</div><div class="concept-back">由突触小泡释放的化学物质，经突触间隙扩散，与突触后膜受体结合，引发后膜电位变化。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">条件反射</div><div class="concept-back">出生后在生活过程中通过学习和训练形成的反射。建立在非条件反射基础上，需大脑皮层参与。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 中枢神经系统和外周神经系统各有哪些组成部分？<br>
+  ● 自主神经系统如何调节内脏活动？<br>
+  ● 组成神经系统的细胞有哪些？各有什么特点？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 神经调节的结构基础</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">神经系统结构 - 交互导图</h4>
+      <canvas id="nervousCanvas" width="800" height="380"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleNervous()">▶ 显示自主神经对比</button>
+        <button class="btn btn-outline" onclick="resetNervous()">重置</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>神经系统总览：</strong><br>
+      神经系统 = <strong>中枢神经系统</strong>（脑 + 脊髓）+ <strong>外周神经系统</strong>（脑神经12对 + 脊神经31对）<br>
+      传出神经又分为：<strong>躯体运动神经</strong>（受意识支配）和<strong>内脏运动神经</strong>（自主神经，不受意识支配）
+    </div>
+
+    <table>
+      <tr><th>脑的结构</th><th>主要功能</th></tr>
+      <tr><td><strong>大脑</strong></td><td>调节机体活动的最高级中枢；大脑皮层是表层灰质</td></tr>
+      <tr><td><strong>下丘脑</strong></td><td>体温调节中枢、水平衡调节中枢，与生物节律控制有关</td></tr>
+      <tr><td><strong>小脑</strong></td><td>协调运动，维持身体平衡</td></tr>
+      <tr><td><strong>脑干</strong></td><td>连接脊髓和脑其他部分，有调节呼吸、心脏功能的基本活动中枢</td></tr>
+      <tr><td><strong>脊髓</strong></td><td>脑与躯干、内脏之间的联系通路，调节运动的低级中枢</td></tr>
+    </table>
+
+    <table>
+      <tr><th>项目</th><th>交感神经</th><th>副交感神经</th></tr>
+      <tr><td>占优势时状态</td><td>兴奋/紧张状态</td><td>安静状态</td></tr>
+      <tr><td>心跳</td><td>加快</td><td>减慢</td></tr>
+      <tr><td>支气管</td><td>扩张</td><td>收缩</td></tr>
+      <tr><td>胃肠蠕动</td><td>减弱</td><td>增强</td></tr>
+      <tr><td>消化腺分泌</td><td>减弱</td><td>增强</td></tr>
+      <tr><td>瞳孔</td><td>扩张</td><td>收缩</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>中枢神经系统</strong> = 脑 + 脊髓</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>外周神经系统</strong> = 脑神经(12对) + 脊神经(31对)</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">自主神经 = 交感神经 + 副交感神经（作用通常<strong>相反</strong>）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>神经元</strong>是神经系统结构和功能的<strong>基本单位</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">神经胶质细胞：支持、保护、营养、修复，参与构成髓鞘</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 什么是反射？它有哪些类型？<br>
+  ● 反射弧的结构是怎样的？<br>
+  ● 条件反射是怎样形成的？它有什么意义？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 神经调节的基本方式</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">反射弧结构 - 交互演示</h4>
+      <canvas id="reflexCanvas" width="800" height="220"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="startReflex()">▶ 演示缩手反射</button>
+        <button class="btn btn-outline" onclick="resetReflex()">重置</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>反射弧五环节（缺一不可！）：</strong><br>
+      ① <strong>感受器</strong> → ② <strong>传入神经</strong> → ③ <strong>神经中枢</strong> → ④ <strong>传出神经</strong> → ⑤ <strong>效应器</strong><br>
+      *效应器 = 传出神经末梢 + 它所支配的肌肉或腺体
+    </div>
+
+    <table>
+      <tr><th>比较</th><th>非条件反射</th><th>条件反射</th></tr>
+      <tr><td>形成</td><td>天生就有（遗传）</td><td>后天学习训练获得</td></tr>
+      <tr><td>神经中枢</td><td>大脑皮层以下（脊髓、脑干）</td><td>必须<strong>大脑皮层参与</strong></td></tr>
+      <tr><td>数量</td><td>有限</td><td>几乎无限</td></tr>
+      <tr><td>持久性</td><td>永久</td><td>可消退（需非条件刺激强化）</td></tr>
+      <tr><td>适应意义</td><td>基本生存</td><td>提高适应复杂环境的能力</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>反射</strong>是神经调节的<strong>基本方式</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">反射弧组成：感受器→传入神经→神经中枢→传出神经→效应器</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">反射弧必须<strong>完整</strong>才能完成反射</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">非条件反射 vs 条件反射的区别</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">条件反射建立需要<strong>大脑皮层参与</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">条件反射消退是中枢把兴奋信号转为<strong>抑制信号</strong>（新的学习过程）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 兴奋是如何在神经纤维上传导的？<br>
+  ● 兴奋在突触处是如何传递的？<br>
+  ● 为什么不能滥用兴奋剂和吸食毒品？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 神经冲动的产生和传导</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <!-- 动作电位传播动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">动作电位的产生与传导 - 动画演示</h4>
+      <canvas id="apCanvas" width="800" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="startAP()">▶ 演示神经冲动传导</button>
+        <button class="btn btn-outline" onclick="resetAP()">重置</button>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card"><h4>静息电位</h4><p><strong>内负外正</strong><br>由K⁺外流引起（协助扩散）<br>不需消耗能量</p></div>
+      <div class="info-card"><h4>动作电位</h4><p><strong>内正外负</strong><br>由Na⁺内流引起（协助扩散）<br>去极化→复极化过程</p></div>
+      <div class="info-card"><h4>传导特点</h4><p>在神经纤维上<strong>双向传导</strong><br>以<strong>局部电流</strong>形式传导<br>不衰减</p></div>
+    </div>
+
+    <!-- 突触传递动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">突触传递 - 动画演示</h4>
+      <canvas id="synCanvas" width="800" height="260"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="startSyn()">▶ 演示突触传递</button>
+        <button class="btn btn-outline" onclick="resetSyn()">重置</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>突触传递要点：</strong><br>
+      ① 信号转换：<strong>电信号 → 化学信号 → 电信号</strong><br>
+      ② 传递方向：<strong>单向</strong>（神经递质只存在于突触小泡中，只能由突触前膜释放）<br>
+      ③ 神经递质与后膜受体结合后，立即被<strong>降解或回收</strong>，以免持续发挥作用<br>
+      ④ 突触传递速度<strong>比神经纤维上慢</strong>（涉及化学信号转换）
+    </div>
+
+    <div class="danger-box">
+      <strong>⚠️ 毒品与兴奋剂的共同作用位点：突触</strong><br>
+      有些促进神经递质合成和释放；有些干扰递质与受体结合；有些影响分解递质的酶活性。<br>
+      如<strong>可卡因</strong>使转运蛋白失去回收多巴胺的功能→多巴胺持续作用→受体减少→成瘾。
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label"><strong>静息电位</strong>：K⁺外流→内负外正</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>动作电位</strong>：Na⁺内流→内正外负</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">兴奋在神经纤维上以<strong>电信号（局部电流）</strong>形式<strong>双向</strong>传导</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">突触：电信号→化学信号→电信号，<strong>单向传递</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">神经递质与受体结合后被<strong>降解或回收</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">毒品和兴奋剂大多通过<strong>突触</strong>起作用</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第4节 + 第5节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 神经系统的分级调节是怎样的？<br>
+  ● 大脑皮层有哪些高级功能？<br>
+  ● 语言区（W/S/V/H区）各有什么功能？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第4-5节 神经系统的分级调节 & 人脑的高级功能</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>语言区</th><th>受损后症状</th><th>位置</th></tr>
+      <tr><td><strong>W区（书写中枢）</strong></td><td>失写症——能听能说能看，但<strong>不能写字</strong></td><td>额叶后部</td></tr>
+      <tr><td><strong>V区（视觉性语言中枢）</strong></td><td>失读症——视力正常，但<strong>看不懂文字</strong></td><td>枕叶</td></tr>
+      <tr><td><strong>S区（运动性语言中枢）</strong></td><td>运动性失语症——能听能看能写，但<strong>不能说话</strong></td><td>额叶下部（Broca区）</td></tr>
+      <tr><td><strong>H区（听觉性语言中枢）</strong></td><td>听觉性失语症——能说能看能写，但<strong>听不懂</strong>别人说话</td><td>颞叶上部（Wernicke区）</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>神经系统分级调节：</strong><br>
+      ① 躯体运动：<strong>大脑皮层</strong>（最高级）→ 脑干 → <strong>脊髓</strong>（低级中枢）<br>
+      ② 大脑皮层代表区位置与躯体各部位关系是<strong>倒置</strong>的<br>
+      ③ 皮层代表区范围大小与运动的<strong>精细程度</strong>成正比（如手指/唇代表区很大）<br>
+      ④ 排尿反射：脊髓控制→大脑皮层调控（婴幼儿大脑皮层发育不完善→尿床）
+    </div>
+
+    <div class="info-row">
+      <div class="info-card"><h4>短时记忆</h4><p>与<strong>海马区</strong>有关。感觉性记忆+第一级记忆，神经元活动及已有联系的神经元参与。</p></div>
+      <div class="info-card"><h4>长时记忆</h4><p>第二级+第三级记忆。与<strong>突触形态改变</strong>和<strong>新突触的建立</strong>有关。需反复强化。</p></div>
+    </div>
+
+    <ul class="checklist" id="cl4">
+      <li><span class="check-box"></span><span class="label">大脑皮层是调节机体活动的<strong>最高级中枢</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">躯体运动中枢——倒置、范围与精细程度成正比</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">四个语言区：<strong>W（写）、V（看）、S（说）、H（听）</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">短时记忆→<strong>海马区</strong>；长时记忆→<strong>突触形态改变+新突触建立</strong></span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 21;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx1_ch2_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx1_ch2_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== NERVOUS SYSTEM MAP =====
+const nCanvas=document.getElementById('nervousCanvas'), nctx=nCanvas.getContext('2d');
+let showANS=false;
+function drawNervous(){
+  const w=800,h=380;
+  nctx.clearRect(0,0,w,h); nctx.fillStyle='#fafbfc'; nctx.fillRect(0,0,w,h);
+
+  // Title
+  nctx.fillStyle='#2c3e50'; nctx.font='bold 15px "PingFang SC","Microsoft YaHei",sans-serif'; nctx.textAlign='center';
+
+  // CNS box
+  nctx.fillStyle='#ede7f6'; nctx.strokeStyle='#6a1b9a'; nctx.lineWidth=2.5;
+  nctx.beginPath(); roundRectN(nctx,250,50,300,100,12); nctx.fill(); nctx.stroke();
+  nctx.fillStyle='#4a148c'; nctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; nctx.textAlign='center';
+  nctx.fillText('中枢神经系统',400,80);
+  nctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';
+  nctx.fillText('大脑 · 小脑 · 脑干 · 下丘脑 · 脊髓',400,106);
+
+  // PNS box
+  nctx.fillStyle='#e8f5e9'; nctx.strokeStyle='#388e3c'; nctx.lineWidth=2.5;
+  nctx.beginPath(); roundRectN(nctx,250,190,300,100,12); nctx.fill(); nctx.stroke();
+  nctx.fillStyle='#2e7d32'; nctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  nctx.fillText('外周神经系统',400,220);
+  nctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';
+  nctx.fillText('脑神经(12对) + 脊神经(31对)',400,246);
+  nctx.fillText('传入神经(感觉) + 传出神经(运动)',400,265);
+
+  // Arrow
+  drawArrowN(nctx,400,155,400,185,'#666');
+
+  // Left side
+  nctx.fillStyle='#4a148c'; nctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; nctx.textAlign='center';
+  nctx.fillText('神经中枢',200,95);
+  nctx.strokeStyle='#6a1b9a'; nctx.lineWidth=1.5; nctx.setLineDash([3,3]);
+  nctx.beginPath(); nctx.moveTo(200,100); nctx.lineTo(248,100); nctx.stroke(); nctx.setLineDash([]);
+
+  // Right - outgoing
+  nctx.fillStyle='#2e7d32'; nctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; nctx.textAlign='center';
+  nctx.fillText('躯体运动神经',600,215);
+  nctx.fillText('（受意识支配）',600,232);
+
+  nctx.strokeStyle='#388e3c'; nctx.lineWidth=1.5;
+  nctx.beginPath(); nctx.moveTo(552,220); nctx.lineTo(590,220); nctx.stroke();
+
+  // ANS if shown
+  if(showANS){
+    nctx.fillStyle='#fff3e0'; nctx.strokeStyle='#e65100'; nctx.lineWidth=2;
+    nctx.beginPath(); roundRectN(nctx,550,265,220,95,10); nctx.fill(); nctx.stroke();
+    nctx.fillStyle='#e65100'; nctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; nctx.textAlign='center';
+    nctx.fillText('自主神经系统（不受意识支配）',660,288);
+    nctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
+    nctx.fillText('交感神经（兴奋占优势）',660,310);
+    nctx.fillText('心跳↑ 支气管扩张 胃肠蠕动↓',660,328);
+    nctx.fillText('副交感神经（安静占优势）',660,346);
+    nctx.fillText('心跳↓ 支气管收缩 胃肠蠕动↑',660,362);
+
+    nctx.strokeStyle='#e65100'; nctx.lineWidth=1.5; nctx.setLineDash([3,3]);
+    nctx.beginPath(); nctx.moveTo(552,290); nctx.lineTo(548,290); nctx.stroke(); nctx.setLineDash([]);
+  }
+
+  // Bottom
+  nctx.fillStyle='#2c3e50'; nctx.font='11px sans-serif'; nctx.textAlign='center';
+  nctx.fillText('神经元（基本单位）= 胞体 + 树突 + 轴突　｜　神经胶质细胞：支持、保护、营养、修复',400,375);
+}
+
+function roundRectN(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+function drawArrowN(ctx,x1,y1,x2,y2,color){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-8*Math.cos(a-Math.PI/6),y2-8*Math.sin(a-Math.PI/6));ctx.lineTo(x2-8*Math.cos(a+Math.PI/6),y2-8*Math.sin(a+Math.PI/6));ctx.closePath();ctx.fill();}
+function toggleNervous(){showANS=!showANS;drawNervous();}
+function resetNervous(){showANS=false;drawNervous();}
+drawNervous();
+
+// ===== REFLEX ARC =====
+const rCanvas=document.getElementById('reflexCanvas'), rctx=rCanvas.getContext('2d');
+let reflexStep=-1, reflexTimer;
+function drawReflex(){
+  const w=800,h=220;
+  rctx.clearRect(0,0,w,h); rctx.fillStyle='#fafbfc'; rctx.fillRect(0,0,w,h);
+
+  const comps=[
+    {x:70,y:100,label:'感受器',color:'#f44336'},
+    {x:210,y:100,label:'传入神经',color:'#2196f3'},
+    {x:370,y:90,label:'神经中枢\n(脊髓)',color:'#4caf50'},
+    {x:540,y:100,label:'传出神经',color:'#ff9800'},
+    {x:680,y:100,label:'效应器\n(肌肉)',color:'#9c27b0'},
+  ];
+
+  comps.forEach((c,i)=>{
+    const active=i<=reflexStep;
+    rctx.fillStyle=active?c.color:rgba(c.color,0.15);
+    rctx.strokeStyle=active?c.color:rgba(c.color,0.3);
+    rctx.lineWidth=active?2.5:1.5;
+    rctx.beginPath(); rctx.arc(c.x,c.y,active?28:22,0,Math.PI*2); rctx.fill(); rctx.stroke();
+    rctx.fillStyle=active?'#fff':'#999';
+    rctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; rctx.textAlign='center';
+    const lines=c.label.split('\n');
+    lines.forEach((l,li)=>{rctx.fillText(l,c.x,c.y-4+li*16);});
+  });
+
+  // Arrows
+  for(let i=0;i<4;i++){
+    const active=i<reflexStep;
+    rctx.strokeStyle=active?'#333':'#ccc';
+    rctx.lineWidth=active?2.5:1.5;
+    rctx.beginPath();
+    rctx.moveTo(comps[i].x+comps[i].x<370?30:28, comps[i].y);
+    rctx.lineTo(comps[i+1].x-(comps[i+1].x<540?28:28), comps[i+1].y);
+    rctx.stroke();
+    drawArrowR(rctx,comps[i].x+28+(comps[i+1].x-comps[i].x-56)/2,comps[i].y,comps[i+1].x-28+(comps[i+1].x-comps[i].x-56)/2,comps[i+1].y,active?'#333':'#ccc');
+  }
+
+  rctx.fillStyle='#2c3e50'; rctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; rctx.textAlign='center';
+  rctx.fillText('刺激',comps[0].x,150);
+  rctx.fillText('反应',comps[4].x,150);
+
+  if(reflexStep>=0){
+    rctx.fillStyle='#e65100'; rctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    rctx.fillText('兴奋传导方向 →→→',400,185);
+  }
+}
+function rgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+function drawArrowR(ctx,x1,y1,x2,y2,color){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function startReflex(){reflexStep=-1;clearTimeout(reflexTimer);function step(){reflexStep++;drawReflex();if(reflexStep<4)reflexTimer=setTimeout(step,600);}step();}
+function resetReflex(){clearTimeout(reflexTimer);reflexStep=-1;drawReflex();}
+drawReflex();
+
+// ===== ACTION POTENTIAL =====
+const apCanvas=document.getElementById('apCanvas'), apctx=apCanvas.getContext('2d');
+let apAnim=false, apId, apPhase=0, apPos=0;
+
+function drawAP(){
+  const w=800,h=300;
+  apctx.clearRect(0,0,w,h); apctx.fillStyle='#fafbfc'; apctx.fillRect(0,0,w,h);
+
+  // Membrane
+  apctx.strokeStyle='#999'; apctx.lineWidth=1;
+  apctx.beginPath(); apctx.moveTo(40,130); apctx.lineTo(760,130); apctx.stroke();
+  apctx.fillStyle='#666'; apctx.font='11px sans-serif'; apctx.textAlign='left';
+  apctx.fillText('细胞外（Na⁺浓度高）',100,115);
+  apctx.fillText('细胞内（K⁺浓度高）',100,155);
+
+  // Draw membrane segments
+  const segCount=18;
+  for(let i=0;i<segCount;i++){
+    const sx=55+i*39;
+    let state='rest'; // resting
+
+    if(apAnim){
+      const wavePos=apPos;
+      const dist=i-wavePos;
+      if(dist>=0&&dist<2.5){
+        if(dist<1) state='depol';
+        else if(dist<2) state='repol';
+        else state='hyper';
+      }
+    }
+
+    let topColor,botColor,topSign,botSign;
+    if(state==='rest'){topColor='#bbdefb';botColor='#c8e6c9';topSign='+';botSign='-';}
+    else if(state==='depol'){topColor='#c8e6c9';botColor='#bbdefb';topSign='-';botSign='+';}
+    else if(state==='repol'){topColor='#e1bee7';botColor='#e1bee7';topSign='~';botSign='~';}
+    else {topColor='#ffcdd2';botColor='#ffcdd2';topSign='-';botSign='+';}
+
+    // Top side
+    apctx.fillStyle=topColor; apctx.strokeStyle='#888'; apctx.lineWidth=1;
+    apctx.beginPath(); apctx.rect(sx,105,35,23); apctx.fill(); apctx.stroke();
+    apctx.fillStyle='#333'; apctx.font='10px sans-serif'; apctx.textAlign='center'; apctx.fillText(topSign,sx+17,121);
+
+    // Bottom side
+    apctx.fillStyle=botColor;
+    apctx.beginPath(); apctx.rect(sx,132,35,23); apctx.fill(); apctx.stroke();
+    apctx.fillStyle='#333'; apctx.fillText(botSign,sx+17,148);
+
+    // Separator line
+    apctx.strokeStyle='#666'; apctx.lineWidth=2;
+    apctx.beginPath(); apctx.moveTo(sx,128); apctx.lineTo(sx+35,128); apctx.stroke();
+  }
+
+  // Direction arrow
+  if(apAnim){
+    apctx.fillStyle='#e65100'; apctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; apctx.textAlign='center';
+    apctx.fillText('→ 兴奋传导方向（局部电流刺激相邻区域） →',400,185);
+  }
+
+  // Legend
+  apctx.fillStyle='#2c3e50'; apctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';
+  apctx.fillText('静息：内负外正 (K⁺外流) → 受刺激：内正外负 (Na⁺内流) → 形成局部电流，向前传导',400,220);
+  apctx.fillText('动作电位曲线（模式）',400,250);
+
+  // Mini graph
+  apctx.strokeStyle='#e65100'; apctx.lineWidth=2;
+  apctx.beginPath();
+  const gx=40,gy=260,gw=720,gh=30;
+  apctx.moveTo(gx,gy+gh);
+  for(let i=0;i<=100;i++){
+    const x=gx+i*gw/100;
+    let y;
+    const phase=(i/100+apPos/18)*Math.PI*2;
+    if(phase<0.3) y=gy+gh;
+    else if(phase<0.6) y=gy;
+    else if(phase<1) y=gy+gh*0.8;
+    else y=gy+gh;
+    apctx.lineTo(x,y);
+  }
+  apctx.stroke();
+  apctx.fillStyle='#e65100'; apctx.font='11px sans-serif'; apctx.fillText('静息电位(-70mV) ——→ 去极化(动作电位+30mV) ——→ 复极化 → 恢复',400,285);
+}
+
+function animateAP(){
+  apPos+=0.15;
+  if(apPos>22) apPos=0;
+  drawAP();
+  apId=requestAnimationFrame(animateAP);
+}
+function startAP(){apAnim=!apAnim;if(apAnim)animateAP();else{cancelAnimationFrame(apId);drawAP();}}
+function resetAP(){cancelAnimationFrame(apId);apAnim=false;apPos=0;drawAP();}
+drawAP();
+
+// ===== SYNAPSE =====
+const sCanvas=document.getElementById('synCanvas'), sctx=sCanvas.getContext('2d');
+let synAnim=false, synId, synT=0;
+
+function drawSyn(){
+  const w=800,h=260;
+  sctx.clearRect(0,0,w,h); sctx.fillStyle='#fafbfc'; sctx.fillRect(0,0,w,h);
+
+  // Pre-synaptic terminal
+  sctx.fillStyle='#e8eaf6'; sctx.strokeStyle='#3f51b5'; sctx.lineWidth=2;
+  sctx.beginPath(); roundRectN(sctx,80,100,120,60,15); sctx.fill(); sctx.stroke();
+  sctx.fillStyle='#1a237e'; sctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif'; sctx.textAlign='center';
+  sctx.fillText('突触前膜',140,90);
+  sctx.fillText('（轴突末梢）',140,148);
+
+  // Vesicles
+  for(let i=0;i<4;i++){
+    sctx.fillStyle='#ff9800'; sctx.strokeStyle='#e65100'; sctx.lineWidth=1;
+    sctx.beginPath(); sctx.arc(140+i*15,120+Math.sin(i)*5,6,0,Math.PI*2); sctx.fill(); sctx.stroke();
+  }
+
+  // Synaptic cleft
+  sctx.fillStyle='#fff3e0';
+  sctx.beginPath(); sctx.rect(200,105,40,50); sctx.fill();
+  sctx.fillStyle='#e65100'; sctx.font='10px sans-serif';
+  sctx.fillText('突触',210,130);
+  sctx.fillText('间隙',210,145);
+
+  // Post-synaptic membrane
+  sctx.fillStyle='#fce4ec'; sctx.strokeStyle='#c62828'; sctx.lineWidth=2;
+  sctx.beginPath(); roundRectN(sctx,240,100,120,60,15); sctx.fill(); sctx.stroke();
+  sctx.fillStyle='#b71c1c'; sctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('突触后膜',300,90);
+  sctx.fillText('（下一神经元）',300,148);
+
+  // Receptors
+  sctx.fillStyle='#c62828'; sctx.strokeStyle='#8e0000'; sctx.lineWidth=1;
+  sctx.beginPath(); roundRectN(sctx,245,117,20,10,4); sctx.fill(); sctx.stroke();
+  sctx.beginPath(); roundRectN(sctx,245,135,20,10,4); sctx.fill(); sctx.stroke();
+
+  // Neurotransmitters animation
+  if(synAnim){
+    const nt=Math.floor(synT)%8;
+    for(let i=0;i<Math.min(nt,6);i++){
+      sctx.fillStyle='#ff5722';
+      sctx.beginPath();
+      sctx.arc(200+i*8,115+Math.sin(synT*0.5+i)*4,3.5,0,Math.PI*2);
+      sctx.fill();
+    }
+    // Some NT bound to receptor
+    if(nt>=5){
+      sctx.fillStyle='#ff5722';
+      sctx.beginPath(); sctx.arc(255,122,3.5,0,Math.PI*2); sctx.fill();
+    }
+    if(nt>=6){
+      sctx.fillStyle='#ff5722';
+      sctx.beginPath(); sctx.arc(255,140,3.5,0,Math.PI*2); sctx.fill();
+    }
+  }
+
+  // Info
+  sctx.fillStyle='#2c3e50'; sctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; sctx.textAlign='center';
+  sctx.fillText('电信号 → 突触小泡释放神经递质 → 扩散通过间隙 → 与受体结合 → 后膜电位变化(化学信号→电信号)',400,175);
+  sctx.fillText('关键：神经递质只存在于突触前膜的突触小泡中 → 单向传递！',400,198);
+  sctx.fillText('传递完成后神经递质被降解或回收，以免持续发挥作用',400,218);
+
+  // Labels at bottom
+  sctx.fillStyle='#666'; sctx.font='11px sans-serif';
+  sctx.fillText('①神经冲动到达→',220,230);
+  sctx.fillText('②Ca²⁺内流→小泡与前膜融合→释放递质',360,230);
+  sctx.fillText('③递质与受体结合→离子通道打开',520,230);
+  sctx.fillText('④递质被降解/回收',680,230);
+}
+
+function animateSyn(){synT+=0.3;drawSyn();synId=requestAnimationFrame(animateSyn);}
+function startSyn(){synAnim=!synAnim;if(synAnim)animateSyn();else{cancelAnimationFrame(synId);drawSyn();}}
+function resetSyn(){cancelAnimationFrame(synId);synAnim=false;synT=0;drawSyn();}
+drawSyn();
+</script>
+</body>
+</html>

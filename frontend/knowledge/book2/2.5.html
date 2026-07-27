@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第5章 基因突变及其他变异 - 知识清单</title>
+<style>
+  :root {
+    --primary: #c62828;
+    --primary-light: #ffebee;
+    --accent: #1565c0;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #b71c1c, #c62828);
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='30' r='2' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='70' cy='60' r='3' fill='rgba(255,255,255,0.08)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header h1 { font-size: 2em; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; position: relative; z-index: 1; }
+  .header .quote { margin-top: 14px; font-style: italic; font-size: 0.95em; opacity: 0.85; position: relative; z-index: 1; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #b71c1c; font-weight: 700; }
+  .focus-box { background: #ffebee; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; transition: var(--transition); }
+  .section-header:hover { background: #ffcdd2; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #ffebee; border-color: #ef9a9a; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ef9a9a; color: #9a5a5a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; transition: var(--transition); }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2e7d32; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .diagram-box canvas { max-width: 100%; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px 14px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #ef9a9a; }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #ef5350); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .highlight-box { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; font-weight: 500; }
+
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 180px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: background 0.2s, color 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(198,40,40,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(198,40,40,0.1); color: #c62828; font-weight: 700; border-left-color: #ef5350; }
+  .sidebar .ch-num { font-size: 0.7em; font-weight: 700; color: #90a4ae; min-width: 18px; text-align: center; }
+  @media (max-width: 860px) { .sidebar { position: static; transform: none; width: 100%; max-height: none; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 4px; border-radius: 8px; margin-bottom: 12px; } .sidebar .nav-title { width: 100%; padding: 4px 0; border-bottom: none; margin-bottom: 0; } .sidebar a { padding: 5px 8px; font-size: 0.75em; border-left: none; border-radius: 4px; } }
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+
+      <nav class="sidebar">
+    <div class="nav-title">生物学 必修2<br>遗传与进化</div>
+      <a href="2.1.html"><span class="ch-num">第1章</span>遗传因子的发现</a>
+      <a href="2.2.html"><span class="ch-num">第2章</span>基因和染色体的关系</a>
+      <a href="2.3.html"><span class="ch-num">第3章</span>基因的本质</a>
+      <a href="2.4.html"><span class="ch-num">第4章</span>基因的表达</a>
+      <a href="2.5.html" class="active"><span class="ch-num">第5章</span>基因突变及其他变异</a>
+      <a href="2.6.html"><span class="ch-num">第6章</span>生物的进化</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link active">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第5章 基因突变及其他变异</h1>
+  <div class="subtitle">人教版 · 生物学必修2 · 遗传与进化</div>
+  <div class="quote">"遗传造就生命延续的根基，变异激起进化的层层涟漪。研究遗传变异的分子机制，为人类健康增添新的助力。"</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 30 个知识点</div>
+
+<!-- 第1节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🧬 第1节 基因突变和基因重组</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 基因突变的原因是什么？<br>
+      ● 细胞癌变的原因是什么？<br>
+      ● 基因突变和基因重组有哪些重要意义？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、基因突变</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 基因突变的概念</div>
+      <p><span class="bold-concept">基因突变</span>（gene mutation）：DNA分子中发生<span class="bold-concept">碱基的替换、增添或缺失</span>，而引起的<span class="bold-concept">基因碱基序列的改变</span>。</p>
+      <p><strong>实例——镰状细胞贫血：</strong>血红蛋白基因中碱基替换（GAG→GUG）→谷氨酸→缬氨酸→红细胞呈镰刀状→易破裂→溶血性贫血。这说明<span class="bold-concept">一个碱基的变化就可能引起性状的改变</span>。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、基因突变的原因</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 诱变因素</div>
+      <p>① <strong>物理因素</strong>：紫外线、X射线、γ射线等辐射→损伤DNA</p>
+      <p>② <strong>化学因素</strong>：亚硝酸盐、碱基类似物等→改变核酸的碱基</p>
+      <p>③ <strong>生物因素</strong>：某些病毒的遗传物质→影响宿主细胞DNA</p>
+      <p>④ <strong>自发突变</strong>：DNA复制偶尔发生错误等原因自发产生</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、基因突变的特点</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 四大特点</div>
+      <p>① <span class="bold-concept">普遍性</span>：生物界普遍存在</p>
+      <p>② <span class="bold-concept">随机性</span>：可发生在个体发育任何时期、任何DNA/基因的任何部位</p>
+      <p>③ <span class="bold-concept">不定向性</span>：一个基因可向不同方向突变，产生一个以上的等位基因</p>
+      <p>④ <strong>低频性</strong>：自然状态下频率很低（如果蝇白眼基因突变率≈4×10⁻⁵）</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、基因突变的意义</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 基因突变是生物变异的根本来源</div>
+      <p>基因突变可能破坏生物与环境的协调关系→<strong>有害</strong>（多数）；也可能有利于生存→<strong>有利</strong>（如抗病性、抗药性）；也可能无害无益→<strong>中性</strong>。</p>
+      <p>基因突变是<span class="bold-concept">产生新基因</span>的途径，是<span class="bold-concept">生物变异的根本来源</span>，为生物的进化提供了<span class="bold-concept">丰富的原材料</span>。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">五、细胞的癌变</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 原癌基因与抑癌基因</div>
+      <p><span class="bold-concept">原癌基因</span>：表达的蛋白质是细胞正常生长和增殖所必需的。突变或过量表达→活性过强→可能癌变。</p>
+      <p><span class="bold-concept">抑癌基因</span>：表达的蛋白质抑制细胞生长和增殖或促进凋亡。突变→活性减弱或失活→可能癌变。</p>
+      <p><strong>癌细胞特征：</strong>①无限增殖；②形态结构显著变化；③细胞膜上糖蛋白减少→黏着性降低→易分散和转移。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">六、基因重组</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 基因重组</div>
+      <p><span class="bold-concept">基因重组</span>（gene recombination）：在生物体进行有性生殖的过程中，控制不同性状的基因的重新组合。</p>
+      <p><strong>两种类型：</strong>①减数分裂中<a class="bold-concept">非同源染色体自由组合</a>→非等位基因重组；②<a class="bold-concept">四分体时期非姐妹染色单体互换</a>→等位基因交换。</p>
+      <p><strong>意义：</strong>产生配子多样化→基因组合多样化的子代→有利于物种在多变环境中生存→也是<span class="bold-concept">生物变异的来源之一</span>，对生物的进化具有重要意义。</p>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li data-id="1"><span class="check-box"></span><span class="label"><strong>基因突变</strong>：碱基替换/增添/缺失→基因碱基序列改变</span><span class="tag tag-important">重点</span></li>
+      <li data-id="2"><span class="check-box"></span><span class="label">镰状细胞贫血：GAG→GUG（一个碱基替换）→谷氨酸→缬氨酸</span><span class="tag tag-important">重点</span></li>
+      <li data-id="3"><span class="check-box"></span><span class="label">诱变因素：物理（辐射）、化学（亚硝酸盐）、生物（病毒）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="4"><span class="check-box"></span><span class="label">基因突变特点：<strong>普遍性、随机性、不定向性、低频性</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="5"><span class="check-box"></span><span class="label">基因突变是<strong>产生新基因</strong>的途径，生物变异的<strong>根本来源</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="6"><span class="check-box"></span><span class="label"><strong>原癌基因</strong>（正常→突变→活性过强→癌）和<strong>抑癌基因</strong>（正常→突变→失活→癌）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="7"><span class="check-box"></span><span class="label">癌细胞特征：无限增殖、形态改变、糖蛋白减少易转移</span><span class="tag tag-important">重点</span></li>
+      <li data-id="8"><span class="check-box"></span><span class="label"><strong>基因重组</strong>：有性生殖中基因重新组合（自由组合+交叉互换）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="9"><span class="check-box"></span><span class="label">基因突变+基因重组都是<strong>生物变异的来源</strong>，为进化提供原材料</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🔬 第2节 染色体变异</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 染色体数目的变异有哪些类型？<br>
+      ● 什么是单倍体、二倍体和多倍体？<br>
+      ● 染色体结构的变异有哪些类型？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、染色体数目的变异</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念</div>
+      <p><strong>两类：</strong>①<strong>个别染色体</strong>增加或减少；②以一套完整非同源染色体为基数<span class="bold-concept">成倍地增加或成套地减少</span>。</p>
+      <p><span class="bold-concept">染色体组</span>：一套完整的非同源染色体（形态和功能各不相同）。</p>
+      <p><span class="bold-concept">二倍体</span>：体细胞含两个染色体组（几乎全部动物+过半数高等植物）。</p>
+      <p><span class="bold-concept">多倍体</span>：含三个或以上染色体组。茎秆粗壮，叶/果实/种子大，营养含量高（如四倍体番茄维生素C含量翻倍）。<strong>三倍体</strong>：减数分裂联会紊乱→不育（如三倍体无子西瓜、香蕉）。</p>
+      <p><span class="bold-concept">单倍体</span>：体细胞染色体数=本物种配子染色体数（如雄蜂）。通常植株弱小、高度不育。</p>
+      <p><strong>秋水仙素</strong>：抑制纺锤体形成→染色体不能移向两极→加倍。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、染色体结构的变异</h3>
+    <div class="highlight-box">
+      <strong>四种类型：</strong><br>
+      ① <strong>缺失</strong>：某片段缺失（如猫叫综合征，5号染色体部分缺失）<br>
+      ② <strong>重复</strong>：某片段增加（如果蝇棒状眼）<br>
+      ③ <strong>倒位</strong>：某片段位置颠倒<br>
+      ④ <strong>易位</strong>：某片段移至另一条非同源染色体（如慢性髓细胞性白血病，9号与22号互换）
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🧬 染色体组与多倍体概念 - 交互演示</h4>
+      <canvas id="chrVarCanvas" width="700" height="260"></canvas>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li data-id="10"><span class="check-box"></span><span class="label"><strong>染色体变异</strong>：数目变异（个别增减/成倍增减）+ 结构变异（缺失/重复/倒位/易位）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="11"><span class="check-box"></span><span class="label"><strong>染色体组</strong>：一套完整的非同源染色体</span><span class="tag tag-important">重点</span></li>
+      <li data-id="12"><span class="check-box"></span><span class="label"><strong>二倍体</strong>（2N）、<strong>多倍体</strong>（3N/4N）、<strong>单倍体</strong>（=配子染色体数）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="13"><span class="check-box"></span><span class="label">三倍体<strong>联会紊乱</strong>→不育（无子西瓜、香蕉）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="14"><span class="check-box"></span><span class="label"><strong>秋水仙素</strong>：抑制纺锤体形成→染色体加倍（处理萌发种子/幼苗）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="15"><span class="check-box"></span><span class="label">单倍体：花药（花粉）离体培养→单倍体植株→秋水仙素加倍→纯合二倍体</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🏥 第3节 人类遗传病</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 什么是遗传病？<br>
+      ● 如何检测和预防遗传病？<br>
+      ● 对遗传病做必要的检测和预防有什么社会意义？
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 人类遗传病三大类</div>
+      <p>① <span class="bold-concept">单基因遗传病</span>：受一对等位基因控制（8000+种）。显性：多指、并指、软骨发育不全；隐性：镰状细胞贫血、白化病、苯丙酮尿症。</p>
+      <p>② <span class="bold-concept">多基因遗传病</span>：两对及以上等位基因控制。包括：原发性高血压、冠心病、哮喘、青少年型糖尿病等。在群体中发病率较高。</p>
+      <p>③ <span class="bold-concept">染色体异常遗传病</span>：染色体变异引起（500+种）。如<span class="bold-concept">唐氏综合征</span>（21三体综合征）——多一条21号染色体。</p>
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 遗传病的检测和预防</div>
+      <p>① <span class="bold-concept">遗传咨询</span>：检查→分析传递方式→推算再发风险→建议（产前诊断/终止妊娠）</p>
+      <p>② <span class="bold-concept">产前诊断</span>：羊水检查、B超、孕妇血细胞检查、基因检测</p>
+      <p>③ <span class="bold-concept">基因检测</span>：检测DNA序列→诊断病因、预测患病风险、指导用药</p>
+      <p>④ <span class="bold-concept">基因治疗</span>：正常基因取代/修补缺陷基因（1990年首例临床治疗重症联合免疫缺陷病成功）</p>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li data-id="16"><span class="check-box"></span><span class="label"><strong>人类遗传病</strong>：由遗传物质改变引起，分单基因、多基因、染色体异常三类</span><span class="tag tag-important">重点</span></li>
+      <li data-id="17"><span class="check-box"></span><span class="label"><strong>唐氏综合征</strong>（21三体综合征）：多一条21号染色体（染色体数目变异）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="18"><span class="check-box"></span><span class="label"><strong>遗传咨询</strong>的四步程序和<strong>产前诊断</strong>的方法（羊水/B超/基因检测）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="19"><span class="check-box"></span><span class="label"><strong>基因治疗</strong>：正常基因取代/修补缺陷基因（1990年首例）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="20"><span class="check-box"></span><span class="label">遗传病发病率 = 患者数/被调查人数 ×100%；调查时取样要大且随机</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 易错辨析 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>⚡ 易错概念辨析与补充</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card"><h4>❌ 常见错误</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① "基因突变一定有害"→<strong>错！</strong>有有利/有害/中性之分<br>
+          ② "基因突变和基因重组是同一概念"→<strong>错！</strong>基因突变改变基因结构；基因重组不改变基因本身<br>
+          ③ "先天性疾病都是遗传病"→<strong>错！</strong>如先天性心脏病，不一定由遗传物质引起<br>
+          ④ "有致病基因就一定患遗传病"→<strong>错！</strong>隐性致病基因携带者不患病<br>
+          ⑤ "染色体变异与基因突变无关"→<strong>错！</strong>都属于可遗传变异
+        </p>
+      </div>
+      <div class="info-card"><h4>💡 可遗传变异比较</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          <strong>基因突变</strong>：基因水平，碱基序列改变→新基因<br>
+          <strong>基因重组</strong>：基因水平，基因重新组合→新基因型<br>
+          <strong>染色体变异</strong>：染色体水平，数目/结构改变<br>
+          三种变异在显微镜下的可见性不同：染色体变异>基因突变（看不见）
+        </p>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>变异类型</th><th>水平</th><th>显微镜</th><th>实质</th><th>举例</th></tr>
+      <tr><td>基因突变</td><td>分子</td><td>不可见</td><td>碱基改变</td><td>镰状细胞贫血</td></tr>
+      <tr><td>基因重组</td><td>分子</td><td>不可见</td><td>基因重新组合</td><td>非同源染色体自由组合</td></tr>
+      <tr><td>染色体变异</td><td>细胞</td><td>可见</td><td>数目/结构改变</td><td>唐氏综合征、猫叫综合征</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl4">
+      <li data-id="21"><span class="check-box"></span><span class="label">可遗传变异≠可遗传给后代：配子突变可遗传；体细胞突变一般不能（植物除外）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="22"><span class="check-box"></span><span class="label">基因组编辑（CRISPR/Cas9）："向导"RNA+核酸酶Cas9→精准切割DNA→基因"手术刀"</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="23"><span class="check-box"></span><span class="label"><strong>精准医疗</strong>：基于患者基因组信息，量身设计最佳治疗方案</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="24"><span class="check-box"></span><span class="label">人类基因组计划测定<strong>24条</strong>染色体（22+X+Y）的DNA序列</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="25"><span class="check-box"></span><span class="label">猫叫综合征：5号染色体部分<strong>缺失</strong>；慢性髓细胞白血病：9号与22号<strong>易位</strong></span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📋 本章小结</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>核心框架：</strong>可遗传变异的三大来源——<strong>基因突变</strong>（新基因、根本来源）、<strong>基因重组</strong>（新基因型）、<strong>染色体变异</strong>（数目/结构改变）。遗传病分单基因/多基因/染色体异常三类，可通过遗传咨询+产前诊断+基因检测预防。
+    </div>
+    <ul class="checklist" id="cl5">
+      <li data-id="26"><span class="check-box"></span><span class="label">诱变育种：利用辐射或化学诱变剂处理生物→提高突变率→选育新品种</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="27"><span class="check-box"></span><span class="label">航天育种：利用太空特殊环境（微重力+辐射）诱导基因突变</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="28"><span class="check-box"></span><span class="label">35岁以上孕妇建议产前诊断→筛查唐氏综合征等染色体病</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="29"><span class="check-box"></span><span class="label">基因检测的利（精确诊断、预测风险）与弊（隐私、就业保险歧视）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="30"><span class="check-box"></span><span class="label">从进化角度：突变和重组提供了<strong>进化的原材料</strong></span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 30;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+}
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function() {
+    this.classList.toggle('checked');
+    updateProgress();
+    saveCheckState();
+  });
+});
+function saveCheckState() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => { state[li.dataset.id] = li.classList.contains('checked'); });
+  localStorage.setItem('bio_b2_ch5_checklist', JSON.stringify(state));
+}
+function loadCheckState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_b2_ch5_checklist'));
+    if (state) document.querySelectorAll('.checklist li').forEach(li => { if (state[li.dataset.id]) li.classList.add('checked'); });
+  } catch(e) {}
+  updateProgress();
+}
+loadCheckState();
+
+// Chromosome variation canvas
+const cvCanvas = document.getElementById('chrVarCanvas');
+const cvCtx = cvCanvas.getContext('2d');
+function drawChrVar() {
+  cvCtx.clearRect(0, 0, cvCanvas.width, cvCanvas.height);
+  cvCtx.fillStyle = '#fafbfc';
+  cvCtx.fillRect(0, 0, cvCanvas.width, cvCanvas.height);
+  cvCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  cvCtx.textAlign = 'center';
+
+  // DIPLOID
+  cvCtx.fillStyle = '#c62828';
+  cvCtx.fillText('二倍体 (2N=4，两个染色体组)', 200, 30);
+  const pairs = [[80,130,'#e57373'],[160,130,'#64b5f6'],[80,190,'#ff8a65'],[160,190,'#81c784']];
+  pairs.forEach(([x,y,c]) => {
+    cvCtx.fillStyle = c;
+    cvCtx.fillRect(x-5, y-30, 10, 55);
+    cvCtx.strokeStyle = '#333';
+    cvCtx.strokeRect(x-5, y-30, 10, 55);
+    cvCtx.fillStyle = '#fff';
+    cvCtx.beginPath();
+    cvCtx.arc(x, y, 3, 0, Math.PI*2);
+    cvCtx.fill();
+  });
+
+  // TETRAPLOID
+  cvCtx.fillStyle = '#c62828';
+  cvCtx.fillText('四倍体 (4N=8，四个染色体组)', 520, 30);
+  [[420,130,'#e57373'],[470,130,'#64b5f6'],[520,130,'#e57373'],[570,130,'#64b5f6']].forEach(([x,y,c]) => {
+    cvCtx.fillStyle = c;
+    cvCtx.fillRect(x-5, y-30, 10, 55);
+    cvCtx.strokeStyle = '#333';
+    cvCtx.strokeRect(x-5, y-30, 10, 55);
+  });
+  [[420,190,'#ff8a65'],[470,190,'#81c784'],[520,190,'#ff8a65'],[570,190,'#81c784']].forEach(([x,y,c]) => {
+    cvCtx.fillStyle = c;
+    cvCtx.fillRect(x-5, y-30, 10, 55);
+    cvCtx.strokeStyle = '#333';
+    cvCtx.strokeRect(x-5, y-30, 10, 55);
+  });
+
+  // Label
+  cvCtx.fillStyle = '#c62828';
+  cvCtx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  cvCtx.fillText('自然状态+秋水仙素处理', 520, 240);
+
+  cvCtx.fillStyle = '#666';
+  cvCtx.fillText('多倍体植株：茎秆粗壮、叶大、果实大、营养成分增多', 350, 240);
+}
+drawChrVar();
+</script>
+
+</div>
+</div>
+</body>
+</html>

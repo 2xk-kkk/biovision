@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第1章 人体的内环境与稳态 - 知识清单</title>
+<style>
+  :root { --primary: #1565c0; --primary-light: #e3f2fd; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #0d47a1, #1565c0); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e8f5e9; border-color: #a5d6a7; }
+  .checklist li.checked .check-box { background: #2e7d32; border-color: #2e7d32; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #81c784; color: #4a7a5a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e3f2fd; color: #1565c0; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .tag-concept { background: #f3e5f5; color: #6a1b9a; font-weight: 700; border: 1px dashed #b39ddb; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #90caf9; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #e3f2fd; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#42a5f5); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(33,150,243,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(21,101,192,0.1); color: #1565c0; font-weight: 700; border-left-color: #42a5f5; }
+  .sidebar .ch-num { font-size: 0.7em; font-weight: 700; color: #90a4ae; min-width: 18px; text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #c62828; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #c62828; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #b71c1c; color: #b71c1c; }
+  .concept-card .concept-front { font-size: 0.95em; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;margin-bottom:0;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+  @media(max-width:640px){.info-row{grid-template-columns:1fr;}.header h1{font-size:1.4em;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修1<br>稳态与调节</div>
+      <a href="3.1.html" class="active"><span class="ch-num">第1章</span>内环境与稳态</a>
+      <a href="3.2.html"><span class="ch-num">第2章</span>神经调节</a>
+      <a href="3.3.html"><span class="ch-num">第3章</span>体液调节</a>
+      <a href="3.4.html"><span class="ch-num">第4章</span>免疫调节</a>
+      <a href="3.5.html"><span class="ch-num">第5章</span>植物生命活动调节</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link active">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第1章 人体的内环境与稳态</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修1 · 稳态与调节</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 40 个知识点</div>
+
+<!-- ====== 核心概念翻牌记忆 ====== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌查看释义）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">内环境</div>
+        <div class="concept-back">由细胞外液构成的液体环境，是体内细胞直接生活的环境。包括血浆、组织液、淋巴液等。</div>
+      </div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">血浆</div>
+        <div class="concept-back">血液中的液体成分，约90%为水，7%~9%为蛋白质，约1%为无机盐。是血细胞直接生活的环境。</div>
+      </div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">组织液</div>
+        <div class="concept-back">存在于组织细胞间隙的液体，是绝大多数细胞直接生活的环境。与血浆相比蛋白质含量很少。</div>
+      </div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">淋巴液</div>
+        <div class="concept-back">存在于淋巴管中的液体，由一部分组织液进入毛细淋巴管形成。最终汇入血浆。</div>
+      </div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">渗透压</div>
+        <div class="concept-back">溶液中溶质微粒对水的吸引力。血浆渗透压主要与无机盐和蛋白质含量有关，90%以上来源于Na⁺和Cl⁻。</div>
+      </div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">稳态</div>
+        <div class="concept-back">正常机体通过调节作用，使各个器官、系统协调活动，共同维持内环境的相对稳定状态。</div>
+      </div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">缓冲对</div>
+        <div class="concept-back">能减弱溶液pH变化的物质对。内环境中最重要的缓冲对是HCO₃⁻/H₂CO₃、HPO₄²⁻/H₂PO₄⁻。</div>
+      </div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')">
+        <div class="concept-front">神经—体液—免疫调节网络</div>
+        <div class="concept-back">机体维持稳态的主要调节机制。神经系统、内分泌系统和免疫系统三者相互协调。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 细胞生活的环境 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 内环境由哪些部分组成？各部分之间的关系是怎样的？<br>
+  ● 内环境具有哪些理化性质？<br>
+  ● 细胞如何通过内环境与外界环境进行物质交换？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 细胞生活的环境</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <!-- 交互式内环境交换图 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">内环境三大组分物质交换 - 交互演示</h4>
+      <canvas id="envCanvas" width="800" height="450"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleFlow1()">▶ 演示物质流动</button>
+        <button class="btn btn-outline" onclick="resetEnv()">重置</button>
+        <button class="btn btn-accent" onclick="showLabels()">显示/隐藏标注</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>成分</th><th>存在位置</th><th>蛋白质含量</th><th>生活的细胞</th></tr>
+      <tr><td><strong>血浆</strong></td><td>血管内</td><td>高（7%~9%）</td><td>血细胞</td></tr>
+      <tr><td><strong>组织液</strong></td><td>组织细胞间隙</td><td>很低</td><td>绝大多数体细胞</td></tr>
+      <tr><td><strong>淋巴液</strong></td><td>淋巴管内</td><td>很低</td><td>淋巴细胞等</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>三者的关系：</strong>血浆 ⇌ 组织液 → 淋巴液 → 血浆（单向回流）<br>
+      血浆与组织液通过毛细血管壁双向交换；组织液单向流入毛细淋巴管形成淋巴液；淋巴液经淋巴循环汇入血浆。
+    </div>
+
+    <div class="danger-box">
+      <strong>⚠️ 高频易错：</strong><br>
+      ① 血红蛋白（在红细胞内）≠ 血浆蛋白（在血浆中）—— 血红蛋白<strong>不属于</strong>内环境成分！<br>
+      ② 消化液、尿液、汗液、泪液等<strong>不属于</strong>内环境，因为它们与外界相通。<br>
+      ③ 细胞内的物质（呼吸酶、DNA等）<strong>不属于</strong>内环境成分。
+    </div>
+
+    <div class="info-row">
+      <div class="info-card"><h4>渗透压</h4><p>大小取决于<strong>单位体积溶液中溶质微粒的数目</strong>。血浆渗透压90%以上来源于<strong>Na⁺和Cl⁻</strong>。37℃时为<strong>770 kPa</strong>，与细胞内液渗透压相当。</p></div>
+      <div class="info-card"><h4>酸碱度</h4><p>正常血浆pH为<strong>7.35~7.45</strong>。靠<strong>缓冲对</strong>维持：HCO₃⁻/H₂CO₃（最重要）、HPO₄²⁻/H₂PO₄⁻。</p></div>
+      <div class="info-card"><h4>温度</h4><p>人体细胞外液温度一般维持在<strong>37℃左右</strong>。同一人体温一日内变化不超过1℃。</p></div>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>内环境</strong>由血浆、组织液、淋巴液等细胞外液构成</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">血浆 vs 组织液 vs 淋巴液的蛋白质含量差异</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">组织液→淋巴液→血浆（单向流动）</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>渗透压</strong>——主要取决于Na⁺、Cl⁻浓度</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>pH</strong> 7.35~7.45，靠缓冲对维持</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">不属于内环境成分：血红蛋白、消化酶、尿液等</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">细胞通过内环境与外界进行物质交换</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 内环境的稳态 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 什么是内环境的稳态？它有什么重要意义？<br>
+  ● 稳态调节的机制是什么？<br>
+  ● 如何更好地维持内环境的稳态？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 内环境的稳态</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="highlight-box">
+      <strong>稳态概念：</strong>正常机体通过<strong>调节作用</strong>，使各个器官、系统协调活动，共同维持内环境的<strong>相对稳定状态</strong>。<br>
+      <strong>要点：</strong>稳态不是恒定不变，而是一种<strong>动态平衡</strong>。
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">稳态调节机制 - 动态平衡演示</h4>
+      <canvas id="homeostasisCanvas" width="750" height="280"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleHomeo()">▶ 模拟稳态波动</button>
+        <button class="btn btn-outline" onclick="resetHomeo()">重置</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>调节机制</th><th>提出者</th><th>时间</th><th>核心观点</th></tr>
+      <tr><td>神经调节</td><td>贝尔纳（法国）</td><td>1857年</td><td>内环境稳定主要依赖<strong>神经系统</strong>的调节</td></tr>
+      <tr><td>神经+体液调节</td><td>坎农（美国）</td><td>1926年</td><td>稳态是在<strong>神经调节和体液调节</strong>共同作用下实现的</td></tr>
+      <tr><td>神经—体液—免疫调节</td><td>现代观点</td><td>—</td><td>免疫系统也起重要调节作用，三者构成调节<strong>网络</strong></td></tr>
+    </table>
+
+    <div class="danger-box">
+      <strong>⚠️ 稳态失调实例：</strong><br>
+      ① 肾功能衰竭→尿毒症（水、无机盐代谢紊乱）<br>
+      ② 高热→酶活性改变，代谢紊乱<br>
+      ③ 严重腹泻→失水失盐，渗透压失调<br>
+      ④ 高原反应→缺氧导致头痛、乏力
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 稳态概念的发展（多层次的稳态）</div>
+      <p><span class="bold-concept">分子水平：</span>基因表达的稳态、酶活性的稳态</p>
+      <p><span class="bold-concept">细胞水平：</span>细胞分裂和分化的稳态</p>
+      <p><span class="bold-concept">器官水平：</span>心脏活动的稳态（血压、心率）</p>
+      <p><span class="bold-concept">群体水平：</span>种群数量的稳态、生态系统的稳态</p>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>稳态</strong>的定义——相对稳定状态（动态平衡）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">稳态调节机制：<strong>神经—体液—免疫调节网络</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">稳态是机体进行<strong>正常生命活动的必要条件</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">人体维持稳态的调节能力是<strong>有一定限度的</strong></span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">内环境稳态失调实例（尿毒症、中暑、高原反应）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">稳态概念在生命系统各层次均有体现</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+// ===== PROGRESS =====
+function updateProgress() {
+  const total = 13;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx1_ch1_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach((li,i)=>{
+  li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});
+});
+try{const s=JSON.parse(localStorage.getItem('bio_sx1_ch1_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== ENVIRONMENT EXCHANGE ANIMATION =====
+const eCanvas = document.getElementById('envCanvas'), ectx = eCanvas.getContext('2d');
+let envFlow = false, envAnimId, showLabel = true;
+const particles = [];
+
+function initParticles() {
+  particles.length = 0;
+  for(let i=0;i<20;i++) particles.push({
+    x:340+Math.random()*20, y:140+Math.random()*60, vx:(Math.random()-0.5)*1.5, vy:(Math.random()-0.5)*1.2,
+    from:'blood', color:'#e53935', r:2.5+Math.random()*2
+  });
+}
+
+function drawEnv() {
+  const w=800, h=450;
+  ectx.clearRect(0,0,w,h); ectx.fillStyle='#fafbfc'; ectx.fillRect(0,0,w,h);
+
+  // Blood vessel (top-left)
+  ectx.fillStyle='#ffcdd2'; ectx.strokeStyle='#e53935'; ectx.lineWidth=2.5;
+  ectx.beginPath(); roundRect(ectx,250,80,100,40,20); ectx.fill(); ectx.stroke();
+  ectx.fillStyle='#b71c1c'; ectx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; ectx.textAlign='center';
+  ectx.fillText('血浆',300,80);
+  ectx.fillText('(毛细血管)',300,140);
+
+  // Tissue fluid area (center)
+  ectx.fillStyle='rgba(227,242,253,0.5)'; ectx.strokeStyle='#1565c0'; ectx.lineWidth=2; ectx.setLineDash([6,3]);
+  ectx.beginPath(); ectx.ellipse(400,250,140,100,0,0,Math.PI*2); ectx.fill(); ectx.stroke(); ectx.setLineDash([]);
+  ectx.fillStyle='#1565c0'; ectx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  ectx.fillText('组织液',400,230);
+  ectx.fillText('(细胞间隙)',400,260);
+
+  // Lymph vessel (bottom-right)
+  ectx.fillStyle='#e8f5e9'; ectx.strokeStyle='#2e7d32'; ectx.lineWidth=2.5;
+  ectx.beginPath(); roundRect(ectx,550,280,90,35,18); ectx.fill(); ectx.stroke();
+  ectx.fillStyle='#2e7d32'; ectx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  ectx.fillText('淋巴液',595,275);
+
+  // Cells
+  for(let i=0;i<5;i++){
+    const cx=320+i*45, cy=320+Math.sin(i)*12;
+    ectx.fillStyle='#fff3e0'; ectx.strokeStyle='#e65100'; ectx.lineWidth=1.5;
+    ectx.beginPath(); ectx.arc(cx,cy,14,0,Math.PI*2); ectx.fill(); ectx.stroke();
+    ectx.fillStyle='#e65100'; ectx.font='9px sans-serif'; ectx.textAlign='center'; ectx.fillText('细胞',cx,cy+4);
+  }
+
+  // Arrows
+  if(showLabel){
+    ectx.strokeStyle='#e53935'; ectx.lineWidth=2; drawArrow(ectx,350,120,380,200);
+    ectx.fillStyle='#b71c1c'; ectx.font='11px sans-serif'; ectx.fillText('渗出（物质交换）',355,170);
+
+    ectx.strokeStyle='#2e7d32'; ectx.lineWidth=2; drawArrow(ectx,460,300,550,305);
+    ectx.fillStyle='#2e7d32'; ectx.fillText('部分组织液',500,295);
+    ectx.fillText('→淋巴液',500,312);
+
+    ectx.strokeStyle='#2e7d32'; ectx.lineWidth=2; drawArrow(ectx,595,315,595,365);
+    ectx.strokeStyle='#2e7d32'; ectx.lineWidth=2; drawArrow(ectx,595,365,420,375);
+    ectx.fillStyle='#2e7d32'; ectx.fillText('淋巴循环汇入',510,370);
+
+    ectx.strokeStyle='#e53935'; ectx.lineWidth=2; drawArrow(ectx,300,175,385,220);
+    ectx.fillStyle='#b71c1c'; ectx.fillText('回流（重吸收）',310,200);
+
+    // Title
+    ectx.fillStyle='#2c3e50'; ectx.font='bold 15px "PingFang SC","Microsoft YaHei",sans-serif'; ectx.textAlign='center';
+    ectx.fillText('血浆 ⇌ 组织液 → 淋巴液 → 血浆',400,420);
+  }
+
+  // Animated particles
+  if(envFlow){
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x>380&&p.x<420&&p.y>180&&p.y<320){
+        p.vx=(Math.random()-0.5)*2; p.vy=(Math.random()-0.5)*2;
+      }
+      if(p.x<250||p.x>640) p.vx*=-1;
+      if(p.y<100||p.y>350) p.vy*=-1;
+      ectx.fillStyle=p.color; ectx.beginPath(); ectx.arc(p.x,p.y,p.r,0,Math.PI*2); ectx.fill();
+    });
+  }
+}
+
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+function drawArrow(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1);ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-10*Math.cos(a-Math.PI/6),y2-10*Math.sin(a-Math.PI/6));ctx.lineTo(x2-10*Math.cos(a+Math.PI/6),y2-10*Math.sin(a+Math.PI/6));ctx.closePath();ctx.fill();}
+
+function animateEnv(){drawEnv();if(envFlow) envAnimId=requestAnimationFrame(animateEnv);}
+function toggleFlow1(){envFlow=!envFlow;if(envFlow){initParticles();animateEnv();}else{cancelAnimationFrame(envAnimId);drawEnv();}}
+function resetEnv(){cancelAnimationFrame(envAnimId);envFlow=false;drawEnv();}
+function showLabels(){showLabel=!showLabel;drawEnv();}
+initParticles(); drawEnv();
+
+// ===== HOMEOSTASIS DEMO =====
+const hCanvas=document.getElementById('homeostasisCanvas'), hctx=hCanvas.getContext('2d');
+let homeoAnim=false, homeoId, homeoT=0;
+const homeoData=[];
+for(let t=0;t<200;t++){homeoData.push(7.4+Math.sin(t*0.1)*0.12+Math.sin(t*0.3)*0.08+(Math.random()-0.5)*0.05);}
+
+function drawHomeo(){
+  const w=750,h=280;
+  hctx.clearRect(0,0,w,h); hctx.fillStyle='#fafbfc'; hctx.fillRect(0,0,w,h);
+
+  // Axes
+  hctx.strokeStyle='#999'; hctx.lineWidth=1;
+  hctx.beginPath(); hctx.moveTo(60,30); hctx.lineTo(60,220); hctx.lineTo(710,220); hctx.stroke();
+
+  // Labels
+  hctx.fillStyle='#2c3e50'; hctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; hctx.textAlign='center';
+  hctx.fillText('时间（动态变化）',380,255);
+  hctx.save(); hctx.translate(20,140); hctx.rotate(-Math.PI/2); hctx.fillText('血浆pH',0,0); hctx.restore();
+
+  // Normal range lines
+  hctx.strokeStyle='#4caf50'; hctx.lineWidth=1; hctx.setLineDash([4,4]);
+  hctx.beginPath(); hctx.moveTo(60,70); hctx.lineTo(710,70); hctx.stroke();
+  hctx.beginPath(); hctx.moveTo(60,170); hctx.lineTo(710,170); hctx.stroke();
+  hctx.setLineDash([]);
+  hctx.fillStyle='#4caf50'; hctx.font='11px sans-serif'; hctx.textAlign='left';
+  hctx.fillText('正常上限 pH 7.45',500,63);
+  hctx.fillText('正常下限 pH 7.35',500,183);
+
+  // pH curve
+  hctx.strokeStyle='#e65100'; hctx.lineWidth=2.5;
+  hctx.beginPath();
+  const offset=homeoT%200;
+  for(let i=0;i<150;i++){
+    const x=65+i*4.2, y=120-(homeoData[(i+offset)%200]-7.4)*800;
+    if(i===0) hctx.moveTo(x,y); else hctx.lineTo(x,y);
+  }
+  hctx.stroke();
+
+  hctx.fillStyle='#e65100'; hctx.font='bold 13px sans-serif'; hctx.textAlign='center';
+  hctx.fillText('血浆pH值在7.35~7.45之间动态波动——这就是"稳态"！',375,40);
+}
+
+function toggleHomeo(){homeoAnim=!homeoAnim; if(homeoAnim) animHomeo(); else cancelAnimationFrame(homeoId);}
+function animHomeo(){homeoT++; drawHomeo(); homeoId=requestAnimationFrame(animHomeo);}
+function resetHomeo(){cancelAnimationFrame(homeoId); homeoAnim=false; homeoT=0; drawHomeo();}
+drawHomeo();
+</script>
+</body>
+</html>

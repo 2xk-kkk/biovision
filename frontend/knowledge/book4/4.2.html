@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2章 群落及其演替 - 知识清单</title>
+<style>
+  :root { --primary: #2e7d32; --primary-light: #e8f5e9; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e8f5e9; border-color: #a5d6a7; }
+  .checklist li.checked .check-box { background: #2e7d32; border-color: #2e7d32; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #a5d6a7; color: #4a6a4a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2e7d32; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #a5d6a7; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .focus-box { background: #e8f5e9; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#66bb6a); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(46,125,50,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(46,125,50,0.1); color: #2e7d32; font-weight: 700; border-left-color: #66bb6a; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  .quiz-box { background: #fff; border: 2px solid var(--accent); border-radius: var(--radius); padding: 18px; margin: 16px 0; }
+  .quiz-box .quiz-title { font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .quiz-option { padding: 8px 14px; margin: 4px 0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .quiz-option:hover { background: #e8f5e9; }
+  .quiz-option.correct { background: #c8e6c9!important; border-color: #4caf50!important; }
+  .quiz-option.wrong { background: #ffcdd2!important; border-color: #f44336!important; }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修2<br>生物与环境</div>
+      <a href="4.1.html"><span class="ch-num">第1章</span>种群及其动态</a>
+      <a href="4.2.html" class="active"><span class="ch-num">第2章</span>群落及其演替</a>
+      <a href="4.3.html"><span class="ch-num">第3章</span>生态系统及稳定性</a>
+      <a href="4.4.html"><span class="ch-num">第4章</span>人与环境</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link active">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第2章 群落及其演替</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修2 · 生物与环境</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 25 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">群落</div><div class="concept-back">同一时间内聚集在一定区域中各种生物种群的集合。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">物种丰富度</div><div class="concept-back">群落中物种数目的多少。是区别不同群落的重要特征。越靠近热带越丰富。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">种间关系</div><div class="concept-back">原始合作、互利共生、捕食、寄生、种间竞争五种类型。协同进化的结果。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">垂直结构</div><div class="concept-back">分层现象。植物的分层主要与光照有关；动物的分层取决于栖息空间和食物条件。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">生态位</div><div class="concept-back">一个物种在群落中的地位或作用。包括空间位置、资源占用、与其他物种的关系。有利于充分利用环境资源。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">初生演替</div><div class="concept-back">从没有植被覆盖或被彻底消灭的地方开始（裸岩、沙丘、火山岩、冰川泥）。速度慢。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">次生演替</div><div class="concept-back">保留原有土壤条件甚至繁殖体（弃耕农田、火灾后草原）。速度快。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 群落的物种组成和种间关系有哪些类型？<br>
+  ● 群落的空间结构是怎样的？<br>
+  ● 什么是生态位？它有什么意义？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 群落的结构</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">五种种间关系 - 互动展示</h4>
+      <canvas id="relationCanvas" width="750" height="320"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="cycleRelation()">切换种间关系</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>种间关系</th><th>特点</th><th>举例</th></tr>
+      <tr><td><strong>原始合作</strong></td><td>双方受益，分开也能独立生活</td><td>海葵与寄居蟹</td></tr>
+      <tr><td><strong>互利共生</strong></td><td>相互依存，分开后不能独立生活</td><td>豆科植物与根瘤菌</td></tr>
+      <tr><td><strong>捕食</strong></td><td>一种以另一种为食</td><td>猞猁与雪兔</td></tr>
+      <tr><td><strong>寄生</strong></td><td>从宿主获取营养并产生危害</td><td>蛔虫与人</td></tr>
+      <tr><td><strong>种间竞争</strong></td><td>共同利用有限资源而相互排斥</td><td>双小核草履虫与大草履虫</td></tr>
+    </table>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">群落的垂直结构 - 分层现象</h4>
+      <canvas id="verticalCanvas" width="750" height="300"></canvas>
+    </div>
+
+    <div class="highlight-box">
+      <strong>生态位（高考新重点）：</strong><br>
+      ① 一个物种在群落中的<strong>地位或作用</strong>：空间位置、占用资源、与其他物种的关系<br>
+      ② 每种生物占据<strong>相对稳定</strong>的生态位→有利于<strong>充分利用环境资源</strong>→是<strong>协同进化</strong>的结果<br>
+      ③ 应用：四大家鱼混养（利用不同生态位，减少竞争）；立体农业
+    </div>
+
+    <div class="danger-box">
+      <strong>⚠️ 高频易错：</strong><br>
+      ① 群落的<strong>垂直结构</strong>是不同种群的分层，<strong>不是</strong>同一物种个体的垂直分布差异<br>
+      ② 高山从山脚到山顶的群落分布属于<strong>水平结构</strong>（不同海拔=不同地段），不是垂直结构！<br>
+      ③ 生态位重叠≠种间竞争，但会<strong>增加</strong>竞争
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>物种丰富度</strong>：物种数目的多少</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">五种种间关系：原始合作/互利共生/捕食/寄生/种间竞争</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>垂直结构</strong>（分层）与光照有关；水平结构（镶嵌分布）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>生态位</strong>—空间/资源/关系—协同进化→充分利用环境资源</span><span class="tag tag-super">必考</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节+第3节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2-3节 群落的类型 & 群落的演替</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="info-row">
+      <div class="info-card"><h4>荒漠</h4><p>极度干旱，物种少，结构简单。动植物具耐旱特性。</p></div>
+      <div class="info-card"><h4>草原</h4><p>半干旱，草本植物占优势。动物善于挖洞或快速奔跑。</p></div>
+      <div class="info-card"><h4>森林</h4><p>湿润，物种繁多，结构复杂且稳定。分层明显（乔木/灌木/草本）。</p></div>
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">群落的演替过程 - 动态演示</h4>
+      <canvas id="successionCanvas" width="750" height="260"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="toggleSuccession()">▶ 演示演替过程</button>
+        <button class="btn btn-outline" onclick="resetSuccession()">重置</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>比较</th><th>初生演替</th><th>次生演替</th></tr>
+      <tr><td>起点</td><td>无土壤、无植被（裸岩/沙丘/火山岩）</td><td>有土壤、可能保留种子或繁殖体</td></tr>
+      <tr><td>速度</td><td>慢</td><td>快</td></tr>
+      <tr><td>阶段</td><td>裸岩→地衣→苔藓→草本→灌木→森林</td><td>弃耕农田→一年生杂草→多年生草本→灌木→森林</td></tr>
+      <tr><td>实例</td><td>火山岩、冰川泥、沙丘</td><td>弃耕农田、火灾后草原</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>演替的共同趋势：</strong><br>
+      ① 从<strong>结构简单</strong>到<strong>结构复杂</strong>；② 物种数量和层次<strong>增多</strong>；③ 群落稳定性<strong>增加</strong><br>
+      <strong>人类活动</strong>使群落演替按照<strong>不同于自然演替的方向和速度</strong>进行。
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>初生演替</strong>vs<strong>次生演替</strong>：起点不同（有无土壤是关键）</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label">演替趋势：简单→复杂，物种↑，层次↑，稳定性↑</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">人类活动改变演替的<strong>方向和速度</strong></span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 11;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx2_ch2_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx2_ch2_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// RELATIONS DISPLAY
+const reCanvas=document.getElementById('relationCanvas'), rectx=reCanvas.getContext('2d');
+let relIdx=0;
+const relData=[
+  {title:'原始合作 (Protocooperation)',desc:'双方受益，但分开也能独立生活。',ex:'海葵保护寄居蟹，寄居蟹的移动扩大海葵觅食范围。',a:'海葵',b:'寄居蟹',as:80,bs:620,ac:'#ff9800',bc:'#795548'},
+  {title:'互利共生 (Mutualism)',desc:'相互依存，分开后不能（或难以）独立生活。',ex:'根瘤菌固氮供植物，植物提供有机养料。',a:'豆科植物',b:'根瘤菌',as:80,bs:620,ac:'#4caf50',bc:'#f44336'},
+  {title:'捕食 (Predation)',desc:'一种生物以另一种生物为食。',ex:'捕食者数量变化滞后于猎物，两者呈周期性波动。',a:'雪兔(猎物)',b:'猞猁(捕食者)',as:80,bs:620,ac:'#bbdefb',bc:'#e65100'},
+  {title:'寄生 (Parasitism)',desc:'从宿主获取营养并对其产生危害。',ex:'蛔虫寄生在人体肠道，吸取营养，损害健康。',a:'人(宿主)',b:'蛔虫(寄生物)',as:80,bs:620,ac:'#2196f3',bc:'#9e9e9e'},
+  {title:'种间竞争 (Interspecific Competition)',desc:'共同利用有限资源而产生相互排斥。',ex:'高斯实验：双小核草履虫竞争胜出，大草履虫被排除。',a:'物种A',b:'物种B',as:80,bs:620,ac:'#4caf50',bc:'#e65100'},
+];
+function drawRelation(){
+  const w=750,h=320, d=relData[relIdx];
+  rectx.clearRect(0,0,w,h); rectx.fillStyle='#fafbfc'; rectx.fillRect(0,0,w,h);
+  rectx.fillStyle='#2c3e50'; rectx.font='bold 15px "PingFang SC","Microsoft YaHei",sans-serif'; rectx.textAlign='center';
+  rectx.fillText(d.title,375,30);
+  rectx.font='13px "PingFang SC","Microsoft YaHei",sans-serif';
+  rectx.fillText(d.desc,375,55);
+  // Species A
+  rectx.fillStyle=d.ac; rectx.strokeStyle='#333'; rectx.lineWidth=2;
+  rectx.beginPath(); rectx.arc(d.as,160,40,0,Math.PI*2); rectx.fill(); rectx.stroke();
+  rectx.fillStyle='#fff'; rectx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; rectx.fillText(d.a,d.as,165);
+  // Species B
+  rectx.fillStyle=d.bc;
+  rectx.beginPath(); rectx.arc(d.bs,160,40,0,Math.PI*2); rectx.fill(); rectx.stroke();
+  rectx.fillStyle='#fff'; rectx.fillText(d.b,d.bs,165);
+  // Arrow
+  if(relIdx===0||relIdx===1){rectx.strokeStyle='#4caf50';rectx.lineWidth=2;rectx.setLineDash([]);drawDoubleArrow(rectx,d.as+42,160,d.bs-42,160);}
+  else if(relIdx===2||relIdx===3){rectx.strokeStyle='#e65100';rectx.lineWidth=2;drawArrowR(rectx,d.bs-42,160,d.as+42,160);}
+  else{rectx.strokeStyle='#f44336';rectx.lineWidth=2;rectx.setLineDash([5,3]);drawArrowR(rectx,d.as+42,140,d.bs-42,140);drawArrowR(rectx,d.bs-42,180,d.as+42,180);}
+  rectx.setLineDash([]);
+  rectx.fillStyle='#2c3e50'; rectx.font='13px "PingFang SC","Microsoft YaHei",sans-serif'; rectx.textAlign='center';
+  rectx.fillText(d.ex,375,260);
+  rectx.fillStyle='#888'; rectx.font='11px sans-serif'; rectx.fillText(`(${relIdx+1}/5) 点击按钮切换`,375,290);
+}
+function drawArrowR(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-10*Math.cos(a-0.5),y2-10*Math.sin(a-0.5));ctx.lineTo(x2-10*Math.cos(a+0.5),y2-10*Math.sin(a+0.5));ctx.closePath();ctx.fillStyle=ctx.strokeStyle;ctx.fill();}
+function drawDoubleArrow(ctx,x1,y1,x2,y2){drawArrowR(ctx,x1,y1,x2,y2);drawArrowR(ctx,x2,y2,x1,y1);}
+function cycleRelation(){relIdx=(relIdx+1)%5;drawRelation();}
+drawRelation();
+
+// VERTICAL STRUCTURE
+const vCanvas=document.getElementById('verticalCanvas'), vctx=vCanvas.getContext('2d');
+function drawVertical(){
+  const w=750,h=300;
+  vctx.clearRect(0,0,w,h); vctx.fillStyle='#fafbfc'; vctx.fillRect(0,0,w,h);
+  vctx.fillStyle='#2c3e50'; vctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; vctx.textAlign='center';
+  vctx.fillText('群落垂直结构——分层现象（森林为例）',375,22);
+
+  // Ground
+  vctx.fillStyle='#5d4037'; vctx.fillRect(40,240,670,15);
+  // Underground
+  vctx.fillStyle='#795548'; vctx.fillRect(40,255,670,30);
+  // Canopy
+  for(let i=0;i<8;i++){vctx.fillStyle='#2e7d32';vctx.beginPath();vctx.arc(100+i*80,120,35,0,Math.PI*2);vctx.fill();}
+  for(let i=0;i<10;i++){vctx.fillStyle='#4caf50';vctx.beginPath();vctx.arc(60+i*70,155,22,0,Math.PI*2);vctx.fill();}
+  for(let i=0;i<12;i++){vctx.fillStyle='#66bb6a';vctx.beginPath();vctx.arc(50+i*58,195,14,0,Math.PI*2);vctx.fill();}
+  // Labels
+  vctx.fillStyle='#2c3e50'; vctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; vctx.textAlign='center';
+  vctx.fillText('乔木层（上层——光照充足）',375,100);
+  vctx.fillText('灌木层（中层）',375,148);
+  vctx.fillText('草本层（下层——光照弱）',375,210);
+  vctx.fillText('土壤层（根系、微生物、小动物）',375,275);
+  vctx.fillStyle='#e65100'; vctx.font='12px sans-serif';
+  vctx.fillText('动植物的分层有利于充分利用阳光等环境资源',375,295);
+}
+drawVertical();
+
+// SUCCESSION
+const scCanvas=document.getElementById('successionCanvas'), scctx=scCanvas.getContext('2d');
+let succAnim=false, succId, succT=0;
+function drawSuccession(){
+  const w=750,h=260;
+  scctx.clearRect(0,0,w,h); scctx.fillStyle='#fafbfc'; scctx.fillRect(0,0,w,h);
+  const stages=[
+    {x:80,y:160,label:'裸岩',color:'#999',r:20},
+    {x:200,y:160,label:'地衣阶段',color:'#9ccc65',r:20},
+    {x:320,y:160,label:'苔藓阶段',color:'#66bb6a',r:22},
+    {x:440,y:160,label:'草本阶段',color:'#4caf50',r:25},
+    {x:560,y:160,label:'灌木阶段',color:'#388e3c',r:30},
+    {x:680,y:160,label:'森林阶段',color:'#1b5e20',r:35},
+  ];
+  const visible=succAnim?Math.min(Math.floor(succT/30),6):6;
+  scctx.fillStyle='#2c3e50'; scctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; scctx.textAlign='center';
+  scctx.fillText(succAnim?'初生演替过程 —— 裸岩 → 地衣 → 苔藓 → 草本 → 灌木 → 森林':'初生演替过程示意（点击按钮演示）',375,22);
+  stages.forEach((s,i)=>{
+    const alpha=i<visible?1:0.15;
+    scctx.globalAlpha=alpha;
+    scctx.fillStyle=s.color; scctx.strokeStyle='#333'; scctx.lineWidth=2;
+    scctx.beginPath(); scctx.arc(s.x,s.y,s.r,0,Math.PI*2); scctx.fill(); scctx.stroke();
+    scctx.fillStyle=alpha>0.5?'#fff':'#999'; scctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; scctx.fillText(s.label,s.x,s.y+4);
+    scctx.globalAlpha=1;
+    if(i<visible-1){
+      scctx.strokeStyle='#333'; scctx.lineWidth=2; drawArrowS(scctx,stages[i].x+stages[i].r+5,160,stages[i+1].x-stages[i+1].r-5,160);
+    }
+  });
+  scctx.fillStyle='#0d6b3d'; scctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; scctx.textAlign='center';
+  scctx.fillText('结构：简单→复杂　｜　物种：少→多　｜　稳定性：低→高',375,210);
+  scctx.fillText('次生演替起点更"高级"（有土壤），因此速度更快！',375,235);
+}
+function drawArrowS(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-8,y2-5);ctx.lineTo(x2-8,y2+5);ctx.closePath();ctx.fill();}
+function animSuccession(){succT++;if(succT>180){succT=180;succAnim=false;cancelAnimationFrame(succId);}else drawSuccession();succId=requestAnimationFrame(animSuccession);}
+function toggleSuccession(){succAnim=true;succT=0;animSuccession();}
+function resetSuccession(){cancelAnimationFrame(succId);succAnim=false;succT=0;drawSuccession();}
+drawSuccession();
+</script>
+</body>
+</html>

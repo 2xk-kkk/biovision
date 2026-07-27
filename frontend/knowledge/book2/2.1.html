@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第1章 遗传因子的发现 - 知识清单</title>
+<style>
+  :root {
+    --primary: #7b1fa2;
+    --primary-light: #f3e5f5;
+    --accent: #e65100;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #4a148c, #7b1fa2);
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='30' r='2' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='70' cy='60' r='3' fill='rgba(255,255,255,0.08)'/%3E%3Ccircle cx='85' cy='20' r='1.5' fill='rgba(255,255,255,0.12)'/%3E%3Ccircle cx='40' cy='80' r='2.5' fill='rgba(255,255,255,0.06)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header h1 { font-size: 2em; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; position: relative; z-index: 1; }
+  .header .quote {
+    margin-top: 14px;
+    font-style: italic;
+    font-size: 0.95em;
+    opacity: 0.85;
+    position: relative;
+    z-index: 1;
+  }
+
+  .memo-box {
+    background: #fefefe;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .memo-box .memo-title {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+
+  .focus-box {
+    background: #f3e5f5;
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 0.9em;
+  }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+
+  .section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 16px 24px;
+    background: var(--primary-light);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    transition: var(--transition);
+  }
+  .section-header:hover { background: #e1bee7; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: var(--transition);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f3e5f5; border-color: #ce93d8; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ce93d8; color: #8e6a9a; }
+  .check-box {
+    width: 22px; height: 22px; min-width: 22px;
+    border: 2px solid #b0bec5;
+    border-radius: 6px;
+    position: relative;
+    transition: var(--transition);
+    margin-top: 1px;
+  }
+  .check-box::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 0;
+    transition: var(--transition);
+  }
+  .label { flex: 1; }
+  .tag {
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e3f2fd; color: #1565c0; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+
+  .diagram-box {
+    background: #fafbfc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .diagram-box canvas { max-width: 100%; }
+  .diagram-box .controls {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.88em;
+    font-family: inherit;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #6a1b9a; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #bf360c; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9em;
+  }
+  th {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid var(--primary);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .info-card {
+    background: #fafbfc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: var(--transition);
+  }
+  .info-card:hover { border-color: #ce93d8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+    margin: 16px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary), #ce93d8);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: #fafbfc;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    top: 14px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .timeline-item .year { font-weight: 700; color: var(--primary); font-size: 0.9em; }
+
+  .tooltip-term {
+    color: var(--primary);
+    font-weight: 600;
+    cursor: help;
+    border-bottom: 1px dashed var(--primary);
+    position: relative;
+  }
+  .tooltip-term:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-weight: normal;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: #e0e6ed;
+    border-radius: 3px;
+    margin: 20px 0 8px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #ab47bc);
+    border-radius: 3px;
+    transition: width 0.5s;
+  }
+  .progress-label {
+    font-size: 0.82em;
+    color: var(--text-light);
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .header { padding: 24px 20px; }
+    .header h1 { font-size: 1.4em; }
+    .section-body { padding: 14px;}
+    .info-row { grid-template-columns: 1fr; }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease both;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .highlight-box {
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 16px 0;
+    font-weight: 500;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 180px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    padding: 16px 0;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .sidebar .nav-title {
+    color: #37474f;
+    font-size: 0.9em;
+    font-weight: 700;
+    padding: 0 14px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #78909c;
+    text-decoration: none;
+    padding: 8px 14px;
+    font-size: 0.82em;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+  }
+  .sidebar a:hover { background: rgba(123,31,162,0.06); color: #37474f; }
+  .sidebar a.active {
+    background: rgba(123,31,162,0.1);
+    color: #7b1fa2;
+    font-weight: 700;
+    border-left-color: #ab47bc;
+  }
+  .sidebar .ch-num {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 18px;
+    text-align: center;
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: static;
+      transform: none;
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 8px;
+      gap: 4px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-title { width: 100%; padding: 4px 0; border-bottom: none; margin-bottom: 0; }
+    .sidebar a { padding: 5px 8px; font-size: 0.75em; border-left: none; border-radius: 4px; }
+  }
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+
+      <nav class="sidebar">
+    <div class="nav-title">生物学 必修2<br>遗传与进化</div>
+      <a href="2.1.html" class="active"><span class="ch-num">第1章</span>遗传因子的发现</a>
+      <a href="2.2.html"><span class="ch-num">第2章</span>基因和染色体的关系</a>
+      <a href="2.3.html"><span class="ch-num">第3章</span>基因的本质</a>
+      <a href="2.4.html"><span class="ch-num">第4章</span>基因的表达</a>
+      <a href="2.5.html"><span class="ch-num">第5章</span>基因突变及其他变异</a>
+      <a href="2.6.html"><span class="ch-num">第6章</span>生物的进化</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link active">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+
+<div class="main-wrap">
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>第1章 遗传因子的发现</h1>
+  <div class="subtitle">人教版 · 生物学必修2 · 遗传与进化</div>
+  <div class="quote">"八年耕耘源于对科学的痴迷，一畦畦豌豆蕴藏遗传的秘密。实验设计开辟了研究的新路，数学统计揭示出遗传的规律。"</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 32 个知识点</div>
+
+<!-- ===== 第1节 ===== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🧬 第1节 孟德尔的豌豆杂交实验（一）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 孟德尔是怎样设计一对相对性状的杂交实验的？<br>
+      ● 孟德尔为解释实验结果作出了哪些假设？他又设计了什么实验来验证假设？<br>
+      ● 分离定律的内容是什么？怎样用分离定律解释一些遗传现象？<br>
+      ● 如何运用假说—演绎法进行科学探究？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、豌豆用作遗传实验材料的优点</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念 —— 豌豆作实验材料的优点</div>
+      <p>① 豌豆花是<span class="bold-concept">两性花</span>，在未开放时即完成<span class="bold-concept">自花传粉</span>（自交），避免了外来花粉的干扰，自然状态下一般都是<span class="bold-concept">纯种</span>。</p>
+      <p>② 豌豆植株具有易于区分的<span class="bold-concept">相对性状</span>（trait）。孟德尔从34个豌豆品种中选择了<span class="bold-concept">7对</span>相对性状（茎的高度、种子形状、子叶颜色、花的颜色、豆荚形状、花的位置、豆荚颜色）做杂交实验。</p>
+      <p>③ <span class="bold-concept">相对性状</span>：一种生物的同一种性状的不同表现类型。</p>
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 融合遗传 vs 颗粒遗传</div>
+      <p>当时流行的<span class="bold-concept">融合遗传</span>观点认为：两个亲本杂交后，双亲的遗传物质会在子代体内发生混合。孟德尔冲破了这个错误观点的束缚，提出遗传因子就像<span class="bold-concept">一个个独立的颗粒</span>，既不会相互融合，也不会在传递中消失。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、一对相对性状的杂交实验</h3>
+    <div class="highlight-box">
+      <strong>实验过程：</strong> P: 纯种高茎(♀/♂) × 纯种矮茎(♂/♀) → F₁全为高茎 → F₁自交 → F₂: 高茎787株 + 矮茎277株 ≈ <strong>3∶1</strong><br>
+      <strong>正交和反交</strong>结果一致，说明该性状遗传与性别无关。
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念</div>
+      <p><span class="bold-concept">显性性状</span>（dominant trait）：F₁中显现出来的性状，如高茎。</p>
+      <p><span class="bold-concept">隐性性状</span>（recessive trait）：F₁中未显现出来的性状，如矮茎。</p>
+      <p><span class="bold-concept">性状分离</span>：在杂种后代中，同时出现显性性状和隐性性状的现象。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、对分离现象的解释（孟德尔的假说）</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 孟德尔假说的四个要点</div>
+      <p>① 生物的性状是由<span class="bold-concept">遗传因子</span>（hereditary factor）决定的。这些因子就像一个个独立的颗粒，既不会相互融合，也不会在传递中消失。决定显性性状的为显性遗传因子（大写字母如D），决定隐性性状的为隐性遗传因子（小写字母如d）。</p>
+      <p>② 在体细胞中，遗传因子是<span class="bold-concept">成对存在</span>的。<span class="bold-concept">纯合子</span>：遗传因子组成相同的个体（如DD、dd）；<span class="bold-concept">杂合子</span>：遗传因子组成不同的个体（如Dd）。</p>
+      <p>③ 生物体在形成生殖细胞——配子时，成对的遗传因子<span class="bold-concept">彼此分离</span>，分别进入不同的配子中。配子中只含有每对遗传因子中的一个。</p>
+      <p>④ 受精时，<span class="bold-concept">雌雄配子的结合是随机的</span>。</p>
+    </div>
+
+    <!-- Interactive Canvas -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🧬 孟德尔一对相对性状杂交实验 - 交互演示</h4>
+      <canvas id="monoCanvas" width="800" height="320"></canvas>
+      <div class="controls">
+        <button class="btn btn-outline" onclick="monoStep=0">P 亲代</button>
+        <button class="btn btn-outline" onclick="monoStep=1">F₁ 子一代</button>
+        <button class="btn btn-outline" onclick="monoStep=2">F₁自交→F₂</button>
+        <button class="btn btn-accent" onclick="monoStep=3">测交验证</button>
+      </div>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、对分离现象解释的验证——测交</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 测交实验</div>
+      <p><span class="bold-concept">测交</span>（test cross）：让<span class="bold-concept">F₁与隐性纯合子</span>杂交。以F₁高茎豌豆（Dd）与隐性纯合子矮茎豌豆（dd）杂交为例，孟德尔推测测交后代中高茎与矮茎植株的数量比应为<span class="bold-concept">1∶1</span>。</p>
+      <p>实验结果：在得到的166株后代中，87株是高茎，79株是矮茎，高茎与矮茎植株的数量比<span class="bold-concept">接近1∶1</span>。测交实验的结果<span class="bold-concept">验证</span>了孟德尔的假说。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">五、分离定律</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 分离定律（孟德尔第一定律）</div>
+      <p><span class="bold-concept">分离定律</span>（law of segregation）：在生物的体细胞中，控制同一性状的遗传因子成对存在，不相融合；在形成配子时，成对的遗传因子发生分离，分离后的遗传因子分别进入不同的配子中，随配子遗传给后代。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">六、假说—演绎法</h3>
+    <div class="memo-box">
+      <div class="memo-title">🔬 科学方法 —— 假说—演绎法</div>
+      <p><span class="bold-concept">假说—演绎法</span>：在观察和分析基础上<span class="bold-concept">提出问题</span>→通过推理和想象<span class="bold-concept">提出假说</span>→根据假说进行<span class="bold-concept">演绎推理</span>→推出预测的结果→通过<span class="bold-concept">实验检验</span>。如果实验结果与预测相符，假说正确，反之错误。这是现代科学研究中常用的一种科学方法。</p>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li data-id="1"><span class="check-box"></span><span class="label"><strong>孟德尔</strong>（G.J. Mendel，1822—1884）：通过豌豆杂交实验发现遗传规律，被公认为"<strong>遗传学之父</strong>"</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="2"><span class="check-box"></span><span class="label">豌豆作实验材料的优点：<strong>自花传粉</strong>（纯种）、有易于区分的<strong>相对性状</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="3"><span class="check-box"></span><span class="label"><strong>相对性状</strong>：同一种性状的不同表现类型（如高茎vs矮茎、圆粒vs皱粒）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="4"><span class="check-box"></span><span class="label"><strong>显性性状</strong>：F₁显现出来的性状；<strong>隐性性状</strong>：F₁未显现的性状</span><span class="tag tag-important">重点</span></li>
+      <li data-id="5"><span class="check-box"></span><span class="label"><strong>性状分离</strong>：杂种后代中同时出现显性和隐性性状的现象</span><span class="tag tag-important">重点</span></li>
+      <li data-id="6"><span class="check-box"></span><span class="label">F₂性状分离比接近<strong>3∶1</strong>（孟德尔7对相对性状实验均得到类似结果）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="7"><span class="check-box"></span><span class="label">孟德尔假说的四个要点（遗传因子、成对存在、分离、随机结合）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="8"><span class="check-box"></span><span class="label"><strong>纯合子</strong>（DD/dd）与<strong>杂合子</strong>（Dd）的概念</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="9"><span class="check-box"></span><span class="label"><strong>测交</strong>：F₁ × 隐性纯合子 → 1∶1，验证分离定律</span><span class="tag tag-important">重点</span></li>
+      <li data-id="10"><span class="check-box"></span><span class="label"><strong>分离定律</strong>内容（必背）：成对遗传因子分离进入不同配子</span><span class="tag tag-important">重点</span></li>
+      <li data-id="11"><span class="check-box"></span><span class="label"><strong>假说—演绎法</strong>的基本步骤（观察→假说→演绎→实验→结论）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== 第2节 ===== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🧬 第2节 孟德尔的豌豆杂交实验（二）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 孟德尔是怎样设计两对相对性状的杂交实验的？<br>
+      ● 自由组合定律的内容是什么？<br>
+      ● 孟德尔成功的原因有哪些？他的研究方法和探索精神给我们哪些启示？<br>
+      ● 孟德尔遗传规律在生产和生活中有哪些应用？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、两对相对性状的杂交实验</h3>
+    <div class="highlight-box">
+      <strong>实验过程：</strong> P: 纯种黄色圆粒(YYRR) × 纯种绿色皱粒(yyrr) → F₁全为黄色圆粒(YyRr) → F₁自交<br>
+      F₂: 黄圆315 : 绿圆108 : 黄皱101 : 绿皱32 → <strong>9∶3∶3∶1</strong><br>
+      F₂中出现了亲本没有的性状组合（<strong>绿色圆粒</strong>和<strong>黄色皱粒</strong>），说明不同性状之间发生了<strong>重新组合</strong>。
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 关键分析 —— 每一对性状单独分析仍遵循分离定律</div>
+      <p>圆粒∶皱粒 = (315+108)∶(101+32) = 423∶133 ≈ <strong>3∶1</strong></p>
+      <p>黄色∶绿色 = (315+101)∶(108+32) = 416∶140 ≈ <strong>3∶1</strong></p>
+      <p>说明控制种子形状的遗传因子的遗传，与控制子叶颜色的遗传因子的遗传是<span class="bold-concept">互不干扰</span>的。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、对自由组合现象的解释</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 自由组合现象的解释</div>
+      <p>F₁（YyRr）在产生配子时，每对遗传因子彼此分离，不同对的遗传因子可以<span class="bold-concept">自由组合</span>。</p>
+      <p>F₁产生的雌配子和雄配子各有<span class="bold-concept">4种</span>：YR、Yr、yR、yr，数量比为<span class="bold-concept">1∶1∶1∶1</span>。</p>
+      <p>受精时雌雄配子随机结合，结合方式有<span class="bold-concept">16种</span>；遗传因子组合形式<span class="bold-concept">9种</span>；性状表现为<span class="bold-concept">4种</span>，数量比<span class="bold-concept">9∶3∶3∶1</span>。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、自由组合定律</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 自由组合定律（孟德尔第二定律）</div>
+      <p><span class="bold-concept">自由组合定律</span>（law of independent assortment）：控制不同性状的遗传因子的分离和组合是互不干扰的；在形成配子时，决定同一性状的成对的遗传因子彼此分离，决定不同性状的遗传因子自由组合。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、孟德尔遗传规律的再发现</h3>
+    <div class="timeline">
+      <div class="timeline-item"><div class="year">1866年</div>孟德尔将研究结果整理成论文发表，但未引起重视，一直沉寂了30多年</div>
+      <div class="timeline-item"><div class="year">1900年</div>三位科学家分别重新发现了孟德尔的论文，孟德尔遗传规律得到认可</div>
+      <div class="timeline-item"><div class="year">1909年</div>丹麦生物学家<strong>约翰逊</strong>将"遗传因子"命名为<strong>"基因"（gene）</strong>，提出<strong>表型</strong>（phenotype，表现型）和<strong>基因型</strong>（genotype）的概念，控制相对性状的基因叫作<strong>等位基因</strong>（allele）</div>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">五、孟德尔实验方法的启示</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 孟德尔成功的原因</div>
+      <p>① 正确选用实验材料（<strong>豌豆</strong> — 自花传粉，有易区分的相对性状）</p>
+      <p>② 从<span class="bold-concept">一对相对性状</span>到<span class="bold-concept">多对相对性状</span>的研究方法</p>
+      <p>③ 用<span class="bold-concept">统计学方法</span>分析实验结果</p>
+      <p>④ 创造性地运用<span class="bold-concept">假说—演绎法</span></p>
+      <p>⑤ 使用字母符号体系表达概念，进行逻辑推理（得益于大学进修数学）</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">六、孟德尔遗传规律的应用</h3>
+    <div class="info-row">
+      <div class="info-card">
+        <h4>杂交育种</h4>
+        <p>有目的地将具有不同优良性状的两个亲本杂交，使优良性状组合在一起，再筛选优良品种。例如：抗倒伏(D)易染病(T) × 易倒伏(d)抗病(t) → F₂中选DDtt纯种。</p>
+      </div>
+      <div class="info-card">
+        <h4>医学实践</h4>
+        <p>根据分离定律和自由组合定律，对某些遗传病在后代中的患病概率作出科学推断，为遗传咨询提供理论依据。例如：白化病(aa)，父母表型正常均Aa，后代患病概率1/4。</p>
+      </div>
+    </div>
+
+    <!-- Interactive Canvas for Dihybrid -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:6px;" id="dihyTitle">📊 两对相对性状杂交实验 - F₂ 表型9∶3∶3∶1</h4>
+      <canvas id="dihyCanvas" width="520" height="400"></canvas>
+      <div class="controls" style="margin-top:8px;">
+        <button class="btn btn-primary" id="btnChart" onclick="switchDihyView('chart')">📊 柱状图</button>
+        <button class="btn btn-outline" id="btnPunnett" onclick="switchDihyView('punnett')">🔲 棋盘法</button>
+      </div>
+      <p style="margin-top:6px;font-size:0.85em;color:var(--text-light);" id="dihyCaption">
+        F₂ 四种表型：黄色圆粒315、绿色圆粒108、黄色皱粒101、绿色皱粒32
+      </p>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li data-id="12"><span class="check-box"></span><span class="label">两对相对性状杂交F₂出现<strong>9∶3∶3∶1</strong>的性状分离比</span><span class="tag tag-important">重点</span></li>
+      <li data-id="13"><span class="check-box"></span><span class="label">9∶3∶3∶1中每一对单独分析仍为<strong>3∶1</strong>（分离定律）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="14"><span class="check-box"></span><span class="label">F₁产生配子种类：<strong>4种</strong>（YR, Yr, yR, yr），比例<strong>1∶1∶1∶1</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="15"><span class="check-box"></span><span class="label">F₂基因型<strong>9种</strong>，表型<strong>4种</strong>，雌雄配子结合方式<strong>16种</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="16"><span class="check-box"></span><span class="label"><strong>自由组合定律</strong>内容（必背）：不同性状的遗传因子自由组合</span><span class="tag tag-important">重点</span></li>
+      <li data-id="17"><span class="check-box"></span><span class="label">测交验证F₁(YyRr) × yyrr → <strong>1∶1∶1∶1</strong>（四种表型）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="18"><span class="check-box"></span><span class="label">1909年<strong>约翰逊</strong>命名"基因"，提出<strong>表型、基因型、等位基因</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="19"><span class="check-box"></span><span class="label">基因型是性状表现的<strong>内在因素</strong>，表型是基因型的<strong>表现形式</strong></span><span class="tag tag-understand">理解</span></li>
+      <li data-id="20"><span class="check-box"></span><span class="label">孟德尔成功原因：选材正确、单因素到多因素、统计学、假说—演绎、符号运用</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== 易错概念辨析 ===== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>⚡ 易错概念辨析与补充</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card">
+        <h4>❌ 常见错误</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① "表型相同的生物，基因型一定相同" → <strong>错！</strong> DD和Dd表型都是高茎<br>
+          ② "隐性性状不能表现出来" → <strong>错！</strong>隐性纯合子可表现隐性性状<br>
+          ③ "杂合子自交后代不会出现纯合子" → <strong>错！</strong> Dd×Dd → DD, Dd, dd<br>
+          ④ "自由组合是指雌雄配子的自由结合" → <strong>错！</strong>是非同源染色体上非等位基因的自由组合<br>
+          ⑤ "等位基因分离发生在受精作用时" → <strong>错！</strong>发生在减数分裂形成配子时
+        </p>
+      </div>
+      <div class="info-card">
+        <h4>💡 辨析要点</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① 表型 = <strong>基因型 + 环境</strong>（基因型相同表型不一定相同）<br>
+          ② 显隐性关系是相对的（不完全显性、共显性等情况）<br>
+          ③ 分离定律的实质：<strong>等位基因</strong>在减数分裂时随同源染色体分开而分离<br>
+          ④ 自由组合的前提：控制不同性状的基因位于<strong>非同源染色体</strong>上<br>
+          ⑤ 两大定律的细胞学基础都是<strong>减数分裂</strong>
+        </p>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>概念</th><th>定义</th><th>举例</th></tr>
+      <tr><td>相对性状</td><td>同种生物同一性状的不同表现</td><td>高茎vs矮茎</td></tr>
+      <tr><td>显性性状</td><td>F₁显现出的性状</td><td>高茎(DD/Dd)</td></tr>
+      <tr><td>隐性性状</td><td>F₁未显现的性状</td><td>矮茎(dd)</td></tr>
+      <tr><td>性状分离</td><td>杂种后代中显隐性状同时出现</td><td>F₂高∶矮=3∶1</td></tr>
+      <tr><td>纯合子</td><td>遗传因子组成相同的个体</td><td>DD, dd, YYRR</td></tr>
+      <tr><td>杂合子</td><td>遗传因子组成不同的个体</td><td>Dd, YyRr</td></tr>
+      <tr><td>等位基因</td><td>控制相对性状的基因</td><td>D和d, Y和y</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl3">
+      <li data-id="21"><span class="check-box"></span><span class="label">表型 = <strong>基因型 + 环境</strong>（基因决定性状，环境影响表达）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="22"><span class="check-box"></span><span class="label">分离定律的实质发生在<strong>减数分裂</strong>形成配子时</span><span class="tag tag-important">重点</span></li>
+      <li data-id="23"><span class="check-box"></span><span class="label">自由组合定律适用于<strong>非同源染色体</strong>上的<strong>非等位基因</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="24"><span class="check-box"></span><span class="label">正交与反交结果一致→基因在<strong>常染色体</strong>上（非性染色体）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="25"><span class="check-box"></span><span class="label"><strong>异花传粉</strong>：两朵花之间的传粉；<strong>父本</strong>(♂)供应花粉，<strong>母本</strong>(♀)接受花粉</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="26"><span class="check-box"></span><span class="label">人工杂交操作：<strong>去雄→套袋→授粉→套袋</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="27"><span class="check-box"></span><span class="label">不完全显性：杂合子表现中间性状（如红花×白花→粉花）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="28"><span class="check-box"></span><span class="label">孟德尔被公认为"<strong>遗传学之父</strong>"</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 本章小结 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📋 本章小结</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>核心精髓：</strong>生物体遗传的不是性状本身，而是<strong>控制性状的遗传因子</strong>。性状有显性和隐性之分，遗传因子也有显隐之分。
+    </div>
+    <ul class="checklist" id="cl4">
+      <li data-id="29"><span class="check-box"></span><span class="label"><strong>分离定律</strong>：成对遗传因子在形成配子时分离，分别进入不同配子</span><span class="tag tag-important">重点</span></li>
+      <li data-id="30"><span class="check-box"></span><span class="label"><strong>自由组合定律</strong>：不同对的遗传因子在形成配子时自由组合</span><span class="tag tag-important">重点</span></li>
+      <li data-id="31"><span class="check-box"></span><span class="label">约翰逊命名：基因(gene)、表型(phenotype)、基因型(genotype)、等位基因(allele)</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="32"><span class="check-box"></span><span class="label">假说—演绎法是现代科学研究的基本方法之一</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+// ===== CHECKLIST =====
+function updateProgress() {
+  const total = 32;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+}
+
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function() {
+    this.classList.toggle('checked');
+    updateProgress();
+    saveCheckState();
+  });
+});
+
+function saveCheckState() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => {
+    state[li.dataset.id] = li.classList.contains('checked');
+  });
+  localStorage.setItem('bio_b2_ch1_checklist', JSON.stringify(state));
+}
+
+function loadCheckState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_b2_ch1_checklist'));
+    if (state) {
+      document.querySelectorAll('.checklist li').forEach(li => {
+        if (state[li.dataset.id]) li.classList.add('checked');
+      });
+    }
+  } catch(e) {}
+  updateProgress();
+}
+loadCheckState();
+
+// ===== MONOHYBRID CROSS CANVAS =====
+const monoCanvas = document.getElementById('monoCanvas');
+const monoCtx = monoCanvas.getContext('2d');
+let monoStep = 2;
+let monoAnimT = 0;
+
+function drawPeaPlant(x, y, h, color, label) {
+  monoCtx.fillStyle = color;
+  monoCtx.beginPath();
+  monoCtx.arc(x, y - h - 15, 14, 0, Math.PI * 2);
+  monoCtx.fill();
+  monoCtx.fillStyle = '#4caf50';
+  monoCtx.fillRect(x - 3, y - h, 6, h);
+  monoCtx.fillStyle = '#2c3e50';
+  monoCtx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  monoCtx.textAlign = 'center';
+  monoCtx.fillText(label, x, y + 15);
+}
+
+function drawMono() {
+  monoCtx.clearRect(0, 0, monoCanvas.width, monoCanvas.height);
+  monoCtx.fillStyle = '#fafbfc';
+  monoCtx.fillRect(0, 0, monoCanvas.width, monoCanvas.height);
+  monoAnimT += 0.016;
+
+  monoCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+  monoCtx.textAlign = 'center';
+
+  if (monoStep === 0) {
+    // P generation
+    monoCtx.fillStyle = '#7b1fa2';
+    monoCtx.fillText('P 亲代', 400, 30);
+    drawPeaPlant(200, 100, 80, '#e8f5e9', '高茎 DD');
+    drawPeaPlant(500, 100, 35, '#fff9c4', '矮茎 dd');
+    monoCtx.fillText('×', 350, 90);
+    monoCtx.fillStyle = '#666';
+    monoCtx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+    monoCtx.fillText('纯种高茎豌豆作母本(♀)或父本(♂)，', 350, 210);
+    monoCtx.fillText('正交和反交结果相同', 350, 235);
+    // Pollination animation
+    const t = monoAnimT;
+    const cx = 200 + 280 * (0.5 + 0.5 * Math.sin(t * 2));
+    const cy = 80 + 20 * Math.sin(t * 3);
+    monoCtx.fillStyle = '#ff9800';
+    monoCtx.beginPath();
+    monoCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+    monoCtx.fill();
+  } else if (monoStep === 1) {
+    // F1
+    monoCtx.fillStyle = '#7b1fa2';
+    monoCtx.fillText('F₁ 子一代', 400, 30);
+    for (let i = 0; i < 5; i++) {
+      drawPeaPlant(120 + i * 100, 110, 75, '#e8f5e9', '高茎 Dd');
+    }
+    monoCtx.fillStyle = '#e65100';
+    monoCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+    monoCtx.fillText('全部为高茎（显性性状）！矮茎性状隐而未现', 400, 230);
+  } else if (monoStep === 2) {
+    // F2
+    monoCtx.fillStyle = '#7b1fa2';
+    monoCtx.fillText('F₂ 子二代（F₁自交）', 400, 25);
+    // 3 tall
+    for (let i = 0; i < 3; i++) {
+      drawPeaPlant(60 + i * 100, 100, 70, '#e8f5e9', i === 1 ? '高茎 Dd' : '高茎 DD');
+    }
+    // 1 dwarf
+    drawPeaPlant(450, 100, 30, '#fff9c4', '矮茎 dd');
+    monoCtx.fillStyle = '#e65100';
+    monoCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+    monoCtx.fillText('高茎 3 : 矮茎 1', 400, 215);
+    // Ratio bar
+    const barY = 240;
+    monoCtx.fillStyle = '#e8f5e9';
+    monoCtx.fillRect(120, barY, 240, 30);
+    monoCtx.fillStyle = '#fff9c4';
+    monoCtx.fillRect(360, barY, 80, 30);
+    monoCtx.fillStyle = '#2c3e50';
+    monoCtx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    monoCtx.fillText('3 (高茎)', 240, barY + 20);
+    monoCtx.fillText('1 (矮茎)', 400, barY + 20);
+  } else if (monoStep === 3) {
+    // Test cross
+    monoCtx.fillStyle = '#e65100';
+    monoCtx.fillText('测交实验：F₁(Dd) × 隐性纯合子(dd) → 1∶1', 400, 25);
+    drawPeaPlant(150, 90, 70, '#e8f5e9', 'F₁ 高茎 Dd');
+    monoCtx.fillText('×', 280, 80);
+    drawPeaPlant(350, 90, 30, '#fff9c4', '矮茎 dd');
+    monoCtx.fillText('↓', 250, 145);
+    drawPeaPlant(150, 175, 70, '#e8f5e9', '高茎 Dd');
+    monoCtx.fillText('1', 150, 265);
+    drawPeaPlant(350, 175, 30, '#fff9c4', '矮茎 dd');
+    monoCtx.fillText(':', 250, 265);
+    monoCtx.fillText('1', 350, 265);
+  }
+  requestAnimationFrame(drawMono);
+}
+drawMono();
+
+// ===== DIHYBRID UNIFIED CANVAS =====
+const dihyCanvas = document.getElementById('dihyCanvas');
+const dihyCtx = dihyCanvas.getContext('2d');
+let dihyView = 'chart';
+
+function switchDihyView(view) {
+  dihyView = view;
+  document.getElementById('btnChart').className = view === 'chart' ? 'btn btn-primary' : 'btn btn-outline';
+  document.getElementById('btnPunnett').className = view === 'punnett' ? 'btn btn-primary' : 'btn btn-outline';
+  if (view === 'chart') {
+    document.getElementById('dihyTitle').textContent = '📊 两对相对性状杂交实验 - F₂ 表型9∶3∶3∶1';
+    document.getElementById('dihyCaption').innerHTML = 'F₂ 四种表型：黄色圆粒315、绿色圆粒108、黄色皱粒101、绿色皱粒32';
+  } else {
+    document.getElementById('dihyTitle').textContent = '🔲 棋盘法（Punnett Square）— F₁(YyRr) × F₁(YyRr)';
+    document.getElementById('dihyCaption').innerHTML = 'F₁产生4种配子（YR, Yr, yR, yr），雌雄配子随机结合，共16种组合 → <strong>9黄圆 : 3绿圆 : 3黄皱 : 1绿皱</strong>';
+  }
+  drawDihybrid();
+}
+
+function drawBarChart() {
+  const data = [
+    { label: '黄色圆粒', count: 315, color: '#ffcc02' },
+    { label: '绿色圆粒', count: 108, color: '#4caf50' },
+    { label: '黄色皱粒', count: 101, color: '#ff9800' },
+    { label: '绿色皱粒', count: 32, color: '#2e7d32' }
+  ];
+  const maxH = 180, barW = 80, gap = 30, baseY = 290, startX = 70;
+  dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.textAlign = 'center';
+  dihyCtx.fillStyle = '#2c3e50';
+  dihyCtx.fillText('F₂ 性状分离——四种表型的数量', 260, 25);
+
+  data.forEach((d, i) => {
+    const h = d.count / 315 * maxH;
+    const x = startX + i * (barW + gap);
+    const grad = dihyCtx.createLinearGradient(x, baseY - h, x, baseY);
+    grad.addColorStop(0, d.color);
+    grad.addColorStop(1, d.color + '88');
+    dihyCtx.fillStyle = grad;
+    dihyCtx.fillRect(x, baseY - h, barW, h);
+    dihyCtx.strokeStyle = '#333';
+    dihyCtx.lineWidth = 1;
+    dihyCtx.strokeRect(x, baseY - h, barW, h);
+    dihyCtx.fillStyle = '#2c3e50';
+    dihyCtx.fillText(d.count, x + barW / 2, baseY - h - 8);
+    dihyCtx.fillText(d.label, x + barW / 2, baseY + 20);
+    if (i === 0)
+      dihyCtx.fillText('9', x + barW / 2, baseY + 38);
+    else if (i === 3)
+      dihyCtx.fillText('1', x + barW / 2, baseY + 38);
+    else
+      dihyCtx.fillText('3', x + barW / 2, baseY + 38);
+  });
+
+  dihyCtx.fillStyle = '#e65100';
+  dihyCtx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.fillText('比例：9 : 3 : 3 : 1', 260, 358);
+}
+
+function drawPunnett() {
+  const maleGametes  = ['YR', 'Yr', 'yR', 'yr'];
+  const femaleGametes = ['YR', 'Yr', 'yR', 'yr'];
+  const grid = [
+    [{ g:'YYRR', p:'黄圆', c:'#fff9c4' }, { g:'YYRr', p:'黄圆', c:'#fff9c4' }, { g:'YyRR', p:'黄圆', c:'#fff9c4' }, { g:'YyRr', p:'黄圆', c:'#fff9c4' }],
+    [{ g:'YYRr', p:'黄圆', c:'#fff9c4' }, { g:'YYrr', p:'黄皱', c:'#ffe0b2' }, { g:'YyRr', p:'黄圆', c:'#fff9c4' }, { g:'Yyrr', p:'黄皱', c:'#ffe0b2' }],
+    [{ g:'YyRR', p:'黄圆', c:'#fff9c4' }, { g:'YyRr', p:'黄圆', c:'#fff9c4' }, { g:'yyRR', p:'绿圆', c:'#c8e6c9' }, { g:'yyRr', p:'绿圆', c:'#c8e6c9' }],
+    [{ g:'YyRr', p:'黄圆', c:'#fff9c4' }, { g:'Yyrr', p:'黄皱', c:'#ffe0b2' }, { g:'yyRr', p:'绿圆', c:'#c8e6c9' }, { g:'yyrr', p:'绿皱', c:'#a5d6a7' }]
+  ];
+
+  const cellW = 85, cellH = 52;
+  const startX = 85, startY = 50;
+
+  // Female gamete headers
+  dihyCtx.fillStyle = '#7b1fa2';
+  dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.textAlign = 'center';
+  dihyCtx.fillText('♀ 雌配子 →', startX + cellW * 2, startY - 10);
+  dihyCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+  femaleGametes.forEach((g, i) => {
+    dihyCtx.fillText(g, startX + i * cellW + cellW / 2, startY + 12);
+  });
+
+  // Male gametes label
+  dihyCtx.save();
+  dihyCtx.fillStyle = '#7b1fa2';
+  dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.translate(startX - 52, startY + 24 + cellH * 2);
+  dihyCtx.rotate(-Math.PI / 2);
+  dihyCtx.fillText('♂ 雄配子', 0, 0);
+  dihyCtx.restore();
+
+  // Male gamete labels (left)
+  dihyCtx.fillStyle = '#7b1fa2';
+  dihyCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.textAlign = 'right';
+  maleGametes.forEach((g, i) => {
+    dihyCtx.fillText(g, startX - 10, startY + 24 + i * cellH + cellH / 2 + 5);
+  });
+
+  // Draw grid cells
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      const x = startX + col * cellW;
+      const y = startY + 24 + row * cellH;
+      const cell = grid[row][col];
+
+      dihyCtx.fillStyle = cell.c;
+      dihyCtx.fillRect(x, y, cellW, cellH);
+      dihyCtx.strokeStyle = '#bdbdbd';
+      dihyCtx.lineWidth = 1;
+      dihyCtx.strokeRect(x, y, cellW, cellH);
+
+      dihyCtx.fillStyle = '#2c3e50';
+      dihyCtx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+      dihyCtx.textAlign = 'center';
+      dihyCtx.fillText(cell.g, x + cellW / 2, y + cellH / 2 - 4);
+
+      dihyCtx.fillStyle = '#5a6c7d';
+      dihyCtx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+      dihyCtx.fillText(cell.p, x + cellW / 2, y + cellH / 2 + 15);
+    }
+  }
+
+  // Legend
+  const legendY = startY + 24 + 4 * cellH + 28;
+  const legendItems = [
+    { label: '黄圆 9', color: '#fff9c4' },
+    { label: '绿圆 3', color: '#c8e6c9' },
+    { label: '黄皱 3', color: '#ffe0b2' },
+    { label: '绿皱 1', color: '#a5d6a7' }
+  ];
+  dihyCtx.textAlign = 'center';
+  const totalLegendW = legendItems.length * 95;
+  const legendStartX = (dihyCanvas.width - totalLegendW) / 2;
+
+  legendItems.forEach((item, i) => {
+    const lx = legendStartX + i * 95;
+    dihyCtx.fillStyle = item.color;
+    dihyCtx.fillRect(lx, legendY - 12, 18, 18);
+    dihyCtx.strokeStyle = '#bdbdbd';
+    dihyCtx.strokeRect(lx, legendY - 12, 18, 18);
+    dihyCtx.fillStyle = '#2c3e50';
+    dihyCtx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    dihyCtx.textAlign = 'left';
+    dihyCtx.fillText(item.label, lx + 24, legendY + 2);
+  });
+
+  dihyCtx.fillStyle = '#e65100';
+  dihyCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  dihyCtx.textAlign = 'center';
+  dihyCtx.fillText('F₂ 表型比：  9  :  3  :  3  :  1', dihyCanvas.width / 2, legendY + 36);
+}
+
+function drawDihybrid() {
+  dihyCtx.clearRect(0, 0, dihyCanvas.width, dihyCanvas.height);
+  dihyCtx.fillStyle = '#fafbfc';
+  dihyCtx.fillRect(0, 0, dihyCanvas.width, dihyCanvas.height);
+  if (dihyView === 'chart') {
+    drawBarChart();
+  } else {
+    drawPunnett();
+  }
+}
+drawDihybrid();
+</script>
+
+</div>
+</div>
+</body>
+</html>

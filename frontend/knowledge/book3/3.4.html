@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第4章 免疫调节 - 知识清单</title>
+<style>
+  :root { --primary: #c62828; --primary-light: #ffebee; --accent: #1565c0; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #b71c1c, #c62828); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #fce4ec; border-color: #ef9a9a; }
+  .checklist li.checked .check-box { background: #c62828; border-color: #c62828; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ef9a9a; color: #8a4a5a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #ffebee; color: #c62828; }
+  .tag-memorize { background: #fce4ec; color: #880e4f; }
+  .tag-super { background: #ffcdd2; color: #b71c1c; font-weight: 700; border: 1px solid #ef5350; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #ef9a9a; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #ffebee; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .success-box { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#ef5350); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(198,40,40,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(198,40,40,0.1); color: #c62828; font-weight: 700; border-left-color: #ef5350; }
+  .quiz-box { background: #fff; border: 2px solid var(--accent); border-radius: var(--radius); padding: 18px; margin: 16px 0; }
+  .quiz-box .quiz-title { font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .quiz-option { padding: 8px 14px; margin: 4px 0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .quiz-option:hover { background: #e3f2fd; }
+  .quiz-option.correct { background: #c8e6c9!important; border-color: #4caf50!important; }
+  .quiz-option.wrong { background: #ffcdd2!important; border-color: #f44336!important; }
+  .process-step { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .process-step .step { background: var(--primary-light); border: 2px solid var(--primary); border-radius: 10px; padding: 8px 14px; font-weight: 600; font-size: 0.88em; transition: all 0.3s; cursor: pointer; }
+  .process-step .step:hover { background: #ffcdd2; transform: scale(1.05); }
+  .process-step .step.active { background: var(--primary); color: #fff; }
+  .process-step .arrow-icon { font-size: 1.2em; color: var(--primary); font-weight: bold; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;margin-bottom:0;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+  @media(max-width:640px){.info-row{grid-template-columns:1fr;}.header h1{font-size:1.4em;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修1<br>稳态与调节</div>
+      <a href="3.1.html"><span class="ch-num">第1章</span>内环境与稳态</a>
+      <a href="3.2.html"><span class="ch-num">第2章</span>神经调节</a>
+      <a href="3.3.html"><span class="ch-num">第3章</span>体液调节</a>
+      <a href="3.4.html" class="active"><span class="ch-num">第4章</span>免疫调节</a>
+      <a href="3.5.html"><span class="ch-num">第5章</span>植物生命活动调节</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link active">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第4章 免疫调节 ⭐ 核心章节</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修1 · 稳态与调节 · 高考高频考点</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 45 个知识点</div>
+
+<!-- ====== 核心概念翻牌记忆 ====== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌查看释义）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">免疫器官</div><div class="concept-back">免疫细胞生成、成熟或集中分布的场所。包括骨髓、胸腺、脾、淋巴结、扁桃体等。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">免疫细胞</div><div class="concept-back">执行免疫功能的细胞，包括淋巴细胞（T细胞、B细胞）、树突状细胞、巨噬细胞等。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">免疫活性物质</div><div class="concept-back">由免疫细胞或其他细胞产生的发挥免疫作用的物质。包括抗体、细胞因子、溶菌酶等。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">非特异性免疫</div><div class="concept-back">人生来就有，不针对某一类特定病原体，对多种病原体都有防御作用。第一道+第二道防线。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">特异性免疫</div><div class="concept-back">后天获得，只针对某一特定的病原体起作用。包括体液免疫和细胞免疫。（第三道防线）</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">体液免疫</div><div class="concept-back">B细胞活化→浆细胞产生抗体→抗体与抗原特异性结合→最终被吞噬细胞吞噬消灭。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">细胞免疫</div><div class="concept-back">细胞毒性T细胞活化→效应T细胞识别并裂解被感染的靶细胞→释放的病原体被体液免疫清除。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">抗体</div><div class="concept-back">由浆细胞产生的、能与特定抗原特异性结合的蛋白质。抗体=免疫球蛋白（Ig）。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">抗原</div><div class="concept-back">能引起免疫反应的物质。一般是蛋白质类大分子。病原体表面蛋白、疫苗等都是抗原。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">二次免疫</div><div class="concept-back">相同抗原再次入侵时，记忆细胞迅速增殖分化，产生更快更强更持久的免疫反应。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">过敏反应</div><div class="concept-back">已免疫机体再次接触相同过敏原时发生的异常体液免疫反应。免疫功能过强导致。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">自身免疫病</div><div class="concept-back">免疫系统攻击自身组织器官。如系统性红斑狼疮、类风湿关节炎。免疫功能过强。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">免疫缺陷病</div><div class="concept-back">免疫功能不足或缺乏。先天性（重症联合免疫缺陷病）或获得性（艾滋病—HIV攻击辅助性T细胞）。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">疫苗</div><div class="concept-back">用灭活或减毒的病原体制成。接种后体内产生抗体和记忆细胞。属于主动免疫。疫苗=抗原！</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">HLA</div><div class="concept-back">人类白细胞抗原。器官移植成败主要取决于供者与受者的HLA是否一致或相似。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 第1节 ====== -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 免疫系统由哪些部分组成？<br>
+  ● 免疫系统有哪些主要功能？<br>
+  ● 人体有哪三道防线？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 免疫系统的组成和功能</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">三道防线 - 互动演示</h4>
+      <canvas id="defenseCanvas" width="800" height="320"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="advanceDefense()">▶ 逐层激活防线</button>
+        <button class="btn btn-outline" onclick="resetDefense()">重置</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>免疫系统的三大功能：</strong><br>
+      ① <strong>免疫防御</strong>——防止病原体入侵，清除已入侵病原体<br>
+      ② <strong>免疫自稳</strong>（监控清除）——识别和清除体内衰老、损伤的细胞<br>
+      ③ <strong>免疫监视</strong>——识别和清除体内突变的细胞（如癌细胞）
+    </div>
+
+    <table>
+      <tr><th>防线</th><th>组成</th><th>类型</th><th>特点</th></tr>
+      <tr><td><strong>第一道</strong></td><td>皮肤、黏膜及其分泌物</td><td rowspan="2">非特异性免疫</td><td>物理+化学屏障</td></tr>
+      <tr><td><strong>第二道</strong></td><td>体液中的杀菌物质（溶菌酶等）、吞噬细胞</td><td>天生就有，不针对特定病原体</td></tr>
+      <tr><td><strong>第三道</strong></td><td>免疫器官+免疫细胞+免疫活性物质</td><td><strong>特异性免疫</strong></td><td>后天获得，针对特定病原体</td></tr>
+    </table>
+
+    <div class="danger-box">
+      <strong>⚠️ 高频易错：</strong><br>
+      ① 唾液/泪液中的溶菌酶属于<strong>第一道防线</strong>（黏膜分泌物）<br>
+      ② 血浆中的溶菌酶属于<strong>第二道防线</strong>（体液中的杀菌物质）<br>
+      ③ 吞噬细胞既参与<strong>第二道</strong>也参与<strong>第三道</strong>防线（呈递抗原）
+    </div>
+
+    <table>
+      <tr><th>免疫器官</th><th>功能</th></tr>
+      <tr><td><strong>骨髓</strong></td><td>B细胞成熟的场所；所有免疫细胞的来源（造血干细胞）</td></tr>
+      <tr><td><strong>胸腺</strong></td><td><strong>T细胞成熟的场所</strong>；青春期后逐渐萎缩</td></tr>
+      <tr><td><strong>脾</strong></td><td>最大的免疫器官；储存淋巴细胞；滤过血液</td></tr>
+      <tr><td><strong>淋巴结</strong></td><td>淋巴细胞集中分布；过滤淋巴液</td></tr>
+      <tr><td><strong>扁桃体</strong></td><td>防御呼吸道感染</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label">免疫系统 = <strong>免疫器官</strong> + <strong>免疫细胞</strong> + <strong>免疫活性物质</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">三道防线：皮肤黏膜→杀菌物质/吞噬细胞→特异性免疫</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>骨髓</strong>：B细胞成熟场所；<strong>胸腺</strong>：T细胞成熟场所</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">免疫三大功能：<strong>防御、自稳、监视</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">吞噬细胞<strong>能识别</strong>但<strong>不能特异性识别</strong>抗原</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">三大免疫活性物质：<strong>抗体、细胞因子、溶菌酶</strong></span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== 第2节 特异性免疫 ====== -->
+<div class="focus-box"><div class="focus-title">本节聚焦（高考重中之重！）</div>
+  ● 体液免疫和细胞免疫的过程是怎样的？<br>
+  ● B细胞和T细胞分别起什么作用？<br>
+  ● 二次免疫有什么特点和意义？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 特异性免疫 ⭐ 大题核心</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <!-- 体液免疫动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">体液免疫过程 - 交互演示（点击步骤查看详情）</h4>
+      <canvas id="humoralCanvas" width="800" height="340"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="runHumoral()">▶ 演示体液免疫全过程</button>
+        <button class="btn btn-outline" onclick="resetHumoral()">重置</button>
+      </div>
+    </div>
+
+    <div class="process-step" id="humoralSteps">
+      <span class="step" id="hs1">①吞噬细胞处理呈递抗原</span>
+      <span class="arrow-icon">→</span>
+      <span class="step" id="hs2">②辅助性T细胞活化</span>
+      <span class="arrow-icon">→</span>
+      <span class="step" id="hs3">③B细胞增殖分化</span>
+      <span class="arrow-icon">→</span>
+      <span class="step" id="hs4">④浆细胞产生抗体</span>
+      <span class="arrow-icon">→</span>
+      <span class="step" id="hs5">⑤抗体结合抗原</span>
+      <span class="arrow-icon">→</span>
+      <span class="step" id="hs6">⑥吞噬细胞清除</span>
+    </div>
+
+    <!-- 细胞免疫动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">细胞免疫过程 - 交互演示</h4>
+      <canvas id="cellularCanvas" width="800" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="runCellular()">▶ 演示细胞免疫全过程</button>
+        <button class="btn btn-outline" onclick="resetCellular()">重置</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>体液免疫完整流程（答题模板）：</strong><br>
+      ① 吞噬细胞摄取、处理抗原后呈递给辅助性T细胞<br>
+      ② 辅助性T细胞分泌<strong>细胞因子</strong><br>
+      ③ B细胞在<strong>抗原刺激 + 细胞因子</strong>双重信号下增殖分化<br>
+      ④ 大部分分化为<strong>浆细胞</strong>→产生<strong>抗体</strong>（与抗原特异性结合→沉淀→被吞噬）<br>
+      ⑤ 小部分分化为<strong>记忆B细胞</strong>（长期存活，用于二次免疫）
+    </div>
+
+    <div class="highlight-box">
+      <strong>细胞免疫完整流程（答题模板）：</strong><br>
+      ① 靶细胞（被感染细胞）表面分子变化<br>
+      ② 细胞毒性T细胞识别靶细胞+辅助性T细胞分泌<strong>细胞因子</strong>→增殖分化<br>
+      ③ 大部分分化为<strong>效应T细胞</strong>→与靶细胞<strong>密切接触</strong>→靶细胞裂解死亡<br>
+      ④ 释放的病原体由<strong>体液免疫</strong>（抗体）清除<br>
+      ⑤ 小部分分化为<strong>记忆T细胞</strong>
+    </div>
+
+    <div class="success-box">
+      <strong>🔗 体液免疫与细胞免疫的联系：</strong><br>
+      ① 辅助性T细胞是两者的<strong>"桥梁"</strong>——既参与体液免疫（分泌细胞因子协助B细胞），又参与细胞免疫<br>
+      ② 细胞免疫裂解靶细胞后，释放的病原体需要<strong>体液免疫</strong>来最终清除<br>
+      ③ 两者分工合作：体液免疫对付<strong>细胞外</strong>病原体，细胞免疫对付<strong>细胞内</strong>病原体
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">🔴 三个"唯一"——考试必考！</div>
+      <p>① <span class="bold-concept">唯一能产生抗体的细胞</span>：浆细胞</p>
+      <p>② <span class="bold-concept">唯一没有识别功能的细胞</span>：浆细胞（只能产生抗体，不能识别抗原）</p>
+      <p>③ <span class="bold-concept">唯一没有特异性识别功能的细胞</span>：吞噬细胞（能识别"非己"，但不能特异性识别）</p>
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">二次免疫 - 抗体浓度曲线对比</h4>
+      <canvas id="secondaryCanvas" width="750" height="280"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="runSecondary()">▶ 演示二次免疫</button>
+        <button class="btn btn-outline" onclick="resetSecondary()">重置</button>
+      </div>
+    </div>
+
+    <div class="success-box">
+      <strong>二次免疫特点（疫苗原理）：</strong><br>
+      ① <strong>更快</strong>——记忆细胞快速增殖分化，响应时间短<br>
+      ② <strong>更强</strong>——产生抗体量更多，患病程度轻<br>
+      ③ <strong>更持久</strong>——记忆细胞长期存活<br>
+      ★ 核心机制：初次免疫后产生<strong>记忆细胞</strong>，再次接触相同抗原时快速响应
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>体液免疫</strong>：B细胞→浆细胞→抗体→清除细胞外病原体</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>细胞免疫</strong>：细胞毒性T细胞→效应T细胞→裂解靶细胞</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>浆细胞</strong>：唯一能产生抗体的细胞，但不能识别抗原</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>辅助性T细胞</strong>：体液免疫和细胞免疫的"桥梁"</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>细胞因子</strong>：辅助性T细胞分泌，促进B细胞和T细胞增殖分化</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>二次免疫</strong>：记忆细胞→更快、更强、更持久</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>疫苗</strong> = 抗原 → 主动免疫 → 产生记忆细胞</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== 第3节 免疫失调 ====== -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 过敏反应是如何发生的？<br>
+  ● 自身免疫病有哪些常见类型？<br>
+  ● HIV如何攻击免疫系统？艾滋病患者为何易感染？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 免疫失调</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>类型</th><th>特点</th><th>机理</th><th>实例</th></tr>
+      <tr><td><strong>过敏反应</strong></td><td>免疫功能<strong>过强</strong></td><td>已免疫机体再次接触相同过敏原时发生的异常体液免疫反应</td><td>花粉症、过敏性鼻炎、青霉素过敏、荨麻疹</td></tr>
+      <tr><td><strong>自身免疫病</strong></td><td>免疫功能<strong>过强</strong></td><td>免疫系统攻击自身组织器官</td><td>系统性红斑狼疮、类风湿关节炎、风湿性心脏病</td></tr>
+      <tr><td><strong>免疫缺陷病</strong></td><td>免疫功能<strong>不足</strong></td><td>先天性或获得性免疫系统功能低下</td><td>重症联合免疫缺陷病（先天性）；<strong>艾滋病</strong>（获得性，HIV攻击辅助性T细胞）</td></tr>
+    </table>
+
+    <div class="danger-box">
+      <strong>⚠️ 过敏反应要点：</strong><br>
+      ① 首次接触<strong>不发病</strong>（需先致敏）<br>
+      ② <strong>再次</strong>接触相同过敏原才发作<br>
+      ③ 有<strong>遗传倾向和个体差异</strong><br>
+      ④ 本质是<strong>体液免疫</strong>（产生抗体），但抗体类型不同（IgE类）
+    </div>
+
+    <div class="danger-box">
+      <strong>⚠️ HIV/艾滋病：</strong><br>
+      ① HIV（人类免疫缺陷病毒）专门攻击<strong>辅助性T细胞</strong><br>
+      ② 辅助性T细胞数量急剧下降→<strong>细胞免疫和体液免疫功能均丧失</strong><br>
+      ③ 艾滋病患者最终死于<strong>严重感染或恶性肿瘤</strong>（因为失去了免疫监视功能）<br>
+      ④ 传播途径：<strong>性接触、血液传播、母婴传播</strong>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">过敏反应：首次<strong>不发病</strong>，<strong>再次</strong>接触才发作（免疫功能过强）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">自身免疫病：免疫系统攻击<strong>自身组织</strong>（免疫功能过强）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">HIV攻击<strong>辅助性T细胞</strong>→体液免疫和细胞免疫均丧失</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">艾滋病传播途径：<strong>性接触、血液、母婴</strong></span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== 第4节 免疫学应用 ====== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第4节 免疫学的应用</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>应用</th><th>原理</th><th>注意事项</th></tr>
+      <tr><td><strong>疫苗（免疫预防）</strong></td><td>接种灭活/减毒病原体→机体产生<strong>记忆细胞</strong>和抗体</td><td>属于<strong>主动免疫</strong>；疫苗本身=抗原</td></tr>
+      <tr><td><strong>器官移植</strong></td><td>用免疫抑制剂降低排斥反应</td><td>成败关键：<strong>HLA</strong>是否匹配；免疫抑制剂增加感染风险</td></tr>
+      <tr><td><strong>免疫诊断</strong></td><td>抗原-抗体特异性结合</td><td>ELISA、凝集反应等（如测血型、检测HIV抗体）</td></tr>
+      <tr><td><strong>单克隆抗体</strong></td><td>单一B细胞产生的抗体→特异性强、灵敏度高</td><td>作为药物治疗癌症等（靶向治疗）</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl4">
+      <li><span class="check-box"></span><span class="label"><strong>疫苗</strong>→主动免疫→产生<strong>记忆细胞</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">器官移植成败取决于<strong>HLA</strong>匹配程度</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== 速测快问快答 ====== -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🎯 免疫调节速测 - 快问快答</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="quiz-box" id="quiz1">
+      <div class="quiz-title">第1题：唯一能产生抗体的细胞是？</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">A. 记忆B细胞</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">B. T细胞</div>
+      <div class="quiz-option" onclick="checkQuiz(this,true)">C. 浆细胞</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">D. 吞噬细胞</div>
+    </div>
+    <div class="quiz-box" id="quiz2">
+      <div class="quiz-title">第2题：HIV主要攻击哪种细胞？</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">A. 浆细胞</div>
+      <div class="quiz-option" onclick="checkQuiz(this,true)">B. 辅助性T细胞</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">C. B细胞</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">D. 吞噬细胞</div>
+    </div>
+    <div class="quiz-box" id="quiz3">
+      <div class="quiz-title">第3题：过敏反应属于哪种免疫异常？</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">A. 免疫缺陷</div>
+      <div class="quiz-option" onclick="checkQuiz(this,true)">B. 免疫功能过强</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">C. 自身免疫监视失效</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">D. 器官移植排斥</div>
+    </div>
+    <div class="quiz-box" id="quiz4">
+      <div class="quiz-title">第4题：二次免疫比初次免疫更快更强的原因是什么？</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">A. 抗原更弱了</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">B. 抗体在体内长期存在</div>
+      <div class="quiz-option" onclick="checkQuiz(this,true)">C. 记忆细胞长期存活，快速增殖分化</div>
+      <div class="quiz-option" onclick="checkQuiz(this,false)">D. 吞噬细胞活性增强了</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+// PROGRESS
+function updateProgress() {
+  const total = 25;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx1_ch4_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx1_ch4_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// QUIZ
+function checkQuiz(el,correct){
+  const parent=el.parentElement;
+  if(parent.dataset.done) return;
+  parent.dataset.done='1';
+  if(correct){el.classList.add('correct');}else{el.classList.add('wrong');parent.querySelectorAll('.quiz-option').forEach(o=>{if(o.textContent.includes('C.')&&parent===document.getElementById('quiz1')||o.textContent.includes('B.')&&parent===document.getElementById('quiz2')||o.textContent.includes('B.')&&parent===document.getElementById('quiz3')||o.textContent.includes('C.')&&parent===document.getElementById('quiz4'))o.classList.add('correct');});}
+}
+
+// ===== THREE DEFENSE LINES =====
+const dCanvas=document.getElementById('defenseCanvas'), dctx=dCanvas.getContext('2d');
+let defenseStage=0;
+function drawDefense(){
+  const w=800,h=320;
+  dctx.clearRect(0,0,w,h); dctx.fillStyle='#fafbfc'; dctx.fillRect(0,0,w,h);
+
+  const layers=[];
+  // Line 1 - Skin/Mucosa
+  layers.push({x:30,y:30,w:740,h:70,color:'#fff3e0',stroke:'#e65100',title:'第一道防线 — 皮肤和黏膜',items:['皮肤阻挡','黏膜分泌(溶菌酶)','纤毛摆动','胃酸杀菌'],active:defenseStage>=0});
+
+  // Line 2 - Innate
+  layers.push({x:30,y:120,w:740,h:70,color:'#e8f5e9',stroke:'#2e7d32',title:'第二道防线 — 杀菌物质+吞噬细胞',items:['溶菌酶(体液)','吞噬细胞','炎症反应'],active:defenseStage>=1});
+
+  // Line 3 - Adaptive
+  layers.push({x:30,y:210,w:740,h:70,color:'#ffebee',stroke:'#c62828',title:'第三道防线 — 特异性免疫',items:['体液免疫(B细胞→抗体)','细胞免疫(T细胞→效应T细胞)','免疫记忆(记忆细胞)'],active:defenseStage>=2});
+
+  // Pathogen indicators
+  const pathogens=[
+    {x:120,y:50},{x:350,y:40},{x:600,y:55},
+    {x:200,y:150},{x:500,y:140},{x:700,y:135},
+    {x:100,y:240},{x:400,y:230},{x:650,y:245}
+  ];
+
+  layers.forEach((layer,i)=>{
+    const alpha=layer.active?1:0.25;
+    dctx.globalAlpha=alpha;
+    dctx.fillStyle=layer.color; dctx.strokeStyle=layer.stroke; dctx.lineWidth=2;
+    dctx.beginPath(); roundRectD(dctx,layer.x,layer.y,layer.w,layer.h,8); dctx.fill(); dctx.stroke();
+    dctx.fillStyle=layer.stroke; dctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; dctx.textAlign='left';
+    dctx.fillText(layer.title,layer.x+12,layer.y+22);
+    dctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif'; dctx.textAlign='right';
+    dctx.fillText(layer.items.join(' | '),layer.x+layer.w-12,layer.y+22);
+    dctx.globalAlpha=1;
+  });
+
+  // Pathogen dots
+  pathogens.forEach((p,i)=>{
+    if(i<3&&defenseStage>=0){dctx.globalAlpha=0.3;}else if(i<6&&defenseStage>=1){dctx.globalAlpha=0.3+(defenseStage>=2?0:0);}else if(defenseStage>=2){dctx.globalAlpha=0.15;}
+    else{dctx.globalAlpha=0.8;}
+    dctx.fillStyle='#c62828'; dctx.beginPath(); dctx.arc(p.x,p.y,6,0,Math.PI*2); dctx.fill();
+    dctx.fillStyle='#fff'; dctx.font='bold 8px sans-serif'; dctx.textAlign='center'; dctx.fillText('病',p.x,p.y+3);
+  });
+  dctx.globalAlpha=1;
+
+  dctx.fillStyle='#888'; dctx.font='11px sans-serif'; dctx.textAlign='center';
+  dctx.fillText('病原体在第一道防线被阻挡→第二道被吞噬→第三道被特异性清除',400,315);
+}
+function roundRectD(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+function advanceDefense(){defenseStage=(defenseStage+1)%4;drawDefense();}
+function resetDefense(){defenseStage=0;drawDefense();}
+drawDefense();
+
+// ===== HUMORAL IMMUNITY ANIMATION =====
+const hCanvas=document.getElementById('humoralCanvas'), hctx=hCanvas.getContext('2d');
+let humoralStep=-1, humoralTimer;
+const humoralFrames=[
+  function(){drawHumoralBase();drawMacrophage(80,160,true);drawAntigen(60,130,true);},
+  function(){drawHumoralBase();drawMacrophage(80,160,true);drawAntigen(60,130,true);drawHelperT(220,160,true);hctx.fillStyle='#e65100';hctx.font='11px sans-serif';hctx.textAlign='center';hctx.fillText('呈递抗原',150,200);},
+  function(){drawHumoralBase();drawAntigen(180,150,true);drawHelperT(280,160,true);drawBCell(400,160,false);hctx.fillText('细胞因子',340,190);},
+  function(){drawHumoralBase();drawBCell(300,160,true);drawPlasma(480,160,true);hctx.fillText('增殖分化',390,200);},
+  function(){drawHumoralBase();drawPlasma(400,160,true);drawAntibody(450,145);hctx.fillStyle='#c62828';hctx.font='11px sans-serif';hctx.textAlign='center';hctx.fillText('抗体！',500,200);},
+  function(){drawHumoralBase();drawAntibody(350,140);drawMacrophage(550,160,false);hctx.fillStyle='#c62828';hctx.font='11px sans-serif';hctx.textAlign='center';hctx.fillText('抗体+抗原→被吞噬清除',400,200);},
+];
+
+function drawHumoralBase(){
+  const w=800,h=340;
+  hctx.clearRect(0,0,w,h); hctx.fillStyle='#fafbfc'; hctx.fillRect(0,0,w,h);
+  hctx.fillStyle='#2c3e50'; hctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; hctx.textAlign='center';
+  hctx.fillText('体液免疫：B细胞 → 浆细胞 → 抗体 → 清除细胞外病原体',400,25);
+}
+
+function drawMacrophage(x,y,active){
+  hctx.fillStyle=active?'#ff9800':'rgba(255,152,0,0.2)'; hctx.strokeStyle='#e65100'; hctx.lineWidth=active?2:1;
+  hctx.beginPath(); hctx.arc(x,y,22,0,Math.PI*2); hctx.fill(); hctx.stroke();
+  hctx.fillStyle=active?'#fff':'#999'; hctx.font='bold 11px sans-serif'; hctx.textAlign='center';
+  hctx.fillText('吞噬',x,y-2); hctx.fillText('细胞',x,y+12);
+}
+function drawAntigen(x,y,active){
+  hctx.fillStyle=active?'#c62828':'rgba(198,40,40,0.2)';
+  hctx.beginPath(); hctx.arc(x,y,10,0,Math.PI*2); hctx.fill();
+  hctx.strokeStyle='#b71c1c'; hctx.lineWidth=1; hctx.stroke();
+  hctx.fillStyle='#fff'; hctx.font='bold 8px sans-serif'; hctx.textAlign='center'; hctx.fillText('Ag',x,y+3);
+}
+function drawHelperT(x,y,active){
+  hctx.fillStyle=active?'#4caf50':'rgba(76,175,80,0.2)'; hctx.strokeStyle='#2e7d32'; hctx.lineWidth=active?2:1;
+  hctx.beginPath(); hctx.arc(x,y,20,0,Math.PI*2); hctx.fill(); hctx.stroke();
+  hctx.fillStyle=active?'#fff':'#999'; hctx.font='bold 10px sans-serif'; hctx.textAlign='center';
+  hctx.fillText('辅助性',x,y-2); hctx.fillText('T细胞',x,y+11);
+}
+function drawBCell(x,y,active){
+  hctx.fillStyle=active?'#2196f3':'rgba(33,150,243,0.2)'; hctx.strokeStyle='#1565c0'; hctx.lineWidth=active?2:1;
+  hctx.beginPath(); hctx.arc(x,y,18,0,Math.PI*2); hctx.fill(); hctx.stroke();
+  hctx.fillStyle=active?'#fff':'#999'; hctx.font='bold 10px sans-serif'; hctx.textAlign='center';
+  hctx.fillText('B细胞',x,y+4);
+}
+function drawPlasma(x,y,active){
+  hctx.fillStyle=active?'#9c27b0':'rgba(156,39,176,0.2)'; hctx.strokeStyle='#6a1b9a'; hctx.lineWidth=active?2:1;
+  hctx.beginPath(); hctx.arc(x,y,18,0,Math.PI*2); hctx.fill(); hctx.stroke();
+  hctx.fillStyle=active?'#fff':'#999'; hctx.font='bold 10px sans-serif'; hctx.textAlign='center';
+  hctx.fillText('浆细胞',x,y+4);
+}
+function drawAntibody(x,y){
+  for(let i=0;i<5;i++){
+    hctx.strokeStyle='#c62828'; hctx.lineWidth=2;
+    hctx.beginPath(); hctx.moveTo(x+i*20,y); hctx.lineTo(x+i*20,y-25);
+    hctx.moveTo(x+i*20-5,y-15); hctx.lineTo(x+i*20+5,y-15); hctx.stroke();
+    hctx.fillStyle='#fff'; hctx.font='7px sans-serif'; hctx.textAlign='center'; hctx.fillText('Y',x+i*20,y-20);
+  }
+}
+
+function runHumoral(){
+  humoralStep=-1; clearTimeout(humoralTimer);
+  // Reset step indicators
+  for(let i=1;i<=6;i++) document.getElementById('hs'+i).classList.remove('active');
+  function step(){
+    humoralStep++;
+    if(humoralStep>5){humoralStep=0;for(let i=1;i<=6;i++) document.getElementById('hs'+i).classList.remove('active');}
+    humoralFrames[humoralStep]();
+    document.getElementById('hs'+(humoralStep+1)).classList.add('active');
+    humoralTimer=setTimeout(step,1200);
+  }
+  step();
+}
+function resetHumoral(){clearTimeout(humoralTimer);humoralStep=-1;humoralFrames[0]();for(let i=1;i<=6;i++)document.getElementById('hs'+i).classList.remove('active');}
+humoralFrames[0]();
+
+// ===== CELLULAR IMMUNITY =====
+const ceCanvas=document.getElementById('cellularCanvas'), cectx=ceCanvas.getContext('2d');
+let cellStep=-1, cellTimer;
+const cellFrames=[
+  function(){drawCellBase();drawTargetCell(120,170,true);},
+  function(){drawCellBase();drawTargetCell(120,170,true);drawCytotoxicT(280,170,true);cectx.fillText('识别靶细胞',200,220);},
+  function(){drawCellBase();drawCytotoxicT(200,170,true);drawHelperT(330,170,true);cectx.fillText('细胞因子激活',260,220);},
+  function(){drawCellBase();drawEffectorT(250,170,true);drawTargetCell(550,170,true);cectx.fillText('增殖分化→效应T细胞',380,220);},
+  function(){drawCellBase();drawEffectorT(450,155,true);drawTargetCell(550,170,true);cectx.fillText('密切接触→靶细胞裂解！',430,220);cectx.fillStyle='#c62828';cectx.font='bold 11px sans-serif';cectx.fillText('💥裂解',520,130);},
+  function(){drawCellBase();drawAntibody(500,145);cectx.fillStyle='#2e7d32';cectx.font='bold 12px sans-serif';cectx.textAlign='center';cectx.fillText('释放的病原体由体液免疫清除',380,220);},
+];
+function drawCellBase(){
+  const w=800,h=300;
+  cectx.clearRect(0,0,w,h); cectx.fillStyle='#fafbfc'; cectx.fillRect(0,0,w,h);
+  cectx.fillStyle='#2c3e50'; cectx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; cectx.textAlign='center';
+  cectx.fillText('细胞免疫：细胞毒性T细胞 → 效应T细胞 → 裂解靶细胞',400,25);
+}
+function drawTargetCell(x,y,active){
+  cectx.fillStyle=active?'#ffe0b2':'rgba(255,224,178,0.3)'; cectx.strokeStyle='#e65100'; cectx.lineWidth=active?2:1;
+  cectx.beginPath(); cectx.arc(x,y,25,0,Math.PI*2); cectx.fill(); cectx.stroke();
+  cectx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; cectx.textAlign='center';
+  cectx.fillStyle=active?'#e65100':'#999';
+  cectx.fillText('靶细胞',x,y-2); cectx.fillText('(被感染)',x,y+14);
+}
+function drawCytotoxicT(x,y,active){
+  cectx.fillStyle=active?'#bbdefb':'rgba(187,222,251,0.3)'; cectx.strokeStyle='#1565c0'; cectx.lineWidth=active?2:1;
+  cectx.beginPath(); cectx.arc(x,y,20,0,Math.PI*2); cectx.fill(); cectx.stroke();
+  cectx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; cectx.textAlign='center';
+  cectx.fillStyle=active?'#1565c0':'#999';
+  cectx.fillText('细胞毒性',x,y-4); cectx.fillText('T细胞',x,y+10);
+}
+function drawEffectorT(x,y,active){
+  cectx.fillStyle=active?'#f44336':'rgba(244,67,54,0.3)'; cectx.strokeStyle='#b71c1c'; cectx.lineWidth=active?2:1;
+  cectx.beginPath(); cectx.arc(x,y,20,0,Math.PI*2); cectx.fill(); cectx.stroke();
+  cectx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; cectx.textAlign='center';
+  cectx.fillStyle=active?'#fff':'#999';
+  cectx.fillText('效应',x,y-2); cectx.fillText('T细胞',x,y+11);
+}
+function runCellular(){cellStep=-1;clearTimeout(cellTimer);function s(){cellStep++;if(cellStep>5)cellStep=0;cellFrames[cellStep]();cellTimer=setTimeout(s,1200);}s();}
+function resetCellular(){clearTimeout(cellTimer);cellStep=-1;cellFrames[0]();}
+cellFrames[0]();
+
+// ===== SECONDARY IMMUNE RESPONSE =====
+const seCanvas=document.getElementById('secondaryCanvas'), sectx=seCanvas.getContext('2d');
+let secAnim=false, secId, secT=0;
+
+function drawSecondary(){
+  const w=750,h=280;
+  sectx.clearRect(0,0,w,h); sectx.fillStyle='#fafbfc'; sectx.fillRect(0,0,w,h);
+
+  // Axes
+  sectx.strokeStyle='#999'; sectx.lineWidth=1;
+  sectx.beginPath(); sectx.moveTo(60,30); sectx.lineTo(60,230); sectx.lineTo(710,230); sectx.stroke();
+  sectx.fillStyle='#2c3e50'; sectx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; sectx.textAlign='center';
+  sectx.fillText('时间 →',380,255);
+  sectx.save(); sectx.translate(18,140); sectx.rotate(-Math.PI/2); sectx.fillText('抗体浓度',0,0); sectx.restore();
+
+  // Primary response
+  sectx.strokeStyle='#1565c0'; sectx.lineWidth=2.5;
+  sectx.beginPath();
+  const px=[70,120,180,260,360,480,600,700,750];
+  const py=[220,215,200,170,135,155,190,210,218];
+  for(let i=0;i<px.length;i++){
+    if(i===0)sectx.moveTo(px[i],py[i]);else sectx.lineTo(px[i],py[i]);
+  }
+  sectx.stroke();
+  sectx.fillStyle='#1565c0'; sectx.font='11px sans-serif'; sectx.textAlign='center';
+  sectx.fillText('初次免疫',310,115);
+
+  // Secondary response (if active)
+  if(secAnim){
+    sectx.strokeStyle='#c62828'; sectx.lineWidth=3;
+    sectx.beginPath();
+    const sx=[350,380,410,460,510,580,650,710,750];
+    const sy=[210,205,190,150,90,85,130,170,200];
+    for(let i=0;i<sx.length;i++){
+      if(i===0)sectx.moveTo(sx[i],sy[i]);else sectx.lineTo(sx[i],sy[i]);
+    }
+    sectx.stroke();
+    sectx.fillStyle='#c62828'; sectx.font='bold 12px sans-serif'; sectx.fillText('二次免疫（更快、更强！）',570,70);
+
+    // Labels
+    sectx.fillStyle='#c62828'; sectx.font='11px sans-serif';
+    sectx.fillText('记忆细胞快速',570,190);
+    sectx.fillText('增殖分化→大量抗体',570,206);
+  }
+
+  // Antigen markers
+  sectx.fillStyle='#e65100'; sectx.font='bold 11px sans-serif';
+  sectx.fillText('↓ 首次接触抗原',180,250);
+  if(secAnim) sectx.fillText('↓ 再次接触相同抗原',420,250);
+
+  // Legend
+  sectx.strokeStyle='#1565c0'; sectx.lineWidth=2;
+  sectx.beginPath(); sectx.moveTo(500,248); sectx.lineTo(520,248); sectx.stroke();
+  sectx.fillStyle='#1565c0'; sectx.font='10px sans-serif'; sectx.textAlign='left'; sectx.fillText('初次免疫',525,252);
+  if(secAnim){
+    sectx.strokeStyle='#c62828'; sectx.lineWidth=2;
+    sectx.beginPath(); sectx.moveTo(590,248); sectx.lineTo(610,248); sectx.stroke();
+    sectx.fillStyle='#c62828'; sectx.fillText('二次免疫',615,252);
+  }
+}
+function animateSec(){secT++;drawSecondary();secId=requestAnimationFrame(animateSec);}
+function runSecondary(){secAnim=!secAnim;if(secAnim)animateSec();else{cancelAnimationFrame(secId);drawSecondary();}}
+function resetSecondary(){cancelAnimationFrame(secId);secAnim=false;drawSecondary();}
+drawSecondary();
+</script>
+</body>
+</html>

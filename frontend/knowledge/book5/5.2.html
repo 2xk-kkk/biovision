@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>第2章 细胞工程 - 知识清单</title>
+<style>
+  :root { --primary: #2e7d32; --primary-light: #e8f5e9; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: #fff; padding: 36px 40px; border-radius: 12px; margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 20px 24px; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e8f5e9; border-color: #a5d6a7; }
+  .checklist li.checked .check-box { background: #2e7d32; border-color: #2e7d32; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #a5d6a7; color: #4a6a4a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .tag-super { background: #ffcdd2; color: #b71c1c; font-weight: 700; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .diagram-box { background: #fafbfc; border: 1px solid #dde4ed; border-radius: 12px; padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid #dde4ed; }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid #dde4ed; border-radius: 12px; padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #a5d6a7; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: 12px; padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .focus-box { background: #e8f5e9; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#66bb6a); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: #5a6c7d; text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; }
+  .sidebar a:hover { background: rgba(46,125,50,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(46,125,50,0.1); color: #2e7d32; font-weight: 700; border-left-color: #66bb6a; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style></head><body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修3<br>生物技术与工程</div>
+      <a href="5.1.html"><span class="ch-num">第1章</span>发酵工程</a>
+      <a href="5.2.html" class="active"><span class="ch-num">第2章</span>细胞工程</a>
+      <a href="5.3.html"><span class="ch-num">第3章</span>基因工程</a>
+      <a href="5.4.html"><span class="ch-num">第4章</span>生物技术安全</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link active">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap"><div class="container">
+<div class="header"><h1>第2章 细胞工程 ⭐ 核心章节</h1><div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修3 · 生物技术与工程 · 高考高频考点</div></div>
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 30 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>📖 本章黑体核心概念 — 点击翻牌记背</h2><span class="arrow">▼</span></div>
+<div class="section-body"><div class="concept-grid">
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">细胞全能性</div><div class="concept-back">已分化的细胞仍具有发育成完整个体的潜能。植物细胞全能性>动物细胞。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">愈伤组织</div><div class="concept-back">外植体脱分化形成的不定形、排列疏松的薄壁组织团块。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">脱分化</div><div class="concept-back">已经分化的细胞失去其特有的结构和功能，转变为未分化细胞的过程。需要避光。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">原代培养</div><div class="concept-back">动物组织经处理后的初次培养。分瓶后为传代培养。贴壁细胞存在接触抑制现象。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">单克隆抗体</div><div class="concept-back">由单一杂交瘤细胞产生的、针对单一抗原表位的特异性抗体。特异性强、灵敏度高。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">杂交瘤细胞</div><div class="concept-back">B淋巴细胞与骨髓瘤细胞融合而成。既能大量增殖，又能产生特定抗体。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">动物体细胞核移植</div><div class="concept-back">将动物体细胞的细胞核移入去核的卵母细胞中。原理：动物体细胞核的全能性。</div></div>
+<div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">胚胎移植</div><div class="concept-back">将早期胚胎移植到同种生理状态相同的雌性动物体内。实质：早期胚胎空间位置转移。</div></div>
+</div></div></div>
+
+<!-- 植物细胞工程 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第1节 植物细胞工程</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="diagram-box"><h4 style="margin-bottom:12px;">🧪 植物组织培养实验平台 - 交互模拟</h4>
+    <canvas id="tissueCanvas" width="750" height="320"></canvas>
+    <div class="controls"><button class="btn btn-primary" onclick="startTissue()">▶ 演示组织培养流程</button><button class="btn btn-outline" onclick="resetTissue()">重置</button></div></div>
+  <div class="highlight-box"><strong>植物组织培养流程：</strong>外植体 → <strong>脱分化</strong>（避光）→ 愈伤组织 → <strong>再分化</strong>（需光照）→ 完整植株<br>激素调控：生长素与细胞分裂素的比例决定发育方向（生长素/分裂素高→生根；低→生芽）</div>
+  <table><tr><th>技术</th><th>原理</th><th>应用</th></tr>
+    <tr><td>植物体细胞杂交</td><td>细胞膜流动性+细胞全能性</td><td>打破生殖隔离，远缘杂交</td></tr>
+    <tr><td>快速繁殖</td><td>细胞全能性</td><td>保持优良品种遗传特性</td></tr>
+    <tr><td>作物脱毒</td><td>茎尖病毒极少</td><td>获得无病毒植株</td></tr>
+    <tr><td>单倍体育种</td><td>花药离体培养→秋水仙素加倍</td><td>缩短育种年限</td></tr></table>
+  <ul class="checklist" id="cl1">
+    <li><span class="check-box"></span><span class="label"><strong>脱分化避光，再分化需光照</strong></span><span class="tag tag-super">必考</span></li>
+    <li><span class="check-box"></span><span class="label"><strong>生长素/细胞分裂素</strong>比例决定根/芽分化方向</span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">体细胞杂交：纤维素酶+果胶酶去壁→PEG融合</span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">脱毒取<strong>茎尖</strong>（病毒极少）；单倍体育种取<strong>花药</strong></span><span class="tag tag-memorize">记忆</span></li>
+  </ul>
+</div></div>
+
+<!-- 动物细胞工程 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第2节 动物细胞工程 ⭐ 核心</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="diagram-box"><h4 style="margin-bottom:12px;">🔬 单克隆抗体制备流程 - 交互实验平台</h4>
+    <canvas id="mabCanvas" width="750" height="380"></canvas>
+    <div class="controls"><button class="btn btn-primary" onclick="advanceMab()">▶ 下一步</button><button class="btn btn-outline" onclick="resetMab()">重置</button></div></div>
+  <div class="memo-box"><div class="memo-title">🔴 单克隆抗体制备——考试必背流程</div>
+    <p>① 用特定抗原免疫小鼠→获取<strong>B淋巴细胞</strong>（能产生抗体但不能大量增殖）</p>
+    <p>② B淋巴细胞与<strong>骨髓瘤细胞</strong>（能无限增殖）融合 → PEG/电融合/灭活病毒</p>
+    <p>③ <strong>第一次筛选（选择培养基）</strong>：筛选出<strong>杂交瘤细胞</strong>（B+B瘤融合的才能存活）</p>
+    <p>④ <strong>第二次筛选（克隆化培养+抗体检测）</strong>：获得能分泌<strong>所需抗体</strong>的杂交瘤细胞</p>
+    <p>⑤ 体外培养或小鼠腹腔培养→获取单克隆抗体</p></div>
+  <table><tr><th>项目</th><th>植物组织培养</th><th>动物细胞培养</th></tr>
+    <tr><td>原理</td><td>细胞全能性</td><td>细胞增殖</td></tr>
+    <tr><td>培养基</td><td>固体（含琼脂、蔗糖、激素）</td><td>液体（含血清、葡萄糖、氨基酸）</td></tr>
+    <tr><td>特殊条件</td><td>光照/避光调控</td><td>36.5℃、pH 7.2~7.4、5%CO₂</td></tr>
+    <tr><td>分散方法</td><td>不需分散</td><td>胰蛋白酶/胶原蛋白酶</td></tr></table>
+  <div class="danger-box"><strong>⚠️ 核心概念辨析：</strong><br>① <strong>接触抑制</strong>≠密度抑制：贴壁细胞表面相互接触时停止分裂<br>② 原代培养→分瓶→传代培养（传代培养一般传到10代左右，之后为细胞株/细胞系）<br>③ <strong>干细胞</strong>：ES细胞（胚胎）→全能性最强；iPS细胞（诱导）→避免免疫排斥和伦理问题</div>
+  <ul class="checklist" id="cl2">
+    <li><span class="check-box"></span><span class="label">单克隆抗体——<strong>两次筛选</strong>：选择培养基→抗体检测</span><span class="tag tag-super">必考</span></li>
+    <li><span class="check-box"></span><span class="label"><strong>杂交瘤细胞</strong>：既能大量增殖，又能产生特定抗体</span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">动物细胞培养气体：95%空气+<strong>5%CO₂</strong>（CO₂维持pH）</span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">体细胞核移植受体：<strong>MⅡ期卵母细胞</strong></span><span class="tag tag-memorize">记忆</span></li>
+  </ul>
+</div></div>
+
+<!-- 胚胎工程 -->
+<div class="section fade-in"><div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第3节 胚胎工程</h2><span class="arrow">▼</span></div>
+<div class="section-body">
+  <div class="diagram-box"><h4 style="margin-bottom:12px;">胚胎工程核心技术 - 交互图解</h4>
+    <canvas id="embryoCanvas" width="750" height="300"></canvas>
+    <div class="controls"><button class="btn btn-primary" onclick="cycleEmbryo()">切换技术</button></div></div>
+  <div class="highlight-box"><strong>胚胎工程三大技术：</strong><br>① <strong>体外受精</strong>：卵母细胞采集→成熟培养（MⅡ期）→精子<strong>获能</strong>处理→共同培养<br>② <strong>胚胎移植</strong>：供体<strong>超数排卵</strong>（促性腺激素）→受体<strong>同期发情</strong>（孕激素）→移植早期胚胎<br>③ <strong>胚胎分割</strong>：选桑葚胚或囊胚，分割囊胚时<strong>必须将内细胞团均等分割</strong></div>
+  <div class="info-row">
+    <div class="info-card"><h4>受精—防止多精入卵</h4><p><strong>透明带反应</strong>+<strong>卵细胞膜反应</strong>。受精标志：观察到两个极体或雌雄原核。精子需获能，卵子到MⅡ期才有受精能力。</p></div>
+    <div class="info-card"><h4>囊胚结构</h4><p><strong>内细胞团</strong>→胎儿组织；<strong>滋养层</strong>→胎膜和胎盘；囊胚腔。取样滋养层→性别鉴定（DNA分析）。</p></div>
+  </div>
+  <ul class="checklist" id="cl3">
+    <li><span class="check-box"></span><span class="label"><strong>透明带反应+卵细胞膜反应</strong>——防止多精入卵</span><span class="tag tag-important">重点</span></li>
+    <li><span class="check-box"></span><span class="label">胚胎移植实质：<strong>空间位置转移</strong>（生理环境相同）</span><span class="tag tag-understand">理解</span></li>
+    <li><span class="check-box"></span><span class="label">分割囊胚→<strong>内细胞团必须均等分割</strong></span><span class="tag tag-important">重点</span></li>
+  </ul>
+</div></div>
+
+</div></div>
+<script>
+function updateProgress() {
+  const total = 17; const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width=(checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent=`已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx3_ch2_ck',JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx3_ch2_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}updateProgress();
+
+// TISSUE CULTURE
+const tCanvas=document.getElementById('tissueCanvas'), tctx=tCanvas.getContext('2d');
+let tissueStep=-1, tissueTimer;
+function drawTissue(){
+  const w=750,h=320;
+  tctx.clearRect(0,0,w,h); tctx.fillStyle='#fafbfc'; tctx.fillRect(0,0,w,h);
+  const stages=[
+    {x:90,y:180,label:'外植体\n(叶/茎段)',color:'#4caf50',step:0},
+    {x:240,y:180,label:'脱分化\n(避光)',color:'#ff9800',step:1},
+    {x:400,y:180,label:'愈伤组织\n(不定形细胞团)',color:'#ffb74d',step:2},
+    {x:560,y:180,label:'再分化\n(光照→芽/根)',color:'#4caf50',step:3},
+    {x:700,y:180,label:'完整植株',color:'#2e7d32',step:4},
+  ];
+  stages.forEach((s,i)=>{
+    const active=i<=tissueStep;
+    tctx.fillStyle=active?s.color:s.color+'30'; tctx.strokeStyle=active?'#333':'#ccc'; tctx.lineWidth=active?2.5:1;
+    tctx.beginPath(); tctx.arc(s.x,s.y,active?32:24,0,Math.PI*2); tctx.fill(); tctx.stroke();
+    tctx.fillStyle=active?'#fff':'#999'; tctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; tctx.textAlign='center';
+    const ls=s.label.split('\n'); ls.forEach((l,li)=>{tctx.fillText(l,s.x,s.y-4+li*14);});
+    if(i<4&&active&&i<tissueStep){tctx.strokeStyle='#333';tctx.lineWidth=2;drawArrowT(tctx,s.x+32,s.y,stages[i+1].x-32,stages[i+1].y);}
+  });
+  tctx.fillStyle='#2c3e50'; tctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; tctx.textAlign='center';
+  tctx.fillText('脱分化（避光）+ 再分化（光照）| 生长素/细胞分裂素 比例调控方向',375,280);
+  if(tissueStep>=4) tctx.fillText('✅ 植物组织培养完成！',375,305);
+}
+function drawArrowT(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.fillStyle='#333';ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-6,y2-4);ctx.lineTo(x2-6,y2+4);ctx.fill();}
+function startTissue(){tissueStep=-1;clearTimeout(tissueTimer);function step(){tissueStep++;drawTissue();if(tissueStep<4)tissueTimer=setTimeout(step,700);}step();}
+function resetTissue(){clearTimeout(tissueTimer);tissueStep=-1;drawTissue();}
+drawTissue();
+
+// MONOCLONAL ANTIBODY
+const mCanvas=document.getElementById('mabCanvas'), mctx=mCanvas.getContext('2d');
+let mabStep=0;
+function drawMab(){
+  const w=750,h=380;
+  mctx.clearRect(0,0,w,h); mctx.fillStyle='#fafbfc'; mctx.fillRect(0,0,w,h);
+  mctx.fillStyle='#2c3e50'; mctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif'; mctx.textAlign='center';
+  mctx.fillText('单克隆抗体制备流程',375,22);
+  const steps=[
+    {x:60,y:80,label:'①抗原免疫\n小鼠',desc:'注射特定抗原',active:mabStep>=0,color:'#e65100'},
+    {x:180,y:80,label:'②获取B淋巴\n细胞',desc:'从脾脏获取',active:mabStep>=1,color:'#1565c0'},
+    {x:300,y:80,label:'③细胞融合',desc:'B细胞+骨髓瘤\n+PEG/电融合',active:mabStep>=2,color:'#6a1b9a'},
+    {x:440,y:80,label:'④第一次筛选\n(HAT选择培养基)',desc:'筛选出\n杂交瘤细胞',active:mabStep>=3,color:'#c62828'},
+    {x:590,y:80,label:'⑤第二次筛选\n(抗体检测)',desc:'选出分泌所需\n抗体的杂交瘤细胞',active:mabStep>=4,color:'#c62828'},
+    {x:375,y:200,label:'⑥大量培养\n获取单克隆抗体',desc:'体外培养或\n小鼠腹腔培养',active:mabStep>=5,color:'#2e7d32'},
+  ];
+  steps.forEach(s=>{
+    const a=s.active;
+    mctx.fillStyle=a?s.color+'80':s.color+'20'; mctx.strokeStyle=s.color; mctx.lineWidth=a?2.5:1;
+    mctx.beginPath(); mctx.arc(s.x,s.y,a?28:22,0,Math.PI*2); mctx.fill(); mctx.stroke();
+    mctx.fillStyle=a?'#fff':'#999'; mctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; mctx.textAlign='center';
+    const ls=s.label.split('\n'); ls.forEach((l,li)=>{mctx.fillText(l,s.x,s.y-6+li*14);});
+    mctx.fillStyle=a?'#2c3e50':'#999'; mctx.font='9px sans-serif'; mctx.fillText(s.desc,s.x,s.y+28);
+  });
+  // Connectors
+  [0,1,2,3,4].forEach(i=>{
+    if(mabStep>i){mctx.strokeStyle='#666';mctx.lineWidth=2;drawArrowT(mctx,steps[i].x+28,steps[i].y,steps[i+1].x-28,steps[i+1].y);}
+  });
+  if(mabStep>=5){
+    drawArrowT(mctx,steps[4].x,steps[4].y+28,steps[5].x,steps[5].y-28);
+  }
+  mctx.fillStyle='#888'; mctx.font='11px sans-serif'; mctx.textAlign='center'; mctx.fillText('两次筛选是关键！',375,370);
+}
+function advanceMab(){mabStep=Math.min(mabStep+1,5);drawMab();}
+function resetMab(){mabStep=0;drawMab();}
+drawMab();
+
+// EMBRYO ENGINEERING
+const emCanvas=document.getElementById('embryoCanvas'), emctx=emCanvas.getContext('2d');
+let embIdx=0;
+const embData=[
+  {title:'体外受精(IVF)',steps:['卵母细胞采集(成熟培养至MⅡ期)','精子获能处理','精子+卵子共培养→受精','早期胚胎→移植'],icon:'🧬',color:'#c62828'},
+  {title:'胚胎移植',steps:['供体：超数排卵(促性腺激素)','受体：同期发情(孕激素)','供体配种/受精→收集胚胎','移植到受体子宫→妊娠'],icon:'🐄',color:'#1565c0'},
+  {title:'胚胎分割',steps:['选发育良好的桑葚胚或囊胚','囊胚→内细胞团必须均等分割','半胚分别移植','获得同卵双胎/多胎(无性繁殖)'],icon:'✂️',color:'#2e7d32'},
+];
+function drawEmb(){
+  const w=750,h=300,d=embData[embIdx];
+  emctx.clearRect(0,0,w,h); emctx.fillStyle='#fafbfc'; emctx.fillRect(0,0,w,h);
+  emctx.fillStyle=d.color; emctx.font='bold 17px "PingFang SC","Microsoft YaHei",sans-serif'; emctx.textAlign='center';
+  emctx.fillText(`${d.icon} ${d.title}`,375,30);
+  d.steps.forEach((s,i)=>{
+    emctx.fillStyle=d.color; emctx.strokeStyle=d.color; emctx.lineWidth=2;
+    emctx.beginPath(); emctx.arc(100+i*140,130,22,0,Math.PI*2); emctx.fill(); emctx.stroke();
+    emctx.fillStyle='#fff'; emctx.font='bold 12px sans-serif'; emctx.textAlign='center'; emctx.fillText(i+1,100+i*140,135);
+    emctx.fillStyle='#2c3e50'; emctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; emctx.fillText(s,100+i*140,170);
+    if(i<3){emctx.strokeStyle='#666';emctx.lineWidth=2;emctx.beginPath();emctx.moveTo(100+i*140+22,130);emctx.lineTo(100+(i+1)*140-22,130);emctx.stroke();drawArrowT(emctx,100+i*140+22+(115-44)/2,130,100+(i+1)*140-22-(115-44)/2,130);}
+  });
+  emctx.fillStyle='#888'; emctx.font='11px sans-serif'; emctx.textAlign='center'; emctx.fillText(`(${embIdx+1}/3) 点击切换`,375,290);
+}
+function cycleEmbryo(){embIdx=(embIdx+1)%3;drawEmb();}
+drawEmb();
+</script>
+</body></html>

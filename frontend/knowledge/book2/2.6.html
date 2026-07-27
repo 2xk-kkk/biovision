@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第6章 生物的进化 - 知识清单</title>
+<style>
+  :root {
+    --primary: #1a237e;
+    --primary-light: #e8eaf6;
+    --accent: #ff6f00;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #0d1147, #1a237e);
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='30' r='2' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='70' cy='60' r='3' fill='rgba(255,255,255,0.08)'/%3E%3Ccircle cx='85' cy='20' r='1.5' fill='rgba(255,255,255,0.12)'/%3E%3Ccircle cx='40' cy='80' r='2.5' fill='rgba(255,255,255,0.06)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header h1 { font-size: 2em; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; position: relative; z-index: 1; }
+  .header .quote { margin-top: 14px; font-style: italic; font-size: 0.95em; opacity: 0.85; position: relative; z-index: 1; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #e8eaf6; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; transition: var(--transition); }
+  .section-header:hover { background: #c5cae9; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e8eaf6; border-color: #9fa8da; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #9fa8da; color: #5a5a9a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; transition: var(--transition); }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2e7d32; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .diagram-box canvas { max-width: 100%; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px 14px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #9fa8da; }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  .timeline { position: relative; padding-left: 28px; margin: 16px 0; }
+  .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary), #9fa8da); }
+  .timeline-item { position: relative; margin-bottom: 16px; padding: 10px 14px; background: #fafbfc; border-radius: 8px; border: 1px solid var(--border); }
+  .timeline-item::before { content: ''; position: absolute; left: -22px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--primary); }
+  .timeline-item .year { font-weight: 700; color: var(--primary); font-size: 0.9em; }
+
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #5c6bc0); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; font-weight: 500; }
+
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 180px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: background 0.2s, color 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(26,35,126,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(26,35,126,0.1); color: #1a237e; font-weight: 700; border-left-color: #5c6bc0; }
+  .sidebar .ch-num { font-size: 0.7em; font-weight: 700; color: #90a4ae; min-width: 18px; text-align: center; }
+  @media (max-width: 860px) { .sidebar { position: static; transform: none; width: 100%; max-height: none; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 4px; border-radius: 8px; margin-bottom: 12px; } .sidebar .nav-title { width: 100%; padding: 4px 0; border-bottom: none; margin-bottom: 0; } .sidebar a { padding: 5px 8px; font-size: 0.75em; border-left: none; border-radius: 4px; } }
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+
+      <nav class="sidebar">
+    <div class="nav-title">生物学 必修2<br>遗传与进化</div>
+      <a href="2.1.html"><span class="ch-num">第1章</span>遗传因子的发现</a>
+      <a href="2.2.html"><span class="ch-num">第2章</span>基因和染色体的关系</a>
+      <a href="2.3.html"><span class="ch-num">第3章</span>基因的本质</a>
+      <a href="2.4.html"><span class="ch-num">第4章</span>基因的表达</a>
+      <a href="2.5.html"><span class="ch-num">第5章</span>基因突变及其他变异</a>
+      <a href="2.6.html" class="active"><span class="ch-num">第6章</span>生物的进化</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link active">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第6章 生物的进化</h1>
+  <div class="subtitle">人教版 · 生物学必修2 · 遗传与进化</div>
+  <div class="quote">"远去了'贝格尔'的帆影，无涯是进化论的航程。拨开那亿万年的迷雾，寻觅着生命史的真容。"</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 30 个知识点</div>
+
+<!-- 第1节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🦴 第1节 生物有共同祖先的证据</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 支持共同由来学说的证据有哪些？<br>
+      ● 怎样通过化石证据研究生物的进化？<br>
+      ● 当今生物在器官、胚胎发育、细胞和分子水平上是否具有共同特征？
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 达尔文进化论的两大学说</div>
+      <p>① <span class="bold-concept">共同由来学说</span>：地球上所有的生物都是由原始的共同祖先进化来的</p>
+      <p>② <span class="bold-concept">自然选择学说</span>：揭示了生物进化的机制，解释了适应的形成和物种形成的原因</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、化石证据——最直接、最重要的证据</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 化石</div>
+      <p><span class="bold-concept">化石</span>：通过自然作用保存在地层中的古代生物的遗体、遗物或生活痕迹。是研究生物进化<span class="bold-concept">最直接、最重要</span>的证据。</p>
+      <p>地层越深，化石越古老→揭示生物由<strong>简单→复杂、低等→高等、水生→陆生</strong>的进化顺序。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、比较解剖学证据</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 同源器官</div>
+      <p>蝙蝠的翼、鲸的鳍、猫的前肢、人的上肢——功能迥异、外形差别大，但内部骨骼结构模式一致（肱骨、桡骨、尺骨、腕骨、掌骨、指骨）→说明这些生物有<span class="bold-concept">共同的原始祖先</span>。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、胚胎学证据</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 胚胎发育相似性</div>
+      <p>人的胚胎在发育早期出现<strong>鳃裂和尾</strong>，与鱼胚胎早期相似。脊椎动物胚胎发育早期都有彼此相似的阶段→支持<span class="bold-concept">共同祖先</span>观点。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、细胞和分子水平证据</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 分子水平的共同特征</div>
+      <p>当今生物在细胞结构上有共同点（细胞膜、细胞质、核糖体、DNA）→支持共同祖先。</p>
+      <p>不同生物的<span class="bold-concept">DNA和蛋白质</span>的共同点→提示有共同原始祖先；差异大小→揭示亲缘关系的远近和进化顺序。例如：人与黑猩猩基因组差异仅3%，与猕猴的细胞色素c差1个氨基酸。</p>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li data-id="1"><span class="check-box"></span><span class="label"><strong>达尔文进化论</strong>两大学说：共同由来学说 + 自然选择学说</span><span class="tag tag-important">重点</span></li>
+      <li data-id="2"><span class="check-box"></span><span class="label"><strong>化石</strong>：研究生物进化<strong>最直接、最重要</strong>的证据</span><span class="tag tag-important">重点</span></li>
+      <li data-id="3"><span class="check-box"></span><span class="label">化石揭示进化顺序：<strong>简单→复杂、低等→高等、水生→陆生</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="4"><span class="check-box"></span><span class="label"><strong>同源器官</strong>（比较解剖学）：内部结构相似→支持共同祖先</span><span class="tag tag-important">重点</span></li>
+      <li data-id="5"><span class="check-box"></span><span class="label">胚胎学证据：早期胚胎有<strong>鳃裂和尾</strong>→支持人与鱼有共同祖先</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="6"><span class="check-box"></span><span class="label">人与黑猩猩基因组差异仅<strong>3%</strong>；共用一套遗传密码→分子证据</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="7"><span class="check-box"></span><span class="label">放射性同位素（²³⁸U半衰期45亿年，¹⁴C半衰期5730年）可测化石年龄</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🌍 第2节 自然选择与适应的形成</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 怎样理解适应？<br>
+      ● 如何运用自然选择学说解释生物的适应和多样性的形成？<br>
+      ● 达尔文的自然选择学说对人们的思想观念产生了哪些重要影响？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、适应的概念</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 适应</div>
+      <p><span class="bold-concept">适应</span>（adaptation）两方面的含义：①生物的形态结构适合于完成一定的功能；②形态结构及其功能适合于该生物在一定的环境中生存和繁殖。</p>
+      <p>适应是<strong>普遍存在</strong>的（如枯叶蝶形似枯叶、雷鸟换白羽），但也是<span class="bold-concept">相对的</span>（并非绝对完美，如枯叶蝶仍有天敌捕食、雷鸟若未降雪反更暴露）。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、拉马克的进化学说</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 了解 —— 拉马克学说</div>
+      <p>拉马克彻底否定物种不变论，提出：<span class="bold-concept">用进废退</span>和<span class="bold-concept">获得性遗传</span>。在当时有进步意义，但对适应形成的解释是肤浅的，未被普遍接受。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、达尔文的自然选择学说</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 自然选择学说核心逻辑</div>
+      <p><strong>事实1</strong>：生物都有<strong>过度繁殖</strong>的倾向 → <strong>事实2+3</strong>：物种内个体数保持稳定+资源有限 → <strong>推论1</strong>：个体间存在<strong>生存斗争</strong></p>
+      <p><strong>事实4</strong>：同种个体间普遍存在<strong>变异</strong> + <strong>事实5</strong>：许多变异可遗传 → <strong>推论2</strong>：<strong>适者生存</strong>（具有有利变异的个体生存并留下后代的机会多）</p>
+      <p><strong>推论3</strong>：有利变异逐代积累→形成新的适应特征→新的生物类型。</p>
+      <p><strong>适应形成的必要条件：</strong>群体中出现<span class="bold-concept">可遗传的有利变异</span> + 环境的<span class="bold-concept">定向选择</span>。</p>
+    </div>
+
+    <div class="highlight-box">
+      <strong>达尔文进化论的历史意义：</strong>打破了"神创论"和"物种不变论"，使生物学第一次走上科学的轨道。揭示了生物界的统一性源于共同祖先，多样性和适应性是进化的结果。被恩格斯誉为<strong>19世纪自然科学三大发现</strong>之一。
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li data-id="8"><span class="check-box"></span><span class="label"><strong>适应</strong>：普遍性（生物都适应环境）+ 相对性（适应不是绝对的）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="9"><span class="check-box"></span><span class="label">拉马克观点：<strong>用进废退+获得性遗传</strong>（已被否定，但有历史进步意义）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="10"><span class="check-box"></span><span class="label"><strong>自然选择学说</strong>核心：过度繁殖→生存斗争→适者生存→有利变异积累</span><span class="tag tag-important">重点</span></li>
+      <li data-id="11"><span class="check-box"></span><span class="label">适应形成条件：可遗传的有利变异 + 环境的<strong>定向选择</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="12"><span class="check-box"></span><span class="label">达尔文进化论局限：不能科学解释<strong>遗传和变异的本质</strong>（当时未知基因）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="13"><span class="check-box"></span><span class="label">恩格斯誉进化论为<strong>19世纪自然科学三大发现</strong>之一（与细胞学说、能量守恒并列）</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📊 第3节 种群基因组成的变化与物种的形成</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 为什么说种群是生物进化的基本单位？<br>
+      ● 种群的基因频率为什么会发生变化？<br>
+      ● 自然选择与种群基因频率的变化有什么关系？<br>
+      ● 什么是物种？怎样理解地理隔离和生殖隔离？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、种群是生物进化的基本单位</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念</div>
+      <p><span class="bold-concept">种群</span>：生活在一定区域的同种生物全部个体的集合。种群是<span class="bold-concept">繁殖的单位</span>。</p>
+      <p><span class="bold-concept">基因库</span>：一个种群中全部个体所含有的全部基因。</p>
+      <p><span class="bold-concept">基因频率</span>：在一个种群基因库中，某个基因占全部等位基因数的比值。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、种群基因频率的变化</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 可遗传变异与进化原材料</div>
+      <p>可遗传变异的来源：<span class="bold-concept">基因突变、基因重组、染色体变异</span>。其中基因突变和染色体变异统称<span class="bold-concept">突变</span>。</p>
+      <p>虽然基因突变频率很低，但种群大+个体基因多→每一代产生大量突变→为进化提供原材料。</p>
+      <p>突变和重组是<strong>随机的、不定向的</strong>→不能决定进化方向。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、自然选择决定进化方向</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 自然选择与基因频率</div>
+      <p>在<span class="bold-concept">自然选择</span>的作用下，具有有利变异的个体有更多机会产生后代，种群中相应基因频率不断提高；具有不利变异的个体留下后代机会少，相应基因频率下降→<span class="bold-concept">基因频率发生定向改变</span>→生物朝一定方向不断进化。</p>
+      <p><strong>生物进化的实质：</strong><span class="bold-concept">种群基因频率在自然选择作用下的定向改变。</span></p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、物种的概念和隔离</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 物种与隔离</div>
+      <p><span class="bold-concept">物种</span>：能够在自然状态下相互交配并且产生可育后代的一群生物。</p>
+      <p><span class="bold-concept">生殖隔离</span>：不同物种间一般不能交配，或交配后不能产生可育后代（如马×驴→骡，不育）。</p>
+      <p><span class="bold-concept">地理隔离</span>：同种生物由于高山、河流等地理障碍分成不同种群，阻碍基因交流。</p>
+      <p><strong>物种形成一般过程：</strong><span class="bold-concept">地理隔离 → 突变+基因重组+自然选择 → 基因库差异 → 生殖隔离 → 新物种</span>。隔离是物种形成的<span class="bold-concept">必要条件</span>。</p>
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🌿 桦尺蛾的工业黑化——自然选择的经典案例</h4>
+      <canvas id="mothCanvas" width="700" height="200"></canvas>
+      <div class="controls">
+        <button class="btn btn-outline" onclick="mothEnv='light'">浅色树干（19世纪前）</button>
+        <button class="btn btn-outline" onclick="mothEnv='dark'">黑色树干（工业革命后）</button>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li data-id="14"><span class="check-box"></span><span class="label"><strong>种群</strong>是生物进化的<strong>基本单位</strong>（不是个体！）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="15"><span class="check-box"></span><span class="label">基因库、基因频率、基因型频率的定义和计算方法</span><span class="tag tag-important">重点</span></li>
+      <li data-id="16"><span class="check-box"></span><span class="label"><strong>突变+基因重组</strong>→进化的原材料（随机不定向）；自然选择→方向（定向）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="17"><span class="check-box"></span><span class="label"><strong>生物进化的实质</strong>：种群基因频率的定向改变</span><span class="tag tag-important">重点</span></li>
+      <li data-id="18"><span class="check-box"></span><span class="label"><strong>物种</strong>：自然状态下能交配产可育后代；<strong>生殖隔离</strong>→区分不同物种的根本标志</span><span class="tag tag-important">重点</span></li>
+      <li data-id="19"><span class="check-box"></span><span class="label">物种形成一般过程：地理隔离→基因库差异→生殖隔离→新物种</span><span class="tag tag-important">重点</span></li>
+      <li data-id="20"><span class="check-box"></span><span class="label"><strong>隔离是物种形成的必要条件</strong></span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第4节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🌏 第4节 协同进化与生物多样性的形成</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 什么是协同进化？<br>
+      ● 怎样理解生物多样性是进化的结果？<br>
+      ● 生物进化理论仍然在发展吗？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、协同进化</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 协同进化</div>
+      <p><span class="bold-concept">协同进化</span>：不同物种之间、生物与无机环境之间在<span class="bold-concept">相互影响中不断进化和发展</span>。</p>
+      <p><strong>实例：</strong>猎豹与羚羊的"军备竞赛"；兰花长花距与蛾类长口器的匹配；光合生物出现→大气含氧→好氧生物出现。</p>
+      <p><strong>"收割理论"：</strong>捕食者往往捕食个体数量多的物种→避免少数物种占绝对优势→<span class="bold-concept">有利于增加物种多样性</span>。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、生物多样性的形成</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 生物多样性的三个层次</div>
+      <p>① <strong>遗传多样性</strong>（基因多样性）；② <strong>物种多样性</strong>；③ <strong>生态系统多样性</strong></p>
+      <p><strong>进化历程：</strong>最早生物：35亿年前古细菌（原核、厌氧）→ 蓝细菌出现（光合→释放O₂）→ 真核生物出现 → 有性生殖（基因重组→进化加速）→ 寒武纪大爆发（5.4~5.0亿年前，大量无脊椎动物出现）→ 陆生植物（约4亿年前蕨类）→ 两栖类→裸子植物→被子植物→鸟类/哺乳类。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、现代生物进化理论</h3>
+    <div class="highlight-box">
+      <strong>核心要点：</strong><br>
+      ① <strong>适应</strong>是自然选择的结果；② <strong>种群</strong>是进化的基本单位；③ <strong>突变和基因重组</strong>提供原材料；④ <strong>自然选择</strong>导致基因频率定向改变；⑤ <strong>隔离</strong>是物种形成的必要条件；⑥ <strong>协同进化</strong>→生物多样性。
+    </div>
+
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 进化理论仍在发展</div>
+      <p><strong>中性突变学说</strong>：大量基因突变是中性的，中性突变积累→种群间遗传差异。认为决定进化方向的是中性突变的积累，而非自然选择。</p>
+      <p><strong>间断平衡论</strong>：物种形成不是渐变，而是长期稳定与迅速形成新种交替出现。</p>
+      <p>以自然选择学说为核心的进化理论仍是各方面研究的基础。</p>
+    </div>
+
+    <ul class="checklist" id="cl4">
+      <li data-id="21"><span class="check-box"></span><span class="label"><strong>协同进化</strong>：物种+物种、物种+环境间相互影响共同进化</span><span class="tag tag-important">重点</span></li>
+      <li data-id="22"><span class="check-box"></span><span class="label">生物多样性三层次：<strong>遗传多样性（基因）、物种多样性、生态系统多样性</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="23"><span class="check-box"></span><span class="label">寒武纪大爆发（≈5.4亿年前）：海洋大量无脊椎动物爆发式形成</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="24"><span class="check-box"></span><span class="label">恐龙绝灭→哺乳类兴盛→生物进化翻开崭新一页</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="25"><span class="check-box"></span><span class="label"><strong>现代生物进化理论</strong>六大要点（种群/突变/自然选择/隔离/协同/多样性）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="26"><span class="check-box"></span><span class="label">中性突变学说、间断平衡论——进化理论仍在发展</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>⚡ 易错概念辨析与补充</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card"><h4>❌ 常见错误</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① "自然选择定向，所以变异也是定向的"→<strong>错！</strong>变异是不定向的<br>
+          ② "适应的形成是自然选择的结果，所以适应是完美的"→<strong>错！</strong>适应具有相对性<br>
+          ③ "物种形成一定要经过地理隔离"→<strong>不全对！</strong>有的通过多倍体化直接形成生殖隔离（如植物）<br>
+          ④ "一个物种的进化不影响其他物种"→<strong>错！</strong>协同进化说明物种间相互影响<br>
+          ⑤ "生物进化就意味着新物种形成"→<strong>错！</strong>基因频率改变就是进化，但不一定形成新物种
+        </p>
+      </div>
+      <div class="info-card"><h4>💡 重要辨析</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          <strong>进化 ≠ 新物种形成</strong>：基因频率改变即进化；生殖隔离形成才标志新物种<br>
+          <strong>直接受选择的是表型</strong>，不是基因型（环境直接作用于表型）<br>
+          <strong>哈代-温伯格平衡条件</strong>（理想）：种群足够大、随机交配、无突变、无迁移、无自然选择<br>
+          <strong>协同进化的舞台</strong>："生态的舞台，进化的表演"
+        </p>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>学说</th><th>核心观点</th><th>代表人物</th></tr>
+      <tr><td>拉马克学说</td><td>用进废退+获得性遗传</td><td>拉马克</td></tr>
+      <tr><td>达尔文自然选择</td><td>生存斗争→适者生存→适应形成</td><td>达尔文</td></tr>
+      <tr><td>现代生物进化理论</td><td>种群为单位，基因频率定向改变</td><td>综合多位科学家</td></tr>
+      <tr><td>中性突变学说</td><td>中性突变积累决定进化方向</td><td>木村资生等</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl5">
+      <li data-id="27"><span class="check-box"></span><span class="label">自然选择<strong>直接作用于表型</strong>，间接影响基因型→基因频率改变</span><span class="tag tag-important">重点</span></li>
+      <li data-id="28"><span class="check-box"></span><span class="label">人类也是进化的产物，与其他物种有或近或远的亲缘关系→保护多样性=保护人类</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="29"><span class="check-box"></span><span class="label">加拉帕戈斯群岛地雀：地理隔离→不同岛屿选择压不同→生殖隔离→13种地雀</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="30"><span class="check-box"></span><span class="label">生物进化理论不会停滞不前，在怀疑和求证、争论和修正中不断向前发展</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📋 本章小结</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>核心线索：</strong>证据（化石/比较解剖/胚胎/分子）→共同祖先→自然选择→适应和多样性→种群基因频率改变→隔离→新物种→协同进化→生物多样性。进化理论在不断发展中。
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 30;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+}
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function() {
+    this.classList.toggle('checked');
+    updateProgress();
+    saveCheckState();
+  });
+});
+function saveCheckState() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => { state[li.dataset.id] = li.classList.contains('checked'); });
+  localStorage.setItem('bio_b2_ch6_checklist', JSON.stringify(state));
+}
+function loadCheckState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_b2_ch6_checklist'));
+    if (state) document.querySelectorAll('.checklist li').forEach(li => { if (state[li.dataset.id]) li.classList.add('checked'); });
+  } catch(e) {}
+  updateProgress();
+}
+loadCheckState();
+
+// Moth natural selection canvas
+const mothCanvas = document.getElementById('mothCanvas');
+const mCtx = mothCanvas.getContext('2d');
+let mothEnv = 'light';
+let mothT = 0;
+
+function drawMoth() {
+  mCtx.clearRect(0, 0, mothCanvas.width, mothCanvas.height);
+  mCtx.fillStyle = mothEnv === 'light' ? '#c9b99a' : '#3e2723';
+  mCtx.fillRect(30, 40, mothCanvas.width - 60, 100);
+  mothT += 0.01;
+
+  const moths = [
+    { x: 100, y: 90, color: '#3e2723', alive: mothEnv === 'dark' },
+    { x: 180, y: 80, color: '#c9b99a', alive: mothEnv === 'light' },
+    { x: 260, y: 95, color: '#3e2723', alive: mothEnv === 'dark' },
+    { x: 340, y: 85, color: '#c9b99a', alive: mothEnv === 'light' },
+    { x: 420, y: 90, color: '#c9b99a', alive: mothEnv === 'light' },
+    { x: 500, y: 82, color: '#3e2723', alive: mothEnv === 'dark' },
+    { x: 580, y: 92, color: '#c9b99a', alive: mothEnv === 'light' },
+  ];
+
+  moths.forEach(m => {
+    if (m.alive) {
+      mCtx.fillStyle = m.color;
+      mCtx.beginPath();
+      // Simple moth shape
+      mCtx.ellipse(m.x, m.y, 12, 6, 0.1, 0, Math.PI*2);
+      mCtx.fill();
+      mCtx.ellipse(m.x+14, m.y, 12, 6, -0.1, 0, Math.PI*2);
+      mCtx.fill();
+    }
+  });
+
+  // Bird
+  const bX = 100 + Math.sin(mothT * 3) * 250;
+  const bY = 40 + Math.cos(mothT * 4) * 20;
+  mCtx.fillStyle = '#555';
+  mCtx.font = '22px sans-serif';
+  mCtx.textAlign = 'center';
+  mCtx.fillText('🐦', bX, bY);
+
+  mCtx.fillStyle = '#1a237e';
+  mCtx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  mCtx.fillText(
+    mothEnv === 'dark' ? '工业革命后：黑色树干→黑色蛾易隐藏→S基因频率上升至95%+' : '19世纪前：浅色树干上有地衣→浅色蛾不易被鸟发现→s基因频率高(S<5%)',
+    350, 180
+  );
+  mCtx.fillText('被捕食的蛾被标记为消失', 350, 195);
+
+  requestAnimationFrame(drawMoth);
+}
+drawMoth();
+</script>
+
+</div>
+</div>
+</body>
+</html>

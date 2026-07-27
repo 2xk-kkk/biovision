@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>他人主页 - 生物视界</title>
+    <style>
+        :root {
+            --bg-1: #eef8ff;
+            --bg-2: #f7fbff;
+            --panel: rgba(255, 255, 255, 0.86);
+            --panel-strong: rgba(255, 255, 255, 0.96);
+            --border: rgba(148, 163, 184, 0.18);
+            --text: #1f2937;
+            --muted: #64748b;
+            --brand: #1fb6a6;
+            --brand-dark: #159382;
+            --brand-soft: rgba(31, 182, 166, 0.12);
+            --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(31, 182, 166, 0.14), transparent 28%),
+                radial-gradient(circle at top right, rgba(102, 126, 234, 0.12), transparent 26%),
+                linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 55%, #f7fafc 100%);
+            min-height: 100%;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .avatar-wrapper:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        .page {
+            width: min(1360px, calc(100% - 32px));
+            margin: 24px auto 40px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            min-height: 260px;
+            background:
+                radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.75), transparent 18%),
+                radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.55), transparent 12%),
+                linear-gradient(135deg, #72d7ea 0%, #8ee1e7 38%, #d9f1ff 100%);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.42);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.35)),
+                radial-gradient(circle at 70% 32%, rgba(255, 244, 214, 0.9), transparent 9%),
+                radial-gradient(circle at 18% 68%, rgba(255, 255, 255, 0.35), transparent 7%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.45fr 0.95fr;
+            gap: 24px;
+            padding: 28px;
+            align-items: end;
+            min-height: 260px;
+        }
+
+        .profile-card {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            padding: 22px 22px 18px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        .profile-avatar {
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            color: #ff4d4f;
+            font-size: 2.6rem;
+            background: #2f2a26;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+            object-fit: cover;
+        }
+
+        .profile-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .profile-name {
+            font-size: 1.7rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(62, 255, 242, 0.12);
+            color: var(--brand-dark);
+        }
+
+        .badge.role-teacher {
+            background: linear-gradient(135deg, #4f8df7, #6ba6ff);
+            color: #fff;
+        }
+
+        .badge.following {
+            background: rgba(31, 182, 166, 0.15);
+            color: #0f766e;
+        }
+
+        .badge2 {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(240, 166, 166, 0.12);
+            color: #ea1515;
+        }
+
+        .profile-meta {
+            margin: 10px 0 0;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        .meta-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .meta-chip {
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            color: #475569;
+            font-size: 0.84rem;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-self: stretch;
+            justify-content: end;
+        }
+
+        .stat-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .stat-box {
+            padding: 16px 12px;
+            text-align: center;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.52);
+            backdrop-filter: blur(14px);
+        }
+
+        .stat-box .label {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .stat-box .value {
+            margin-top: 6px;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .sidebar {
+            display: grid;
+            gap: 16px;
+            align-content: start;
+        }
+
+        .summary-list {
+            display: grid;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        .summary-item {
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .summary-item strong {
+            display: block;
+            font-size: 0.97rem;
+        }
+
+        .summary-item small {
+            color: var(--muted);
+        }
+
+        .data-stack {
+            display: grid;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        .data-card {
+            padding: 16px 16px 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .data-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .data-name {
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 0.98rem;
+        }
+
+        .data-value {
+            font-weight: 800;
+            color: var(--brand-dark);
+            font-size: 1rem;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.16);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(135deg, #77dde2, #45f7f7);
+        }
+
+        .data-desc {
+            margin-top: 8px;
+            font-size: 0.86rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .ring-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .ring {
+            --value: 18%;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background:
+                conic-gradient(#45f7f7 0 var(--value), rgba(148, 163, 184, 0.18) var(--value) 100%);
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        .ring::before {
+            content: "";
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+        }
+
+        .ring-label {
+            position: absolute;
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            border: 0;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #77dde2, #45f7f7);
+            color: white;
+            box-shadow: 0 12px 26px rgba(31, 182, 166, 0.24);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.88);
+            color: #15a2b1;
+            border: 1px solid rgba(31, 182, 166, 0.18);
+        }
+
+        .btn-follow {
+            min-width: 110px;
+        }
+
+        .btn-following {
+            background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+            color: #0369a1;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: none;
+        }
+
+        .layout {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .sidebar {
+            display: none;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 18px 20px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .panel-subtitle {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .mini-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 0 20px 20px;
+        }
+
+        .mini-nav-item {
+            padding: 11px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            color: #334155;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .mini-nav-item:hover {
+            background: rgba(31, 182, 166, 0.08);
+            color: var(--brand-dark);
+        }
+
+        .mini-nav-item.active {
+            background: linear-gradient(135deg, #77dde2, #45f7f7);
+            color: white;
+            box-shadow: 0 12px 24px rgba(31, 182, 166, 0.2);
+        }
+
+        .content-box {
+            display: none;
+            padding: 0 20px 20px;
+        }
+
+        .content-box.active {
+            display: block;
+        }
+
+        .post-card {
+            padding: 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .post-top {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .post-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 1.5rem;
+            flex: 0 0 auto;
+            background: linear-gradient(135deg, #34495e, #1fb6a6);
+            object-fit: cover;
+        }
+
+        .post-meta {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin-top: 4px;
+        }
+
+        .post-text {
+            margin: 12px 0 0;
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        .post-actions {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .post-tools {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .post-tools span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        .tag-card {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .tag-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .tag-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .tag-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: var(--brand-soft);
+            color: var(--brand-dark);
+            font-size: 1.2rem;
+            overflow: hidden;
+        }
+
+        .tag-icon img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .tag-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .tag-desc {
+            margin: 8px 0 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h4 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        .notice-box {
+            padding: 18px 20px 20px;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1100px) {
+
+            .hero-content,
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-buttons {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top {
+                height: auto;
+                padding: 12px 16px;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .search {
+                order: 3;
+                flex-basis: 100%;
+                max-width: none;
+            }
+
+            .nav-area {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .page {
+                width: min(1360px, calc(100% - 20px));
+                margin-top: 16px;
+            }
+
+            .hero-content,
+            .panel-header {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .hero-content {
+                padding-top: 18px;
+                padding-bottom: 18px;
+            }
+
+            .profile-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-head,
+            .meta-row {
+                justify-content: center;
+            }
+
+            .stat-strip {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tag-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mini-nav {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top">
+        <div class="logo"></div>
+
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索">
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link" target="_blank">首页</a>
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" data-module="必修一" style="color: #90b2e6;">🔬必修一：分子与细胞</a>
+                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" data-module="必修二" style="color: #a194e3;">🧬必修二：遗传与进化</a>
+                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" data-module="选修一" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
+                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" data-module="选修二" style="color: burlywood;">🌿选修二：生物与环境</a>
+                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" data-module="选修三" style="color: #6bd3b1;">🧫选修三：生物技术与工程</a>
+                    </div>
+                </div>
+                <a href="#" class="nav-link" target="_blank">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link" target="_blank">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
+                <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper" id="userAvatarBtn">
+                    <img src="../images/touxiang.png" alt="Avatar" class="avatar" id="topbarAvatarImage" />
+                    <div class="upload-overlay">+</div>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="main.html" class="user-dropdown-item">个人中心</a>
+                        <a href="#" class="user-dropdown-item">设置</a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="page">
+        <section class="hero">
+            <div class="hero-content">
+                <div class="profile-card">
+                    <img src="../images/touxiang.png" alt="Avatar" class="profile-avatar" id="profileAvatarImage" />
+                    <div class="profile-main">
+                        <div class="profile-head">
+                            <h1 class="profile-name" id="profileNameText">未加载</h1>
+                            <span class="badge">Lv.0</span>
+                            <span class="badge" id="roleBadgeText">学生</span>
+                            <span class="badge" id="followBadgeText">未关注</span>
+                        </div>
+                        <p class="profile-meta" id="profileIntroduction">
+                            <span style="font-weight: 600;">个人简介：</span>正在加载中...<br>
+                        </p>
+                        <div class="meta-row">
+                            <span class="meta-chip" id="gradeChipText">-</span>
+                            <span class="meta-chip" id="schoolChipText">🏫:-</span>
+                            <span class="meta-chip">📍IP：-</span>
+                            <span class="meta-chip" id="mutualChipText">共同关注 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <div class="stat-strip">
+                        <div class="stat-box">
+                            <div class="label">获赞</div>
+                            <div class="value" id="likeCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">粉丝</div>
+                            <div class="value" id="followerCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">关注</div>
+                            <div class="value" id="followingCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">看过TA</div>
+                            <div class="value" id="viewCount">0</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-buttons">
+                        <button class="btn btn-secondary btn-follow" id="followBtn" type="button">关注</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="layout">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">TA的内容</h2>
+                    </div>
+                </div>
+
+                <div class="mini-nav" id="miniNav">
+                    <button class="mini-nav-item active" data-target="post">近期发帖</button>
+                    <button class="mini-nav-item" data-target="favorite">帖子收藏</button>
+                    <button class="mini-nav-item" data-target="model">收藏模型</button>
+                    <button class="mini-nav-item" data-target="ppt">已下载PPT</button>
+                    <button class="mini-nav-item" data-target="wrong">错题本</button>
+                </div>
+
+                <div class="content-box active" id="post">
+                    <div id="postsContainer">
+                        <div class="loading" style="text-align: center; padding: 40px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
+                            <div style="color: #64748b;">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-box" id="favorite">
+                    <div id="collectsContainer">
+                        <div class="loading" style="text-align: center; padding: 40px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
+                            <div style="color: #64748b;">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-box" id="model">
+                    <div class="tag-grid">
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">动物细胞</h3>
+                                    <p class="tag-desc">无细胞壁，含线粒体、内质网等细胞器，以有丝分裂方式增殖</p>
+                                </div>
+                                <div class="tag-icon"><img src="../images/animal-cell.png" alt="动物细胞"></div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">DNA的复制</h3>
+                                    <p class="tag-desc">在细胞分裂前，DNA双链解开，以每条链为模板，按碱基互补配对原则合成新链。</p>
+                                </div>
+                                <div class="tag-icon"><img src="../images/dna.png" alt="DNA"></div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">哺乳动物受精过程</h3>
+                                    <p class="tag-desc">精子与卵子融合，形成受精卵。</p>
+                                </div>
+                                <div class="tag-icon"><img src="../images/reproduction.png" alt="受精过程"></div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">突触</h3>
+                                    <p class="tag-desc">神经元之间或神经元与效应器之间传递信息的结构，通过神经递质实现信号的化学传递。</p>
+                                </div>
+                                <div class="tag-icon">⚡</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-box" id="ppt">
+                    <div class="tag-grid">
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《细胞结构与功能》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-18 21:14 · 适合课堂展示。</p>
+                                </div>
+                                <div class="tag-icon">📊</div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《遗传与进化》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-18 19:30 · 已标注重点页码。</p>
+                                </div>
+                                <div class="tag-icon">🧠</div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《稳态与调节》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-17 16:05 · 带动画版讲解稿。</p>
+                                </div>
+                                <div class="tag-icon">🩺</div>
+                            </div>
+                        </div>
+                        <div class="tag-card">
+                            <div class="tag-card-head">
+                                <div>
+                                    <h3 class="tag-title">《生物与环境》</h3>
+                                    <p class="tag-desc">下载时间：2026-05-16 22:48 · 适用于小组汇报。</p>
+                                </div>
+                                <div class="tag-icon">🌏</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-box" id="wrong">
+                    <div class="summary-list">
+                        <div class="summary-item">
+                            <div>
+                                <strong>2026-05-19 · 细胞膜运输</strong>
+                                <small>错因：主动运输与协助扩散混淆</small>
+                            </div>
+                            <span class="badge">待复习</span>
+                        </div>
+                        <div class="summary-item">
+                            <div>
+                                <strong>2026-05-18 · DNA 复制</strong>
+                                <small>错因：半保留复制概念不清</small>
+                            </div>
+                            <span class="badge">已标记</span>
+                        </div>
+                        <div class="summary-item">
+                            <div>
+                                <strong>2026-05-17 · 生态系统能量流动</strong>
+                                <small>错因：能量传递效率计算错误</small>
+                            </div>
+                            <span class="badge">待巩固</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title">TA的学习中心</h2>
+                            <p class="panel-subtitle">学习数据、错题提醒和推荐内容</p>
+                        </div>
+                    </div>
+
+                    <div class="notice-box" id="publicNotice">
+                        当前页面为他人主页展示模式，你可以查看内容、关注 TA，并通过私信入口继续互动。
+                    </div>
+
+                    <div class="sidebar-combined">
+                        <div class="sidebar-section">
+                            <div class="data-stack" style="padding: 0;">
+                                <div class="data-card">
+                                    <div class="data-card-head">
+                                        <span class="data-name">累计学习时长</span>
+                                        <span class="data-value" id="studyHoursValue">2 小时</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill" id="studyHoursBar" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="data-desc" id="studyHoursDesc">本周学习目标：8 小时</div>
+                                </div>
+
+                                <div class="data-card">
+                                    <div class="data-card-head">
+                                        <span class="data-name">做题数量</span>
+                                        <span class="data-value" id="questionCountValue">0 题</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill" id="questionCountBar" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="data-desc" id="questionCountDesc">本周做题目标：100 题</div>
+                                </div>
+
+                                <div class="data-card">
+                                    <div class="data-card-head">
+                                        <span class="data-name">错题比</span>
+                                        <span class="data-value">18%</span>
+                                    </div>
+                                    <div class="ring-wrap">
+                                        <div class="ring" style="--value: 18%;">
+                                            <span class="ring-label">18%</span>
+                                        </div>
+                                        <div class="data-desc" style="margin-top: 0;">
+                                            错题占比较低，继续保持，建议优先复习最近一周错题。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="panel-header" style="padding: 0 0 12px;">
+                                <div>
+                                    <h2 class="panel-title" style="font-size: 1rem;">错题提醒</h2>
+                                    <p class="panel-subtitle">最近需要优先复习的知识点</p>
+                                </div>
+                            </div>
+                            <div class="summary-list" style="padding: 0;">
+                                <div class="summary-item">
+                                    <div>
+                                        <strong>细胞膜运输</strong>
+                                        <small>主动运输与协助扩散混淆</small>
+                                    </div>
+                                    <span class="badge2">今日</span>
+                                </div>
+                                <div class="summary-item">
+                                    <div>
+                                        <strong>DNA 复制</strong>
+                                        <small>半保留复制概念不清</small>
+                                    </div>
+                                    <span class="badge2">3天前</span>
+                                </div>
+                                <div class="summary-item">
+                                    <div>
+                                        <strong>生态系统能量流动</strong>
+                                        <small>能量传递效率计算错误</small>
+                                    </div>
+                                    <span class="badge2">4天前</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="panel-header" style="padding: 0 0 12px;">
+                                <div>
+                                    <h2 class="panel-title" style="font-size: 1rem;">好课推荐</h2>
+                                    <p class="panel-subtitle">B站优质up生物教学视频推荐</p>
+                                </div>
+                            </div>
+                            <div class="summary-list" style="padding: 0;">
+                                <a class="summary-item" href="https://www.bilibili.com/video/BV1M3Lz6AEgj/?spm_id_from=333.337.search-card.all.click" target="_blank">
+                                    <div>
+                                        <strong>李林高三一轮复习</strong>
+                                        <small>适合高二升高三的学生准备复习</small>
+                                    </div>
+                                    <span>›</span>
+                                </a>
+                                <a class="summary-item" href="https://www.bilibili.com/video/BV1tc41157TW/?spm_id_from=333.337.search-card.all.click" target="_blank">
+                                    <div>
+                                        <strong>DNA复制动画</strong>
+                                        <small>帮助理解DNA复制过程</small>
+                                    </div>
+                                    <span>›</span>
+                                </a>
+                                <a class="summary-item" href="https://www.bilibili.com/video/BV1tVfPBTE8q/?spm_id_from=333.337.search-card.all.click" target="_blank">
+                                    <div>
+                                        <strong>高中生物必修二（一生儿）</strong>
+                                        <small>从基础到拔高</small>
+                                    </div>
+                                    <span>›</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </section>
+    </main>
+
+    <div class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h4>关于我们</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">平台介绍</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>用户之声</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">意见反馈</a></li>
+                        <li><a href="#">常见问题</a></li>
+                        <li><a href="#">指正反馈</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>应用菜单</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">首页</a></li>
+                        <li><a href="#">PPT快搭</a></li>
+                        <li><a href="#">论坛</a></li>
+                        <li><a href="#">交感模型</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000/api';
+        const VIEW_USER_ID = new URLSearchParams(window.location.search).get('userId') || 'demo-user';
+
+        let currentUser = null;
+        let currentToken = null;
+        let currentProfile = null;
+        let isFollowing = false;
+
+        const mockProfile = {
+            user_id: VIEW_USER_ID,
+            username: '林知夏',
+            avatar: '',
+            introduction: '喜欢把复杂的生物知识拆成一张张易懂的图。最近在整理遗传与进化的复习笔记，也会在论坛分享一些适合高二同学看的知识卡片。',
+            grade: '高二',
+            school: '成都东软学院',
+            role: '学生',
+            like_count: 1280,
+            follower_count: 346,
+            following_count: 68,
+            view_count: 2041,
+            mutual_count: 12,
+            study_hours: 2,
+            study_goal: 8,
+            question_count: 0,
+            question_goal: 100,
+            posts: [
+                {
+                    post_id: 1,
+                    username: '林知夏',
+                    create_at: '2026-05-19 21:08',
+                    content: '今天把细胞膜运输的主动运输和协助扩散做了一个对比表，记住“需能量、载体、逆浓度梯度”这三点就很稳了。',
+                    view_count: 198,
+                    like_count: 42
+                },
+                {
+                    post_id: 2,
+                    username: '林知夏',
+                    create_at: '2026-05-18 18:30',
+                    content: 'DNA 复制的半保留机制最容易忘，我会把“解旋酶、DNA 聚合酶、引物”单独画在同一张图里。',
+                    view_count: 233,
+                    like_count: 58
+                }
+            ],
+            collects: [
+                {
+                    post_id: 11,
+                    username: '高三生物课代表',
+                    create_at: '2026-05-17 19:20',
+                    content: '生态系统能量流动的计算题，记住每一营养级只有一部分能量传递给下一营养级，常用效率约 10%。',
+                    view_count: 410,
+                    like_count: 66
+                },
+                {
+                    post_id: 12,
+                    username: '生物老师阿泽',
+                    create_at: '2026-05-16 14:05',
+                    content: '稳态调节的核心是负反馈，体温调节和血糖调节是复习时必须能说清楚的两个典型例子。',
+                    view_count: 367,
+                    like_count: 51
+                }
+            ]
+        };
+
+        function getTokenFromStorage() {
+            return localStorage.getItem('token') || sessionStorage.getItem('token');
+        }
+
+        function parseToken(token) {
+            try {
+                const payload = token.split('.')[1];
+                return JSON.parse(atob(payload));
+            } catch {
+                return null;
+            }
+        }
+
+        async function fetchWithToken(url, options = {}) {
+            const token = getTokenFromStorage();
+            if (!token) {
+                return { success: false, data: null, msg: '未登录' };
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'token': token,
+                ...options.headers
+            };
+
+            try {
+                const response = await fetch(url, { ...options, headers });
+                return await response.json();
+            } catch (error) {
+                console.error('API请求失败:', error);
+                return { success: false, data: null, msg: '网络错误' };
+            }
+        }
+
+        function getDefaultAvatar(username) {
+            const avatarChar = (username || '用').trim()[0] || '用';
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23667eea'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='40' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function getViewedUserIdPayload() {
+            const token = getTokenFromStorage();
+            if (!token) return null;
+            return parseToken(token);
+        }
+
+        function updateFollowUI() {
+            const followBtn = document.getElementById('followBtn');
+            const followBadgeText = document.getElementById('followBadgeText');
+
+            if (!followBtn || !followBadgeText) return;
+
+            if (isFollowing) {
+                followBtn.textContent = '已关注';
+                followBtn.classList.remove('btn-secondary');
+                followBtn.classList.add('btn-following');
+                followBadgeText.textContent = '已关注';
+                followBadgeText.classList.add('following');
+            } else {
+                followBtn.textContent = '关注';
+                followBtn.classList.add('btn-secondary');
+                followBtn.classList.remove('btn-following');
+                followBadgeText.textContent = '未关注';
+                followBadgeText.classList.remove('following');
+            }
+        }
+
+        function renderProfile(user) {
+            currentProfile = user;
+
+            document.getElementById('profileNameText').textContent = user.username || '未设置';
+            document.getElementById('roleBadgeText').textContent = user.role || '学生';
+            document.getElementById('roleBadgeText').classList.toggle('role-teacher', user.role === '老师');
+            document.getElementById('gradeChipText').textContent = user.grade || '-';
+            document.getElementById('schoolChipText').textContent = `🏫:${user.school || '-'}`;
+            document.getElementById('mutualChipText').textContent = `共同关注 ${user.mutual_count || 0}`;
+
+            const profileIntroduction = document.getElementById('profileIntroduction');
+            if (profileIntroduction) {
+                const intro = user.introduction || '';
+                profileIntroduction.innerHTML = intro
+                    ? `<span style="font-weight: 600;">个人简介：</span>${escapeHtml(intro).replace(/\n/g, '<br>')}`
+                    : '<span style="font-weight: 600;">个人简介：</span>TA 还没有写个人简介<br>';
+            }
+
+            const avatar = user.avatar || getDefaultAvatar(user.username || '用');
+            document.getElementById('profileAvatarImage').src = avatar;
+            document.getElementById('topbarAvatarImage').src = avatar;
+
+            document.getElementById('likeCount').textContent = user.like_count || 0;
+            document.getElementById('followerCount').textContent = user.follower_count || 0;
+            document.getElementById('followingCount').textContent = user.following_count || 0;
+            document.getElementById('viewCount').textContent = user.view_count || 0;
+
+            const hoursRate = user.study_goal ? Math.min((user.study_hours / user.study_goal) * 100, 100) : 0;
+            const questionRate = user.question_goal ? Math.min((user.question_count / user.question_goal) * 100, 100) : 0;
+
+            document.getElementById('studyHoursValue').textContent = `${user.study_hours || 0} 小时`;
+            document.getElementById('studyHoursBar').style.width = `${hoursRate}%`;
+            document.getElementById('studyHoursDesc').textContent = `本周学习目标：${user.study_goal || 0} 小时`;
+
+            document.getElementById('questionCountValue').textContent = `${user.question_count || 0} 题`;
+            document.getElementById('questionCountBar').style.width = `${questionRate}%`;
+            document.getElementById('questionCountDesc').textContent = `本周做题目标：${user.question_goal || 0} 题`;
+
+            updateFollowUI();
+        }
+
+        function renderPosts(posts) {
+            const postsContainer = document.getElementById('postsContainer');
+            if (!posts || posts.length === 0) {
+                postsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">TA 还未发布帖子</h3>
+                        <p style="color: #64748b;">可以先关注一下，等 TA 更新后第一时间看到。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            postsContainer.innerHTML = posts.map(post => `
+                <div class="post-card">
+                    <div class="post-top">
+                        <img src="${escapeHtml(post.avatar || currentProfile?.avatar || getDefaultAvatar(post.username || '用'))}" alt="Avatar" class="post-avatar" />
+                        <div>
+                            <strong style="font-size: 1.02rem;">${escapeHtml(post.username || currentProfile?.username || '用户')}</strong>
+                            <div class="post-meta">${escapeHtml(post.create_at || '未知时间')} · 发布于论坛</div>
+                        </div>
+                    </div>
+                    <p class="post-text">${escapeHtml(post.content || '').replace(/\n/g, '<br>')}</p>
+                    <div class="post-actions">
+                        <div class="post-tools">
+                            <span>👁 ${post.view_count || 0}</span>
+                            <span>👍 ${post.like_count || 0}</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
+                        </div>
+                        <a class="btn btn-secondary" style="padding: 10px 14px;" href="../forum/post-detail.html?id=${post.post_id}" target="_blank">查看原帖</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCollects(posts) {
+            const collectsContainer = document.getElementById('collectsContainer');
+            if (!posts || posts.length === 0) {
+                collectsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">📌</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">TA 还没有收藏内容</h3>
+                        <p style="color: #64748b;">如果后续公开收藏，你会在这里看到。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            collectsContainer.innerHTML = posts.map(post => `
+                <div class="post-card">
+                    <div class="post-top">
+                        <img src="${escapeHtml(post.avatar || getDefaultAvatar(post.username || '用'))}" alt="Avatar" class="post-avatar" />
+                        <div>
+                            <strong style="font-size: 1.02rem;">${escapeHtml(post.username || '用户')}</strong>
+                            <div class="post-meta">${escapeHtml(post.create_at || '未知时间')} · 发布于论坛</div>
+                        </div>
+                    </div>
+                    <p class="post-text">${escapeHtml(post.content || '').replace(/\n/g, '<br>')}</p>
+                    <div class="post-actions">
+                        <div class="post-tools">
+                            <span>👁 ${post.view_count || 0}</span>
+                            <span>👍 ${post.like_count || 0}</span>
+                            <span>💬 ${post.comment_count || 0}</span>
+                            <span>⭐ ${post.collect_count || 0}</span>
+                        </div>
+                        <a class="btn btn-secondary" style="padding: 10px 14px;" href="../forum/post-detail.html?id=${post.post_id}" target="_blank">查看原帖</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function activateTab(targetId) {
+            document.querySelectorAll('.mini-nav-item').forEach((item) => {
+                item.classList.toggle('active', item.dataset.target === targetId);
+            });
+
+            document.querySelectorAll('.content-box').forEach((box) => {
+                box.classList.toggle('active', box.id === targetId);
+            });
+        }
+
+        async function loadProfileData() {
+            currentToken = getTokenFromStorage();
+            const payload = getViewedUserIdPayload();
+
+    if (payload && payload.user_id) {
+        currentUser = payload;
+    }
+
+    try {
+        // 调用用户信息接口
+        const response = await fetchWithToken(`${API_BASE_URL}/user/${VIEW_USER_ID}/info`);
+        if (response && response.success && response.data) {
+            const user = response.data;
+            
+            // 同时获取用户统计数据
+            let stats = null;
+            try {
+                const statsResponse = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/stats`);
+                const statsResult = await statsResponse.json();
+                if (statsResult.success && statsResult.data) {
+                    stats = statsResult.data;
+                }
+            } catch (e) {
+                console.warn('获取统计数据失败:', e);
+            }
+
+            // 调用增加浏览量接口（看过TA）
+            try {
+                await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/view`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (e) {
+                console.warn('增加浏览量失败:', e);
+            }
+
+            renderProfile({
+                user_id: VIEW_USER_ID,
+                username: user.username,
+                avatar: user.avatar,
+                introduction: user.introduction,
+                grade: user.grade,
+                school: user.school,
+                role: user.role || '学生',
+                like_count: stats?.like_count || user.like_count || 0,
+                follower_count: stats?.follower_count || user.follower_count || 0,
+                following_count: stats?.following_count || user.following_count || 0,
+                view_count: (stats?.view_count || user.view_count || 0) + 1, // 本地加1显示
+                mutual_count: 0,
+                study_hours: 0,
+                study_goal: 8,
+                question_count: 0,
+                question_goal: 100,
+                posts: [],
+                collects: []
+            });
+            isFollowing = !!user.is_following;
+            await loadUserRealPosts();
+            return;
+        }
+    } catch (error) {
+        console.warn('加载失败', error);
+    }
+
+    // 失败才显示假数据
+    renderProfile(mockProfile);
+    isFollowing = false;
+}
+
+function getFollowCacheKey(userId) {
+    return `follow_status_${userId}`;
+}
+
+function getFollowStatusFromCache(userId) {
+    try {
+        const cached = localStorage.getItem(getFollowCacheKey(userId));
+        if (cached === 'true' || cached === 'false') {
+            return cached === 'true';
+        }
+    } catch (e) {
+        console.warn('读取缓存失败:', e);
+    }
+    return null;
+}
+
+function setFollowStatusToCache(userId, status) {
+    try {
+        localStorage.setItem(getFollowCacheKey(userId), String(status));
+    } catch (e) {
+        console.warn('写入缓存失败:', e);
+    }
+}
+
+async function checkFollowStatus() {
+    if (!currentToken || !VIEW_USER_ID) {
+        isFollowing = false;
+        updateFollowUI();
+        return;
+    }
+
+    // 先尝试从 API 获取状态
+    let apiSuccess = false;
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/follow/status`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'token': currentToken
+            }
+        });
+        const result = await response.json();
+        if (result.success && typeof result.data === 'boolean') {
+            isFollowing = result.data;
+            apiSuccess = true;
+            // 更新缓存
+            setFollowStatusToCache(VIEW_USER_ID, isFollowing);
+        }
+    } catch (error) {
+        console.warn('检查关注状态失败:', error);
+    }
+
+    // 如果 API 失败，从缓存读取
+    if (!apiSuccess) {
+        const cachedStatus = getFollowStatusFromCache(VIEW_USER_ID);
+        if (cachedStatus !== null) {
+            isFollowing = cachedStatus;
+            console.log('使用缓存的关注状态:', isFollowing);
+        }
+    }
+    updateFollowUI();
+}
+
+        async function toggleFollow() {
+            const followBtn = document.getElementById('followBtn');
+            if (!currentToken) {
+                alert('请先登录后再关注 TA');
+                window.location.href = '../login/login-main.html';
+                return;
+            }
+
+            if (!currentProfile) return;
+
+            const nextState = !isFollowing;
+            followBtn.disabled = true;
+
+            try {
+                // 根据状态选择不同的接口
+                const endpoint = nextState ? 'follow' : 'unfollow';
+                const response = await fetch(`${API_BASE_URL}/user/${currentProfile.user_id || VIEW_USER_ID}/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': currentToken
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    isFollowing = nextState;
+                } else {
+                    alert(result.msg || '操作失败');
+                    // 如果失败，保持原来的状态
+                    isFollowing = !nextState;
+                }
+            } catch (error) {
+                console.warn('关注接口不可用，使用本地切换。', error);
+                isFollowing = nextState;
+            } finally {
+                followBtn.disabled = false;
+            }
+
+            // 更新缓存
+            setFollowStatusToCache(VIEW_USER_ID, isFollowing);
+
+            const followerValue = document.getElementById('followerCount');
+            const currentFollowers = parseInt(followerValue.textContent, 10) || 0;
+            followerValue.textContent = isFollowing ? currentFollowers + 1 : Math.max(currentFollowers - 1, 0);
+            updateFollowUI();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadProfileData();
+            await checkFollowStatus();
+        });
+
+        const miniNav = document.getElementById('miniNav');
+if (miniNav) {
+    miniNav.addEventListener('click', async (event) => {
+        const button = event.target.closest('.mini-nav-item');
+        if (!button) return;
+        const target = button.dataset.target;
+        activateTab(target);
+
+        // 切换到对应页面自动加载真实数据
+        if (target === 'post') {
+            await loadUserRealPosts();
+        }
+        if (target === 'favorite') {
+            await loadUserRealCollects();
+        }
+    });
+}
+        const userAvatarBtn = document.getElementById('userAvatarBtn');
+        const dropdown = document.getElementById('userDropdownMenu');
+        if (userAvatarBtn && dropdown) {
+            userAvatarBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!dropdown.contains(event.target) && !userAvatarBtn.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closest('.dropdown').classList.toggle('show');
+            });
+        });
+
+        const followBtn = document.getElementById('followBtn');
+        if (followBtn) {
+            followBtn.addEventListener('click', toggleFollow);
+        }
+
+        document.querySelector('.search-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+        });
+
+        // 加载真实发帖
+async function loadUserRealPosts() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/posts`);
+    const result = await res.json();
+    
+    if (result.success) {
+      renderPosts(result.data);
+    } else {
+      renderPosts([]);
+    }
+  } catch (err) {
+    console.error("获取帖子错误", err);
+    renderPosts([]);
+  }
+}
+
+// 加载真实收藏
+async function loadUserRealCollects() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/collects`);
+    const result = await res.json();
+    
+    if (result.success) {
+      renderCollects(result.data);
+    } else {
+      renderCollects([]);
+    }
+  } catch (err) {
+    console.error("获取收藏错误", err);
+    renderCollects([]);
+  }
+}
+
+// 加载真实收藏
+async function loadUserRealCollects() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/${VIEW_USER_ID}/collects`);
+    const result = await res.json();
+    
+    if (result.success) {
+      renderCollects(result.data);
+    } else {
+      renderCollects([]);
+    }
+  } catch (err) {
+    console.error("获取收藏错误", err);
+    renderCollects([]);
+  }
+}
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3章 体液调节 - 知识清单</title>
+<style>
+  :root { --primary: #00838f; --primary-light: #e0f7fa; --accent: #e65100; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #006064, #00838f); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e0f2f1; border-color: #80cbc4; }
+  .checklist li.checked .check-box { background: #00838f; border-color: #00838f; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #80cbc4; color: #4a7a7a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e0f7fa; color: #00838f; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #80cbc4; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #e0f7fa; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#4dd0e1); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #c62828; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #c62828; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #b71c1c; color: #b71c1c; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(0,131,143,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(0,131,143,0.1); color: #00838f; font-weight: 700; border-left-color: #4dd0e1; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;margin-bottom:0;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+  @media(max-width:640px){.info-row{grid-template-columns:1fr;}.header h1{font-size:1.4em;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修1<br>稳态与调节</div>
+      <a href="3.1.html"><span class="ch-num">第1章</span>内环境与稳态</a>
+      <a href="3.2.html"><span class="ch-num">第2章</span>神经调节</a>
+      <a href="3.3.html" class="active"><span class="ch-num">第3章</span>体液调节</a>
+      <a href="3.4.html"><span class="ch-num">第4章</span>免疫调节</a>
+      <a href="3.5.html"><span class="ch-num">第5章</span>植物生命活动调节</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link active">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第3章 体液调节</h1>
+  <div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修1 · 稳态与调节</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 28 个知识点</div>
+
+<!-- 核心概念 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📖 本章黑体核心概念 — 必须记背！（点击翻牌）</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="concept-grid">
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">激素</div><div class="concept-back">由内分泌腺（或内分泌细胞）分泌，直接进入腺体内的毛细血管，随血液循环输送到全身各处。微量高效。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">外分泌腺 vs 内分泌腺</div><div class="concept-back">外分泌腺有导管（汗腺、唾液腺等）；内分泌腺无导管，激素直接进入血液。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">反馈调节</div><div class="concept-back">在一个系统中，系统工作的效果反过来又作为信息调节该系统的工作。有正反馈和负反馈。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">分级调节</div><div class="concept-back">下丘脑→垂体→靶腺体的分层调控方式。可放大激素调节效应，形成精细调控。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">胰岛素</div><div class="concept-back">由胰岛B细胞分泌，是人体内唯一降血糖的激素。促进组织细胞摄取、利用和储存葡萄糖。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">胰高血糖素</div><div class="concept-back">由胰岛A细胞分泌，促进肝糖原分解和非糖物质转化为葡萄糖，升高血糖。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">抗利尿激素</div><div class="concept-back">由下丘脑分泌、垂体释放，促进肾小管和集合管对水的重吸收，减少尿量。</div></div>
+      <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">醛固酮</div><div class="concept-back">由肾上腺皮质分泌，促进肾小管和集合管对Na⁺重吸收、K⁺排出，维持血钠含量稳定。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 第1节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 激素的发现过程给你什么启示？<br>
+  ● 研究激素的基本方法有哪些？<br>
+  ● 人体主要的内分泌腺有哪些？各分泌什么激素？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 激素与内分泌系统</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="highlight-box">
+      <strong>促胰液素的发现（第一种被发现的激素）：</strong><br>
+      沃泰默：稀盐酸注入狗小肠→胰腺分泌胰液。即使切除神经仍能分泌→认为是"顽固的反射"。<br>
+      <strong>贝利斯 + 斯他林</strong>：提出化学调节假设→将小肠黏膜提取液注入血液→胰腺分泌胰液→命名为<strong>促胰液素</strong>。
+    </div>
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">人体主要内分泌腺 - 交互探索</h4>
+      <canvas id="glandCanvas" width="750" height="480"></canvas>
+      <div id="glandInfo" style="min-height:40px;margin-top:8px;font-size:0.9em;color:var(--text-light);"></div>
+    </div>
+
+    <table>
+      <tr><th>内分泌腺/细胞</th><th>分泌的激素</th><th>主要功能</th></tr>
+      <tr><td><strong>下丘脑</strong></td><td>促激素释放激素、抗利尿激素</td><td>调控垂体，调节水盐平衡</td></tr>
+      <tr><td><strong>垂体</strong></td><td>生长激素、促激素</td><td>促进生长，调节其他内分泌腺</td></tr>
+      <tr><td><strong>甲状腺</strong></td><td>甲状腺激素（含碘）</td><td>促进代谢、生长发育，提高神经系统兴奋性</td></tr>
+      <tr><td><strong>胰岛A细胞</strong></td><td>胰高血糖素</td><td>升高血糖</td></tr>
+      <tr><td><strong>胰岛B细胞</strong></td><td>胰岛素</td><td>降低血糖（唯一降血糖激素）</td></tr>
+      <tr><td><strong>肾上腺（髓质）</strong></td><td>肾上腺素</td><td>应急反应：心跳加快、血压升高、血糖升高</td></tr>
+      <tr><td><strong>肾上腺（皮质）</strong></td><td>皮质醇、醛固酮</td><td>调节代谢、水盐平衡</td></tr>
+      <tr><td><strong>性腺</strong></td><td>雄激素/雌激素</td><td>促进生殖器官发育、维持第二性征</td></tr>
+    </table>
+
+    <div class="danger-box">
+      <strong>⚠️ 激素调节的特点（必记）：</strong><br>
+      ① <strong>通过体液运输</strong>（随血液循环到全身）<br>
+      ② 作用于<strong>靶器官、靶细胞</strong>（与特异性受体结合）<br>
+      ③ 作为<strong>信使传递信息</strong>（不直接参与代谢）<br>
+      ④ <strong>微量、高效</strong><br>
+      ⑤ 激素既不组成细胞结构，也不提供能量，<strong>不起催化作用</strong>（与酶的本质区别！）
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label">第一种被发现的激素：<strong>促胰液素</strong>（贝利斯和斯他林）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">内分泌腺<strong>无导管</strong>，激素直接进入血液</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">垂体分泌<strong>生长激素</strong>（幼年不足→侏儒症，过多→巨人症）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">甲状腺激素含<strong>碘</strong>（缺碘→甲状腺肿/大脖子病）</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">激素五大特点（体液运输/靶器官/信使/微量高效/不催化）</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 血糖平衡是如何调节的？<br>
+  ● 甲状腺激素的分级调节和反馈调节是怎样的？<br>
+  ● 激素调节有哪些共同特点？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 激素调节的过程</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">血糖调节 - 动态平衡模拟</h4>
+      <canvas id="glucoseCanvas" width="750" height="380"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" id="btnEat" onclick="simEat()">🍚 进食（血糖升高）</button>
+        <button class="btn btn-outline" id="btnExercise" onclick="simExercise()">🏃 运动（血糖降低）</button>
+        <button class="btn btn-outline" onclick="resetGlucose()">重置</button>
+      </div>
+    </div>
+
+    <h4 style="color:var(--primary);margin:12px 0 6px;">血糖平衡调节（正常范围：3.9~6.1 mmol/L）</h4>
+    <div class="info-row">
+      <div class="info-card"><h4>血糖来源（升高）</h4><p>① 食物消化吸收（主要）<br>② 肝糖原分解<br>③ 非糖物质转化（糖异生）</p></div>
+      <div class="info-card"><h4>血糖去路（降低）</h4><p>① 氧化分解释能（主要）<br>② 合成肝糖原和肌糖原<br>③ 转化为脂肪、某些氨基酸等</p></div>
+      <div class="info-card"><h4>降血糖——胰岛素（唯一！）</h4><p>促进组织细胞摄取、利用和储存葡萄糖。促进糖原合成，抑制糖原分解和非糖物质转化。</p></div>
+      <div class="info-card"><h4>升血糖——多种激素</h4><p><strong>胰高血糖素</strong>、肾上腺素、糖皮质激素、甲状腺激素。促进糖原分解和非糖物质转化。</p></div>
+    </div>
+
+    <h4 style="color:var(--primary);margin:16px 0 6px;">甲状腺激素的分级调节与反馈</h4>
+    <div class="highlight-box">
+      <strong>分级调节轴：</strong><br>
+      下丘脑 → TRH（促甲状腺激素释放激素） → 垂体 → TSH（促甲状腺激素） → 甲状腺 → 甲状腺激素<br><br>
+      <strong>负反馈：</strong>当血液中甲状腺激素含量升高到一定程度时→<strong>抑制</strong>下丘脑和垂体的分泌活动→TRH和TSH减少→甲状腺激素分泌减少，维持稳定。<br><br>
+      <strong>意义：</strong>分级调节可以<strong>放大</strong>激素的调节效应，形成多级反馈调节，有利于<strong>精细调控</strong>，维持稳态。
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>胰岛素</strong>是唯一降血糖的激素（胰岛B细胞分泌）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>胰高血糖素</strong>升高血糖（胰岛A细胞），促进肝糖原分解</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">血糖正常范围：<strong>3.9~6.1 mmol/L</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">下丘脑→垂体→甲状腺的<strong>分级调节</strong>轴（TRH→TSH→甲状腺激素）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">甲状腺激素的<strong>负反馈调节</strong>（抑制下丘脑和垂体）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">分级调节<strong>放大效应</strong>，有利于<strong>精细调控</strong></span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="focus-box"><div class="focus-title">本节聚焦</div>
+  ● 神经调节与体液调节有什么联系和区别？<br>
+  ● 体温是如何维持相对恒定的？<br>
+  ● 水和无机盐的平衡是如何维持的？
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 体液调节与神经调节的关系</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>比较项目</th><th>神经调节</th><th>体液调节</th></tr>
+      <tr><td>作用途径</td><td>反射弧</td><td>体液运输</td></tr>
+      <tr><td>反应速度</td><td>迅速</td><td>较缓慢</td></tr>
+      <tr><td>作用范围</td><td>准确、局限</td><td>较广泛</td></tr>
+      <tr><td>作用时间</td><td>短暂</td><td>比较长</td></tr>
+      <tr><td>结构基础</td><td>主要是神经元</td><td>主要是内分泌腺</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <strong>体温调节（神经—体液调节的典型实例）：</strong><br>
+      ① 调节中枢：<strong>下丘脑</strong>体温调节中枢<br>
+      ② 寒冷时：皮肤冷觉感受器→下丘脑→<strong>产热↑</strong>（代谢增强、骨骼肌战栗）+<strong>散热↓</strong>（血管收缩、汗腺分泌减少）<br>
+      ③ 炎热时：皮肤热觉感受器→下丘脑→<strong>散热↑</strong>（血管舒张、汗腺分泌增加）<br>
+      ④ 参与激素：<strong>甲状腺激素</strong>（提高代谢产热）、<strong>肾上腺素</strong>（应急产热）
+    </div>
+
+    <div class="info-row">
+      <div class="info-card"><h4>水盐平衡调节</h4><p>渗透压感受器（下丘脑）→<strong>抗利尿激素</strong>→肾小管和集合管重吸收水→尿量减少<br>Na⁺↓→<strong>醛固酮</strong>→肾小管重吸收Na⁺</p></div>
+      <div class="info-card"><h4>抗利尿激素（ADH）</h4><p>由<strong>下丘脑</strong>分泌、<strong>垂体</strong>释放<br>细胞外液渗透压↑→ADH↑→尿量↓<br>细胞外液渗透压↓→ADH↓→尿量↑</p></div>
+      <div class="info-card"><h4>关键事实</h4><p>① 肾排尿是排出水的最主要途径<br>② 一天最少尿量~500 mL（排出代谢废物所需）<br>③ 大量出汗后应同时补水+补盐</p></div>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">神经调节 vs 体液调节的区别（速度/范围/时间）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">体温调节中枢在<strong>下丘脑</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">寒冷→产热↑+散热↓；炎热→散热↑</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>抗利尿激素</strong>：渗透压↑→ADH↑→重吸收水↑→尿量↓</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">水和无机盐平衡是<strong>神经调节+激素调节</strong>共同作用</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 16;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx1_ch3_ck', JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx1_ch3_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// ===== ENDOCRINE GLANDS =====
+const glCanvas=document.getElementById('glandCanvas'), glctx=glCanvas.getContext('2d');
+const glands=[
+  {name:'下丘脑',x:375,y:55,r:22,color:'#ffcdd2',stroke:'#c62828',info:'下丘脑：分泌促激素释放激素和抗利尿激素。体温调节、水平衡调节、生物节律的控制中枢。是内分泌系统的"总指挥官"。'},
+  {name:'垂体',x:375,y:105,r:16,color:'#f8bbd0',stroke:'#c2185b',info:'垂体：分泌生长激素和多种促激素（促甲状腺激素等）。接受下丘脑调控，是内分泌调节的枢纽。"最复杂的内分泌腺"。'},
+  {name:'甲状腺',x:375,y:148,rx:30,ry:14,color:'#ffe0b2',stroke:'#e65100',info:'甲状腺：分泌甲状腺激素（含碘）。促进代谢和生长发育，提高神经系统兴奋性。幼年不足→呆小症。'},
+  {name:'胸腺',x:375,y:185,r:12,color:'#e8eaf6',stroke:'#3f51b5',info:'胸腺：T细胞成熟的场所。青春期后逐渐萎缩。'},
+  {name:'胰岛',x:280,y:220,r:18,color:'#fff9c4',stroke:'#f9a825',info:'胰岛：A细胞分泌胰高血糖素（升血糖），B细胞分泌胰岛素（降血糖，唯一）。血糖调节的关键。'},
+  {name:'肾上腺',x:375,y:235,r:14,color:'#ede7f6',stroke:'#6a1b9a',info:'肾上腺：髓质分泌肾上腺素（应急反应），皮质分泌皮质醇和醛固酮（调节水盐平衡和代谢）。'},
+  {name:'性腺',x:375,y:280,r:16,color:'#f3e5f5',stroke:'#9c27b0',info:'性腺（卵巢/睾丸）：分泌雌激素/雄激素。促进生殖器官发育、维持第二性征。'},
+];
+
+function drawGlands(){
+  const w=750,h=480;
+  glctx.clearRect(0,0,w,h); glctx.fillStyle='#fafbfc'; glctx.fillRect(0,0,w,h);
+
+  // Body outline
+  glctx.strokeStyle='#bdbdbd'; glctx.lineWidth=1.5;
+  glctx.beginPath(); glctx.moveTo(375,15); glctx.lineTo(375,35);
+  glctx.moveTo(375,120); glctx.lineTo(375,160);
+  glctx.moveTo(375,175); glctx.lineTo(375,195);
+  glctx.moveTo(375,210); glctx.lineTo(375,250);
+  glctx.moveTo(375,260); glctx.lineTo(375,310);
+  glctx.stroke();
+
+  // Head
+  glctx.fillStyle='#f5f5f5'; glctx.strokeStyle='#999'; glctx.lineWidth=1.5;
+  glctx.beginPath(); glctx.arc(375,55,40,0,Math.PI*2); glctx.stroke();
+
+  // Torso
+  glctx.beginPath(); roundRectG(glctx,340,100,70,220,20); glctx.stroke();
+
+  // Draw glands
+  glands.forEach(g=>{
+    glctx.fillStyle=g.color; glctx.strokeStyle=g.stroke; glctx.lineWidth=2;
+    if(g.rx){
+      glctx.beginPath(); glctx.ellipse(g.x,g.y,g.rx,g.ry,0,0,Math.PI*2); glctx.fill(); glctx.stroke();
+    } else {
+      glctx.beginPath(); glctx.arc(g.x,g.y,g.r,0,Math.PI*2); glctx.fill(); glctx.stroke();
+    }
+    glctx.fillStyle='#333'; glctx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; glctx.textAlign='center';
+    if(g.rx) glctx.fillText(g.name,g.x,g.y+g.ry+13);
+    else glctx.fillText(g.name,g.x,g.y+g.r+13);
+  });
+
+  // Callout lines
+  const callouts=[
+    {text:'下丘脑-垂体是',x:530,y:105,color:'#c62828'},
+    {text:'内分泌调节枢纽',x:535,y:122,color:'#c62828'},
+    {text:'甲状腺激素',x:490,y:148,color:'#e65100'},
+    {text:'含碘，促代谢',x:490,y:165,color:'#e65100'},
+    {text:'胰岛素（胰岛B细胞）',x:160,y:210,color:'#1565c0'},
+    {text:'唯一降血糖激素',x:160,y:227,color:'#1565c0'},
+    {text:'肾上腺素',x:500,y:235,color:'#6a1b9a'},
+    {text:'应急/"战斗或逃跑"',x:505,y:252,color:'#6a1b9a'},
+  ];
+
+  callouts.forEach(c=>{
+    glctx.fillStyle=c.color; glctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif'; glctx.textAlign='left';
+    glctx.fillText(c.text,c.x,c.y);
+  });
+
+  // Lines from pituitary and thyroid
+  glctx.strokeStyle='#c62828'; glctx.lineWidth=1; glctx.setLineDash([2,2]);
+  glctx.beginPath(); glctx.moveTo(391,105); glctx.lineTo(525,105); glctx.stroke();
+  glctx.setLineDash([]);
+
+  glctx.strokeStyle='#e65100'; glctx.lineWidth=1; glctx.setLineDash([2,2]);
+  glctx.beginPath(); glctx.moveTo(405,148); glctx.lineTo(485,148); glctx.stroke();
+  glctx.setLineDash([]);
+
+  // Hint
+  glctx.fillStyle='#888'; glctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif'; glctx.textAlign='center';
+  glctx.fillText('点击腺体查看详细信息',375,470);
+}
+
+function roundRectG(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+
+glCanvas.addEventListener('click',function(e){
+  const rect=glCanvas.getBoundingClientRect();
+  const sx=750/rect.width, sy=480/rect.height;
+  const mx=(e.clientX-rect.left)*sx, my=(e.clientY-rect.top)*sy;
+  let found=null;
+  glands.forEach(g=>{
+    if(g.rx){
+      const dx=(mx-g.x)/g.rx, dy=(my-g.y)/g.ry;
+      if(dx*dx+dy*dy<=2.0) found=g;
+    } else {
+      const dx=mx-g.x, dy=my-g.y;
+      if(Math.sqrt(dx*dx+dy*dy)<=g.r+10) found=g;
+    }
+  });
+  if(found){
+    document.getElementById('glandInfo').innerHTML=`<strong>${found.name}</strong>：${found.info}`;
+    document.getElementById('glandInfo').style.color='#00838f';
+  }
+});
+drawGlands();
+
+// ===== BLOOD GLUCOSE SIMULATION =====
+const bgCanvas=document.getElementById('glucoseCanvas'), bgctx=bgCanvas.getContext('2d');
+let glucoseLevel=5.0, glucoseHistory=[], bgAnimId, bgRunning=false;
+
+function drawGlucose(){
+  const w=750,h=380;
+  bgctx.clearRect(0,0,w,h); bgctx.fillStyle='#fafbfc'; bgctx.fillRect(0,0,w,h);
+
+  // Graph area
+  bgctx.strokeStyle='#ddd'; bgctx.lineWidth=1;
+  bgctx.beginPath(); bgctx.rect(50,30,650,240); bgctx.stroke();
+
+  // Normal range
+  bgctx.fillStyle='rgba(76,175,80,0.1)'; bgctx.fillRect(50,30+240-(6.1-2)*40,650,(6.1-3.9)*40);
+  bgctx.strokeStyle='#4caf50'; bgctx.lineWidth=1; bgctx.setLineDash([3,3]);
+  bgctx.beginPath(); bgctx.moveTo(50,30+240-(6.1-2)*40); bgctx.lineTo(700,30+240-(6.1-2)*40); bgctx.stroke();
+  bgctx.beginPath(); bgctx.moveTo(50,30+240-(3.9-2)*40); bgctx.lineTo(700,30+240-(3.9-2)*40); bgctx.stroke();
+  bgctx.setLineDash([]);
+
+  // Axes labels
+  bgctx.fillStyle='#4caf50'; bgctx.font='10px sans-serif'; bgctx.textAlign='left';
+  bgctx.fillText('正常范围: 3.9~6.1 mmol/L',510,45);
+
+  bgctx.fillStyle='#2c3e50'; bgctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; bgctx.textAlign='center';
+  bgctx.fillText('时间 →',375,285);
+
+  bgctx.save(); bgctx.translate(18,150); bgctx.rotate(-Math.PI/2);
+  bgctx.fillText('血糖浓度 (mmol/L)',0,0); bgctx.restore();
+
+  // Y-axis ticks
+  for(let v=2;v<=12;v+=1){
+    const y=30+240-(v-2)*40;
+    bgctx.fillStyle='#999'; bgctx.font='10px sans-serif'; bgctx.textAlign='right';
+    bgctx.fillText(v,45,y+4);
+    bgctx.strokeStyle='#eee'; bgctx.lineWidth=0.5;
+    bgctx.beginPath(); bgctx.moveTo(50,y); bgctx.lineTo(700,y); bgctx.stroke();
+  }
+
+  // Glucose curve
+  bgctx.strokeStyle='#e65100'; bgctx.lineWidth=3;
+  bgctx.beginPath();
+  for(let i=0;i<glucoseHistory.length;i++){
+    const x=55+i*3, y=30+240-(glucoseHistory[i]-2)*40;
+    if(i===0) bgctx.moveTo(x,y); else bgctx.lineTo(x,y);
+  }
+  bgctx.stroke();
+
+  // Current level indicator
+  bgctx.fillStyle='#e65100'; bgctx.font='bold 16px "PingFang SC","Microsoft YaHei",sans-serif'; bgctx.textAlign='center';
+  bgctx.fillText(`当前血糖: ${glucoseLevel.toFixed(1)} mmol/L`,375,315);
+
+  // Status
+  let status='正常', sc='#4caf50';
+  if(glucoseLevel>6.1){status='偏高 - 胰岛素分泌↑';sc='#e65100';}
+  else if(glucoseLevel<3.9){status='偏低 - 胰高血糖素分泌↑';sc='#1565c0';}
+  bgctx.fillStyle=sc; bgctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  bgctx.fillText(`状态: ${status}`,375,340);
+
+  // Insulin/Glucagon indicators
+  let ins='基础分泌', glu='基础分泌';
+  if(glucoseLevel>5.5){ins='分泌增加 ↑↑';}
+  else if(glucoseLevel>4.5) ins='正常分泌';
+  if(glucoseLevel<4.5) glu='分泌增加 ↑↑';
+
+  bgctx.fillStyle='#1565c0'; bgctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';
+  bgctx.fillText(`胰岛素: ${ins}`,250,365);
+  bgctx.fillStyle='#e65100';
+  bgctx.fillText(`胰高血糖素: ${glu}`,500,365);
+}
+
+function trackGlucose(){
+  glucoseHistory.push(glucoseLevel);
+  if(glucoseHistory.length>210) glucoseHistory.shift();
+  // Homeostasis adjustment
+  if(glucoseLevel>5.0) glucoseLevel-=0.04;
+  else if(glucoseLevel<4.8) glucoseLevel+=0.03;
+  else glucoseLevel+=(5.0-glucoseLevel)*0.02;
+  drawGlucose();
+  bgAnimId=requestAnimationFrame(trackGlucose);
+}
+
+function simEat(){glucoseLevel=Math.min(glucoseLevel+3.5,10);document.getElementById('btnEat').textContent='✓ 已进食';setTimeout(()=>{document.getElementById('btnEat').textContent='🍚 进食（血糖升高）';},1000);}
+function simExercise(){glucoseLevel=Math.max(glucoseLevel-2,2.5);document.getElementById('btnExercise').textContent='✓ 运动中';setTimeout(()=>{document.getElementById('btnExercise').textContent='🏃 运动（血糖降低）';},1000);}
+function resetGlucose(){cancelAnimationFrame(bgAnimId);glucoseLevel=5.0;glucoseHistory=[];for(let i=0;i<50;i++) glucoseHistory.push(5.0+(Math.random()-0.5)*0.3); trackGlucose();}
+for(let i=0;i<50;i++) glucoseHistory.push(5.0+(Math.random()-0.5)*0.3);
+trackGlucose();
+</script>
+</body>
+</html>

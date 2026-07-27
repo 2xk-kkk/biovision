@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>第1章 发酵工程 - 知识清单</title>
+<style>
+  :root { --primary: #bf360c; --primary-light: #fbe9e7; --accent: #0d47a1; --bg: #f7f9fc; --card: #fff; --text: #2c3e50; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #870000, #bf360c); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; justify-content: space-between; user-select: none; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 20px 24px; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.25s; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #fce4ec; border-color: #ef9a9a; }
+  .checklist li.checked .check-box { background: #bf360c; border-color: #bf360c; }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ef9a9a; color: #8a4a5a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: all 0.25s; margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .tag-super { background: #ffcdd2; color: #b71c1c; font-weight: 700; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border,#dde4ed); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 12px; border-bottom: 1px solid #dde4ed; }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid #dde4ed; border-radius: var(--radius); padding: 16px; transition: all 0.2s; }
+  .info-card:hover { border-color: #ffab91; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; }
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+  .focus-box { background: #fbe9e7; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg,#fff8e1,#fff3cd); border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .danger-box { background: #fce4ec; border-left: 4px solid #c62828; padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#ff7043); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: #5a6c7d; text-align: center; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+  .concept-card { background: #fff; border: 2px solid #b71c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.3s; text-align: center; font-weight: 700; color: #b71c1c; }
+  .concept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(198,40,40,0.15); background: #ffebee; }
+  .concept-card.flipped { background: #ffcdd2; border-color: #8e0000; color: #8e0000; }
+  .concept-card .concept-back { font-size: 0.85em; font-weight: 400; color: #444; margin-top: 6px; display: none; }
+  .concept-card.flipped .concept-back { display: block; }
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 175px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: 0.2s; border-left: 3px solid transparent; }
+  .sidebar a:hover { background: rgba(191,54,12,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(191,54,12,0.1); color: #bf360c; font-weight: 700; border-left-color: #ff7043; }
+  .section-body.exp-area { background: #263238; color: #e0e0e0; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  @media(max-width:860px){.sidebar{position:static;transform:none;width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;border-radius:8px;margin-bottom:12px;}.sidebar .nav-title{width:100%;padding:4px 0;border-bottom:none;}.sidebar a{padding:5px 8px;font-size:0.75em;border-left:none;border-radius:4px;}}
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style></head><body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+      <nav class="sidebar">
+    <div class="nav-title">选择性必修3<br>生物技术与工程</div>
+      <a href="5.1.html" class="active"><span class="ch-num">第1章</span>发酵工程</a>
+      <a href="5.2.html"><span class="ch-num">第2章</span>细胞工程</a>
+      <a href="5.3.html"><span class="ch-num">第3章</span>基因工程</a>
+      <a href="5.4.html"><span class="ch-num">第4章</span>生物技术安全</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link active">选必3 · 生物技术与工程</a>
+  </nav>
+<div class="main-wrap"><div class="container">
+<div class="header"><h1>第1章 发酵工程</h1><div style="margin-top:6px;opacity:0.9;">人教版 · 生物学选择性必修3 · 生物技术与工程</div></div>
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 25 个知识点</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>📖 本章黑体核心概念 — 点击翻牌记背</h2><span class="arrow">▼</span></div>
+  <div class="section-body"><div class="concept-grid">
+    <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">发酵</div><div class="concept-back">利用微生物，在适宜条件下，将原料通过微生物的代谢转化为人类所需要的产物的过程。</div></div>
+    <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">传统发酵技术</div><div class="concept-back">直接利用原材料中天然存在的微生物，或利用前一次发酵保存下来的发酵物中的微生物进行发酵。</div></div>
+    <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">培养基</div><div class="concept-back">供微生物生长繁殖的营养基质。一般含水、碳源、氮源和无机盐。分为液体和固体培养基。</div></div>
+    <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">消毒 vs 灭菌</div><div class="concept-back">消毒：温和方法杀死部分微生物。灭菌：强烈方法杀死所有微生物（包括芽孢和孢子）。</div></div>
+    <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">纯培养</div><div class="concept-back">由单一个体繁殖所获得的微生物群体。方法：平板划线法和稀释涂布平板法。</div></div>
+    <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">选择培养基</div><div class="concept-back">允许特定种类微生物生长，同时抑制或阻止其他种类微生物生长的培养基。</div></div>
+    <div class="concept-card" onclick="this.classList.toggle('flipped')"><div class="concept-front">发酵工程</div><div class="concept-back">利用微生物的特定功能，规模化生产人类所需产品的综合性生物工程。中心环节是发酵罐内发酵。</div></div>
+  </div></div>
+</div>
+
+<!-- 第1节 传统发酵 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第1节 传统发酵技术的应用</h2><span class="arrow">▼</span></div>
+  <div class="section-body">
+    <div class="diagram-box"><h4 style="margin-bottom:12px;">泡菜、果酒、果醋制作 - 交互对比</h4>
+      <canvas id="fermCanvas" width="750" height="320"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="cycleFerm()">切换发酵类型</button>
+      </div>
+    </div>
+    <table><tr><th>项目</th><th>泡菜</th><th>果酒</th><th>果醋</th></tr>
+      <tr><td>菌种</td><td>乳酸菌（厌氧）</td><td>酵母菌（兼性厌氧）</td><td>醋酸菌（好氧）</td></tr>
+      <tr><td>温度</td><td>常温</td><td>18~30℃（最适28℃）</td><td>30~35℃</td></tr>
+      <tr><td>原理</td><td>C₆H₁₂O₆→2乳酸+能量</td><td>C₆H₁₂O₆→2酒精+2CO₂+能量</td><td>乙醇+O₂→乙酸+H₂O</td></tr>
+      <tr><td>关键操作</td><td>盐水没过菜料+水封</td><td>留1/3空间，12h拧松放气</td><td>打开瓶盖，盖纱布通氧</td></tr></table>
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label"><strong>乳酸菌</strong>是厌氧菌，泡菜制作需<strong>无氧</strong>环境</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>酵母菌</strong>兼性厌氧：无氧产酒精，有氧大量繁殖</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>醋酸菌</strong>是好氧菌——果醋制作必须<strong>通氧气</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">制作果酒留1/3空间防止发酵液溢出</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 微生物培养 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第2节 微生物的培养技术及应用</h2><span class="arrow">▼</span></div>
+  <div class="section-body">
+    <table><tr><th>灭菌方法</th><th>条件</th><th>适用对象</th></tr>
+      <tr><td>湿热灭菌（高压蒸汽）</td><td>121℃，100kPa，15~30min</td><td>培养基、水等（效果最好）</td></tr>
+      <tr><td>干热灭菌</td><td>160~170℃，1~2h</td><td>玻璃器皿、金属用具</td></tr>
+      <tr><td>灼烧灭菌</td><td>酒精灯火焰充分燃烧层</td><td>接种环、涂布器、试管口</td></tr></table>
+    <div class="diagram-box"><h4 style="margin-bottom:12px;">🧪 平板划线实验平台 - 交互模拟</h4>
+      <canvas id="plateCanvas" width="750" height="280"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="startPlating()">▶ 演示平板划线</button>
+        <button class="btn btn-outline" onclick="resetPlating()">重置</button>
+      </div></div>
+    <div class="danger-box"><strong>⚠️ 高频易错：</strong><br>① 平板划线法：每次划线前灼烧接种环→<strong>杀死残留菌种</strong>，使下一次划线的菌种来自上一次划线末端<br>② 划线时<strong>不要将最后一次划线与第一次相连</strong><br>③ 灼烧接种环后需<strong>冷却</strong>再蘸取菌液<br>④ 培养时平板<strong>倒置</strong>（防止冷凝水滴落污染）</div>
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label"><strong>消毒≠灭菌</strong>：消毒杀部分，灭菌杀全部（包括芽孢）</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label">培养基基本成分：<strong>水、碳源、氮源、无机盐</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>平板划线法</strong>：分离纯化；<strong>稀释涂布平板法</strong>：分离+计数</span><span class="tag tag-super">必考</span></li>
+      <li><span class="check-box"></span><span class="label">尿素分解菌分离：<strong>尿素为唯一氮源</strong>的选择培养基</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 发酵工程 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')"><h2>第3节 发酵工程及其应用</h2><span class="arrow">▼</span></div>
+  <div class="section-body">
+    <div class="diagram-box"><h4 style="margin-bottom:12px;">🏭 发酵工程流程 - 互动演示</h4>
+      <canvas id="engCanvas" width="750" height="260"></canvas>
+      <div class="controls"><button class="btn btn-primary" onclick="advanceFermEng()">▶ 推进一步</button><button class="btn btn-outline" onclick="resetFermEng()">重置</button></div></div>
+    <div class="highlight-box"><strong>发酵工程基本环节：</strong><br>① 菌种选育 → ② 扩大培养 → ③ 培养基配制和灭菌 → ④ 接种 → ⑤ <strong>发酵罐内发酵（中心环节）</strong> → ⑥ 分离提纯</div>
+    <div class="info-row">
+      <div class="info-card"><h4>啤酒发酵</h4><p>主发酵（酵母菌繁殖+糖分解）→后发酵（低温密闭储存，沉淀酵母，形成澄清啤酒）</p></div>
+      <div class="info-card"><h4>发酵过程控制</h4><p>随时检测微生物数量、产物浓度；控制<strong>温度、pH和溶解氧</strong></p></div>
+    </div>
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">发酵工程<strong>中心环节</strong>是发酵罐内发酵</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">发酵工程产品：酒、醋、味精、抗生素、胰岛素等</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+</div></div>
+<script>
+function updateProgress() {
+  const total = 14; const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width=(checked/total*100)+'%';
+  document.getElementById('progressLabel').textContent=`已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_sx3_ch1_ck',JSON.stringify([...document.querySelectorAll('.checklist li')].map(l=>l.classList.contains('checked'))));
+}
+document.querySelectorAll('.checklist li').forEach(li=>{li.addEventListener('click',function(){this.classList.toggle('checked');updateProgress();});});
+try{const s=JSON.parse(localStorage.getItem('bio_sx3_ch1_ck'));document.querySelectorAll('.checklist li').forEach((l,i)=>{if(s&&s[i])l.classList.add('checked');});}catch(e){}
+updateProgress();
+
+// FERMENTATION TYPES
+const fCanvas=document.getElementById('fermCanvas'), fctx=fCanvas.getContext('2d');
+let fermIdx=0;
+const fermData=[
+  {title:'泡菜 — 乳酸菌发酵',icon:'🥬',temp:'常温',o2:'无氧（水封）',eq:'葡萄糖 → 乳酸 + 能量',detail:'乳酸菌是厌氧细菌。盐水没过菜料+坛盖水槽注满水=创造无氧环境。',steps:['洗净切菜→装坛八成满','加5%~20%煮沸冷却的盐水','水槽注满水密封发酵'],color:'#4caf50'},
+  {title:'果酒 — 酵母菌酒精发酵',icon:'🍷',temp:'18~30℃',o2:'无氧',eq:'C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂',detail:'酵母菌是兼性厌氧微生物。留1/3空间防止发酵液溢出。每12h拧松瓶盖放气。',steps:['清水冲洗葡萄→榨汁','装入发酵瓶（留1/3空间）','18~30℃发酵10~12d，每12h放气'],color:'#9c27b0'},
+  {title:'果醋 — 醋酸菌发酵',icon:'🍶',temp:'30~35℃',o2:'有氧（盖纱布）',eq:'乙醇+O₂→乙醛→乙酸+H₂O',detail:'醋酸菌是好氧细菌。酒变醋的关键是通入氧气。打开瓶盖盖纱布利于醋酸菌生长。',steps:['果酒完成后打开瓶盖','盖上一层纱布通氧','30~35℃发酵7~8d'],color:'#e65100'},
+];
+function drawFerm(){
+  const w=750,h=320,d=fermData[fermIdx];
+  fctx.clearRect(0,0,w,h); fctx.fillStyle='#fafbfc'; fctx.fillRect(0,0,w,h);
+  fctx.fillStyle=d.color; fctx.font='bold 18px "PingFang SC","Microsoft YaHei",sans-serif'; fctx.textAlign='center';
+  fctx.fillText(d.title,375,30);
+  // Jar
+  fctx.fillStyle='#eee'; fctx.strokeStyle='#666'; fctx.lineWidth=3;
+  fctx.beginPath(); fctx.moveTo(150,60); fctx.lineTo(110,220); fctx.lineTo(190,220); fctx.closePath(); fctx.fill(); fctx.stroke();
+  fctx.fillStyle='#ddd'; fctx.fillRect(110,40,80,30);
+  // Content
+  fctx.fillStyle=d.color+'40'; fctx.fillRect(113,65,74,152);
+  fctx.fillStyle='#2c3e50'; fctx.font='14px "PingFang SC","Microsoft YaHei",sans-serif'; fctx.textAlign='center';
+  fctx.fillText(d.temp,150,140); fctx.fillText(d.o2,150,160);
+  // Labels
+  fctx.fillStyle='#2c3e50'; fctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; fctx.textAlign='left';
+  fctx.fillText('原理:',250,60); fctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif'; fctx.fillText(d.eq,250,80);
+  fctx.fillText(d.detail,250,105);
+  fctx.fillText('步骤:',250,140);
+  d.steps.forEach((s,i)=>{fctx.fillText(`${i+1}. ${s}`,260,160+i*20);});
+  fctx.fillStyle='#888'; fctx.font='11px sans-serif'; fctx.textAlign='center'; fctx.fillText(`(${fermIdx+1}/3) 点击按钮切换`,375,305);
+}
+function cycleFerm(){fermIdx=(fermIdx+1)%3;drawFerm();}
+drawFerm();
+
+// PLATE STREAKING SIMULATION
+const pCanvas=document.getElementById('plateCanvas'), pctx=pCanvas.getContext('2d');
+let plateStep=-1, plateTimer;
+function drawPlate(){
+  const w=750,h=280;
+  pctx.clearRect(0,0,w,h); pctx.fillStyle='#fafbfc'; pctx.fillRect(0,0,w,h);
+  // Petri dish
+  pctx.fillStyle='rgba(255,235,205,0.5)'; pctx.strokeStyle='#999'; pctx.lineWidth=3;
+  pctx.beginPath(); pctx.arc(375,140,110,0,Math.PI*2); pctx.fill(); pctx.stroke();
+  pctx.fillStyle='#999'; pctx.font='12px sans-serif'; pctx.textAlign='center'; pctx.fillText('琼脂培养基',375,260);
+
+  // Loop
+  const loopX=620,loopY=100;
+  pctx.strokeStyle='#666'; pctx.lineWidth=2;
+  pctx.beginPath(); pctx.moveTo(loopX,loopY+40); pctx.lineTo(loopX,loopY); pctx.stroke();
+  pctx.beginPath(); pctx.ellipse(loopX-20,loopY-10,25,10,0.3,0,Math.PI*2); pctx.stroke();
+  pctx.fillStyle='#2c3e50'; pctx.font='11px sans-serif'; pctx.textAlign='center'; pctx.fillText('接种环',loopX,loopY+55);
+
+  if(plateStep>=0){
+    // Flame
+    pctx.fillStyle='#ff9800'; pctx.beginPath(); pctx.arc(loopX+30,loopY-30,12,0,Math.PI*2); pctx.fill();
+    pctx.fillStyle='#e65100'; pctx.font='10px sans-serif'; pctx.fillText('灼烧灭菌',loopX+30,loopY-50);
+  }
+  if(plateStep>=1){
+    // Dip in culture
+    pctx.fillStyle='#ffcdd2'; pctx.strokeStyle='#c62828'; pctx.lineWidth=1.5;
+    pctx.beginPath(); pctx.arc(loopX+30,loopY-5,14,0,Math.PI*2); pctx.fill(); pctx.stroke();
+    pctx.fillStyle='#c62828'; pctx.font='10px sans-serif'; pctx.fillText('蘸取菌液',loopX+30,loopY-15);
+  }
+  if(plateStep>=2){
+    // Streak lines
+    const streakColors=['#c62828','#e53935','#ef5350','#e57373','#ef9a9a'];
+    for(let s=0;s<=Math.min(plateStep-2,4);s++){
+      pctx.strokeStyle=streakColors[s]; pctx.lineWidth=2;
+      pctx.beginPath(); pctx.moveTo(290+s*18,130-s*10); pctx.lineTo(420-s*10,80-s*8); pctx.stroke();
+    }
+    pctx.fillStyle='#c62828'; pctx.font='12px sans-serif'; pctx.textAlign='center';
+    pctx.fillText('连续划线——菌液逐步稀释',375,280);
+  }
+}
+function startPlating(){plateStep=-1;clearTimeout(plateTimer);function step(){plateStep++;drawPlate();if(plateStep<6)plateTimer=setTimeout(step,700);}step();}
+function resetPlating(){clearTimeout(plateTimer);plateStep=-1;drawPlate();}
+drawPlate();
+
+// FERMENTATION ENGINEERING
+const eCanvas=document.getElementById('engCanvas'), ectx=eCanvas.getContext('2d');
+let engStep=0;
+function drawFermEng(){
+  const w=750,h=260;
+  ectx.clearRect(0,0,w,h); ectx.fillStyle='#fafbfc'; ectx.fillRect(0,0,w,h);
+  const steps=[{x:50,y:120,label:'菌种选育',active:engStep>=0},{x:170,y:120,label:'扩大培养',active:engStep>=1},{x:290,y:120,label:'培养基灭菌',active:engStep>=2},{x:420,y:160,label:'接种',active:engStep>=3},{x:550,y:120,label:'发酵罐\n(中心环节)',active:engStep>=4,big:true},{x:680,y:120,label:'分离提纯',active:engStep>=5}];
+  steps.forEach((s,i)=>{
+    ectx.fillStyle=s.active?('#bf360c'+(s.big?'':'80')):'#e0e0e0'; ectx.strokeStyle=s.active?'#870000':'#bbb'; ectx.lineWidth=2;
+    const r=s.big?32:24;
+    ectx.beginPath(); ectx.arc(s.x,s.y,r,0,Math.PI*2); ectx.fill(); ectx.stroke();
+    ectx.fillStyle=s.active?'#fff':'#999'; ectx.font='bold 10px "PingFang SC","Microsoft YaHei",sans-serif'; ectx.textAlign='center';
+    const ls=s.label.split('\n'); ls.forEach((l,li)=>{ectx.fillText(l,s.x,s.y-3+li*14);});
+    if(i<5&&s.active){ectx.strokeStyle='#666';ectx.lineWidth=1.5;drawArrowE(ectx,s.x+r+2,s.y,steps[i+1].x-(steps[i+1].big?32:24)-2,steps[i+1].y);}
+  });
+  ectx.fillStyle='#2c3e50'; ectx.font='13px "PingFang SC","Microsoft YaHei",sans-serif'; ectx.textAlign='center';
+  ectx.fillText('发酵过程中控制：温度、pH、溶解氧   |   应用：食品、医药、农牧业',375,245);
+}
+function drawArrowE(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-6,y2-4);ctx.lineTo(x2-6,y2+4);ctx.fill();}
+function advanceFermEng(){engStep=Math.min(engStep+1,5);drawFermEng();}
+function resetFermEng(){engStep=0;drawFermEng();}
+drawFermEng();
+</script>
+</body></html>

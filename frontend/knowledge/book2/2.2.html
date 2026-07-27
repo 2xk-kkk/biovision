@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2章 基因和染色体的关系 - 知识清单</title>
+<style>
+  :root {
+    --primary: #1565c0;
+    --primary-light: #e3f2fd;
+    --accent: #c62828;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #0d47a1, #1565c0);
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='30' r='2' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='70' cy='60' r='3' fill='rgba(255,255,255,0.08)'/%3E%3Ccircle cx='85' cy='20' r='1.5' fill='rgba(255,255,255,0.12)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header h1 { font-size: 2em; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; position: relative; z-index: 1; }
+  .header .quote { margin-top: 14px; font-style: italic; font-size: 0.95em; opacity: 0.85; position: relative; z-index: 1; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+
+  .focus-box { background: #e3f2fd; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; transition: var(--transition); }
+  .section-header:hover { background: #bbdefb; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #e3f2fd; border-color: #90caf9; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #90caf9; color: #5a7a9a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; transition: var(--transition); }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2e7d32; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .diagram-box canvas { max-width: 100%; }
+  .diagram-box .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #0d47a1; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #b71c1c; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px 14px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #90caf9; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  .timeline { position: relative; padding-left: 28px; margin: 16px 0; }
+  .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary), #90caf9); }
+  .timeline-item { position: relative; margin-bottom: 16px; padding: 10px 14px; background: #fafbfc; border-radius: 8px; border: 1px solid var(--border); }
+  .timeline-item::before { content: ''; position: absolute; left: -22px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--primary); }
+  .timeline-item .year { font-weight: 700; color: var(--primary); font-size: 0.9em; }
+
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #42a5f5); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+
+  @media (max-width: 640px) { .header { padding: 24px 20px; } .header h1 { font-size: 1.4em; } .section-body { padding: 14px;} .info-row { grid-template-columns: 1fr; } }
+
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; font-weight: 500; }
+
+  .tooltip-term { color: var(--primary); font-weight: 600; cursor: help; border-bottom: 1px dashed var(--primary); position: relative; }
+  .tooltip-term:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #2c3e50; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.8em; font-weight: normal; white-space: nowrap; z-index: 10; pointer-events: none; }
+
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 180px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: background 0.2s, color 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(21,101,192,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(21,101,192,0.1); color: #1565c0; font-weight: 700; border-left-color: #42a5f5; }
+  .sidebar .ch-num { font-size: 0.7em; font-weight: 700; color: #90a4ae; min-width: 18px; text-align: center; }
+  @media (max-width: 860px) { .sidebar { position: static; transform: none; width: 100%; max-height: none; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 4px; border-radius: 8px; margin-bottom: 12px; } .sidebar .nav-title { width: 100%; padding: 4px 0; border-bottom: none; margin-bottom: 0; } .sidebar a { padding: 5px 8px; font-size: 0.75em; border-left: none; border-radius: 4px; } }
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+
+      <nav class="sidebar">
+    <div class="nav-title">生物学 必修2<br>遗传与进化</div>
+      <a href="2.1.html"><span class="ch-num">第1章</span>遗传因子的发现</a>
+      <a href="2.2.html" class="active"><span class="ch-num">第2章</span>基因和染色体的关系</a>
+      <a href="2.3.html"><span class="ch-num">第3章</span>基因的本质</a>
+      <a href="2.4.html"><span class="ch-num">第4章</span>基因的表达</a>
+      <a href="2.5.html"><span class="ch-num">第5章</span>基因突变及其他变异</a>
+      <a href="2.6.html"><span class="ch-num">第6章</span>生物的进化</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link active">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第2章 基因和染色体的关系</h1>
+  <div class="subtitle">人教版 · 生物学必修2 · 遗传与进化</div>
+  <div class="quote">"基因在哪里？悠悠百年，寻寻觅觅。怀疑、争论、推理……最终是观察和实验，探明它神秘的踪迹！"</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 35 个知识点</div>
+
+<!-- 第1节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🔬 第1节 减数分裂和受精作用</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 减数分裂的含义是什么？<br>
+      ● 配子的形成为什么必须经过减数分裂？<br>
+      ● 减数分裂是怎样进行的？<br>
+      ● 配子中染色体的组合为什么是多种多样的？<br>
+      ● 什么是受精作用？受精作用对于生物的遗传有什么重要意义？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、减数分裂概述</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念 —— 减数分裂</div>
+      <p><span class="bold-concept">减数分裂</span>（meiosis）：是进行有性生殖的生物，在产生成熟生殖细胞时进行的<span class="bold-concept">染色体数目减半</span>的细胞分裂。在减数分裂前，染色体复制一次，而细胞在减数分裂过程中<span class="bold-concept">连续分裂两次</span>。结果是成熟生殖细胞中的染色体数目比原始生殖细胞的<span class="bold-concept">减少一半</span>。</p>
+      <p>魏斯曼从理论上预测：在精子和卵细胞成熟的过程中，必然有一个特殊的过程使染色体数目减少一半；受精时，精子和卵细胞融合，染色体数目得以恢复正常。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、精子的形成过程（动物）</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 精子形成过程</div>
+      <p><strong>场所：</strong>睾丸中的<span class="bold-concept">曲细精管</span></p>
+      <p><strong>过程：</strong><span class="bold-concept">精原细胞</span>（有丝分裂增殖）→ 染色体复制 → <span class="bold-concept">初级精母细胞</span> → 减数分裂Ⅰ → <span class="bold-concept">次级精母细胞</span> → 减数分裂Ⅱ → <span class="bold-concept">精细胞</span> → 变形 → <span class="bold-concept">精子</span></p>
+      <p><strong>减数分裂Ⅰ主要特征：</strong>同源染色体配对（<span class="bold-concept">联会</span>）；四分体中的非姐妹染色单体可发生<span class="bold-concept">互换</span>；<span class="bold-concept">同源染色体分离</span>，分别移向两极。</p>
+      <p><strong>减数分裂Ⅱ主要特征：</strong>每条染色体的<span class="bold-concept">着丝粒分裂</span>，姐妹染色单体分开，分别移向两极。</p>
+    </div>
+
+    <div class="highlight-box">
+      <strong>关键概念：</strong><br>
+      <strong>同源染色体</strong>：配对的两条染色体，形状和大小一般相同，一条来自父方、一条来自母方。<br>
+      <strong>联会</strong>：减数分裂过程中同源染色体两两配对的现象。<br>
+      <strong>四分体</strong>：联会后的每对同源染色体含有四条染色单体（1个四分体=1对同源染色体=2条染色体=4条染色单体）。<br>
+      <strong>染色体数目减半发生在减数分裂Ⅰ</strong>（同源染色体分离）。
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、卵细胞的形成过程</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 卵细胞形成（与精子的区别）</div>
+      <p><strong>场所：</strong>卵巢中的卵泡</p>
+      <p><strong>过程：</strong>卵原细胞 → 初级卵母细胞 → 减数分裂Ⅰ（<span class="bold-concept">不均等分裂</span>）→ 次级卵母细胞+极体 → 减数分裂Ⅱ（<span class="bold-concept">不均等分裂</span>）→ <span class="bold-concept">1个卵细胞+3个极体</span>（极体退化消失）</p>
+      <p><strong>主要区别：</strong>①初级卵母细胞减Ⅰ不均等分裂（一大一小）；②一个卵原细胞最终只形成1个卵细胞和3个极体；③卵细胞的形成不需要变形。</p>
+    </div>
+
+    <!-- Meiosis Canvas -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🧬 减数分裂过程 - 交互演示（2对同源染色体）</h4>
+      <canvas id="meiosisCanvas" width="800" height="300"></canvas>
+      <div class="controls">
+        <button class="btn btn-outline" onclick="meiStep=0">间期(复制)</button>
+        <button class="btn btn-outline" onclick="meiStep=1">减Ⅰ前期(联会)</button>
+        <button class="btn btn-outline" onclick="meiStep=2">减Ⅰ后期(分离)</button>
+        <button class="btn btn-outline" onclick="meiStep=3">减Ⅱ后期(着丝粒分裂)</button>
+        <button class="btn btn-outline" onclick="meiStep=4">结果(4精细胞)</button>
+      </div>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、配子中染色体组合的多样性</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 配子多样性的原因</div>
+      <p>① <span class="bold-concept">非同源染色体的自由组合</span>：减Ⅰ后期非同源染色体自由组合。人有23对染色体，理论上可产生2²³ = 约8.4×10⁶种配子。</p>
+      <p>② <span class="bold-concept">四分体时期非姐妹染色单体间的互换</span>（交叉互换）：进一步增加了配子的种类。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">五、受精作用</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 受精作用的意义</div>
+      <p><span class="bold-concept">受精作用</span>：卵细胞和精子相互识别、融合成为受精卵的过程。</p>
+      <p><strong>结果：</strong>受精卵中的染色体数目恢复到体细胞中的数目，保证了<span class="bold-concept">物种染色体数目的稳定</span>。一半染色体来自精子（父方），一半来自卵细胞（母方）。</p>
+      <p><strong>减数分裂和受精作用的意义：</strong>①保证了每种生物前后代<span class="bold-concept">染色体数目的恒定</span>，维持了生物遗传的稳定性；②通过有性生殖，后代继承了<span class="bold-concept">父母双方的遗传物质</span>；③配子染色体组合的多样性+受精的随机性→后代<span class="bold-concept">多样性</span>→有利于适应和进化。</p>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li data-id="1"><span class="check-box"></span><span class="label"><strong>减数分裂</strong>定义：染色体复制一次，细胞连续分裂两次，染色体数目减半</span><span class="tag tag-important">重点</span></li>
+      <li data-id="2"><span class="check-box"></span><span class="label"><strong>同源染色体</strong>：形状大小一般相同，一条来自父方、一条来自母方</span><span class="tag tag-important">重点</span></li>
+      <li data-id="3"><span class="check-box"></span><span class="label"><strong>联会</strong>和<strong>四分体</strong>：同源染色体两两配对；1个四分体=1对同源染色体=4条染色单体</span><span class="tag tag-important">重点</span></li>
+      <li data-id="4"><span class="check-box"></span><span class="label"><strong>染色体数目减半</strong>发生在<strong>减数分裂Ⅰ</strong>（同源染色体分离）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="5"><span class="check-box"></span><span class="label">精子形成：1精原细胞→<strong>4个精子</strong>（需变形）；卵细胞形成：1卵原细胞→<strong>1个卵细胞+3极体</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="6"><span class="check-box"></span><span class="label">卵母细胞减数分裂<strong>不均等分裂</strong>（这不是"瑕疵"而是为胚胎发育储备营养）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="7"><span class="check-box"></span><span class="label">配子多样性原因：<strong>非同源染色体自由组合</strong> + <strong>非姐妹染色单体互换</strong></span><span class="tag tag-important">重点</span></li>
+      <li data-id="8"><span class="check-box"></span><span class="label"><strong>受精作用</strong>：恢复染色体数目，保证物种染色体稳定；后代多样性有利于适应和进化</span><span class="tag tag-important">重点</span></li>
+      <li data-id="9"><span class="check-box"></span><span class="label">减数分裂和受精作用对于<strong>遗传和变异</strong>都是十分重要的</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🔗 第2节 基因在染色体上</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 科学家发现基因与染色体有哪些平行关系？<br>
+      ● 摩尔根如何证明基因位于染色体上？<br>
+      ● 怎样从基因和染色体的层面解释孟德尔遗传规律？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、萨顿的假说</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 萨顿假说 —— 基因和染色体的平行关系</div>
+      <p>萨顿（1903年）研究蝗虫细胞，发现<span class="bold-concept">基因和染色体的行为存在平行关系</span>，推论<span class="bold-concept">基因是由染色体携带着从亲代传递给下一代的，即基因在染色体上</span>。</p>
+      <p>① 基因在杂交中保持完整性和独立性；染色体在减数分裂中也保持稳定</p>
+      <p>② 体细胞中基因成对存在，染色体也成对</p>
+      <p>③ 配子中只有成对基因中的一个，染色体也只有一条</p>
+      <p>④ 非等位基因自由组合，非同源染色体也自由组合</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、摩尔根的果蝇杂交实验（基因位于染色体上的实验证据）</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 摩尔根果蝇实验</div>
+      <p><strong>实验材料：</strong>果蝇（易饲养、繁殖快、染色体少：4对=3对常染色体+1对性染色体）</p>
+      <p><strong>发现：</strong>在红眼果蝇中偶然发现一只<span class="bold-concept">白眼雄果蝇</span></p>
+      <p><strong>杂交实验：</strong>白眼雄×红眼雌→F₁全红眼→F₁雌雄交配→F₂红眼∶白眼=3∶1（符合分离定律），但白眼性状<span class="bold-concept">总是与性别相关联</span>（白眼果蝇全为雄性）。</p>
+      <p><strong>解释：</strong>控制白眼的基因（w）在<span class="bold-concept">X染色体</span>上，Y染色体上不含有它的等位基因。→用实验证明了<span class="bold-concept">基因在染色体上</span>。</p>
+      <p><strong>基因在染色体上呈线性排列</strong>——摩尔根和他的学生绘制了第一幅果蝇基因在染色体上的相对位置图。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、孟德尔遗传规律的现代解释</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 两大定律的细胞学实质</div>
+      <p><strong>分离定律的实质：</strong>在杂合子的细胞中，位于一对同源染色体上的<span class="bold-concept">等位基因</span>，在减数分裂形成配子时随<span class="bold-concept">同源染色体的分开</span>而分离。</p>
+      <p><strong>自由组合定律的实质：</strong>位于<span class="bold-concept">非同源染色体</span>上的<span class="bold-concept">非等位基因</span>的分离或组合互不干扰；在减数分裂过程中，同源染色体上等位基因分离的同时，非同源染色体上的非等位基因<span class="bold-concept">自由组合</span>。</p>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li data-id="10"><span class="check-box"></span><span class="label"><strong>萨顿</strong>用蝗虫细胞研究，提出<strong>基因在染色体上</strong>的假说（类比推理）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="11"><span class="check-box"></span><span class="label">基因与染色体行为的<strong>平行关系</strong>（4点）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="12"><span class="check-box"></span><span class="label"><strong>摩尔根</strong>用果蝇实验证明<strong>基因在染色体上</strong>（假说—演绎法+测交验证）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="13"><span class="check-box"></span><span class="label">果蝇：4对染色体（<strong>3对常染色体+1对性染色体</strong>XX/XY）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="14"><span class="check-box"></span><span class="label">白眼基因在<strong>X染色体</strong>上，Y染色体上无其等位基因</span><span class="tag tag-important">重点</span></li>
+      <li data-id="15"><span class="check-box"></span><span class="label">基因在染色体上呈<strong>线性排列</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="16"><span class="check-box"></span><span class="label">分离定律实质：等位基因随<strong>同源染色体分开</strong>而分离</span><span class="tag tag-important">重点</span></li>
+      <li data-id="17"><span class="check-box"></span><span class="label">自由组合定律实质：<strong>非同源染色体</strong>上<strong>非等位基因</strong>自由组合</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🧬 第3节 伴性遗传</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 什么是伴性遗传？<br>
+      ● 伴性遗传有什么特点？<br>
+      ● 伴性遗传理论在实践中有什么应用？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、伴性遗传概念</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背概念 —— 伴性遗传</div>
+      <p><span class="bold-concept">伴性遗传</span>（sex-linked inheritance）：决定性状的基因位于<span class="bold-concept">性染色体</span>上，在遗传上总是和性别相关联的现象。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、人类红绿色盲（伴X隐性遗传）</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 红绿色盲的特点</div>
+      <p>红绿色盲由位于<span class="bold-concept">X染色体上的隐性基因</span>控制，患者中<span class="bold-concept">男性远多于女性</span>。</p>
+      <p><strong>基因型：</strong>女性正常(XᴮXᴮ)、女性携带者(XᴮXᵇ)、女性色盲(XᵇXᵇ)；男性正常(XᴮY)、男性色盲(XᵇY)</p>
+      <p><strong>特点：</strong>①男性患者多于女性；②男性患者的基因只能从<span class="bold-concept">母亲</span>那里传来，以后只能传给<span class="bold-concept">女儿</span>（交叉遗传）；③女性患者的父亲和儿子一定患病。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、抗维生素D佝偻病（伴X显性遗传）</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 伴X显性遗传的特点</div>
+      <p>抗维生素D佝偻病由位于<span class="bold-concept">X染色体上的显性基因</span>控制，患者中<span class="bold-concept">女性多于男性</span>，但部分女性患者病症较轻。</p>
+      <p><strong>特点：</strong>①女性患者多于男性；②男性患者与正常女性婚配，女儿全患病，儿子全正常。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、伴性遗传理论的应用</h3>
+    <div class="info-row">
+      <div class="info-card"><h4>优生指导</h4><p>根据伴性遗传规律推算后代患病概率，指导生育。如抗维生素D佝偻病男性患者×正常女性→建议生男孩。</p></div>
+      <div class="info-card"><h4>育种工作</h4><p>鸡的性别决定是ZW型（雌ZW，雄ZZ）。芦花鸡（ZᴮW雌）×非芦花鸡（ZᵇZᵇ雄）→F₁雄鸡全为芦花，雌鸡全为非芦花，可依羽毛区分性别。</p></div>
+    </div>
+
+    <ul class="checklist" id="cl3">
+      <li data-id="18"><span class="check-box"></span><span class="label"><strong>伴性遗传</strong>：位于性染色体上的基因控制的性状与性别相关联</span><span class="tag tag-important">重点</span></li>
+      <li data-id="19"><span class="check-box"></span><span class="label">人类性别决定：女性<strong>XX</strong>（同型），男性<strong>XY</strong>（异型）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="20"><span class="check-box"></span><span class="label">红绿色盲是<strong>伴X隐性</strong>遗传病——男患者多于女患者</span><span class="tag tag-important">重点</span></li>
+      <li data-id="21"><span class="check-box"></span><span class="label">伴X隐性遗传特点：交叉遗传、母传子、女患者之父和子必病</span><span class="tag tag-important">重点</span></li>
+      <li data-id="22"><span class="check-box"></span><span class="label">抗维生素D佝偻病是<strong>伴X显性</strong>遗传病——女患者多于男患者</span><span class="tag tag-important">重点</span></li>
+      <li data-id="23"><span class="check-box"></span><span class="label">伴X显性：男患者之母和女必病；正常夫妇不会生出患者</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="24"><span class="check-box"></span><span class="label">鸡为<strong>ZW型</strong>性别决定：雌性ZW，雄性ZZ（与XY型相反）</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 易错辨析 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>⚡ 易错概念辨析与补充</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card"><h4>❌ 常见错误</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① "有丝分裂和减数分裂过程一样"→<strong>错！</strong>减数分裂有联会、同源染色体分离<br>
+          ② "减数分裂中染色体复制两次"→<strong>错！</strong>染色体复制一次，细胞分裂两次<br>
+          ③ "受精卵中染色体全部来自母方"→<strong>错！</strong>一半来自母方一半来自父方<br>
+          ④ "位于性染色体上的基因都与性别决定有关"→<strong>错！</strong>色盲基因在X染色体上但与性别决定无关<br>
+          ⑤ "萨顿用实验证明了基因在染色体上"→<strong>错！</strong>萨顿是类比推理，摩尔根才是实验证明
+        </p>
+      </div>
+      <div class="info-card"><h4>💡 关键数据</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          人：体细胞<strong>46</strong>条(23对)，精子/卵细胞<strong>23</strong>条<br>
+          果蝇：体细胞<strong>8</strong>条(4对)，配子4条<br>
+          蝗虫：体细胞<strong>24</strong>条(12对)，配子12条<br>
+          马：体细胞<strong>64</strong>条(32对) 驴：<strong>62</strong>条(31对) 骡：<strong>63</strong>条(不育)<br>
+          大熊猫：体细胞<strong>42</strong>条
+        </p>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>分裂方式</th><th>染色体复制</th><th>分裂次数</th><th>子细胞数</th><th>子细胞染色体</th></tr>
+      <tr><td>有丝分裂</td><td>1次</td><td>1次</td><td>2个</td><td>与亲代相同</td></tr>
+      <tr><td>减数分裂</td><td>1次</td><td>2次</td><td>4个</td><td>减半</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl4">
+      <li data-id="25"><span class="check-box"></span><span class="label">减数分裂Ⅰ有联会、四分体、同源染色体分离；减数分裂Ⅱ着丝粒分裂（类似有丝分裂）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="26"><span class="check-box"></span><span class="label">减数分裂中染色体数目变化：2N→减Ⅰ→N→减Ⅱ→N；DNA: 2N→4N→2N→N</span><span class="tag tag-important">重点</span></li>
+      <li data-id="27"><span class="check-box"></span><span class="label">判断减Ⅰ/减Ⅱ：减Ⅰ有<strong>同源染色体</strong>（联会/四分体/分离）；减Ⅱ无同源染色体</span><span class="tag tag-important">重点</span></li>
+      <li data-id="28"><span class="check-box"></span><span class="label">摩尔根也发现了<strong>基因的连锁互换定律</strong>（遗传学第三定律），获1933年诺贝尔奖</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="29"><span class="check-box"></span><span class="label">XY型性别决定：后代性别由<strong>父方</strong>精子决定（X或Y精子）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="30"><span class="check-box"></span><span class="label">ZW型性别决定：后代性别由<strong>母方</strong>卵细胞决定（Z或W卵细胞）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 本章小结 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📋 本章小结</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>核心线索：</strong>基因在染色体上→减数分裂中染色体行为→遗传规律的细胞学基础。减数分裂和受精作用既保证遗传的<strong>稳定性</strong>，又创造遗传的<strong>多样性</strong>。
+    </div>
+    <ul class="checklist" id="cl5">
+      <li data-id="31"><span class="check-box"></span><span class="label">基因在染色体上呈线性排列，一条染色体上有<strong>许多个</strong>基因</span><span class="tag tag-important">重点</span></li>
+      <li data-id="32"><span class="check-box"></span><span class="label">果蝇1.3万+基因，4对染色体；人约2.6万基因，23对染色体</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="33"><span class="check-box"></span><span class="label">伴性遗传在医学（遗传咨询）和育种（芦花鸡性别鉴定）中的应用</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="34"><span class="check-box"></span><span class="label">道尔顿是第一个发现<strong>色盲</strong>的人（1792年），也提出了"原子论"</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="35"><span class="check-box"></span><span class="label">减数分裂和受精作用对于生物<strong>遗传的稳定性</strong>和<strong>变异的多样性</strong>都十分重要</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 35;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+}
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function() {
+    this.classList.toggle('checked');
+    updateProgress();
+    saveCheckState();
+  });
+});
+function saveCheckState() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => { state[li.dataset.id] = li.classList.contains('checked'); });
+  localStorage.setItem('bio_b2_ch2_checklist', JSON.stringify(state));
+}
+function loadCheckState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_b2_ch2_checklist'));
+    if (state) document.querySelectorAll('.checklist li').forEach(li => { if (state[li.dataset.id]) li.classList.add('checked'); });
+  } catch(e) {}
+  updateProgress();
+}
+loadCheckState();
+
+// ===== MEIOSIS CANVAS ANIMATION =====
+const meiCanvas = document.getElementById('meiosisCanvas');
+const meiCtx = meiCanvas.getContext('2d');
+let meiStep = 1;
+let meiT = 0;
+
+function drawChr(x, y, w, h, color, label) {
+  meiCtx.fillStyle = color;
+  meiCtx.fillRect(x - w/2, y - h/2, w, h);
+  meiCtx.strokeStyle = '#333';
+  meiCtx.lineWidth = 1;
+  meiCtx.strokeRect(x - w/2, y - h/2, w, h);
+  // centromere
+  meiCtx.fillStyle = '#fff';
+  meiCtx.beginPath();
+  meiCtx.arc(x, y, 4, 0, Math.PI*2);
+  meiCtx.fill();
+  meiCtx.strokeStyle = '#333';
+  meiCtx.stroke();
+  if (label) {
+    meiCtx.fillStyle = '#2c3e50';
+    meiCtx.font = 'bold 11px sans-serif';
+    meiCtx.textAlign = 'center';
+    meiCtx.fillText(label, x, y + h/2 + 14);
+  }
+}
+
+function drawMeiosis() {
+  meiCtx.clearRect(0, 0, meiCanvas.width, meiCanvas.height);
+  meiCtx.fillStyle = '#fafbfc';
+  meiCtx.fillRect(0, 0, meiCanvas.width, meiCanvas.height);
+  meiT += 0.016;
+
+  meiCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  meiCtx.textAlign = 'center';
+
+  if (meiStep === 0) {
+    meiCtx.fillStyle = '#1565c0';
+    meiCtx.fillText('间期：染色体复制（每条染色体含两条姐妹染色单体）', 400, 30);
+    const cx = 250;
+    drawChr(cx - 40, 120, 8, 80, '#e57373', '来自母方');
+    drawChr(cx + 40, 120, 8, 80, '#64b5f6', '来自父方');
+    drawChr(cx - 40, 210, 5, 50, '#ff8a65', '来自母方');
+    drawChr(cx + 40, 210, 5, 50, '#81c784', '来自父方');
+    meiCtx.fillStyle = '#666';
+    meiCtx.fillText('2对同源染色体（长染色体+短染色体）', 400, 270);
+    // duplicate arrow
+    meiCtx.fillStyle = '#1565c0';
+    meiCtx.font = '30px sans-serif';
+    meiCtx.fillText('→', 380, 160);
+    // After replication
+    drawChr(520, 120, 8, 80, '#e57373', '');
+    drawChr(526, 120, 8, 80, '#e57373', '');
+    drawChr(540, 120, 8, 80, '#64b5f6', '');
+    drawChr(546, 120, 8, 80, '#64b5f6', '');
+    meiCtx.fillText('姊妹染色单体', 533, 190);
+  } else if (meiStep === 1) {
+    meiCtx.fillStyle = '#1565c0';
+    meiCtx.fillText('减Ⅰ前期：同源染色体联会 → 形成四分体', 400, 25);
+    // Paired homologous chromosomes (quadrivalent)
+    const cy = 100;
+    // Long pair
+    drawChr(120, cy, 8, 80, '#e57373', '');
+    drawChr(135, cy+2, 8, 78, '#e57373', '');
+    drawChr(150, cy, 8, 80, '#64b5f6', '');
+    drawChr(165, cy+2, 8, 78, '#64b5f6', '');
+    meiCtx.fillText('联会(长染色体对)', 142, cy+60);
+    // Short pair
+    drawChr(320, cy+15, 5, 45, '#ff8a65', '');
+    drawChr(330, cy+17, 5, 43, '#ff8a65', '');
+    drawChr(340, cy+15, 5, 45, '#81c784', '');
+    drawChr(350, cy+17, 5, 43, '#81c784', '');
+    meiCtx.fillText('联会(短染色体对)', 335, cy+50);
+    // Crossing over visualization
+    meiCtx.fillStyle = '#c62828';
+    meiCtx.font = 'bold 13px sans-serif';
+    meiCtx.fillText('非姐妹染色单体可发生互换（交叉互换）', 400, 210);
+    // Draw crossover
+    meiCtx.fillStyle = '#ff9800';
+    meiCtx.beginPath();
+    const xc = 500, yc = 100;
+    meiCtx.moveTo(xc-20, yc-10);
+    meiCtx.bezierCurveTo(xc-10, yc-20, xc+10, yc+20, xc+20, yc+10);
+    meiCtx.lineWidth = 3;
+    meiCtx.strokeStyle = '#ff9800';
+    meiCtx.stroke();
+    meiCtx.lineWidth = 1;
+    meiCtx.fillStyle = '#666';
+    meiCtx.font = '12px sans-serif';
+    meiCtx.fillText('互换片段', xc, yc+30);
+  } else if (meiStep === 2) {
+    meiCtx.fillStyle = '#1565c0';
+    meiCtx.fillText('减Ⅰ后期：同源染色体分离 → 非同源染色体自由组合', 400, 25);
+    // Left pole
+    drawChr(120, 100, 8, 70, '#e57373', '');
+    drawChr(130, 100, 8, 70, '#e57373', '');
+    drawChr(120, 190, 5, 40, '#ff8a65', '');
+    drawChr(130, 190, 5, 40, '#ff8a65', '');
+    meiCtx.fillText('组合1', 125, 240);
+    // Right pole
+    drawChr(300, 100, 8, 70, '#64b5f6', '');
+    drawChr(310, 100, 8, 70, '#64b5f6', '');
+    drawChr(300, 190, 5, 40, '#81c784', '');
+    drawChr(310, 190, 5, 40, '#81c784', '');
+    meiCtx.fillText('或', 250, 130);
+    // Alternative
+    drawChr(470, 100, 8, 70, '#e57373', '');
+    drawChr(480, 100, 8, 70, '#e57373', '');
+    drawChr(470, 190, 5, 40, '#81c784', '');
+    drawChr(480, 190, 5, 40, '#81c784', '');
+    meiCtx.fillText('组合2', 475, 240);
+    // Arrow
+    drawChr(640, 100, 8, 70, '#64b5f6', '');
+    drawChr(650, 100, 8, 70, '#64b5f6', '');
+    drawChr(640, 190, 5, 40, '#ff8a65', '');
+    drawChr(650, 190, 5, 40, '#ff8a65', '');
+    meiCtx.fillText('减Ⅰ染色体数减半', 400, 280);
+  } else if (meiStep === 3) {
+    meiCtx.fillStyle = '#1565c0';
+    meiCtx.fillText('减Ⅱ后期：着丝粒分裂 → 姐妹染色单体分开', 400, 25);
+    // Cell 1
+    meiCtx.strokeStyle = '#999';
+    meiCtx.strokeRect(30, 60, 250, 200);
+    drawChr(80, 140, 8, 60, '#e57373', '');
+    drawChr(140, 140, 8, 60, '#e57373', '分离为');
+    drawChr(100, 180, 5, 40, '#ff8a65', '');
+    drawChr(160, 180, 5, 40, '#ff8a65', '');
+    // Cell 2
+    meiCtx.strokeRect(320, 60, 250, 200);
+    drawChr(380, 140, 8, 60, '#64b5f6', '');
+    drawChr(440, 140, 8, 60, '#64b5f6', '');
+    drawChr(400, 180, 5, 40, '#81c784', '');
+    drawChr(460, 180, 5, 40, '#81c784', '');
+    meiCtx.fillStyle = '#c62828';
+    meiCtx.fillText('每个次级精母细胞中的姐妹染色单体分开', 400, 280);
+  } else {
+    meiCtx.fillStyle = '#1565c0';
+    meiCtx.fillText('结果：4个精细胞（染色体数减半，各含2条染色体）', 400, 25);
+    for (let i = 0; i < 4; i++) {
+      const sx = 80 + i * 160;
+      meiCtx.strokeStyle = '#ddd';
+      meiCtx.strokeRect(sx-30, 60, 120, 180);
+      const combo = i % 2 === 0;
+      drawChr(sx+30, 130, 8, 60, combo ? '#e57373' : '#e57373', '');
+      drawChr(sx+60, 160, 5, 40, combo ? '#ff8a65' : '#81c784', '');
+      drawChr(sx+75, 130, 8, 60, combo ? '#e57373' : '#e57373', '');
+      drawChr(sx+90, 160, 5, 40, combo ? '#ff8a65' : '#81c784', '');
+      meiCtx.fillStyle = '#2c3e50';
+      meiCtx.font = '12px sans-serif';
+      meiCtx.fillText('精细胞'+(i+1), sx+30, 240);
+    }
+    meiCtx.fillStyle = '#e65100';
+    meiCtx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    meiCtx.fillText('→ 变形 → 4个精子（蝌蚪形：头含细胞核、尾可摆动）', 400, 280);
+  }
+  requestAnimationFrame(drawMeiosis);
+}
+drawMeiosis();
+</script>
+
+</div>
+</div>
+</body>
+</html>

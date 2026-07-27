@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2章 组成细胞的分子 - 知识清单</title>
+<style>
+  :root { --primary: #1565c0; --primary-light: #e3f2fd; --accent: #e65100; --bg: #f7f9fc; --card: #ffffff; --text: #2c3e50; --text-light: #5a6c7d; --border: #dde4ed; --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 12px; --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 16px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #0d47a1, #1565c0); color: #fff; padding: 36px 40px; border-radius: var(--radius); margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 2em; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; }
+  
+  .memo-box {
+    background: #fefefe;
+    border: 2px solid #1565c0;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .memo-box .memo-title {
+    font-weight: 700;
+    color: #1565c0;
+    font-size: 1em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .memo-box p, .memo-box li {
+    font-size: 0.92em;
+    line-height: 1.8;
+    margin-bottom: 4px;
+  }
+  .memo-box .bold-concept {
+    color: #c62828;
+    font-weight: 700;
+  }
+  .focus-box {
+    background: #e3f2fd;
+    border-left: 4px solid #1565c0;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 0.9em;
+  }
+  .focus-box .focus-title {
+    font-weight: 700;
+    color: #1565c0;
+    margin-bottom: 6px;
+  }
+.section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; transition: var(--transition); }
+  .section-header:hover { background: #d0e4f5; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #f0f7ff; border-color: #bbdefb; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #90caf9; color: #5a7a9a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; transition: var(--transition); }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e3f2fd; color: #1565c0; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .diagram-box canvas { max-width: 100%; }
+  .controls { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #0d47a1; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #c05200; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px 14px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafb; }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #90a4b8; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p, .memo-box li { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #e3f2fd; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .highlight-box { background: linear-gradient(135deg, #fff8e1, #fff3cd); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; font-weight: 500; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #42a5f5); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 640px) { .header { padding: 24px 20px; } .header h1 { font-size: 1.4em; } .info-row { grid-template-columns: 1fr; } }
+  .formula { display: inline-block; background: #f5f5f5; padding: 3px 8px; border-radius: 4px; font-family: "Courier New", monospace; font-size: 0.9em; border: 1px solid #ddd; }
+
+      /* ===== FLOATING SIDEBAR ===== */
+  .sidebar {
+    position: fixed;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 175px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    padding: 16px 0;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .sidebar .nav-title {
+    color: #37474f;
+    font-size: 0.9em;
+    font-weight: 700;
+    padding: 0 14px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #78909c;
+    text-decoration: none;
+    padding: 8px 14px;
+    font-size: 0.82em;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+  }
+  .sidebar a:hover {
+    background: rgba(33,150,243,0.06);
+    color: #37474f;
+  }
+  .sidebar a.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+  .sidebar .ch-num {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 18px;
+    text-align: center;
+  }
+  .main-wrap {
+    /* wraps container - no layout changes needed */
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: static;
+      transform: none;
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 8px;
+      gap: 4px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-title {
+      width: 100%;
+      padding: 4px 0;
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .sidebar a {
+      padding: 5px 8px;
+      font-size: 0.75em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .book-title { width: 100%; padding: 4px 0; }
+    .sidebar a.book-link {
+      padding: 5px 8px;
+      font-size: 0.7em;
+      border-left: none;
+      border-radius: 4px;
+    }
+    .sidebar .nav-divider { width: 100%; margin: 4px 8px; }
+  }
+
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+            <nav class="sidebar">
+    <div class="nav-title">生物学 必修1<br>分子与细胞</div>
+      <a href="1.1.html"><span class="ch-num">第1章</span>走近细胞</a>
+      <a href="1.2.html" class="active"><span class="ch-num">第2章</span>组成细胞的分子</a>
+      <a href="1.3.html"><span class="ch-num">第3章</span>细胞的基本结构</a>
+      <a href="1.4.html"><span class="ch-num">第4章</span>物质输入和输出</a>
+      <a href="1.5.html"><span class="ch-num">第5章</span>能量供应和利用</a>
+      <a href="1.6.html"><span class="ch-num">第6章</span>细胞的生命历程</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link active">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+  <div class="main-wrap">
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>第2章 组成细胞的分子</h1>
+  <div class="subtitle">人教版 · 生物学必修1 · 分子与细胞</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 40 个知识点</div>
+
+<!-- 第1节 元素和化合物 -->
+
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 组成细胞的主要元素有哪些？各有什么作用？<br>
+      ● 怎样检测生物组织中的糖类、脂肪和蛋白质？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第1节 细胞中的元素和化合物</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>核心结论：</strong>组成细胞的化学元素，在<strong>无机自然界</strong>中都能找到，没有一种元素是细胞所特有的——这说明生物界与非生物界具有<strong>统一性</strong>。但细胞中各种元素的相对含量与无机自然界的<strong>大不相同</strong>——说明生物界与非生物界具有<strong>差异性</strong>。
+    </div>
+    <div class="info-row">
+      <div class="info-card">
+        <h4>大量元素</h4>
+        <p>C、H、O、N、P、S、K、Ca、Mg 等<br><small style="color:var(--text-light);">C是构成生物大分子的<strong>基本骨架</strong></small></p>
+      </div>
+      <div class="info-card">
+        <h4>微量元素</h4>
+        <p>Fe、Mn、Zn、Cu、B、Mo 等<br><small style="color:var(--text-light);">含量很少但<strong>不可缺少</strong></small></p>
+      </div>
+      <div class="info-card">
+        <h4>细胞中含量最多的化合物</h4>
+        <p><strong>水</strong>（占细胞鲜重最多，约85%~90%）<br>蛋白质（占细胞干重最多）</p>
+      </div>
+    </div>
+    <ul class="checklist" id="cl1">
+      <li><span class="check-box"></span><span class="label">大量元素：<strong>C H O N P S K Ca Mg</strong></span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">微量元素：<strong>Fe Mn Zn Cu B Mo</strong>（铁锰锌铜硼钼）</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">C是最基本的元素，构成有机物的<strong>碳骨架</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">鲜重含量最多：<strong>水</strong>；干重含量最多：<strong>蛋白质</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">检测还原糖：<strong>斐林试剂</strong>，水浴加热，砖红色沉淀</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">检测蛋白质：<strong>双缩脲试剂</strong>，紫色反应</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">检测脂肪：<strong>苏丹III染液</strong>，橘黄色</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 水和无机盐 -->
+
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 水在细胞中以什么形式存在？有什么功能？<br>
+      ● 无机盐在细胞中起什么作用？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第2节 细胞中的无机物</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card">
+        <h4>自由水（占95.5%）</h4>
+        <p>以游离形式存在，可以自由流动<br>功能：细胞内<strong>良好溶剂</strong>、参与生化反应、运输物质</p>
+      </div>
+      <div class="info-card">
+        <h4>结合水（占4.5%）</h4>
+        <p>与蛋白质、多糖等物质结合<br>功能：细胞结构的<strong>重要组成成分</strong></p>
+      </div>
+    </div>
+    <div class="highlight-box">
+      <strong>自由水与结合水的比例</strong>影响细胞代谢和抗逆性：<br>
+      自由水/结合水比值<strong>高</strong> → 代谢旺盛（如萌发种子）<br>
+      自由水/结合水比值<strong>低</strong> → 抗逆性强（如休眠种子）
+    </div>
+    <ul class="checklist" id="cl2">
+      <li><span class="check-box"></span><span class="label">自由水的功能：溶剂、反应物、运输</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">结合水的功能：细胞结构的组成成分</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">自由水/结合水比例的意义</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">无机盐多以<strong>离子</strong>形式存在（如Na⁺、K⁺、Ca²⁺、Fe²⁺）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">Mg²⁺是叶绿素的组成成分；Fe²⁺是血红蛋白的成分</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第3节 糖类和脂质 -->
+
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 细胞中的糖类有哪些种类？各有什么功能？<br>
+      ● 脂质有哪些种类？有什么功能？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第3节 细胞中的糖类和脂质</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <!-- 交互式糖类分类图 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">糖类分类 - 交互导图</h4>
+      <canvas id="sugarCanvas" width="750" height="260"></canvas>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="highlightSugar('mono')">单糖</button>
+        <button class="btn btn-primary" onclick="highlightSugar('di')">二糖</button>
+        <button class="btn btn-primary" onclick="highlightSugar('poly')">多糖</button>
+        <button class="btn btn-outline" onclick="highlightSugar('all')">全部显示</button>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>类别</th><th>举例</th><th>分布/功能</th></tr>
+      <tr><td>单糖</td><td>葡萄糖、果糖、半乳糖、核糖、脱氧核糖</td><td>细胞的重要能源物质</td></tr>
+      <tr><td>二糖</td><td>蔗糖、麦芽糖（植物）；乳糖（动物）</td><td>水解后产生两个单糖</td></tr>
+      <tr><td>多糖</td><td>淀粉、纤维素（植物）；糖原（动物）</td><td>储能（淀粉/糖原）或结构（纤维素）</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl3">
+      <li><span class="check-box"></span><span class="label">糖类是主要的<strong>能源物质</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">葡萄糖是细胞生命活动的<strong>主要能源物质</strong></span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">淀粉（植物）和糖原（动物）是储能多糖</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label">纤维素是植物<strong>细胞壁</strong>的主要成分（结构多糖）</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label">脂肪是细胞内<strong>良好的储能物质</strong>（等质量储能最多）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">磷脂是构成<strong>细胞膜</strong>的重要成分</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">固醇类：胆固醇、性激素、维生素D</span><span class="tag tag-memorize">记忆</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第4节 蛋白质 -->
+
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 蛋白质的基本组成单位是什么？<br>
+      ● 氨基酸是怎样构成蛋白质的？<br>
+      ● 蛋白质多样性的原因是什么？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第4节 蛋白质是生命活动的主要承担者</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <!-- 交互式氨基酸脱水缩合动画 -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">氨基酸脱水缩合 - 交互动画</h4>
+      <canvas id="peptideCanvas" width="750" height="200"></canvas>
+      <div class="controls">
+        <button class="btn btn-accent" onclick="startPeptideAnim()">🔄 演示脱水缩合</button>
+        <button class="btn btn-outline" onclick="resetPeptideAnim()">重置</button>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>蛋白质结构层次：</strong><br>
+      氨基酸（基本单位）→ 脱水缩合 → 肽链（多肽）→ 盘曲折叠 → 具有一定空间结构的蛋白质<br>
+      <strong>蛋白质多样性原因：</strong><br>
+      ①氨基酸<strong>种类</strong>不同 ②氨基酸<strong>数目</strong>不同 ③氨基酸<strong>排列顺序</strong>不同 ④肽链<strong>空间结构</strong>千差万别
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h4>氨基酸通式</h4>
+        <p style="font-family:monospace;font-size:1.1em;">H₂N—CH—COOH<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R</p>
+        <p>氨基(-NH₂)+羧基(-COOH)+R基+H连在同一C上</p>
+      </div>
+      <div class="info-card">
+        <h4>计算公式</h4>
+        <p>肽键数 = 氨基酸数 - 肽链数<br>
+        脱水数 = 肽键数 = 氨基酸数 - 肽链数<br>
+        蛋白质相对分子质量 = 氨基酸平均分子量 × 氨基酸数 - 18 × 脱水数</p>
+      </div>
+    </div>
+
+    <ul class="checklist" id="cl4">
+      <li><span class="check-box"></span><span class="label">氨基酸是蛋白质的<strong>基本单位</strong>（21种氨基酸）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">必需氨基酸8种（人体不能合成）</span><span class="tag tag-memorize">记忆</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>脱水缩合</strong>形成肽键（—CO—NH—）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">肽键数 = 氨基酸数 − 肽链数</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">蛋白质多样性的四个原因</span><span class="tag tag-understand">理解</span></li>
+      <li><span class="check-box"></span><span class="label"><strong>蛋白质变性</strong>：空间结构被破坏（高温、强酸、强碱、重金属等）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">蛋白质功能：催化（酶）、结构、运输、免疫（抗体）、调节（激素）</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第5节 核酸 -->
+
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● DNA与RNA在化学组成上有什么异同点？<br>
+      ● 核苷酸的排列顺序与遗传信息有什么关系？<br>
+      ● 怎样理解生物大分子以碳链作为基本骨架？
+    </div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>第5节 核酸是遗传信息的携带者</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">DNA vs RNA 结构对比</h4>
+      <canvas id="nucleicCanvas" width="750" height="220"></canvas>
+    </div>
+    <table>
+      <tr><th>比较项目</th><th>DNA</th><th>RNA</th></tr>
+      <tr><td>五碳糖</td><td>脱氧核糖</td><td>核糖</td></tr>
+      <tr><td>碱基</td><td>A、G、C、<strong>T</strong></td><td>A、G、C、<strong>U</strong></td></tr>
+      <tr><td>结构</td><td>通常双链（双螺旋）</td><td>通常单链</td></tr>
+      <tr><td>分布</td><td>主要在细胞核</td><td>主要在细胞质</td></tr>
+    </table>
+    <ul class="checklist" id="cl5">
+      <li><span class="check-box"></span><span class="label">核酸是<strong>遗传信息</strong>的携带者</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">核苷酸是核酸的基本单位（一分子磷酸+五碳糖+含氮碱基）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">DNA和RNA的区别（五碳糖和碱基）</span><span class="tag tag-important">重点</span></li>
+      <li><span class="check-box"></span><span class="label">核苷酸排列顺序代表<strong>遗传信息</strong></span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ===== CHECKLIST =====
+function updateProgress() {
+  const total = 32;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+  localStorage.setItem('bio_ch2_checklist', JSON.stringify(
+    [...document.querySelectorAll('.checklist li')].map(li => li.classList.contains('checked'))
+  ));
+}
+document.querySelectorAll('.checklist li').forEach((li, i) => {
+  li.dataset.id = i;
+  li.addEventListener('click', function() { this.classList.toggle('checked'); updateProgress(); });
+});
+(function(){
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_ch2_checklist'));
+    if (state) document.querySelectorAll('.checklist li').forEach((li, i) => { if (state[i]) li.classList.add('checked'); });
+  } catch(e) {}
+  updateProgress();
+})();
+
+// ===== SUGAR CLASSIFICATION CANVAS =====
+const sugarCanvas = document.getElementById('sugarCanvas');
+const sctx = sugarCanvas.getContext('2d');
+let sugarHighlight = 'all';
+
+function drawSugarTree(hl) {
+  const w = sugarCanvas.width, h = sugarCanvas.height;
+  sctx.clearRect(0, 0, w, h);
+  sctx.fillStyle = '#fafbfc'; sctx.fillRect(0, 0, w, h);
+
+  function alpha(cat) { return (hl === 'all' || hl === cat) ? 1 : 0.25; }
+
+  // Lines
+  sctx.strokeStyle = '#90a4ae'; sctx.lineWidth = 2;
+  sctx.globalAlpha = 0.5;
+  sctx.beginPath(); sctx.moveTo(375, 40); sctx.lineTo(120, 100);
+  sctx.moveTo(375, 40); sctx.lineTo(375, 100);
+  sctx.moveTo(375, 40); sctx.lineTo(600, 100);
+  sctx.stroke();
+  sctx.globalAlpha = 1;
+
+  // 单糖
+  sctx.globalAlpha = alpha('mono');
+  sctx.fillStyle = '#e3f2fd'; sctx.strokeStyle = '#1565c0'; sctx.lineWidth = 3;
+  roundRect(sctx, 60, 90, 130, 75, 10);
+  sctx.fill(); sctx.stroke();
+  sctx.fillStyle = '#1565c0'; sctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.textAlign = 'center';
+  sctx.fillText('单糖', 125, 117);
+  sctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('葡萄糖 果糖 半乳糖', 125, 137);
+  sctx.fillText('核糖 脱氧核糖', 125, 154);
+
+  // 二糖
+  sctx.globalAlpha = alpha('di');
+  sctx.fillStyle = '#fff3e0'; sctx.strokeStyle = '#e65100';
+  roundRect(sctx, 310, 90, 130, 75, 10);
+  sctx.fill(); sctx.stroke();
+  sctx.fillStyle = '#e65100'; sctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('二糖', 375, 117);
+  sctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('蔗糖 麦芽糖（植物）', 375, 137);
+  sctx.fillText('乳糖（动物）', 375, 154);
+
+  // 多糖
+  sctx.globalAlpha = alpha('poly');
+  sctx.fillStyle = '#e8f5e9'; sctx.strokeStyle = '#2c8c5a';
+  roundRect(sctx, 560, 90, 130, 75, 10);
+  sctx.fill(); sctx.stroke();
+  sctx.fillStyle = '#2c8c5a'; sctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('多糖', 625, 117);
+  sctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('淀粉 纤维素（植物）', 625, 137);
+  sctx.fillText('糖原（动物）', 625, 154);
+
+  // Title
+  sctx.globalAlpha = 1;
+  sctx.fillStyle = '#2c3e50'; sctx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('🍬 糖类分类', 375, 25);
+
+  // Footer note
+  sctx.fillStyle = '#888'; sctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  sctx.fillText('还原糖：葡萄糖、果糖、麦芽糖、乳糖（能与斐林试剂反应）', 375, 245);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+}
+
+function highlightSugar(type) { sugarHighlight = type; drawSugarTree(type); }
+drawSugarTree('all');
+
+// ===== PEPTIDE ANIMATION =====
+const peptCanvas = document.getElementById('peptideCanvas');
+const pctx = peptCanvas.getContext('2d');
+let peptAnimId, peptT = 0, peptRunning = false;
+
+function drawPeptideScene(t, stage) {
+  const w = peptCanvas.width, h = peptCanvas.height;
+  pctx.clearRect(0, 0, w, h);
+  pctx.fillStyle = '#fafbfc'; pctx.fillRect(0, 0, w, h);
+
+  // AA1
+  const aa1x = 150, aa1y = 120;
+  // AA2
+  const aa2x = 480, aa2y = 120;
+  const mx = (aa1x + aa2x) / 2;
+  const progress = stage === 'anim' ? Math.min(1, Math.max(0, t / 3)) : (stage === 'done' ? 1 : 0);
+  const cx = aa1x + (aa2x - aa1x) * progress;
+
+  function drawAA(x, y, rColor, label, r) {
+    // R group
+    pctx.fillStyle = rColor;
+    pctx.beginPath(); pctx.arc(x, y - 28, 14, 0, Math.PI*2); pctx.fill();
+    pctx.fillStyle = '#fff'; pctx.font = 'bold 10px sans-serif'; pctx.textAlign = 'center';
+    pctx.fillText(label, x, y - 24);
+    // alpha C
+    pctx.fillStyle = '#333'; pctx.beginPath(); pctx.arc(x, y, 8, 0, Math.PI*2); pctx.fill();
+    // NH2 left
+    pctx.fillStyle = '#1565c0'; pctx.beginPath(); pctx.arc(x - 30, y - 5, 10, 0, Math.PI*2); pctx.fill();
+    pctx.fillStyle = '#fff'; pctx.font = '9px sans-serif'; pctx.fillText('NH₂', x - 30, y - 1);
+    // COOH right
+    pctx.fillStyle = '#c62828'; pctx.beginPath(); pctx.arc(x + 30, y - 5, 10, 0, Math.PI*2); pctx.fill();
+    pctx.fillStyle = '#fff'; pctx.font = '9px sans-serif'; pctx.fillText('COOH', x + 30, y - 1);
+    // H
+    pctx.fillStyle = '#888'; pctx.font = '11px sans-serif'; pctx.fillText('H', x - 8, y - 18);
+  }
+
+  // Moving AA2
+  const aa2cx = aa2x - (aa2x - cx) * progress;
+  if (progress < 1) {
+    drawAA(cx, aa1y, '#ff9800', 'R₁', 'R1');
+    drawAA(aa2x - (aa2x - cx) * (1 - progress), aa2y, '#9c27b0', 'R₂', 'R2');
+  }
+
+  if (progress > 0.5) {
+    // Show water leaving
+    const waterAlpha = (progress - 0.5) * 2;
+    pctx.globalAlpha = waterAlpha;
+    pctx.fillStyle = '#03a9f4';
+    pctx.beginPath(); pctx.arc(mx + 20, aa1y - 60 * (progress - 0.5), 10, 0, Math.PI*2);
+    pctx.fill();
+    pctx.fillStyle = '#fff'; pctx.font = '9px sans-serif'; pctx.textAlign = 'center';
+    pctx.fillText('H₂O', mx + 20, aa1y - 60 * (progress - 0.5) + 3);
+    pctx.globalAlpha = 1;
+  }
+
+  if (progress >= 1) {
+    // Final: dipeptide
+    drawAA(315, 120, '#ff9800', 'R₁', 'R1');
+    drawAA(435, 120, '#9c27b0', 'R₂', 'R2');
+    // Peptide bond
+    pctx.fillStyle = '#e65100';
+    pctx.fillRect(345, 113, 60, 14);
+    pctx.fillStyle = '#fff';
+    pctx.font = 'bold 11px sans-serif'; pctx.textAlign = 'center';
+    pctx.fillText('肽键', 375, 124);
+    // Arrow to peptide bond
+    pctx.strokeStyle = '#e65100'; pctx.lineWidth = 1.5;
+    pctx.beginPath(); pctx.moveTo(375, 130); pctx.lineTo(375, 155);
+    pctx.stroke();
+    pctx.fillStyle = '#e65100'; pctx.font = '11px sans-serif';
+    pctx.fillText('—CO—NH—', 375, 168);
+  }
+
+  pctx.fillStyle = '#2c3e50'; pctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; pctx.textAlign = 'center';
+  pctx.fillText(progress >= 1 ? '二肽（两个氨基酸脱去1分子水）' : '氨基酸1 + 氨基酸2 → 脱水缩合', 375, 192);
+}
+
+function animatePeptide(timestamp) {
+  if (!peptRunning) return;
+  if (!peptStartTime) peptStartTime = timestamp;
+  peptT = (timestamp - peptStartTime) / 1000;
+  drawPeptideScene(peptT, 'anim');
+  if (peptT >= 3) { peptRunning = false; drawPeptideScene(3, 'done'); return; }
+  peptAnimId = requestAnimationFrame(animatePeptide);
+}
+let peptStartTime;
+function startPeptideAnim() {
+  cancelAnimationFrame(peptAnimId);
+  peptRunning = true; peptStartTime = null;
+  peptAnimId = requestAnimationFrame(animatePeptide);
+}
+function resetPeptideAnim() {
+  cancelAnimationFrame(peptAnimId);
+  peptRunning = false; peptT = 0;
+  drawPeptideScene(0, 'init');
+}
+drawPeptideScene(0, 'init');
+
+// ===== NUCLEIC ACID CANVAS =====
+const nctx = document.getElementById('nucleicCanvas').getContext('2d');
+function drawNucleic() {
+  const w = 750, h = 220;
+  nctx.clearRect(0, 0, w, h);
+  nctx.fillStyle = '#fafbfc'; nctx.fillRect(0, 0, w, h);
+  nctx.fillStyle = '#2c3e50'; nctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif'; nctx.textAlign = 'center';
+
+  // DNA side
+  nctx.fillText('DNA（脱氧核糖核酸）', 200, 28);
+  drawNucleotide(nctx, 200, 80, '#1565c0', 'A', true);
+  drawNucleotide(nctx, 200, 140, '#c62828', 'T', true);
+  nctx.fillStyle = '#666'; nctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  nctx.fillText('脱氧核糖 + 磷酸 + 碱基(A/T/G/C)', 200, 195);
+  nctx.fillText('通常双链 · 双螺旋结构', 200, 212);
+
+  // RNA side
+  nctx.fillText('RNA（核糖核酸）', 550, 28);
+  drawNucleotide(nctx, 550, 80, '#2c8c5a', 'A', false);
+  drawNucleotide(nctx, 550, 140, '#e65100', 'U', false);
+  nctx.fillStyle = '#666'; nctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  nctx.fillText('核糖 + 磷酸 + 碱基(A/U/G/C)', 550, 195);
+  nctx.fillText('通常单链', 550, 212);
+
+  // Divider
+  nctx.strokeStyle = '#ccc'; nctx.lineWidth = 1; nctx.setLineDash([6,6]);
+  nctx.beginPath(); nctx.moveTo(375, 30); nctx.lineTo(375, 215);
+  nctx.stroke(); nctx.setLineDash([]);
+}
+
+function drawNucleotide(ctx, x, y, color, base, isDNA) {
+  // Phosphate
+  ctx.fillStyle = '#ff9800'; ctx.beginPath(); ctx.arc(x - 60, y, 14, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('P', x - 60, y + 3);
+  // Sugar
+  ctx.fillStyle = isDNA ? '#bbdefb' : '#c8e6c9';
+  ctx.strokeStyle = isDNA ? '#1565c0' : '#2c8c5a'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#333'; ctx.font = '9px sans-serif'; ctx.fillText(isDNA ? '脱氧' : '核糖', x, y + 3);
+  // Base
+  ctx.fillStyle = color;
+  roundRect(ctx, x + 35, y - 13, 28, 26, 5);
+  ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif'; ctx.fillText(base, x + 49, y + 5);
+  // Lines
+  ctx.strokeStyle = '#666'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x - 46, y); ctx.lineTo(x - 16, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 16, y); ctx.lineTo(x + 35, y); ctx.stroke();
+}
+drawNucleic();
+
+// Progress
+updateProgress();
+</script>
+
+</div>
+</div>
+</body>
+</html>

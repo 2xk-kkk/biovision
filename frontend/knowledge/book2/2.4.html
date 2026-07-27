@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第4章 基因的表达 - 知识清单</title>
+<style>
+  :root {
+    --primary: #e65100;
+    --primary-light: #fff3e0;
+    --accent: #2e7d32;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #bf360c, #e65100);
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='30' r='2' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='70' cy='60' r='3' fill='rgba(255,255,255,0.08)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header h1 { font-size: 2em; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 1.05em; opacity: 0.9; margin-top: 6px; position: relative; z-index: 1; }
+  .header .quote { margin-top: 14px; font-style: italic; font-size: 0.95em; opacity: 0.85; position: relative; z-index: 1; }
+
+  .memo-box { background: #fefefe; border: 2px solid var(--primary); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .memo-box .memo-title { font-weight: 700; color: var(--primary); font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .memo-box p { font-size: 0.92em; line-height: 1.8; margin-bottom: 4px; }
+  .memo-box .bold-concept { color: #c62828; font-weight: 700; }
+  .focus-box { background: #fff3e0; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 0.9em; }
+  .focus-box .focus-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .section-header { padding: 16px 24px; background: var(--primary-light); border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; transition: var(--transition); }
+  .section-header:hover { background: #ffe0b2; }
+  .section-header h2 { font-size: 1.15em; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+  .section-header .arrow { transition: transform 0.3s; font-size: 0.8em; }
+  .section.collapsed .section-header .arrow { transform: rotate(-90deg); }
+  .section-body { padding: 20px 24px; }
+  .section.collapsed .section-body { display: none; }
+
+  .checklist { list-style: none; }
+  .checklist li { padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+  .checklist li:hover { background: #f8fafb; border-color: #e8ecf1; }
+  .checklist li.checked { background: #fff3e0; border-color: #ffcc80; }
+  .checklist li.checked .check-box { background: var(--primary); border-color: var(--primary); }
+  .checklist li.checked .check-box::after { opacity: 1; }
+  .checklist li.checked .label { text-decoration: line-through; text-decoration-color: #ffcc80; color: #9a6e3a; }
+  .check-box { width: 22px; height: 22px; min-width: 22px; border: 2px solid #b0bec5; border-radius: 6px; position: relative; transition: var(--transition); margin-top: 1px; }
+  .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: bold; opacity: 0; transition: var(--transition); }
+  .label { flex: 1; }
+  .tag { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+  .tag-important { background: #fff3e0; color: #e65100; }
+  .tag-understand { background: #e8f5e9; color: #2e7d32; }
+  .tag-memorize { background: #fce4ec; color: #c62828; }
+
+  .diagram-box { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; text-align: center; }
+  .diagram-box canvas { max-width: 100%; }
+  .btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.88em; font-family: inherit; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #1b5e20; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--primary-light); color: var(--primary); padding: 12px 14px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--primary); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .info-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+  .info-card { background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); }
+  .info-card:hover { border-color: #ffcc80; }
+  .info-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 0.95em; }
+
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin: 20px 0 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #ff9800); border-radius: 3px; transition: width 0.5s; }
+  .progress-label { font-size: 0.82em; color: var(--text-light); text-align: center; }
+
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .highlight-box { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0; font-weight: 500; }
+
+  .sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 180px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); color: #546e7a; padding: 16px 0; z-index: 100; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06); }
+  .sidebar .nav-title { color: #37474f; font-size: 0.9em; font-weight: 700; padding: 0 14px 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 4px; line-height: 1.4; }
+  .sidebar a { display: flex; align-items: center; gap: 6px; color: #78909c; text-decoration: none; padding: 8px 14px; font-size: 0.82em; transition: background 0.2s, color 0.2s; border-left: 3px solid transparent; line-height: 1.2; }
+  .sidebar a:hover { background: rgba(230,81,0,0.06); color: #37474f; }
+  .sidebar a.active { background: rgba(230,81,0,0.1); color: #e65100; font-weight: 700; border-left-color: #ff9800; }
+  .sidebar .ch-num { font-size: 0.7em; font-weight: 700; color: #90a4ae; min-width: 18px; text-align: center; }
+  @media (max-width: 860px) { .sidebar { position: static; transform: none; width: 100%; max-height: none; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 4px; border-radius: 8px; margin-bottom: 12px; } .sidebar .nav-title { width: 100%; padding: 4px 0; border-bottom: none; margin-bottom: 0; } .sidebar a { padding: 5px 8px; font-size: 0.75em; border-left: none; border-radius: 4px; } }
+
+  .sidebar .nav-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+    margin: 8px 14px;
+  }
+  .sidebar .book-title {
+    color: #90a4ae;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 14px 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar a.book-link {
+    font-size: 0.75em;
+    padding: 5px 14px;
+  }
+  .sidebar a.book-link .bk-num {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #90a4ae;
+    min-width: 16px;
+    text-align: center;
+    margin-right: 2px;
+  }
+  .sidebar a.book-link.active {
+    background: rgba(33,150,243,0.1);
+    color: #1565c0;
+    font-weight: 700;
+    border-left-color: #42a5f5;
+  }
+
+
+  .back-home {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: #546e7a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s;
+  }
+  .back-home:hover {
+    background: #fff;
+    color: #2c3e50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .back-home .arrow {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .back-home {
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 0.78em;
+    }
+  }
+
+</style>
+</head>
+<body>
+<a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
+
+
+      <nav class="sidebar">
+    <div class="nav-title">生物学 必修2<br>遗传与进化</div>
+      <a href="2.1.html"><span class="ch-num">第1章</span>遗传因子的发现</a>
+      <a href="2.2.html"><span class="ch-num">第2章</span>基因和染色体的关系</a>
+      <a href="2.3.html"><span class="ch-num">第3章</span>基因的本质</a>
+      <a href="2.4.html" class="active"><span class="ch-num">第4章</span>基因的表达</a>
+      <a href="2.5.html"><span class="ch-num">第5章</span>基因突变及其他变异</a>
+      <a href="2.6.html"><span class="ch-num">第6章</span>生物的进化</a>
+  
+      <div class="nav-divider"></div>
+      <div class="book-title">切换课本</div>
+      <a href="../book1/1.1.html" class="book-link">必修1 · 分子与细胞</a>
+      <a href="../book2/2.1.html" class="book-link active">必修2 · 遗传与进化</a>
+      <a href="../book3/3.1.html" class="book-link">选必1 · 稳态与调节</a>
+      <a href="../book4/4.1.html" class="book-link">选必2 · 生物与环境</a>
+      <a href="../book5/5.1.html" class="book-link">选必3 · 生物技术与工程</a>
+  </nav>
+
+<div class="main-wrap">
+<div class="container">
+
+<div class="header">
+  <h1>第4章 基因的表达</h1>
+  <div class="subtitle">人教版 · 生物学必修2 · 遗传与进化</div>
+  <div class="quote">"生命的图案，扑朔迷离：从信息到物质，从蓝图到现实，繁复、简约，粗放、精细，是谁创造出，如此的和谐与统一？"</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">已掌握: 0 / 28 个知识点</div>
+
+<!-- 第1节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📝 第1节 基因指导蛋白质的合成</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 基因如何指导蛋白质的合成？<br>
+      ● 中心法则是如何描述遗传信息的传递规律的？<br>
+      ● 几乎所有生物共用同一套密码子的基本事实，给我们什么启示？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、遗传信息的转录</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 转录</div>
+      <p><span class="bold-concept">转录</span>：在细胞核中，通过<span class="bold-concept">RNA聚合酶</span>以<span class="bold-concept">DNA的一条链</span>为模板合成RNA的过程。</p>
+      <p><strong>RNA与DNA的区别：</strong>①五碳糖是<span class="bold-concept">核糖</span>（不是脱氧核糖）；②碱基不含T（胸腺嘧啶），含<span class="bold-concept">U（尿嘧啶）</span>；③RNA一般是<span class="bold-concept">单链</span>，比DNA短。</p>
+      <p><strong>三种主要的RNA：</strong></p>
+      <p><span class="bold-concept">mRNA（信使RNA）</span>：传递遗传信息，作为翻译的模板</p>
+      <p><span class="bold-concept">tRNA（转运RNA）</span>：一端携带氨基酸，另一端有3个反密码子与mRNA密码子互补配对</p>
+      <p><span class="bold-concept">rRNA（核糖体RNA）</span>：组成核糖体的成分，参与蛋白质合成</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、遗传信息的翻译</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 翻译</div>
+      <p><span class="bold-concept">翻译</span>：游离在细胞质中的各种氨基酸，以<span class="bold-concept">mRNA为模板</span>合成具有一定氨基酸顺序的蛋白质的过程。</p>
+      <p><span class="bold-concept">密码子</span>：mRNA上<span class="bold-concept">3个相邻的碱基</span>决定1个氨基酸。共64个密码子：61个编码氨基酸（含2个起始密码子AUG和GUG），3个为<span class="bold-concept">终止密码子</span>（UAA、UAG、UGA）。</p>
+      <p><span class="bold-concept">反密码子</span>：tRNA上与mRNA密码子互补配对的3个碱基。</p>
+      <p><strong>密码子的简并性</strong>：大多数氨基酸有多个密码子（如亮氨酸有6个）。简并对生物体的生存发展有意义：减少基因突变带来的影响。</p>
+      <p><strong>几乎所有的生物共用一套密码子</strong>→暗示生物可能有共同起源。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、中心法则</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 中心法则</div>
+      <p>克里克1957年提出<span class="bold-concept">中心法则</span>：遗传信息可以从DNA→DNA（复制），DNA→RNA（转录），RNA→蛋白质（翻译）。后补充：RNA→RNA（复制）和RNA→DNA（<span class="bold-concept">逆转录</span>），见于少数RNA病毒。</p>
+      <p><strong>生命是物质、能量和信息的统一体</strong>：DNA/RNA是信息载体，蛋白质是信息表达产物，ATP为信息流动提供能量。</p>
+    </div>
+
+    <!-- Translation animation -->
+    <div class="diagram-box">
+      <h4 style="margin-bottom:12px;">🔬 蛋白质合成过程 - 交互演示</h4>
+      <canvas id="translCanvas" width="800" height="220"></canvas>
+    </div>
+
+    <ul class="checklist" id="cl1">
+      <li data-id="1"><span class="check-box"></span><span class="label"><strong>转录</strong>：以DNA一条链为模板，RNA聚合酶催化→合成mRNA（细胞核）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="2"><span class="check-box"></span><span class="label">RNA用<strong>U（尿嘧啶）</strong>代替DNA的T（胸腺嘧啶），A—U配对</span><span class="tag tag-important">重点</span></li>
+      <li data-id="3"><span class="check-box"></span><span class="label"><strong>mRNA</strong>：信使；<strong>tRNA</strong>：搬运氨基酸（含反密码子）；<strong>rRNA</strong>：核糖体成分</span><span class="tag tag-important">重点</span></li>
+      <li data-id="4"><span class="check-box"></span><span class="label"><strong>翻译</strong>：以mRNA为模板，在核糖体上合成蛋白质（细胞质）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="5"><span class="check-box"></span><span class="label"><strong>密码子</strong>：mRNA上3个相邻碱基=1个氨基酸；共64个（3个终止密码）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="6"><span class="check-box"></span><span class="label">密码子特点：<strong>简并性</strong>（多密码子编码同一氨基酸）、<strong>通用性</strong>（所有生物共用）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="7"><span class="check-box"></span><span class="label"><strong>中心法则</strong>内容：DNA→RNA→蛋白质 以及 RNA→DNA（逆转录）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="8"><span class="check-box"></span><span class="label">生命是<strong>物质、能量和信息的统一体</strong></span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 第2节 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🧬 第2节 基因表达与性状的关系</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="focus-box">
+      <div class="focus-title">本节聚焦</div>
+      ● 基因如何控制生物体的性状？<br>
+      ● 细胞分化与基因表达有什么关系？<br>
+      ● 表观遗传信息是如何调控基因表达的？<br>
+      ● 怎样理解基因与性状关系的复杂性？
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">一、基因控制性状的途径</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 基因控制性状的两条途径</div>
+      <p>① <strong>基因通过控制<span class="bold-concept">酶的合成</span>来控制代谢过程，进而控制性状</strong>。例如：皱粒豌豆（淀粉分支酶异常→淀粉含量降低→失水皱缩）、白化病（酪氨酸酶缺乏→不能合成黑色素）。</p>
+      <p>② <strong>基因通过控制<span class="bold-concept">蛋白质的结构</span>直接控制性状</strong>。例如：囊性纤维化（CFTR蛋白缺失3个碱基→空间结构变化→运输氯离子功能异常）。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">二、基因的选择性表达与细胞分化</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 细胞分化的本质</div>
+      <p>同一生物体中不同类型的细胞，<span class="bold-concept">基因都是相同的</span>（都来自同一受精卵），但形态、结构和功能各不相同。这是因为<span class="bold-concept">基因的选择性表达</span>：有些基因在所有细胞中都表达（如ATP合成酶基因），有些只在特定细胞中表达（如胰岛素基因只在胰岛细胞中表达）。<span class="bold-concept">细胞分化的本质就是基因的选择性表达。</span></p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">三、表观遗传</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 表观遗传</div>
+      <p><span class="bold-concept">表观遗传</span>（epigenetic inheritance）：生物体<span class="bold-concept">基因的碱基序列保持不变</span>，但基因表达和表型发生<span class="bold-concept">可遗传变化</span>的现象。</p>
+      <p><strong>机制：</strong>①DNA甲基化（抑制基因表达）；②组蛋白修饰（甲基化、乙酰化等）。</p>
+      <p><strong>实例：</strong>柳穿鱼花形态（Lcyc基因甲基化导致不表达）、小鼠Avy基因（甲基化程度越高→体毛越深）、同卵双胞胎的微小差异、蜂王与工蜂的分化。</p>
+    </div>
+
+    <h3 style="color:var(--primary);margin-bottom:12px;">四、基因与性状关系的复杂性</h3>
+    <div class="memo-box">
+      <div class="memo-title">📝 必背 —— 基因与性状不是简单一一对应</div>
+      <p>① 一个性状可受<span class="bold-concept">多个基因</span>影响（如人的身高由多个基因决定）</p>
+      <p>② 一个基因可影响<span class="bold-concept">多个性状</span>（如水稻Ghd7基因影响开花、生长、发育和产量）</p>
+      <p>③ 性状 = <span class="bold-concept">基因 + 环境</span>（如后天营养和锻炼对身高的影响、水毛茛叶形）</p>
+      <p>④ 基因与基因、基因与基因产物、基因与环境之间存在<span class="bold-concept">复杂的相互作用网络</span>。</p>
+    </div>
+
+    <ul class="checklist" id="cl2">
+      <li data-id="9"><span class="check-box"></span><span class="label">基因控制性状途径①：控制<strong>酶的合成</strong>→代谢→性状（如白化病）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="10"><span class="check-box"></span><span class="label">基因控制性状途径②：控制<strong>蛋白质结构</strong>→直接控制性状（如囊性纤维化）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="11"><span class="check-box"></span><span class="label"><strong>细胞分化本质</strong>：基因的选择性表达（基因相同，表达不同）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="12"><span class="check-box"></span><span class="label"><strong>表观遗传</strong>：碱基序列不变，表达和表型可遗传变化（DNA甲基化等）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="13"><span class="check-box"></span><span class="label">表观遗传实例：柳穿鱼、小鼠Av、同卵双胞胎、蜂王/工蜂</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="14"><span class="check-box"></span><span class="label">基因与性状关系复杂：多因一效、一因多效、基因+环境</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="15"><span class="check-box"></span><span class="label">性状 = <strong>基因型 + 环境</strong>（基因不是唯一决定因素）</span><span class="tag tag-important">重点</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 易错辨析 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>⚡ 易错概念辨析与补充</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <div class="info-card"><h4>❌ 常见错误</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① "转录和复制是一回事" → <strong>错！</strong>转录产物是RNA，复制产物是DNA；转录用RNA聚合酶<br>
+          ② "一个密码子对应一种氨基酸，所以一种氨基酸只有一个密码子" → <strong>错！</strong>一种氨基酸可有多个密码子（简并性）<br>
+          ③ "DNA甲基化改变基因的双链序列"→<strong>错！</strong>表观遗传碱基序列不变<br>
+          ④ "蛋白质可以从DNA直接翻译"→<strong>错！</strong>必须经过mRNA中介<br>
+          ⑤ "转录只以编码链为模板"→<strong>错！</strong>以模板链（反义链）为模板
+        </p>
+      </div>
+      <div class="info-card"><h4>💡 计算要点</h4>
+        <p style="font-size:0.88em;color:var(--text-light);">
+          ① 基因中碱基数∶mRNA碱基数∶氨基酸数 ≈ <strong>6∶3∶1</strong><br>
+          ② 翻译时一个mRNA可结合<strong>多个核糖体</strong>→同时合成多条肽链→高效<br>
+          ③ 起始密码子：AUG（甲硫氨酸），原核生物GUG也可作起始<br>
+          ④ 终止密码子：UAA、UAG、UGA（特殊情况下UGA可编码硒代半胱氨酸）<br>
+          ⑤ 核糖体是沿着<strong>mRNA</strong>移动的，不是mRNA移动
+        </p>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>过程</th><th>场所</th><th>模板</th><th>原料</th><th>产物</th></tr>
+      <tr><td>DNA复制</td><td>细胞核（主）</td><td>DNA两条链</td><td>脱氧核苷酸</td><td>DNA</td></tr>
+      <tr><td>转录</td><td>细胞核</td><td>DNA一条链</td><td>核糖核苷酸</td><td>mRNA</td></tr>
+      <tr><td>翻译</td><td>核糖体</td><td>mRNA</td><td>氨基酸</td><td>蛋白质/多肽</td></tr>
+      <tr><td>逆转录</td><td>宿主细胞</td><td>RNA</td><td>脱氧核苷酸</td><td>DNA</td></tr>
+    </table>
+
+    <ul class="checklist" id="cl3">
+      <li data-id="16"><span class="check-box"></span><span class="label">转录产物需经过<strong>加工</strong>（真核：切除内含子、连接外显子、加帽加尾）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="17"><span class="check-box"></span><span class="label">一个mRNA上可结合<strong>多个核糖体</strong>（多聚核糖体）→高效翻译</span><span class="tag tag-important">重点</span></li>
+      <li data-id="18"><span class="check-box"></span><span class="label">克里克第一个用实验证明<strong>3个碱基编码1个氨基酸</strong>（T4噬菌体实验）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="19"><span class="check-box"></span><span class="label">尼伦伯格和马太：用蛋白质体外合成技术破译第一个密码子（UUU→苯丙氨酸）</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="20"><span class="check-box"></span><span class="label">几乎所有生物共用一套密码子→支持<strong>生物有共同祖先</strong></span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>📋 本章小结</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="highlight-box">
+      <strong>核心框架：</strong>基因通过转录（DNA→mRNA）和翻译（mRNA→蛋白质）来控制蛋白质合成。性状是基因和环境共同作用的结果。表观遗传在不改变碱基序列的情况下调控基因表达。生命是物质、能量和信息的统一体。
+    </div>
+    <ul class="checklist" id="cl4">
+      <li data-id="21"><span class="check-box"></span><span class="label">基因工程应用：转基因抗虫棉、胰岛素生产、凝乳酶等</span><span class="tag tag-memorize">记忆</span></li>
+      <li data-id="22"><span class="check-box"></span><span class="label">吸烟会使精子DNA甲基化水平升高→影响后代（表观遗传）</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="23"><span class="check-box"></span><span class="label">基因表达调控：基因何时、在哪种细胞、表达水平高低都受调控</span><span class="tag tag-understand">理解</span></li>
+      <li data-id="24"><span class="check-box"></span><span class="label">DNA与RNA的化学组成区别（核糖vs脱氧核糖、U vs T）</span><span class="tag tag-important">重点</span></li>
+      <li data-id="25"><span class="check-box"></span><span class="label">表观遗传普遍存在于生长、发育和衰老整个生命过程中</span><span class="tag tag-understand">理解</span></li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function updateProgress() {
+  const total = 25;
+  const checked = document.querySelectorAll('.checklist li.checked').length;
+  document.getElementById('progress').style.width = (checked / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `已掌握: ${checked} / ${total} 个知识点`;
+}
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function() {
+    this.classList.toggle('checked');
+    updateProgress();
+    saveCheckState();
+  });
+});
+function saveCheckState() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => { state[li.dataset.id] = li.classList.contains('checked'); });
+  localStorage.setItem('bio_b2_ch4_checklist', JSON.stringify(state));
+}
+function loadCheckState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('bio_b2_ch4_checklist'));
+    if (state) document.querySelectorAll('.checklist li').forEach(li => { if (state[li.dataset.id]) li.classList.add('checked'); });
+  } catch(e) {}
+  updateProgress();
+}
+loadCheckState();
+
+// Translation animation
+const transCanvas = document.getElementById('translCanvas');
+const tCtx = transCanvas.getContext('2d');
+let tT = 0;
+
+function drawTransl() {
+  tCtx.clearRect(0, 0, transCanvas.width, transCanvas.height);
+  tCtx.fillStyle = '#fafbfc';
+  tCtx.fillRect(0, 0, transCanvas.width, transCanvas.height);
+  tT += 0.01;
+
+  // mRNA strand
+  tCtx.strokeStyle = '#e65100';
+  tCtx.lineWidth = 3;
+  tCtx.beginPath();
+  tCtx.moveTo(60, 160);
+  tCtx.lineTo(740, 160);
+  tCtx.stroke();
+  // mRNA bases
+  const bases = ['A','U','G','C','G','A','U','U','U','A','G','C','A','U','G','C','U','A','G'];
+  for (let i = 0; i < bases.length; i++) {
+    const bx = 80 + i * 35;
+    tCtx.fillStyle = '#e65100';
+    tCtx.font = 'bold 12px monospace';
+    tCtx.textAlign = 'center';
+    tCtx.fillText(bases[i], bx, 155);
+  }
+
+  // Ribosome (moving)
+  const rX = 150 + Math.sin(tT * 2) * 200;
+  tCtx.fillStyle = '#ffcc80';
+  tCtx.strokeStyle = '#e65100';
+  tCtx.lineWidth = 2;
+  tCtx.beginPath();
+  tCtx.ellipse(rX, 140, 35, 18, 0, 0, Math.PI*2);
+  tCtx.fill();
+  tCtx.stroke();
+  tCtx.fillStyle = '#e65100';
+  tCtx.font = 'bold 10px sans-serif';
+  tCtx.textAlign = 'center';
+  tCtx.fillText('核糖体', rX, 130);
+
+  // tRNA with amino acid
+  const trnaX = rX;
+  tCtx.fillStyle = '#2e7d32';
+  tCtx.beginPath();
+  tCtx.arc(trnaX, 110, 6, 0, Math.PI*2);
+  tCtx.fill();
+  tCtx.fillText('氨基酸', trnaX, 95);
+  tCtx.strokeStyle = '#2e7d32';
+  tCtx.beginPath();
+  tCtx.moveTo(trnaX, 116);
+  tCtx.lineTo(trnaX, 140);
+  tCtx.stroke();
+
+  tCtx.fillStyle = '#2c3e50';
+  tCtx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+  tCtx.fillText('翻译过程：核糖体沿mRNA移动，tRNA搬运氨基酸，合成肽链', 400, 200);
+
+  requestAnimationFrame(drawTransl);
+}
+drawTransl();
+</script>
+
+</div>
+</div>
+</body>
+</html>
