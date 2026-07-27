@@ -456,6 +456,60 @@
             cursor: not-allowed;
         }
 
+        .essay-area {
+            margin-top: 20px;
+        }
+
+        .essay-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .essay-textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 15px;
+            line-height: 1.6;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .essay-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .essay-textarea.disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+            border-color: #e0e0e0;
+        }
+
+        .essay-answer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .answer-label {
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+
+        .answer-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #333;
+        }
+
         .feedback-area {
             margin-top: 0;
             padding: 0;
@@ -971,8 +1025,7 @@
             const textbook = getQueryParam('textbook');
             const chapter = getQueryParam('chapter');
             const section = getQueryParam('section');
-            const typesParam = getQueryParam('types');
-            const selectedTypes = typesParam ? typesParam.split(',') : ['choice'];
+            const questionType = getQueryParam('type');
             
             if (!examId && !textbook) {
                 document.getElementById('quizPaper').innerHTML = `
@@ -996,6 +1049,7 @@
                     if (textbook) params.append('textbook', textbook);
                     if (chapter) params.append('chapter', chapter);
                     if (section) params.append('section', section);
+                    if (questionType) params.append('type', questionType);
                     const url = `${API_BASE_URL}/questions/textbook?${params.toString()}`;
                     response = await fetch(url);
                     result = await response.json();
@@ -1030,24 +1084,7 @@
                         return;
                     }
 
-                    // 根据选中的题型过滤题目
-                    const filteredQuestions = qs.filter(q => {
-                        const questionType = getQuestionType(q);
-                        return selectedTypes.includes(questionType);
-                    });
-
-                    if (filteredQuestions.length === 0) {
-                        document.getElementById('quizPaper').innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">📝</div>
-                                <div class="empty-title">暂无匹配的题目</div>
-                                <div class="empty-desc">所选题型暂无题目，请选择其他题型</div>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    allQuestions = filteredQuestions;
+                    allQuestions = qs;
                     
                     startTime = Date.now();
                     startNewQuiz();
@@ -1093,6 +1130,9 @@
         }
 
         function getQuestionType(question) {
+            if (question.type === 'essay') {
+                return 'essay';
+            }
             const hasOptions = question.options && Object.keys(question.options).some(k => question.options[k]);
             if (hasOptions) {
                 return 'choice';
@@ -1131,7 +1171,7 @@
                 <div class="question-header">
                     <div class="question-header-left">
                         <div class="question-number">${currentQuestionIndex + 1}</div>
-                        <div class="question-type">${questionType === 'choice' ? '选择题' : '填空题'}</div>
+                        <div class="question-type">${questionType === 'choice' ? '选择题' : questionType === 'essay' ? '大题' : '填空题'}</div>
                     </div>
                     <div class="question-header-right">
                         <div class="stats-badge">✅ <span>${correctCount}</span>正确</div>
@@ -1187,9 +1227,27 @@
                     `;
                 });
                 html += '</div>';
+            } else if (questionType === 'essay') {
+                html += `<div class="essay-area">`;
+                html += `<div class="essay-text">${question.stem}</div>`;
+                
+                const textareaId = `essay-input-${question.id}`;
+                let textareaClass = 'essay-textarea';
+                if (isAnswerSubmitted) {
+                    textareaClass += ' disabled';
+                }
+                
+                html += `<textarea class="${textareaClass}" id="${textareaId}" rows="6" ${isAnswerSubmitted ? 'disabled' : ''} oninput="updateEssayAnswer(${question.id})">${userAnswer || ''}</textarea>`;
+                
+                if (isAnswerSubmitted && correctAnswer) {
+                    html += `<div class="essay-answer"><div class="answer-label">参考答案：</div><div class="answer-content">${correctAnswer}</div></div>`;
+                }
+                
+                html += `</div>`;
             } else {
                 let stemHtml = question.stem;
-                const blankCount = (stemHtml.match(/____/g) || []).length;
+                const blanks = stemHtml.match(/_+/g) || [];
+                const blankCount = blanks.length;
                 
                 html += `<div class="fill-blank-area"><div class="fill-blank-text">`;
                 
@@ -1212,7 +1270,7 @@
                         const onChange = isAnswerSubmitted ? '' : `oninput="updateFillAnswer(${question.id}, ${blankCount})"`;
                         const disabled = isAnswerSubmitted ? 'disabled' : '';
                         
-                        stemHtml = stemHtml.replace('____', `<input type="text" class="${inputClass}" id="${inputId}" value="${inputValue}" ${onChange} ${disabled}>`);
+                        stemHtml = stemHtml.replace(/_+/, `<input type="text" class="${inputClass}" id="${inputId}" value="${inputValue}" ${onChange} ${disabled}>`);
                     }
                 }
                 
@@ -1257,6 +1315,14 @@
             }
             
             answers[questionId] = answerParts.join(';');
+        }
+
+        function updateEssayAnswer(questionId) {
+            if (isAnswerSubmitted) return;
+            const textarea = document.getElementById(`essay-input-${questionId}`);
+            if (textarea) {
+                answers[questionId] = textarea.value;
+            }
         }
 
         async function submitCurrentAnswer() {

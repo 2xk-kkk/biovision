@@ -1,8 +1,9 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type
 from utils.response import ApiResponse
 import json
 import os
+import random
 
 def import_questions():
     questions_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'questions.json')
@@ -175,7 +176,35 @@ def toggle_mastered_service(user_id, question_id, mastered=1):
 def get_questions_by_textbook_service(textbook=None, chapter=None, section=None, question_type=None):
     db = get_db_connection()
     try:
-        questions = get_questions_by_textbook(db, textbook, chapter, section, question_type)
+        if question_type == 'comprehensive':
+            choice_questions = get_questions_by_type(db, textbook, chapter, section, 'choice')
+            fill_questions = get_questions_by_type(db, textbook, chapter, section, 'fill')
+            essay_questions = get_questions_by_type(db, textbook, chapter, section, 'essay')
+            
+            if len(fill_questions) < 2:
+                fill_questions = get_questions_by_type(db, textbook, chapter, None, 'fill')
+            
+            if len(essay_questions) < 1:
+                essay_questions = get_questions_by_type(db, textbook, chapter, None, 'essay')
+            
+            if len(choice_questions) < 2:
+                choice_questions = get_questions_by_type(db, textbook, chapter, None, 'choice')
+            
+            selected_choice = random.sample(choice_questions, min(2, len(choice_questions))) if choice_questions else []
+            selected_fill = random.sample(fill_questions, min(2, len(fill_questions))) if fill_questions else []
+            selected_essay = random.sample(essay_questions, min(1, len(essay_questions))) if essay_questions else []
+            
+            questions = selected_choice + selected_fill + selected_essay
+            random.shuffle(questions)
+        else:
+            questions = get_questions_by_textbook(db, textbook, chapter, '专项训练', question_type)
+            
+            if len(questions) == 0:
+                questions = get_questions_by_textbook(db, textbook, chapter, section, question_type)
+            
+            if len(questions) == 0:
+                questions = get_questions_by_textbook(db, textbook, chapter, None, question_type)
+        
         return ApiResponse.success(data=questions)
     except Exception as e:
         return ApiResponse.error(msg=f"获取题目失败: {str(e)}")

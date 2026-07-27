@@ -1519,20 +1519,19 @@
         }
 
         function confirmTypeSelection() {
-            const selectedTypes = Array.from(document.querySelectorAll('input[name="questionType"]:checked'))
-                .map(input => input.value);
+            const selectedType = document.querySelector('input[name="questionType"]:checked');
             
-            if (selectedTypes.length === 0) {
-                alert('请至少选择一种题型');
+            if (!selectedType) {
+                alert('请选择一种题型');
                 return;
             }
             
             if (!currentPracticeInfo) return;
             
             const { textbookId, chapterTitle, sectionTitle } = currentPracticeInfo;
-            const types = selectedTypes.join(',');
+            const questionType = selectedType.value;
             
-            window.location.href = `quiz.html?textbook=${encodeURIComponent(textbookId)}&chapter=${encodeURIComponent(chapterTitle)}&section=${encodeURIComponent(sectionTitle)}&types=${encodeURIComponent(types)}`;
+            window.location.href = `quiz.html?textbook=${encodeURIComponent(textbookId)}&chapter=${encodeURIComponent(chapterTitle)}&section=${encodeURIComponent(sectionTitle)}&type=${encodeURIComponent(questionType)}`;
         }
     </script>
 
@@ -1548,22 +1547,22 @@
                 <p class="type-select-desc">请选择随机练习中包含的题型（可多选）</p>
                 <div class="type-select-grid">
                     <label class="type-select-item">
-                        <input type="checkbox" name="questionType" value="choice" checked>
+                        <input type="radio" name="questionType" value="choice" checked>
                         <span class="type-icon">✅</span>
                         <span class="type-name">选择题</span>
                     </label>
                     <label class="type-select-item">
-                        <input type="checkbox" name="questionType" value="fill">
+                        <input type="radio" name="questionType" value="fill">
                         <span class="type-icon">✏️</span>
                         <span class="type-name">填空题</span>
                     </label>
                     <label class="type-select-item">
-                        <input type="checkbox" name="questionType" value="essay">
+                        <input type="radio" name="questionType" value="essay">
                         <span class="type-icon">📝</span>
                         <span class="type-name">大题</span>
                     </label>
                     <label class="type-select-item">
-                        <input type="checkbox" name="questionType" value="comprehensive">
+                        <input type="radio" name="questionType" value="comprehensive">
                         <span class="type-icon">🎯</span>
                         <span class="type-name">综合题</span>
                     </label>

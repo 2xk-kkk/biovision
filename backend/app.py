@@ -39,7 +39,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # 挂载前端静态文件目录
 FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 #注册路由
 app.include_router(user.router, prefix="/api", tags=["用户"])
@@ -48,10 +48,12 @@ app.include_router(chart.router, prefix="/api", tags=["统计"])
 app.include_router(exam.router, prefix="/api", tags=["试卷"])
 app.include_router(question.router, prefix="/api", tags=["题目"])
 
-#根路径
+#根路径 - 提供前端页面
 @app.get("/")
 def root():
-    return {"message": "论坛 API 服务正常运行"}
+    from fastapi.responses import FileResponse
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    return FileResponse(index_path)
 
 @app.get("/health")
 def health():

@@ -256,7 +256,7 @@ def get_exam_questions(exam_id: int):
         exam_id_val, exam_name = exam_row
         
         cursor.execute('''
-            SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images 
+            SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, type, analysis 
             FROM questions 
             WHERE exam_id = ? 
             ORDER BY number ASC
@@ -283,7 +283,9 @@ def get_exam_questions(exam_id: int):
                     'D': row[6] if row[6] else ''
                 },
                 'answer': row[7] if row[7] else '',
-                'images': images if images else []
+                'images': images if images else [],
+                'type': row[9] if row[9] else '',
+                'analysis': row[10] if row[10] else ''
             })
         
         conn.close()

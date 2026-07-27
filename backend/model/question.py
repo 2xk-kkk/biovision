@@ -35,7 +35,7 @@ def add_question(db, exam_id, number, stem, option_a, option_b, option_c, option
 
 def get_questions_by_exam(db, exam_id):
     cursor = db.cursor()
-    cursor.execute('SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images FROM questions WHERE exam_id = ? ORDER BY number', (exam_id,))
+    cursor.execute('SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, type, analysis FROM questions WHERE exam_id = ? ORDER BY number', (exam_id,))
     questions = []
     for row in cursor.fetchall():
         images = json.loads(row[8]) if row[8] else []
@@ -50,7 +50,9 @@ def get_questions_by_exam(db, exam_id):
                 'D': row[6]
             },
             'answer': row[7],
-            'images': images
+            'images': images,
+            'type': row[9] if row[9] else '',
+            'analysis': row[10] if row[10] else ''
         })
     return questions
 
@@ -263,7 +265,7 @@ def get_exam_stats(db, exam_id, user_id):
 def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, question_type=None):
     cursor = db.cursor()
     
-    query = 'SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, textbook, chapter, section FROM questions WHERE 1=1'
+    query = 'SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, textbook, chapter, section, type, analysis FROM questions WHERE 1=1'
     params = []
     
     if textbook:
@@ -277,6 +279,10 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, que
     if section:
         query += ' AND section = ?'
         params.append(section)
+    
+    if question_type and question_type != 'all':
+        query += ' AND type = ?'
+        params.append(question_type)
     
     query += ' ORDER BY number'
     
@@ -302,6 +308,58 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, que
             'images': images,
             'textbook': row[9],
             'chapter': row[10],
-            'section': row[11]
+            'section': row[11],
+            'type': row[12] if row[12] else '',
+            'analysis': row[13] if row[13] else ''
+        })
+    return questions
+
+def get_questions_by_type(db, textbook=None, chapter=None, section=None, question_type=None):
+    cursor = db.cursor()
+    
+    query = 'SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, textbook, chapter, section, type, analysis FROM questions WHERE 1=1'
+    params = []
+    
+    if textbook:
+        query += ' AND textbook = ?'
+        params.append(textbook)
+    
+    if chapter:
+        query += ' AND chapter = ?'
+        params.append(chapter)
+    
+    if section:
+        query += ' AND section = ?'
+        params.append(section)
+    
+    if question_type:
+        query += ' AND type = ?'
+        params.append(question_type)
+    
+    cursor.execute(query, params)
+    questions = []
+    for row in cursor.fetchall():
+        images_str = row[8] if row[8] else ''
+        try:
+            images = json.loads(images_str) if images_str else []
+        except:
+            images = []
+        questions.append({
+            'id': row[0],
+            'number': row[1],
+            'stem': row[2],
+            'options': {
+                'A': row[3],
+                'B': row[4],
+                'C': row[5],
+                'D': row[6]
+            },
+            'answer': row[7],
+            'images': images,
+            'textbook': row[9],
+            'chapter': row[10],
+            'section': row[11],
+            'type': row[12] if row[12] else '',
+            'analysis': row[13] if row[13] else ''
         })
     return questions
