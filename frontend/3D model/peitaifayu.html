@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>胚胎早期发育 — 交互模型</title>
+<style>
+:root {
+  --bg: #fefaf5; --panel: #ffffff; --primary: #c0652a; --primaryL: #e08850;
+  --accent: #2a9d8f; --text: #3d2010; --textL: #7a5d4e;
+  --border: #f0d8c0; --shadow: 0 2px 16px rgba(0,0,0,0.06); --r: 12px;
+  --embryo: #fef0e0; --embryo2: #fcd8b0; --icm: #ffe0a0; --icm2: #f5c878;
+  --troph: #f0c8d0; --troph2: #e0a8b8; --zona: #e8e0f0; --zona2: #d0c4de;
+  --success: #2a9d8f; --danger: #dc2626;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+  background:linear-gradient(160deg,#fef5ee 0%,#fefaf5 30%,#fdf8f0 60%,#fefefe 100%);
+  min-height:100vh; user-select:none; -webkit-user-select:none;
+  overflow-x:hidden;
+}
+
+/* ===== HEADER ===== */
+.header{
+  background:linear-gradient(135deg,#5c2a0a,#c0652a);
+  color:#fff; padding:10px 24px; display:flex; align-items:center;
+  justify-content:space-between; flex-wrap:wrap; gap:10px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.18);
+}
+.header h1{font-size:1.25rem;font-weight:700;letter-spacing:0.5px;}
+.progress-bar{display:flex;gap:3px;align-items:center;flex-wrap:wrap;}
+.step-dot{
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.3s;
+  position:relative;
+}
+.step-dot:hover{background:rgba(255,255,255,0.35);}
+.step-dot.active{background:var(--accent);color:#fff;transform:scale(1.15);box-shadow:0 0 18px rgba(42,157,143,0.5);}
+.step-dot.done{background:var(--success);color:#fff;}
+.step-connector{width:18px;height:2px;background:rgba(255,255,255,0.3);border-radius:1px;}
+.step-connector.done{background:var(--success);}
+
+/* ===== MAIN LAYOUT ===== */
+.main{
+  display:grid;grid-template-columns:200px 1fr;gap:12px;padding:12px;
+  height:calc(100vh - 110px);max-width:1420px;margin:0 auto;
+}
+.main-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+
+/* ===== STRUCTURE PANEL (LEFT) ===== */
+.structure-panel{
+  background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:12px;overflow-y:auto;border:1px solid var(--border);
+}
+.structure-panel h3{
+  font-size:0.9rem;color:var(--primary);margin-bottom:10px;
+  padding-bottom:8px;border-bottom:2px solid var(--primaryL);
+}
+.structure-list{display:flex;flex-direction:column;gap:6px;}
+.structure-card{
+  padding:10px;background:#fefaf7;border:1.5px solid var(--border);border-radius:8px;
+  transition:all 0.25s;font-size:0.75rem;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.structure-card .st-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.structure-card .st-icon svg{width:36px;height:36px;}
+.structure-card.highlight{border-color:var(--accent);background:#f5fdfb;box-shadow:0 0 0 3px rgba(42,157,143,0.2);}
+.structure-card .st-info{flex:1;min-width:0;}
+.structure-card .st-name{font-weight:700;color:var(--primary);margin-bottom:2px;}
+.structure-card .st-desc{font-size:0.7rem;color:var(--textL);line-height:1.3;}
+
+/* Key-value stat */
+.stat-mini{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 8px;background:#fefaf7;border-radius:6px;margin-top:4px;
+}
+.stat-mini .sm-label{font-size:0.7rem;color:var(--textL);}
+.stat-mini .sm-value{font-size:0.85rem;font-weight:700;color:var(--primary);}
+
+/* ===== VISUALIZATION AREA (CENTER) ===== */
+.viz-area{
+  background:linear-gradient(180deg,#fefdfc 0%,#fefaf5 50%,#fdf2e8 100%);
+  border-radius:var(--r);box-shadow:var(--shadow),inset 0 0 80px rgba(192,101,42,0.04);
+  border:2px solid #e8d0c0;position:relative;overflow:hidden;
+  flex:1;min-height:380px;touch-action:none;
+}
+.viz-label{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  font-size:0.75rem;color:#b89880;letter-spacing:2px;font-weight:600;
+  pointer-events:none;z-index:1;
+}
+.viz-area .grid-overlay{
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(200,170,140,0.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,170,140,0.06) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+
+/* ===== SCENE ELEMENTS ===== */
+.scene-item{
+  position:absolute;z-index:10;transition:all 0.8s ease;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  pointer-events:none;
+}
+.scene-item .si-icon{display:flex;align-items:center;justify-content:center;}
+.scene-item .si-label{font-size:0.82rem;color:#7a5d4e;text-align:center;max-width:160px;line-height:1.3;font-weight:600;}
+.scene-item.highlight{filter:drop-shadow(0 0 12px rgba(42,157,143,0.7));z-index:30;}
+
+/* Timeline bar */
+.timeline-bar{
+  position:absolute;bottom:12px;left:8%;right:8%;height:4px;
+  background:rgba(200,170,140,0.2);border-radius:2px;z-index:5;
+  pointer-events:none;
+}
+.timeline-marker{
+  position:absolute;bottom:8px;width:12px;height:12px;border-radius:50%;
+  background:var(--accent);border:2px solid #fff;z-index:6;
+  box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:left 1s ease;
+  pointer-events:none;
+}
+.timeline-marker::after{
+  content:attr(data-label);position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  font-size:0.55rem;color:var(--primary);white-space:nowrap;font-weight:600;
+}
+
+/* Demo overlay */
+.demo-overlay{
+  position:absolute;inset:0;pointer-events:none;z-index:50;
+}
+.demo-particle{
+  position:absolute;border-radius:50%;
+  animation:particleBurst 1.2s ease-out forwards;
+}
+@keyframes particleBurst{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0);}
+}
+
+/* ===== INSTRUCTION BAR ===== */
+.instruction-bar{
+  background:var(--panel);border-radius:var(--r);box-shadow:0 4px 20px rgba(0,0,0,0.1);
+  padding:12px 16px;border:2px solid var(--primary);display:flex;
+  gap:14px;align-items:center;flex-wrap:wrap;
+  position:relative;overflow:hidden;
+}
+.instruction-bar::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(180deg,var(--primary),var(--primaryL),var(--accent));
+  border-radius:0 3px 3px 0;
+}
+.ibar-title{
+  font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;
+  background:linear-gradient(135deg,var(--primary),var(--primaryL));
+  padding:7px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(192,101,42,0.2);
+  min-width:180px;text-align:center;letter-spacing:0.5px;
+}
+.ibar-body{flex:1;min-width:220px;display:flex;flex-direction:column;gap:4px;}
+.ibar-steps{
+  font-size:0.8rem;color:var(--text);line-height:1.6;
+  max-height:70px;overflow-y:auto;
+}
+.ibar-steps ol{padding-left:18px;margin:0;}
+.ibar-steps li{margin-bottom:2px;}
+.ibar-steps strong{color:var(--danger);}
+.ibar-knowledge{
+  display:none;font-size:0.8rem;color:#5c2a0a;line-height:1.5;font-weight:500;
+  background:#fef8f0;border:1px solid #f0c898;border-radius:6px;
+  padding:6px 10px;
+}
+.ibar-right{
+  display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:170px;
+}
+.ibar-hint{
+  font-size:0.75rem;color:#a06030;background:#fef8f3;border:1px solid #f0d8c0;
+  border-radius:6px;padding:6px 10px;max-width:260px;line-height:1.4;
+}
+.ibar-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.ibar-btns .btn{font-size:0.78rem;padding:6px 12px;}
+
+.btn{
+  padding:9px 16px;border:none;border-radius:8px;font-size:0.85rem;
+  font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;
+  letter-spacing:0.5px;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.btn:active{transform:translateY(0);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primaryL);}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-accent:hover{background:#3aad9f;}
+.btn-outline{background:#fff;color:var(--primary);border:2px solid var(--primary);}
+.btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* Toast */
+.toast{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  padding:10px 24px;border-radius:28px;font-weight:700;font-size:0.9rem;
+  z-index:1000;animation:toastIn 0.3s ease,toastOut 0.3s ease 2s forwards;
+  pointer-events:none;white-space:nowrap;
+}
+.toast.success{background:var(--success);color:#fff;}
+.toast.error{background:var(--danger);color:#fff;}
+.toast.info{background:var(--primaryL);color:#fff;}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-16px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes toastOut{from{opacity:1;}to{opacity:0;}}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  display:flex;align-items:center;justify-content:center;z-index:999;
+  animation:fadeIn 0.3s;
+}
+.modal{
+  background:#fff;border-radius:18px;padding:32px;max-width:520px;
+  text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.2);
+}
+.modal h2{font-size:1.4rem;margin-bottom:10px;color:var(--primary);}
+.modal p{color:var(--textL);margin-bottom:16px;line-height:1.6;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* Anim nav */
+.anim-nav{
+  position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px;
+  align-items:center;z-index:60;background:rgba(255,255,255,0.94);padding:8px 16px;
+  border-radius:24px;box-shadow:0 3px 16px rgba(0,0,0,0.12);border:1px solid #e8d0c0;
+}
+
+/* Stage indicator */
+.stage-badge{
+  position:absolute;top:14px;right:16px;z-index:4;
+  padding:4px 12px;border-radius:14px;font-size:0.7rem;font-weight:700;
+  background:rgba(255,255,255,0.85);color:var(--primary);
+  border:1px solid var(--border);pointer-events:none;
+}
+
+.back-link{
+  position:fixed;top:56px;left:0;z-index:100;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px 8px 12px;border-radius:0 999px 999px 0;
+  border:1px solid rgba(255,255,255,0.25);border-left:0;
+  background:rgba(92,42,10,0.88);backdrop-filter:blur(10px);
+  color:#fde8d0;text-decoration:none;font-size:14px;
+  font-weight:700;box-shadow:0 2px 16px rgba(0,0,0,0.3);
+}
+.back-link:hover{background:rgba(130,60,20,0.95);transform:translateX(2px);}
+
+/* Responsive */
+@media(max-width:1024px){
+  .main{grid-template-columns:160px 1fr;gap:10px;padding:10px;}
+}
+@media(max-width:768px){
+  .main{grid-template-columns:1fr;}
+  .structure-panel{max-height:120px;}
+  .viz-area{min-height:320px;}
+  .instruction-bar{flex-direction:column;align-items:stretch;gap:8px;padding:10px;}
+  .ibar-title{min-width:auto;text-align:center;}
+  .ibar-right{flex-direction:row;align-items:center;flex-wrap:wrap;}
+  .header h1{font-size:1rem;}
+  .step-dot{width:26px;height:26px;font-size:0.7rem;}
+}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="main5.html" aria-label="返回上一页">← 返回</a>
+
+<div class="header">
+  <h1>🧬 胚胎早期发育 — 交互模型</h1>
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="main">
+  <div class="structure-panel" id="structurePanel">
+    <h3>🔬 发育结构</h3>
+    <div class="structure-list" id="structureList"></div>
+  </div>
+
+  <div class="main-col">
+    <div class="viz-area" id="vizArea">
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="instruction-bar" id="instructionBar">
+      <div class="ibar-title" id="stepTitle"></div>
+      <div class="ibar-body">
+        <div class="ibar-steps" id="instructionText"></div>
+        <div class="ibar-knowledge" id="knowledgeBox">
+          <span>📖</span> <span id="knowledgeText"></span>
+          <span style="font-size:0.7rem;color:#fff;font-weight:700;background:#c0652a;padding:2px 8px;border-radius:12px;white-space:nowrap;margin-left:4px;" id="knowledgeBadge"></span>
+        </div>
+      </div>
+      <div class="ibar-right">
+        <div class="ibar-hint"><span>💡</span> <span id="hintText"></span></div>
+        <div class="ibar-btns">
+          <button class="btn btn-outline" onclick="prevStep()" id="btnPrev">◀ 上一步</button>
+          <button class="btn btn-primary" onclick="nextStep()" id="btnNext">下一步 ▶</button>
+          <button class="btn btn-accent" onclick="resetAll()">🔄 重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastContainer"></div>
+<div id="modalContainer"></div>
+
+<script>
+// ===== SVG ILLUSTRATIONS =====
+const EmbryoSVG = {
+
+  // Zygote: single large cell within zona pellucida, with polar bodies
+  zygote: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="zygCyto" cx="48%" cy="45%"><stop offset="0%" stop-color="#fef8f0"/><stop offset="60%" stop-color="#fef0e0"/><stop offset="100%" stop-color="#fcd8b0"/></radialGradient>
+    </defs>
+    <!-- Zona pellucida -->
+    <circle cx="80" cy="80" r="68" fill="none" stroke="#d0c4de" stroke-width="5" opacity="0.8"/>
+    <circle cx="80" cy="80" r="65" fill="none" stroke="rgba(200,180,210,0.4)" stroke-width="1"/>
+    <!-- Perivitelline space -->
+    <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(200,180,200,0.2)" stroke-width="0.8"/>
+    <!-- Cell membrane -->
+    <circle cx="80" cy="80" r="55" fill="url(#zygCyto)" stroke="#e8b080" stroke-width="2.5"/>
+    <!-- Nucleus (large, central) -->
+    <circle cx="80" cy="78" r="20" fill="#fef0e8" stroke="#d89868" stroke-width="2"/>
+    <circle cx="80" cy="78" r="14" fill="none" stroke="rgba(216,152,104,0.3)" stroke-width="1"/>
+    <!-- Nucleolus -->
+    <circle cx="80" cy="76" r="5" fill="#d08850" opacity="0.5"/>
+    <circle cx="82" cy="80" r="3" fill="#d08850" opacity="0.4"/>
+    <!-- Polar bodies (small, near top edge) -->
+    <circle cx="48" cy="38" r="8" fill="#fef0e0" stroke="#e8b080" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="48" cy="38" r="3" fill="#d08850" opacity="0.5"/>
+    <circle cx="62" cy="34" r="6" fill="#fef0e0" stroke="#e8b080" stroke-width="1.2" opacity="0.8"/>
+    <!-- Labels -->
+    <text x="80" y="18" text-anchor="middle" font-size="11" fill="#b07040" font-weight="700">受精卵（合子）</text>
+    <text x="128" y="90" font-size="8.5" fill="#b090c8">透明带</text>
+    <line x1="125" y1="87" x2="115" y2="72" stroke="#b090c8" stroke-width="0.6"/>
+    <text x="40" y="26" font-size="8" fill="#c87858">第二极体</text>
+  </svg>`,
+
+  // 2-cell stage
+  cleavage2: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="cl2a" cx="40%" cy="45%"><stop offset="0%" stop-color="#fef8f0"/><stop offset="100%" stop-color="#fce0c0"/></radialGradient>
+      <radialGradient id="cl2b" cx="40%" cy="45%"><stop offset="0%" stop-color="#fef8f0"/><stop offset="100%" stop-color="#fce0c0"/></radialGradient>
+    </defs>
+    <circle cx="80" cy="80" r="68" fill="none" stroke="#d0c4de" stroke-width="5" opacity="0.7"/>
+    <!-- Two blastomeres -->
+    <ellipse cx="65" cy="78" rx="28" ry="30" fill="url(#cl2a)" stroke="#e8b080" stroke-width="2"/>
+    <circle cx="65" cy="76" r="8" fill="#fef0e8" stroke="#d89868" stroke-width="1.2"/>
+    <ellipse cx="98" cy="78" rx="28" ry="30" fill="url(#cl2b)" stroke="#e8b080" stroke-width="2"/>
+    <circle cx="98" cy="76" r="8" fill="#fef0e8" stroke="#d89868" stroke-width="1.2"/>
+    <text x="80" y="18" text-anchor="middle" font-size="11" fill="#b07040" font-weight="700">2-细胞期</text>
+    <text x="80" y="140" text-anchor="middle" font-size="8.5" fill="#b07040">卵裂球</text>
+  </svg>`,
+
+  // 4-cell stage
+  cleavage4: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="cl4c" cx="45%" cy="45%"><stop offset="0%" stop-color="#fef8f0"/><stop offset="100%" stop-color="#fce0c0"/></radialGradient>
+    </defs>
+    <circle cx="80" cy="80" r="65" fill="none" stroke="#d0c4de" stroke-width="4.5" opacity="0.7"/>
+    <ellipse cx="62" cy="64" rx="22" ry="22" fill="url(#cl4c)" stroke="#e8b080" stroke-width="1.8"/>
+    <ellipse cx="100" cy="64" rx="22" ry="22" fill="url(#cl4c)" stroke="#e8b080" stroke-width="1.8"/>
+    <ellipse cx="62" cy="100" rx="22" ry="22" fill="url(#cl4c)" stroke="#e8b080" stroke-width="1.8"/>
+    <ellipse cx="100" cy="100" rx="22" ry="22" fill="url(#cl4c)" stroke="#e8b080" stroke-width="1.8"/>
+    <text x="80" y="16" text-anchor="middle" font-size="11" fill="#b07040" font-weight="700">4-细胞期</text>
+    <text x="80" y="140" text-anchor="middle" font-size="8.5" fill="#b07040">等裂（全裂）</text>
+  </svg>`,
+
+  // 8-cell stage
+  cleavage8: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="cl8c" cx="45%" cy="45%"><stop offset="0%" stop-color="#fef8f0"/><stop offset="100%" stop-color="#fce0c0"/></radialGradient>
+    </defs>
+    <circle cx="80" cy="80" r="62" fill="none" stroke="#d0c4de" stroke-width="4" opacity="0.65"/>
+    <circle cx="56" cy="58" r="13" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="78" cy="54" r="13" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="100" cy="60" r="13" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="52" cy="82" r="13" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="74" cy="80" r="12" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="98" cy="82" r="13" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="60" cy="104" r="13" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="86" cy="100" r="13" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <circle cx="106" cy="104" r="12" fill="url(#cl8c)" stroke="#e8b080" stroke-width="1.5"/>
+    <text x="80" y="15" text-anchor="middle" font-size="11" fill="#b07040" font-weight="700">8-细胞期</text>
+    <text x="80" y="140" text-anchor="middle" font-size="8.5" fill="#b07040">细胞越分越小</text>
+  </svg>`,
+
+  // Morula: tightly packed cells ~16-32
+  morula: `<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="morc" cx="45%" cy="45%"><stop offset="0%" stop-color="#fef8f0"/><stop offset="100%" stop-color="#fcd8b0"/></radialGradient>
+    </defs>
+    <circle cx="80" cy="80" r="55" fill="none" stroke="#d0c4de" stroke-width="3" opacity="0.5"/>
+    <!-- Tightly packed cells forming a mulberry-like mass -->
+    ${(()=>{let s='';const positions=[
+      [65,55],[80,52],[95,58],[55,65],[70,62],[88,60],[100,65],[50,75],
+      [62,72],[78,68],[95,72],[108,75],[52,85],[65,82],[80,78],[98,82],
+      [110,85],[58,95],[72,92],[90,90],[105,95],[65,105],[82,102],[98,105]
+    ];
+    positions.forEach(([cx,cy])=>s+=`<circle cx="${cx}" cy="${cy}" r="10" fill="url(#morc)" stroke="#e8b878" stroke-width="1" opacity="0.9"/>`);
+    return s;})()}
+    <text x="80" y="15" text-anchor="middle" font-size="11" fill="#b07040" font-weight="700">桑葚胚</text>
+    <text x="80" y="140" text-anchor="middle" font-size="8.5" fill="#b07040">16~32个细胞 · 细胞紧密连接</text>
+  </svg>`,
+
+  // Blastocyst: ICM + trophoblast + blastocoel
+  blastocyst: `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="blastoF" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef8f0"/><stop offset="100%" stop-color="#fcd8b0"/></linearGradient>
+    </defs>
+    <!-- Zona (thin, stretched) -->
+    <ellipse cx="100" cy="80" rx="88" ry="68" fill="none" stroke="#d0c4de" stroke-width="3" opacity="0.4" stroke-dasharray="8,4"/>
+    <!-- Trophoblast (outer layer ring) -->
+    <ellipse cx="100" cy="80" rx="82" ry="62" fill="none" stroke="#e0a0b8" stroke-width="6" opacity="0.6"/>
+    <!-- Trophoblast cells around rim -->
+    ${Array.from({length:28},(_,i)=>{
+      const ang=i*12.85*Math.PI/180; const cx=100+78*Math.cos(ang); const cy=80+58*Math.sin(ang);
+      return `<circle cx="${cx}" cy="${cy}" r="5" fill="#f0c0d0" stroke="#d898b0" stroke-width="0.8" opacity="0.8"/>`;
+    }).join('')}
+    <!-- Blastocoel (fluid-filled cavity) -->
+    <ellipse cx="105" cy="88" rx="52" ry="36" fill="#e8f4f8" stroke="rgba(150,190,200,0.3)" stroke-width="1" opacity="0.7"/>
+    <text x="120" y="90" font-size="8.5" fill="#80b0c0" opacity="0.7">囊胚腔</text>
+    <!-- Inner cell mass (ICM) -->
+    <ellipse cx="62" cy="62" rx="22" ry="20" fill="#ffe8a0" stroke="#e8c060" stroke-width="2"/>
+    ${Array.from({length:10},(_,i)=>{
+      const ang=i*36*Math.PI/180; const cx=60+12*Math.cos(ang); const cy=60+10*Math.sin(ang);
+      return `<circle cx="${cx}" cy="${cy}" r="4" fill="#f5d078" stroke="#d0a840" stroke-width="0.6" opacity="0.85"/>`;
+    }).join('')}
+    <text x="60" y="50" text-anchor="middle" font-size="10" fill="#b08020" font-weight="700">内细胞团</text>
+    <text x="62" y="100" text-anchor="middle" font-size="9" fill="#e0a0b8" font-weight="600">滋养层</text>
+    <text x="100" y="18" text-anchor="middle" font-size="13" fill="#b07040" font-weight="700">囊胚（胚泡）</text>
+    <text x="190" y="135" text-anchor="end" font-size="9" fill="#b07040">约4~5天</text>
+  </svg>`,
+
+  // Hatching blastocyst
+  hatching: `<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+    <!-- Zona with break -->
+    <ellipse cx="90" cy="80" rx="85" ry="65" fill="none" stroke="#d0c4de" stroke-width="3.5" opacity="0.35"/>
+    <!-- Break in zona -->
+    <path d="M165,62 Q175,70 168,82 Q160,74 155,58" fill="none" stroke="#c0652a" stroke-width="2.5" stroke-dasharray="4,3"/>
+    <!-- Trophoblast -->
+    <ellipse cx="105" cy="78" rx="70" ry="52" fill="none" stroke="#e0a0b8" stroke-width="5" opacity="0.5"/>
+    <!-- Blastocyst cells (emerging) -->
+    ${Array.from({length:22},(_,i)=>{
+      const ang=i*16.36*Math.PI/180; const cx=105+66*Math.cos(ang); const cy=78+48*Math.sin(ang);
+      return `<circle cx="${cx}" cy="${cy}" r="4.5" fill="#f0c0d0" stroke="#d898b0" stroke-width="0.7" opacity="0.8"/>`;
+    }).join('')}
+    <!-- Blastocoel -->
+    <ellipse cx="108" cy="84" rx="42" ry="28" fill="#e8f4f8" stroke="rgba(150,190,200,0.3)" stroke-width="1" opacity="0.6"/>
+    <!-- ICM -->
+    <ellipse cx="70" cy="62" rx="18" ry="16" fill="#ffe8a0" stroke="#e8c060" stroke-width="1.8"/>
+    <text x="68" y="50" text-anchor="middle" font-size="9" fill="#b08020" font-weight="700">内细胞团</text>
+    <!-- Emerging part -->
+    <text x="175" y="72" text-anchor="end" font-size="8.5" fill="#c0652a" font-weight="700">透明带破裂</text>
+    <!-- Arrow indicating escape -->
+    <path d="M175,90 L185,95" stroke="#c0652a" stroke-width="2"/>
+    <text x="160" y="28" text-anchor="middle" font-size="13" fill="#b07040" font-weight="700">孵化中的囊胚</text>
+    <text x="210" y="140" text-anchor="end" font-size="9" fill="#b07040">约5~6天</text>
+  </svg>`,
+
+  // Implantation
+  implantation: `<svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- Uterine endometrium (bottom half) -->
+    <defs>
+      <linearGradient id="endoG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fcd0c0"/><stop offset="100%" stop-color="#e89888"/></linearGradient>
+    </defs>
+    <rect x="0" y="110" width="220" height="70" rx="8" fill="url(#endoG)" stroke="#d08070" stroke-width="2" opacity="0.8"/>
+    <!-- Endometrial glands -->
+    <circle cx="30" cy="130" r="6" fill="#f0a090" opacity="0.5"/>
+    <circle cx="60" cy="140" r="5" fill="#f0a090" opacity="0.5"/>
+    <circle cx="120" cy="135" r="5" fill="#f0a090" opacity="0.5"/>
+    <circle cx="180" cy="138" r="6" fill="#f0a090" opacity="0.5"/>
+    <path d="M30,130 Q40,145 35,150" fill="none" stroke="#e89888" stroke-width="1"/>
+    <path d="M60,140 Q58,152 62,158" fill="none" stroke="#e89888" stroke-width="1"/>
+    <!-- Blood vessels -->
+    <path d="M20,120 Q50,125 80,118 Q110,112 140,120" fill="none" stroke="#d05050" stroke-width="2" opacity="0.4"/>
+    <path d="M100,128 Q120,132 150,125 Q170,120 190,130" fill="none" stroke="#d05050" stroke-width="1.5" opacity="0.3"/>
+    <!-- Blastocyst embedding -->
+    <ellipse cx="120" cy="95" rx="55" ry="38" fill="none" stroke="#e0a0b8" stroke-width="4" opacity="0.6"/>
+    ${Array.from({length:18},(_,i)=>{
+      const ang=i*20*Math.PI/180; const cx=120+50*Math.cos(ang); const cy=95+34*Math.sin(ang);
+      return `<circle cx="${cx}" cy="${cy}" r="4" fill="#f0c0d0" stroke="#d898b0" stroke-width="0.7" opacity="0.75"/>`;
+    }).join('')}
+    <!-- Syncytiotrophoblast invading -->
+    <path d="M100,120 Q105,118 110,125 Q115,130 120,118 Q125,110 130,122 Q135,128 140,115" fill="none" stroke="#e07090" stroke-width="3" opacity="0.7"/>
+    <!-- ICM -->
+    <ellipse cx="95" cy="75" rx="16" ry="14" fill="#ffe8a0" stroke="#e8c060" stroke-width="1.8"/>
+    <!-- Blastocoel -->
+    <ellipse cx="130" cy="88" rx="30" ry="18" fill="#e8f4f8" stroke="rgba(150,190,200,0.3)" stroke-width="1" opacity="0.5"/>
+    <text x="40" y="20" font-size="13" fill="#b07040" font-weight="700">囊胚植入子宫内膜</text>
+    <text x="80" y="112" font-size="10" fill="#8a4a3a" font-weight="700">子宫内膜</text>
+    <text x="130" y="170" font-size="9" fill="#8a4a3a">约6~7天开始植入</text>
+    <text x="78" y="58" font-size="8.5" fill="#b08020" font-weight="600">内细胞团</text>
+    <text x="148" y="98" font-size="8" fill="#e0a0b8">合体滋养层</text>
+  </svg>`,
+
+  // Gastrula - three germ layers
+  gastrula: `<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- Embryo elongated oval -->
+    <ellipse cx="100" cy="85" rx="65" ry="45" fill="#fef5e8" stroke="#d89868" stroke-width="2.5"/>
+    <!-- Ectoderm (outer layer, blue) -->
+    <ellipse cx="100" cy="85" rx="65" ry="45" fill="none" stroke="#60a0d8" stroke-width="3"/>
+    <path d="M35,85 Q40,75 45,70 Q60,58 100,52 Q140,58 155,70 Q160,75 165,85" fill="none" stroke="#60a0d8" stroke-width="2.5" opacity="0.7"/>
+    <text x="195" y="70" text-anchor="end" font-size="9" fill="#4080c0" font-weight="700">外胚层</text>
+    <!-- Mesoderm (middle layer, red) -->
+    <ellipse cx="100" cy="88" rx="50" ry="32" fill="none" stroke="#e86060" stroke-width="2.5"/>
+    <path d="M50,88 Q55,78 65,72 Q100,62 140,75 Q145,80 150,88" fill="none" stroke="#e86060" stroke-width="2" opacity="0.6"/>
+    <text x="195" y="96" text-anchor="end" font-size="9" fill="#d04040" font-weight="700">中胚层</text>
+    <!-- Endoderm (inner layer, yellow) -->
+    <ellipse cx="100" cy="90" rx="35" ry="20" fill="none" stroke="#d8a840" stroke-width="2.5"/>
+    <path d="M65,90 Q68,82 75,78 Q100,70 130,80 Q135,85 135,90" fill="none" stroke="#d8a840" stroke-width="2" opacity="0.6"/>
+    <text x="195" y="120" text-anchor="end" font-size="9" fill="#b08020" font-weight="700">内胚层</text>
+    <!-- Primitive streak -->
+    <line x1="100" y1="62" x2="100" y2="118" stroke="#c0652a" stroke-width="2" opacity="0.6"/>
+    <text x="90" y="50" text-anchor="middle" font-size="9" fill="#c0652a" font-weight="600">原条</text>
+    <!-- Legend box -->
+    <rect x="4" y="4" width="80" height="52" rx="6" fill="rgba(255,255,255,0.8)" stroke="#ddd" stroke-width="0.8"/>
+    <circle cx="14" cy="16" r="4" fill="#60a0d8" opacity="0.8"/>
+    <text x="22" y="19" font-size="9" fill="#4080c0">外胚层 → 表皮、神经</text>
+    <circle cx="14" cy="30" r="4" fill="#e86060" opacity="0.8"/>
+    <text x="22" y="33" font-size="9" fill="#d04040">中胚层 → 肌肉、骨骼</text>
+    <circle cx="14" cy="44" r="4" fill="#d8a840" opacity="0.8"/>
+    <text x="22" y="47" font-size="9" fill="#b08020">内胚层 → 消化管、肺</text>
+    <text x="100" y="150" text-anchor="middle" font-size="11" fill="#b07040" font-weight="700">原肠胚（三胚层分化）</text>
+  </svg>`,
+
+  // Development timeline overview
+  timeline: `<svg viewBox="0 0 700 60" xmlns="http://www.w3.org/2000/svg">
+    <line x1="30" y1="30" x2="670" y2="30" stroke="#d0c0b0" stroke-width="2"/>
+    <circle cx="60" cy="30" r="8" fill="#fcd8b0" stroke="#c0652a" stroke-width="1.5"/><text x="60" y="50" text-anchor="middle" font-size="8.5">0d 受精卵</text>
+    <circle cx="150" cy="30" r="6" fill="#fcd8b0" stroke="#c0652a" stroke-width="1.5"/><text x="150" y="50" text-anchor="middle" font-size="8.5">1d 2-细胞</text>
+    <circle cx="240" cy="30" r="6" fill="#fcd8b0" stroke="#c0652a" stroke-width="1.5"/><text x="240" y="50" text-anchor="middle" font-size="8.5">2d 4-细胞</text>
+    <circle cx="330" cy="30" r="6" fill="#fcd8b0" stroke="#c0652a" stroke-width="1.5"/><text x="330" y="50" text-anchor="middle" font-size="8.5">3d 桑葚胚</text>
+    <circle cx="440" cy="30" r="8" fill="#ffe8a0" stroke="#2a9d8f" stroke-width="2"/><text x="440" y="50" text-anchor="middle" font-size="8.5">4-5d 囊胚</text>
+    <circle cx="560" cy="30" r="6" fill="#f0c0d0" stroke="#2a9d8f" stroke-width="1.5"/><text x="560" y="50" text-anchor="middle" font-size="8.5">6-7d 植入</text>
+    <circle cx="640" cy="30" r="8" fill="#e0d0f0" stroke="#6d4c8a" stroke-width="2"/><text x="640" y="50" text-anchor="middle" font-size="8.5">14d 原肠胚</text>
+  </svg>`,
+};
+
+// ===== STRUCTURE DATA =====
+const allStructures = [
+  {id:'zona',name:'透明带',desc:'保护胚胎的糖蛋白外壳，阻止过早植入，孵化时被降解',svg:null},
+  {id:'blastomere',name:'卵裂球',desc:'卵裂产生的小细胞，随分裂次数增加而体积逐渐减小',svg:null},
+  {id:'icm',name:'内细胞团',desc:'（ICM）囊胚内的一群细胞→将发育成胎儿本体',svg:null},
+  {id:'trophoblast',name:'滋养层',desc:'囊胚外层扁平细胞→发育为胎盘/绒毛膜，负责植入和营养',svg:null},
+  {id:'blastocoel',name:'囊胚腔',desc:'囊胚内部充满液体的空腔，由滋养层细胞分泌形成',svg:null},
+  {id:'endometrium',name:'子宫内膜',desc:'子宫内壁组织，囊胚植入于此，是胚胎发育的"土壤"',svg:null},
+  {id:'germLayers',name:'三胚层',desc:'外胚层（表皮/神经）、中胚层（肌肉/骨骼）、内胚层（消化管/肺）',svg:null},
+];
+
+// ===== STEP DEFINITIONS =====
+const steps = [
+  {
+    id:1, title:'步骤一：受精卵（合子）',
+    instruction:`
+      <p><strong>受精完成后形成合子——胚胎发育的起点：</strong></p>
+      <ol>
+        <li>精卵融合→雌雄原核融合→<strong>合子(2n)形成</strong></li>
+        <li>合子是<strong>单个二倍体细胞</strong>，具有<strong>全能性</strong></li>
+        <li>合子被<strong>透明带</strong>包裹，防止过早与输卵管壁黏附</li>
+        <li>合子开始<strong>蛋白质合成</strong>，为第一次卵裂准备</li>
+        <li>可见<strong>第二极体</strong>（卵细胞完成MⅡ的标志）</li>
+      </ol>
+      <p style="color:#c0652a;margin-top:4px;font-size:0.82rem;">🌟 <strong>全能性</strong>：合子拥有发育为完整个体所需的所有遗传信息！</p>`,
+    hint:'合子是胚胎发育的起点——一个具有全能性的二倍体细胞。',
+    structures:['zona'],
+    sceneLayout:[{id:'embryo',x:26,y:6,svg:'zygote',w:290,h:290}],
+    stats:[{label:'细胞数',value:'1'},{label:'染色体',value:'2n'},{label:'时间',value:'受精后0天'}],
+    animations:[
+      {tip:'🥚 受精完成！合子形成。此时的合子是一个巨大的单细胞（人类合子直径约0.1mm），被透明带包裹保护',action:function(viz){glowSceneItem(viz,'embryo');}},
+      {tip:'🧬 合子含有父母双方各23条染色体（2n=46）。核内DNA已经开始复制（S期），为第一次有丝分裂做准备',action:function(viz){resetSceneItem(viz,'embryo');}},
+      {tip:'🌟 合子具有<strong>全能性（totipotency）</strong>——可以发育为完整个体。在透明带保护下，合子沿输卵管向子宫方向缓慢移动',action:function(){}},
+    ],
+  },
+  {
+    id:2, title:'步骤二：卵裂期',
+    instruction:`
+      <p><strong>合子进行快速有丝分裂——卵裂：</strong></p>
+      <ol>
+        <li><strong>特点：</strong>连续有丝分裂，细胞数目↑但<strong>总体积不变</strong></li>
+        <li>每次分裂后细胞（卵裂球）<strong>越来越小</strong></li>
+        <li>在<strong>透明带内</strong>进行，直到形成桑葚胚</li>
+        <li>哺乳动物卵裂速度<strong>较慢</strong>（约每12~24小时分裂一次）</li>
+        <li>分裂顺序：1→2→4→8→16细胞……</li>
+      </ol>
+      <p style="color:#c0652a;margin-top:4px;font-size:0.82rem;">📐 关键特征：G₁期极短甚至缺失，<strong>只分裂不生长</strong>！</p>`,
+    hint:'胚胎进行快速分裂（卵裂），细胞数增多但总体积不变，在透明带内进行。',
+    structures:['blastomere','zona'],
+    sceneLayout:[
+      {id:'stage2',x:6,y:14,svg:'cleavage2',w:165,h:165},
+      {id:'stage4',x:36,y:14,svg:'cleavage4',w:165,h:165},
+      {id:'stage8',x:66,y:14,svg:'cleavage8',w:165,h:165},
+      {id:'arrow',x:29,y:46,svg:null,isLabel:true,text:'<span style="font-size:1.5rem;color:#c0652a;">→</span>'},
+      {id:'arrow2',x:59,y:46,svg:null,isLabel:true,text:'<span style="font-size:1.5rem;color:#c0652a;">→</span>'},
+    ],
+    stats:[{label:'细胞数变化',value:'1→2→4→8'},{label:'总体积',value:'不变'},{label:'时间',value:'1~3天'}],
+    animations:[
+      {tip:'🔄 第一次卵裂（受精后约24h）：合子进行有丝分裂→2个卵裂球。注意：分裂后总体积不变，每个卵裂球约为合子的一半',action:function(viz){glowSceneItem(viz,'stage2');}},
+      {tip:'🔄 第二次卵裂（约36~48h）：2个卵裂球各自分裂→4个卵裂球。G₁期极短（甚至缺失），细胞只分裂不生长——这是卵裂区别于普通有丝分裂的关键',action:function(viz){resetSceneItem(viz,'stage2');glowSceneItem(viz,'stage4');}},
+      {tip:'🔄 第三次卵裂（约60~72h）：4→8个卵裂球。此时卵裂球之间出现<strong>紧密连接</strong>，细胞开始极化——外层细胞和内层细胞的命运开始出现差异',action:function(viz){resetSceneItem(viz,'stage4');glowSceneItem(viz,'stage8');}},
+      {tip:'📝 卵裂的意义：①增加细胞数量为后续分化提供素材；②恢复合理的核质比（合子核质比极低）；③建立细胞间相互作用的基础',action:function(viz){resetSceneItem(viz,'stage8');}},
+    ],
+  },
+  {
+    id:3, title:'步骤三：桑葚胚',
+    instruction:`
+      <p><strong>卵裂球达到16~32个时形成桑葚胚：</strong></p>
+      <ol>
+        <li>约受精后<strong>3~4天</strong>形成</li>
+        <li>细胞紧密排列，形似<strong>桑葚（mulberry）</strong></li>
+        <li>细胞间出现<strong>紧密连接</strong>和<strong>缝隙连接</strong></li>
+        <li>外层细胞开始极化→未来形成<strong>滋养层</strong></li>
+        <li>内层细胞→未来形成<strong>内细胞团</strong></li>
+        <li><strong>致密化（compaction）</strong>：细胞间接触面积增大，界限变得模糊</li>
+      </ol>
+      <p style="color:#c0652a;margin-top:4px;font-size:0.82rem;">🔑 桑葚胚是<strong>第一次细胞命运决定</strong>的关键时期！</p>`,
+    hint:'16~32个细胞紧密排列，第一次出现明显的细胞分化（外层↔内层）。',
+    structures:['blastomere'],
+    sceneLayout:[
+      {id:'embryo',x:27,y:5,svg:'morula',w:260,h:260},
+    ],
+    stats:[{label:'细胞数',value:'16~32'},{label:'阶段',value:'桑葚胚'},{label:'时间',value:'第3~4天'}],
+    animations:[
+      {tip:'🫐 桑葚胚形成：约16~32个卵裂球紧密排列，形态像桑葚（因此得名morula，拉丁语意为"桑葚"）。此时胚胎仍在透明带内，沿输卵管到达子宫',action:function(viz){glowSceneItem(viz,'embryo');}},
+      {tip:'🔗 致密化（compaction）：细胞间接触面积显著增大，出现紧密连接和缝隙连接。细胞表面变得扁平，彼此之间界限开始模糊——这是第一次形态上的细胞分化',action:function(viz){resetSceneItem(viz,'embryo');viz.querySelector('.scene-item[data-id="embryo"]').style.transform='scale(1.08)';}},
+      {tip:'📋 第一次细胞命运决定：外层细胞（极性化）→未来形成滋养层；内层细胞（非极性化）→未来形成内细胞团。这是胚胎发育中最早的"命运抉择"',action:function(viz){resetSceneItem(viz,'embryo');}},
+    ],
+  },
+  {
+    id:4, title:'步骤四：囊胚（胚泡）',
+    instruction:`
+      <p><strong>桑葚胚进一步发育形成囊胚：</strong></p>
+      <ol>
+        <li><strong>滋养层细胞</strong>分泌液体→形成<strong>囊胚腔</strong></li>
+        <li>内细胞团（ICM）聚集在囊胚<strong>一端</strong></li>
+        <li>囊胚腔逐渐<strong>扩大</strong>，透明带被<strong>撑薄</strong></li>
+        <li>ICM细胞具有<strong>多能性</strong>→将形成胎儿本体</li>
+        <li>滋养层细胞→将形成<strong>胎盘和绒毛膜</strong></li>
+      </ol>
+      <div style="background:#fef8f3;border:1px solid #f0d8c0;border-radius:6px;padding:6px;margin-top:4px;font-size:0.78rem;">
+        <strong>🧬 干细胞来源：</strong>内细胞团(ICM)是<strong>胚胎干细胞(ES细胞)</strong>的来源，具有多能性！
+      </div>`,
+    hint:'囊胚腔形成，胚胎分化为内细胞团（→胎儿）和滋养层（→胎盘）。',
+    structures:['icm','trophoblast','blastocoel'],
+    sceneLayout:[
+      {id:'embryo',x:16,y:5,svg:'blastocyst',w:330,h:270},
+    ],
+    stats:[{label:'细胞数',value:'~100+'},{label:'阶段',value:'囊胚'},{label:'时间',value:'第4~5天'}],
+    animations:[
+      {tip:'💧 囊胚腔形成：滋养层细胞（外层细胞）开始主动将Na⁺泵入细胞间隙→渗透压驱动水分子进入→形成充满液体的囊胚腔（blastocoel）',action:function(viz){glowSceneItem(viz,'embryo');}},
+      {tip:'⚡ 两大细胞谱系确立：①<strong>内细胞团（ICM）</strong>—位于囊胚一极的细胞群，多能性，将发育为胎儿；②<strong>滋养层（trophoblast）</strong>—围成囊胚腔外围的扁平细胞，将形成胎盘',action:function(viz){resetSceneItem(viz,'embryo');}},
+      {tip:'🫧 囊胚腔持续扩大，透明带被撑得越来越薄。囊胚在子宫腔内自由漂浮1~2天，此期间透明带阻止囊胚过早与子宫内膜黏附',action:function(viz){}},
+      {tip:'🔬 内细胞团是<strong>胚胎干细胞（ES cells）</strong>的经典来源。科研中通过分离ICM在体外培养获得ES细胞，用于再生医学研究',action:function(){}},
+    ],
+  },
+  {
+    id:5, title:'步骤五：孵化',
+    instruction:`
+      <p><strong>囊胚从透明带中脱出——孵化：</strong></p>
+      <ol>
+        <li>囊胚<strong>膨胀增大</strong>，透明带被进一步撑薄</li>
+        <li>滋养层细胞分泌<strong>蛋白酶</strong>局部消化透明带</li>
+        <li>透明带出现<strong>破口</strong>，囊胚通过蠕动收缩挤出</li>
+        <li>脱出后透明带<strong>退化消失</strong></li>
+        <li><strong style="color:#dc2626;">必须孵化！</strong>否则囊胚无法接触子宫内膜→无法植入</li>
+      </ol>
+      <p style="color:#c0652a;margin-top:4px;font-size:0.82rem;">⚠ 辅助生殖中，有些胚胎因透明带过厚无法孵化→需<strong>辅助孵化（AH）</strong>技术！</p>`,
+    hint:'囊胚从透明带中"破壳而出"，是植入子宫内膜的前提。',
+    structures:['zona','trophoblast'],
+    sceneLayout:[
+      {id:'embryo',x:10,y:4,svg:'hatching',w:350,h:260},
+    ],
+    stats:[{label:'细胞数',value:'~200+'},{label:'阶段',value:'孵化囊胚'},{label:'时间',value:'第5~6天'}],
+    animations:[
+      {tip:'🫧 囊胚持续膨胀（囊胚腔增大），透明带被撑成薄膜状。同时滋养层细胞分泌蛋白酶（如strypsin），在透明带上"蚀刻"出薄弱区域',action:function(viz){glowSceneItem(viz,'embryo');}},
+      {tip:'🐣 透明带局部破裂！囊胚通过有节奏的收缩-膨胀运动，逐渐从透明带破口中"挤出"——这个过程就像小鸡从蛋壳中孵化出来，因此得名"孵化（hatching）"',action:function(viz){resetSceneItem(viz,'embryo');}},
+      {tip:'🗑️ 囊胚完全脱出后，空的透明带残壳退化消失。脱去透明带的囊胚表面滋养层细胞直接暴露，具备了与子宫内膜黏附、侵入的能力',action:function(){}},
+      {tip:'🏥 临床应用：在IVF（体外受精）中，部分胚胎透明带过厚无法自行孵化→胚胎学家用激光或酸性溶液在透明带上打孔→<strong>辅助孵化（Assisted Hatching）</strong>提高着床率',action:function(){}},
+    ],
+  },
+  {
+    id:6, title:'步骤六：植入（着床）',
+    instruction:`
+      <p><strong>孵化后的囊胚植入子宫内膜：</strong></p>
+      <ol>
+        <li>囊胚<strong>内细胞团端</strong>与子宫内膜接触</li>
+        <li>接触处的滋养层细胞→<strong>合体滋养层</strong>（细胞融合成多核）</li>
+        <li>合体滋养层<strong>侵入</strong>子宫内膜，建立母-胎联系</li>
+        <li>侵入过程中释放<strong>hCG</strong>（人绒毛膜促性腺激素）→维持黄体</li>
+        <li>植入约在受精后<strong>6~10天</strong>完成</li>
+      </ol>
+      <p style="color:#c0652a;margin-top:4px;font-size:0.82rem;">🏠 <strong>hCG</strong>是验孕棒检测的激素！植入成功后hCG进入母体血液循环。</p>`,
+    hint:'囊胚与子宫内膜接触→合体滋养层侵入→建立"母-胎"连接。',
+    structures:['trophoblast','endometrium'],
+    sceneLayout:[
+      {id:'embryo',x:10,y:2,svg:'implantation',w:350,h:280},
+    ],
+    stats:[{label:'细胞数',value:'~500+'},{label:'阶段',value:'植入中'},{label:'时间',value:'第6~10天'}],
+    animations:[
+      {tip:'🎯 定位：孵化后的囊胚在子宫腔内定位到适宜的着床点（通常在子宫体后壁）。内细胞团所在的一端（胚极）朝向子宫内膜',action:function(viz){glowSceneItem(viz,'embryo');}},
+      {tip:'🤝 附着：胚极的滋养层细胞与子宫内膜上皮细胞通过黏附分子（整合素、选择素等）相互识别和黏附。这是<strong>母-胎"对话"</strong>的开始',action:function(viz){resetSceneItem(viz,'embryo');}},
+      {tip:'⚡ 侵入：滋养层细胞分化为<strong>合体滋养层</strong>（细胞融合→多核巨细胞），分泌蛋白水解酶侵蚀子宫内膜，囊胚逐渐"嵌入"子宫内膜基质中',action:function(viz){}},
+      {tip:'🧪 合体滋养层开始分泌<strong>hCG</strong>（人绒毛膜促性腺激素），其作用类似LH→维持黄体→黄体持续分泌孕酮→维持子宫内膜不脱落（不来月经）。hCG是验孕棒/血检的检测目标！',action:function(){showToast('🏠 植入进行中！hCG开始分泌','info');}},
+    ],
+  },
+  {
+    id:7, title:'步骤七：原肠胚与三胚层分化',
+    instruction:`
+      <p><strong>内细胞团进一步发育，形成原肠胚：</strong></p>
+      <ol>
+        <li>ICM细胞经<strong>原肠作用（gastrulation）</strong>形成<strong>三胚层</strong></li>
+        <li><strong>外胚层（ectoderm）</strong>：→表皮、神经系统、感官</li>
+        <li><strong>中胚层（mesoderm）</strong>：→肌肉、骨骼、循环系统、泌尿生殖系统</li>
+        <li><strong>内胚层（endoderm）</strong>：→消化管、肺、肝、胰腺等</li>
+        <li>原条（primitive streak）出现→确定<strong>体轴</strong>（头尾/背腹）</li>
+      </ol>
+      <div style="background:#fef8f3;border:1px solid #f0d8c0;border-radius:6px;padding:6px;margin-top:4px;font-size:0.78rem;">
+        <strong>📌 三胚层衍生物速记：</strong><br>外→"外表和神经" | 中→"运动和循环" | 内→"消化和呼吸"
+      </div>`,
+    hint:'原肠作用形成三胚层：外胚层、中胚层、内胚层——所有组织器官的来源。',
+    structures:['germLayers'],
+    sceneLayout:[
+      {id:'embryo',x:14,y:2,svg:'gastrula',w:320,h:280},
+    ],
+    stats:[{label:'阶段',value:'原肠胚'},{label:'胚层',value:'外/中/内'},{label:'时间',value:'第14~21天'}],
+    animations:[
+      {tip:'🔄 原肠作用（gastrulation）：内细胞团细胞进行高度协调的迁移和重排，形成三胚层结构。这是胚胎发育中<strong>最重要的事件之一</strong>——从此细胞命运基本确定',action:function(viz){glowSceneItem(viz,'embryo');}},
+      {tip:'🔵 外胚层：形成表皮（皮肤表皮、毛发、指甲）、整个神经系统（脑、脊髓、神经）、视网膜等。外胚层来源的器官位于身体"外层"或"管状"结构',action:function(viz){resetSceneItem(viz,'embryo');}},
+      {tip:'🔴 中胚层：形成肌肉（骨骼肌/平滑肌/心肌）、骨骼、软骨、血液、血管、肾脏、生殖腺等。中胚层是最"多样化"的胚层',action:function(viz){}},
+      {tip:'🟡 内胚层：形成消化管上皮（从食管到直肠）、肝、胰腺、肺上皮、甲状腺等。内胚层主要形成体内"管道系统"的上皮衬里',action:function(viz){}},
+      {tip:'📏 原条（primitive streak）的出现确定了胚胎的<strong>体轴</strong>：头端vs尾端、背侧vs腹侧、左侧vs右侧。原条是原肠作用的"组织中心"',action:function(){}},
+      {tip:'🏆 恭喜！三胚层形成后，胚胎将进入<strong>器官发生（organogenesis）</strong>阶段——各胚层按预定蓝图形成特定器官。至此，早期胚胎发育的关键阶段全部完成！',action:function(){showToast('🎉 早期胚胎发育学习完成！','success');}},
+    ],
+  },
+];
+
+// ===== STATE =====
+let currentStep = 0;
+let completedSteps = new Set();
+let animState = null;
+
+// ===== INIT =====
+function init(){renderProgressBar();renderStep();}
+
+function renderProgressBar(){
+  const bar=document.getElementById('progressBar');bar.innerHTML='';
+  steps.forEach((s,i)=>{
+    if(i>0){const c=document.createElement('div');c.className='step-connector'+(completedSteps.has(i-1)?' done':'');bar.appendChild(c);}
+    const d=document.createElement('div');d.className='step-dot';
+    if(i===currentStep)d.classList.add('active');
+    if(completedSteps.has(i))d.classList.add('done');
+    d.textContent=i+1;d.title=s.title;
+    d.addEventListener('click',()=>{if(completedSteps.has(i)||i<currentStep){cleanupAnim();currentStep=i;renderStep();}});
+    bar.appendChild(d);
+  });
+}
+
+function renderStructures(){
+  const list=document.getElementById('structureList');list.innerHTML='';
+  const step=steps[currentStep];
+  const needed=step.structures||[];
+  needed.forEach(sid=>{
+    const st=allStructures.find(s=>s.id===sid);
+    if(!st)return;
+    const card=document.createElement('div');card.className='structure-card highlight';
+    card.innerHTML=`
+      <div class="st-icon"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#c0652a" stroke-width="2"/><circle cx="18" cy="18" r="5" fill="#2a9d8f" opacity="0.6"/></svg></div>
+      <div class="st-info"><div class="st-name">${st.name}</div><div class="st-desc">${st.desc}</div></div>`;
+    list.appendChild(card);
+  });
+  // Stats
+  if(step.stats){
+    const statsDiv=document.createElement('div');statsDiv.style.cssText='margin-top:8px;display:flex;flex-direction:column;gap:4px;';
+    step.stats.forEach(s=>{
+      statsDiv.innerHTML+=`<div class="stat-mini"><span class="sm-label">${s.label}</span><span class="sm-value">${s.value}</span></div>`;
+    });
+    list.appendChild(statsDiv);
+  }
+}
+
+function renderStep(){
+  const step=steps[currentStep];
+  document.getElementById('stepTitle').textContent=step.title;
+  document.getElementById('instructionText').innerHTML=step.instruction;
+  document.getElementById('hintText').textContent=step.hint;
+  document.getElementById('btnPrev').disabled=currentStep===0;
+  const btnNext=document.getElementById('btnNext');
+  btnNext.textContent=currentStep===steps.length-1?'🏆 完成学习':'下一步 ▶';
+  document.getElementById('knowledgeBox').style.display='none';
+  renderProgressBar();renderStructures();renderScene();
+}
+
+// ===== SCENE RENDERING =====
+function renderScene(){
+  const viz=document.getElementById('vizArea');
+  viz.innerHTML='<div class="grid-overlay"></div>';
+
+  const step=steps[currentStep];
+  if(!step.sceneLayout)return;
+
+  step.sceneLayout.forEach(item=>{
+    const el=document.createElement('div');
+    el.className='scene-item';el.dataset.id=item.id;
+    el.style.left=item.x+'%';el.style.top=item.y+'%';
+
+    if(item.isLabel){
+      el.innerHTML=item.text;
+      viz.appendChild(el);return;
+    }
+
+    const w=item.w||140,h=item.h||140;
+    const svgContent=EmbryoSVG[item.svg]||item.svg;
+    el.innerHTML=`<div class="si-icon" style="width:${w}px;height:${h}px;">${svgContent}</div>${item.label?`<div class="si-label">${item.label}</div>`:''}`;
+    viz.appendChild(el);
+  });
+
+  // Add demo button if step has animations
+  if(step.animations&&step.animations.length>0){
+    const demoBtn=document.createElement('button');
+    demoBtn.className='btn btn-accent';
+    demoBtn.style.cssText='position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:20;font-size:0.85rem;padding:8px 20px;';
+    demoBtn.textContent='▶ 演示动画';
+    demoBtn.addEventListener('click',e=>{e.stopPropagation();playAnim();});
+    demoBtn.addEventListener('mousedown',e=>e.stopPropagation());
+    viz.appendChild(demoBtn);
+  }
+}
+
+// ===== ANIMATION =====
+function playAnim(){
+  if(animState)return;
+  const step=steps[currentStep];
+  if(!step.animations||step.animations.length===0)return;
+  const viz=document.getElementById('vizArea');
+  animState={seq:step.animations,idx:-1,viz:viz,timer:null};
+  showAnimNav(viz);
+  advanceAnim();
+}
+
+function showAnimNav(viz){
+  let old=document.querySelector('.anim-nav');if(old)old.remove();
+  const nav=document.createElement('div');nav.className='anim-nav';
+  nav.innerHTML=`
+    <button class="btn btn-outline" id="animPrev" style="font-size:0.75rem;padding:5px 14px;">◀ 上一步</button>
+    <span id="animCounter" style="font-size:0.8rem;font-weight:700;color:#c0652a;min-width:56px;text-align:center;">1/${animState.seq.length}</span>
+    <button class="btn btn-primary" id="animNext" style="font-size:0.75rem;padding:5px 14px;">下一步 ▶</button>
+    <button class="btn btn-outline" id="animClose" style="font-size:0.75rem;padding:5px 10px;">✕</button>`;
+  nav.querySelector('#animPrev').addEventListener('click',retreatAnim);
+  nav.querySelector('#animNext').addEventListener('click',advanceAnim);
+  nav.querySelector('#animClose').addEventListener('click',finishAnim);
+  viz.appendChild(nav);
+}
+
+function advanceAnim(){
+  if(!animState)return;
+  const seq=animState.seq,viz=animState.viz;
+  if(animState.timer){clearTimeout(animState.timer);animState.timer=null;}
+  animState.idx++;
+  if(animState.idx>=seq.length){finishAnim();return;}
+  const frame=seq[animState.idx];
+  if(frame.action)frame.action(viz);
+  if(frame.tip)showKnowledge(frame.tip,animState.idx+1,seq.length);
+  updateAnimNav();
+  if(animState.idx<seq.length-1){
+    animState.timer=setTimeout(()=>advanceAnim(),5000);
+  }
+}
+
+function retreatAnim(){
+  if(!animState||animState.idx<=0)return;
+  if(animState.timer){clearTimeout(animState.timer);animState.timer=null;}
+  animState.idx--;
+  resetSceneToInitial(animState.viz);
+  for(let i=0;i<=animState.idx;i++){
+    const frame=animState.seq[i];
+    if(frame.action)frame.action(animState.viz);
+    if(frame.tip&&i===animState.idx)showKnowledge(frame.tip,animState.idx+1,animState.seq.length);
+  }
+  updateAnimNav();
+  if(animState.idx<animState.seq.length-1){
+    animState.timer=setTimeout(()=>advanceAnim(),5000);
+  }
+}
+
+function resetSceneToInitial(viz){
+  const items=viz.querySelectorAll('.scene-item');
+  items.forEach(el=>{
+    el.classList.remove('highlight');el.style.transform='';el.style.filter='';el.style.opacity='';
+  });
+}
+
+function updateAnimNav(){
+  const cnt=document.getElementById('animCounter');
+  if(cnt)cnt.textContent=(animState.idx+1)+'/'+animState.seq.length;
+  const prev=document.getElementById('animPrev');
+  if(prev)prev.disabled=animState.idx<=0;
+  const next=document.getElementById('animNext');
+  if(next)next.textContent=animState.idx>=animState.seq.length-1?'✅ 完成':'下一步 ▶';
+}
+
+function finishAnim(){
+  if(!animState)return;
+  if(animState.timer)clearTimeout(animState.timer);
+  const nav=document.querySelector('.anim-nav');if(nav)nav.remove();
+  if(animState.idx>=0){
+    const last=animState.seq[animState.seq.length-1];
+    if(last&&last.tip)showKnowledge(last.tip,animState.seq.length,animState.seq.length);
+  }
+  animState=null;
+  setTimeout(()=>renderScene(),300);
+}
+
+// ===== HELPERS =====
+function glowSceneItem(viz,id){
+  const el=viz.querySelector('.scene-item[data-id="'+id+'"]');
+  if(el){el.classList.add('highlight');el.style.transform='scale(1.08)';el.style.transition='all 0.4s ease';}
+}
+function resetSceneItem(viz,id){
+  const el=viz.querySelector('.scene-item[data-id="'+id+'"]');
+  if(el){el.classList.remove('highlight');el.style.transform='';el.style.filter='';}
+}
+function showKnowledge(msg,idx,total){
+  const kb=document.getElementById('knowledgeBox');
+  kb.style.display='block';
+  document.getElementById('knowledgeText').innerHTML=msg.replace(/<strong>/g,'<strong style="color:#c0652a;">');
+  document.getElementById('knowledgeBadge').textContent=idx+'/'+total;
+}
+
+// ===== NAVIGATION =====
+function prevStep(){
+  if(currentStep>0){cleanupAnim();currentStep--;renderStep();}
+}
+function nextStep(){
+  if(currentStep<steps.length-1){
+    completedSteps.add(currentStep);
+    cleanupAnim();
+    currentStep++;renderStep();
+    showToast(`✅ 已完成：${steps[currentStep-1].title}`,'success');
+  }else{
+    completedSteps.add(currentStep);
+    showCompletionModal();
+  }
+}
+function cleanupAnim(){
+  if(animState){
+    if(animState.timer)clearTimeout(animState.timer);
+    animState=null;
+  }
+  const nav=document.querySelector('.anim-nav');if(nav)nav.remove();
+  document.getElementById('knowledgeBox').style.display='none';
+}
+function showCompletionModal(){
+  document.getElementById('modalContainer').innerHTML=`
+    <div class="modal-overlay" onclick="this.remove()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <h2>🏆 学习完成！</h2>
+        <p>🎉 恭喜你完成了<strong>胚胎早期发育</strong>的学习！</p>
+        <p style="font-size:0.82rem;color:var(--textL);line-height:1.8;">
+          你已掌握：<br>
+          ✅ 合子的全能性与第一次卵裂<br>
+          ✅ 卵裂期：只分裂不生长<br>
+          ✅ 桑葚胚：第一次细胞命运决定<br>
+          ✅ 囊胚：ICM和滋养层分化<br>
+          ✅ 孵化：脱离透明带<br>
+          ✅ 植入：建立母-胎联系<br>
+          ✅ 原肠胚：三胚层形成
+        </p>
+        <p style="font-size:0.75rem;color:var(--textL);">
+          📝 从合子到原肠胚，单个细胞经过增殖和分化，最终形成具有三个胚层的复杂胚胎结构。
+        </p>
+        <button class="btn btn-primary" onclick="resetAll();document.getElementById('modalContainer').innerHTML='';">
+          🔄 重新学习
+        </button>
+      </div>
+    </div>`;
+}
+function resetAll(){
+  cleanupAnim();
+  currentStep=0;completedSteps=new Set();
+  renderStep();showToast('已重置','info');
+}
+
+// ===== TOAST =====
+function showToast(msg,type){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;
+  c.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>

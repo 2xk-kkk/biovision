@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哺乳动物受精过程 — 交互模型</title>
+<style>
+:root {
+  --bg:#fdf2f7; --panel:#ffffff; --primary:#9c3a6d; --primaryL:#c75b8f;
+  --accent:#e8963a; --text:#3d1c2e; --textL:#7a5d6e;
+  --border:#f0c8d8; --shadow:0 2px 16px rgba(0,0,0,0.06); --r:12px;
+  --success:#0891b2; --danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+  background:linear-gradient(160deg,#fce4ec 0%,#fdf2f7 30%,#faf5f9 60%,#fefefe 100%);
+  min-height:100vh; user-select:none; -webkit-user-select:none; overflow-x:hidden;
+}
+.header{
+  background:linear-gradient(135deg,#5c1a3a,#9c3a6d); color:#fff;
+  padding:10px 24px; display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:10px; box-shadow:0 2px 20px rgba(0,0,0,0.18);
+}
+.header h1{font-size:1.25rem;font-weight:700;letter-spacing:0.5px;}
+.progress-bar{display:flex;gap:3px;align-items:center;flex-wrap:wrap;}
+.step-dot{
+  width:32px;height:32px;border-radius:50%; background:rgba(255,255,255,0.18);
+  color:rgba(255,255,255,0.7); display:flex;align-items:center;justify-content:center;
+  font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.3s;
+}
+.step-dot:hover{background:rgba(255,255,255,0.35);}
+.step-dot.active{background:var(--accent);color:#fff;transform:scale(1.15);box-shadow:0 0 18px rgba(232,150,58,0.5);}
+.step-dot.done{background:var(--success);color:#fff;}
+.step-connector{width:18px;height:2px;background:rgba(255,255,255,0.3);border-radius:1px;}
+.step-connector.done{background:var(--success);}
+.main{
+  display:grid;grid-template-columns:200px 1fr;gap:12px;padding:12px;
+  height:calc(100vh - 110px);max-width:1420px;margin:0 auto;
+}
+.main-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.structure-panel{
+  background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:12px;overflow-y:auto;border:1px solid var(--border);
+}
+.structure-panel h3{font-size:0.9rem;color:var(--primary);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--primaryL);}
+.structure-list{display:flex;flex-direction:column;gap:6px;}
+.structure-card{
+  padding:10px;background:#fefafc;border:1.5px solid var(--border);border-radius:8px;
+  font-size:0.75rem;color:var(--text); display:flex;align-items:center;gap:8px;
+}
+.structure-card.highlight{border-color:var(--accent);background:#fff8f0;box-shadow:0 0 0 3px rgba(232,150,58,0.2);}
+.structure-card .st-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.structure-card .st-name{font-weight:700;color:var(--primary);}
+.structure-card .st-desc{font-size:0.7rem;color:var(--textL);line-height:1.3;}
+
+/* Canvas container */
+.canvas-container{
+  background:linear-gradient(180deg,#fefcfd 0%,#fdf2f7 50%,#fce8f0 100%);
+  border-radius:var(--r);box-shadow:var(--shadow),inset 0 0 80px rgba(156,58,109,0.04);
+  border:2px solid #e8ccd8;position:relative;overflow:hidden;
+  flex:1;min-height:380px;
+}
+.canvas-container canvas{display:block;width:100%;height:100%;}
+.canvas-label{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  font-size:0.75rem;color:#b08a9a;letter-spacing:2px;font-weight:600;pointer-events:none;z-index:1;
+}
+
+/* Instruction bar */
+.instruction-bar{
+  background:var(--panel);border-radius:var(--r);box-shadow:0 4px 20px rgba(0,0,0,0.1);
+  padding:12px 16px;border:2px solid var(--primary);display:flex;
+  gap:14px;align-items:center;flex-wrap:wrap;position:relative;overflow:hidden;
+}
+.instruction-bar::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(180deg,var(--primary),var(--primaryL),var(--accent));border-radius:0 3px 3px 0;
+}
+.ibar-title{
+  font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;
+  background:linear-gradient(135deg,var(--primary),var(--primaryL));
+  padding:7px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(156,58,109,0.2);
+  min-width:170px;text-align:center;letter-spacing:0.5px;
+}
+.ibar-body{flex:1;min-width:220px;display:flex;flex-direction:column;gap:4px;}
+.ibar-steps{font-size:0.8rem;color:var(--text);line-height:1.6;max-height:70px;overflow-y:auto;}
+.ibar-steps ol{padding-left:18px;margin:0;}
+.ibar-steps li{margin-bottom:2px;}
+.ibar-steps strong{color:var(--danger);}
+.ibar-knowledge{
+  display:none;font-size:0.8rem;color:#5c1a3a;line-height:1.5;font-weight:500;
+  background:#fff5f8;border:1px solid #e8b0c8;border-radius:6px;padding:6px 10px;
+}
+.ibar-right{display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:170px;}
+.ibar-hint{font-size:0.75rem;color:#9c3a6d;background:#fef5f9;border:1px solid #f0c8d8;border-radius:6px;padding:6px 10px;max-width:260px;line-height:1.4;}
+.ibar-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.ibar-btns .btn{font-size:0.78rem;padding:6px 12px;}
+.btn{
+  padding:9px 16px;border:none;border-radius:8px;font-size:0.85rem;
+  font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;letter-spacing:0.5px;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.btn:active{transform:translateY(0);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primaryL);}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-accent:hover{background:#f0a54a;}
+.btn-outline{background:#fff;color:var(--primary);border:2px solid var(--primary);}
+.btn-sm{padding:5px 12px;font-size:0.75rem;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none;}
+
+.toast{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  padding:10px 24px;border-radius:28px;font-weight:700;font-size:0.9rem;
+  z-index:1000;animation:toastIn 0.3s ease,toastOut 0.3s ease 2s forwards;pointer-events:none;
+}
+.toast.success{background:var(--success);color:#fff;}
+.toast.error{background:var(--danger);color:#fff;}
+.toast.info{background:var(--primaryL);color:#fff;}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-16px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes toastOut{from{opacity:1;}to{opacity:0;}}
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;animation:fadeIn 0.3s;
+}
+.modal{background:#fff;border-radius:18px;padding:32px;max-width:520px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+.modal h2{font-size:1.4rem;margin-bottom:10px;color:var(--primary);}
+.modal p{color:var(--textL);margin-bottom:16px;line-height:1.6;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.anim-nav{
+  position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;
+  z-index:60;background:rgba(255,255,255,0.94);padding:7px 14px;border-radius:22px;
+  box-shadow:0 3px 16px rgba(0,0,0,0.12);border:1px solid #e0c0d0;
+}
+.anim-nav span{font-size:0.78rem;font-weight:700;color:#9c3a6d;min-width:50px;text-align:center;}
+.back-link{
+  position:fixed;top:56px;left:0;z-index:100;
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px 8px 12px;
+  border-radius:0 999px 999px 0;border:1px solid rgba(255,255,255,0.25);border-left:0;
+  background:rgba(92,26,58,0.88);backdrop-filter:blur(10px);
+  color:#fce0ec;text-decoration:none;font-size:14px;font-weight:700;
+  box-shadow:0 2px 16px rgba(0,0,0,0.3);
+}
+.back-link:hover{background:rgba(120,40,80,0.95);transform:translateX(2px);}
+
+@media(max-width:1024px){.main{grid-template-columns:160px 1fr;gap:10px;padding:10px;}}
+@media(max-width:768px){
+  .main{grid-template-columns:1fr;}
+  .structure-panel{max-height:110px;}
+  .canvas-container{min-height:300px;}
+  .instruction-bar{flex-direction:column;align-items:stretch;gap:8px;padding:10px;}
+  .ibar-title{min-width:auto;text-align:center;}
+  .ibar-right{flex-direction:row;align-items:center;flex-wrap:wrap;}
+  .header h1{font-size:1rem;}
+  .step-dot{width:26px;height:26px;font-size:0.7rem;}
+}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="main5.html">← 返回</a>
+
+<div class="header">
+  <h1>🥚 哺乳动物受精过程 — 交互模型</h1>
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="main">
+  <div class="structure-panel" id="structurePanel">
+    <h3>🔬 细胞结构</h3>
+    <div class="structure-list" id="structureList"></div>
+  </div>
+
+  <div class="main-col">
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="mainCanvas"></canvas>
+    </div>
+    <div class="instruction-bar" id="instructionBar">
+      <div class="ibar-title" id="stepTitle"></div>
+      <div class="ibar-body">
+        <div class="ibar-steps" id="instructionText"></div>
+        <div class="ibar-knowledge" id="knowledgeBox">
+          <span>📖</span> <span id="knowledgeText"></span>
+          <span style="font-size:0.7rem;color:#fff;background:#9c3a6d;padding:2px 8px;border-radius:12px;margin-left:4px;" id="knowledgeBadge"></span>
+        </div>
+      </div>
+      <div class="ibar-right">
+        <div class="ibar-hint"><span>💡</span> <span id="hintText"></span></div>
+        <div class="ibar-btns">
+          <button class="btn btn-outline" onclick="prevStep()" id="btnPrev">◀ 上一步</button>
+          <button class="btn btn-primary" onclick="nextStep()" id="btnNext">下一步 ▶</button>
+          <button class="btn btn-accent" onclick="resetAll()">🔄 重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastContainer"></div>
+<div id="modalContainer"></div>
+
+<script>
+// ==============================
+//  CANVAS DRAWING PRIMITIVES
+// ==============================
+
+// Colors
+const C = {
+  eggCyto: '#fef5e8', eggCytoD: '#fce0cc', eggMem: '#e8a8b8',
+  zona: 'rgba(210,190,225,0.7)', zonaEdge: 'rgba(180,155,210,0.9)',
+  corona: '#fef0f5', coronaEdge: '#e8c8d8', coronaInner: '#f0d0dd',
+  cortical: '#e898b0',
+  spermHead: '#c8d8f5', spermHeadEdge: '#90a8d0', spermAcro: '#98a8d0',
+  spermMid: '#d8cce8', spermTail: '#a0b8d8',
+  nucleus: '#6d4088', nucleusF: '#e8d0f0',
+  enzyme: '#f0a840', enzyme2: '#f8c060',
+  text: '#4a2038', textL: '#8a6078',
+  highlight: '#e8963a', warn: '#dc2626',
+};
+
+function setAlpha(color, a) {
+  if (color.startsWith('rgba')) return color.replace(/[\d.]+\)$/, a+')');
+  return color;
+}
+
+// ── Sperm ──
+function drawSperm(ctx, x, y, angle, scale, opts={}) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(angle); ctx.scale(scale, scale);
+  const {glow=0, showAcrosome=true, showTail=true, opacity=1} = opts;
+  ctx.globalAlpha = opacity;
+
+  // Tail
+  if (showTail) {
+    ctx.beginPath();
+    ctx.moveTo(14, 0);
+    ctx.bezierCurveTo(22,-6, 30,6, 38,-4);
+    ctx.bezierCurveTo(46,-14, 54,-2, 62,-6);
+    ctx.bezierCurveTo(70,-10, 78,-2, 86,-5);
+    ctx.strokeStyle = C.spermTail; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  // Midpiece
+  ctx.fillStyle = C.spermMid;
+  ctx.beginPath(); ctx.roundRect(8, -4, 8, 8, 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(160,144,192,0.8)'; ctx.lineWidth = 0.8; ctx.stroke();
+  // Mitochondria dots
+  for (let i=0;i<3;i++) { ctx.fillStyle='rgba(176,160,200,0.8)'; ctx.beginPath(); ctx.arc(10+i*2.5,-2.5,1,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(10+i*2.5,2.5,1,0,Math.PI*2); ctx.fill(); }
+
+  // Head
+  ctx.fillStyle = C.spermHead;
+  ctx.beginPath(); ctx.ellipse(0, 0, 11, 7, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = C.spermHeadEdge; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Acrosome (anterior cap)
+  if (showAcrosome) {
+    ctx.fillStyle = C.spermAcro;
+    ctx.beginPath(); ctx.ellipse(-5, 0, 7, 5.5, 0, -0.6, 0.6); ctx.fill();
+    ctx.strokeStyle = 'rgba(100,130,180,0.7)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  // Nucleus hint
+  ctx.fillStyle = 'rgba(160,190,230,0.5)';
+  ctx.beginPath(); ctx.arc(2, 0, 3.5, 0, Math.PI*2); ctx.fill();
+
+  // Glow
+  if (glow > 0) {
+    ctx.shadowColor = C.highlight; ctx.shadowBlur = 12*glow;
+    ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(232,150,58,0)'; ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ── Egg cell (simplified cross-section) ──
+function drawEgg(ctx, x, y, r, opts={}) {
+  const {
+    showCorona=true, coronaOpacity=0.9,
+    zonaOpacity=0.8, showCortical=true, corticalGlow=0,
+    zonaHighlight=false, membraneHighlight=false,
+    showSpindle=true,
+  } = opts;
+
+  // Corona radiata
+  if (showCorona) {
+    const n=16;
+    for (let i=0;i<n;i++) {
+      const a=i/n*Math.PI*2;
+      const cx=x+(r+20)*Math.cos(a), cy=y+(r+20)*Math.sin(a);
+      ctx.fillStyle = C.corona; ctx.globalAlpha = coronaOpacity;
+      ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = C.coronaEdge; ctx.lineWidth = 0.8; ctx.stroke();
+      ctx.fillStyle = C.coronaInner; ctx.globalAlpha = coronaOpacity*0.5;
+      ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Zona pellucida
+  if (zonaHighlight) {
+    ctx.strokeStyle = C.highlight; ctx.lineWidth = 4;
+    ctx.shadowColor = C.highlight; ctx.shadowBlur = 10;
+  } else {
+    ctx.strokeStyle = C.zonaEdge; ctx.lineWidth = 2.5;
+    ctx.shadowBlur = 0;
+  }
+  ctx.globalAlpha = zonaOpacity;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = C.zona; ctx.fill();
+  ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+
+  // Perivitelline space
+  ctx.fillStyle = 'rgba(240,220,230,0.3)';
+  ctx.beginPath(); ctx.arc(x, y, r-8, 0, Math.PI*2); ctx.fill();
+
+  // Plasma membrane
+  if (membraneHighlight) {
+    ctx.strokeStyle = C.highlight; ctx.lineWidth = 3.5;
+    ctx.shadowColor = C.highlight; ctx.shadowBlur = 8;
+  } else {
+    ctx.strokeStyle = C.eggMem; ctx.lineWidth = 2;
+    ctx.shadowBlur = 0;
+  }
+  ctx.beginPath(); ctx.arc(x, y, r-12, 0, Math.PI*2); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Cytoplasm
+  const g = ctx.createRadialGradient(x-r*0.1, y-r*0.1, 0, x, y, r-14);
+  g.addColorStop(0, C.eggCyto); g.addColorStop(0.6, C.eggCyto); g.addColorStop(1, C.eggCytoD);
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x, y, r-14, 0, Math.PI*2); ctx.fill();
+
+  // Cortical granules
+  if (showCortical) {
+    const n=12, gr=r-18;
+    for (let i=0;i<n;i++) {
+      const a=i/n*Math.PI*2, cx=x+gr*Math.cos(a), cy=y+gr*Math.sin(a);
+      if (corticalGlow>0 && i<6) {
+        ctx.shadowColor = C.highlight; ctx.shadowBlur = 6*corticalGlow;
+      }
+      ctx.fillStyle = C.cortical;
+      ctx.beginPath(); ctx.arc(cx, cy, 2.2, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // Spindle / chromosomes (metaphase II)
+  if (showSpindle) {
+    ctx.strokeStyle = 'rgba(180,100,130,0.5)'; ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.arc(x, y-10, 12, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.nucleus; ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.arc(x-2, y-12, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+4, y-10, 2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+1, y-8, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── Nucleus / Pronucleus ──
+function drawNucleus(ctx, x, y, r, color, label, glow) {
+  if (glow>0) { ctx.shadowColor = C.highlight; ctx.shadowBlur = 10*glow; }
+  ctx.fillStyle = setAlpha(color, '0.25');
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
+  // Chromatin dots
+  ctx.fillStyle = color;
+  for (let i=0;i<5;i++) {
+    const a=i/5*Math.PI*2+0.3, d=r*0.35;
+    ctx.beginPath(); ctx.arc(x+d*Math.cos(a), y+d*Math.sin(a), 2.5, 0, Math.PI*2); ctx.fill();
+  }
+  if (label) {
+    ctx.fillStyle = color; ctx.font = 'bold 11px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText(label, x, y-r-8);
+  }
+  ctx.shadowBlur = 0;
+}
+
+// ── Particles ──
+function drawParticles(ctx, particles) {
+  particles.forEach(p=>{
+    ctx.fillStyle = p.color||C.enzyme; ctx.globalAlpha = p.alpha||0.9;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r||3, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ── Arrow ──
+function drawArrow(ctx, x1, y1, x2, y2, color, w) {
+  ctx.strokeStyle = color||C.textL; ctx.lineWidth = w||2;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  const ang=Math.atan2(y2-y1, x2-x1);
+  ctx.fillStyle = color||C.textL;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2-10*Math.cos(ang-0.5), y2-10*Math.sin(ang-0.5));
+  ctx.lineTo(x2-10*Math.cos(ang+0.5), y2-10*Math.sin(ang+0.5));
+  ctx.closePath(); ctx.fill();
+}
+
+// ── Label ──
+function drawLabel(ctx, x, y, text, opts={}) {
+  const {size=12, color=C.text, bold=false, align='center', bg=null} = opts;
+  ctx.font = `${bold?'bold ':''}${size}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  ctx.textAlign = align;
+  if (bg) {
+    const m=ctx.measureText(text);
+    ctx.fillStyle = bg; ctx.fillRect(x-m.width/2-6, y-size-2, m.width+12, size+8);
+  }
+  ctx.fillStyle = color; ctx.fillText(text, x, y);
+}
+
+// ── Progress ring (for timed events) ──
+function drawProgressRing(ctx, x, y, r, progress, color) {
+  ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
+  ctx.strokeStyle = color||C.accent; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(x, y, r, -Math.PI/2, -Math.PI/2+progress*Math.PI*2); ctx.stroke();
+}
+
+// ==============================
+//  STEP DRAWERS
+// ==============================
+
+const stepDrawers = {
+  // Step 1: 精子获能
+  0: function(ctx, p, w, h) {
+    const cx=w/2, cy=h/2;
+    // Title
+    drawLabel(ctx, cx, 38, '精子获能', {size:16, bold:true, color:C.primary});
+
+    // Draw a horizontal comparison: before (left) vs after (right)
+    const leftX=cx-130, rightX=cx+130, spermY=cy+10;
+
+    // Labels
+    drawLabel(ctx, leftX, spermY-55, '获能前', {size:12, bold:true, color:C.textL});
+    drawLabel(ctx, rightX, spermY-55, '获能后', {size:12, bold:true, color:C.accent});
+
+    // Left: sperm before capacitation (opaque, rigid)
+    const beforeGlow = p<0.4 ? 0 : Math.min(1, (p-0.4)/0.3);
+    drawSperm(ctx, leftX, spermY, -0.15, 2.2, {glow:beforeGlow, showAcrosome:true});
+
+    // Right: sperm after capacitation (more dynamic)
+    const afterAlpha = Math.min(1, p/0.5);
+    drawSperm(ctx, rightX, spermY+(1-afterAlpha)*10, -0.15, 2.2, {glow:Math.max(0,(p-0.5)/0.5), opacity:afterAlpha});
+
+    // Membrane cholesterol being removed (particles near left sperm)
+    if (p>0.3 && p<0.7) {
+      const particles=[];
+      for (let i=0;i<6;i++) {
+        particles.push({
+          x: leftX-30+(p-0.3)*60, y: spermY-15+Math.sin(i)*12,
+          r:2, color:C.enzyme, alpha:0.8-(p-0.3)*1.5
+        });
+      }
+      drawParticles(ctx, particles);
+    }
+
+    // Status indicators
+    if (p>0.6) {
+      drawLabel(ctx, leftX, spermY+40, '胆固醇排出', {size:10, color:C.accent});
+      drawArrow(ctx, leftX, spermY+32, leftX+(p-0.6)*80, spermY+32, C.accent, 1.5);
+    }
+    if (p>0.85) {
+      drawLabel(ctx, rightX, spermY+40, '✓ 获能完成', {size:10, bold:true, color:C.accent});
+    }
+  },
+
+  // Step 2: 穿过放射冠
+  1: function(ctx, p, w, h) {
+    const cx=w/2, cy=h/2;
+    drawLabel(ctx, cx, 30, '穿过放射冠', {size:16, bold:true, color:C.primary});
+
+    const eggX=cx+85, eggY=cy+8, eggR=68;
+    // Corona fades as sperm passes through
+    const coronaAlpha = 1 - Math.min(1, p/0.6)*0.8;
+    drawEgg(ctx, eggX, eggY, eggR, {coronaOpacity:coronaAlpha});
+
+    // Sperm approaching and passing through corona — head faces egg (Math.PI)
+    const startX=35, coronaX=eggX-eggR-22, zonaX=eggX-eggR+8;
+    const spermX = startX + (zonaX-startX)*Math.min(p/0.85, 1);
+    drawSperm(ctx, spermX, eggY-18, Math.PI, 1.7);
+
+    // Hyaluronidase particles (near sperm head, which is on right side after π rotation)
+    if (p>0.2 && p<0.7) {
+      const bP=(p-0.2)/0.5, bx=Math.min(spermX+12, coronaX+5), by=eggY-26;
+      const particles=[];
+      for (let i=0;i<10;i++) {
+        const ang=Math.random()*Math.PI*2, dist=bP*20;
+        particles.push({
+          x:bx+dist*Math.cos(ang), y:by+dist*Math.sin(ang),
+          r:1+Math.random()*1.5, color:C.enzyme, alpha:0.9-bP*0.5
+        });
+      }
+      drawParticles(ctx, particles);
+    }
+
+    // Labels
+    if (p>0.1 && p<0.4) drawLabel(ctx, coronaX-5, eggY-55, '透明质酸酶', {size:10, bold:true, color:C.accent});
+    if (p>0.35 && p<0.7) drawLabel(ctx, eggX, eggY-eggR-16, '卵丘细胞散开', {size:10, color:C.accent});
+    if (p>0.75) drawLabel(ctx, zonaX+5, eggY-eggR+6, '抵达透明带', {size:10, bold:true, color:C.primary});
+  },
+
+  // Step 3: 接触透明带与顶体反应
+  2: function(ctx, p, w, h) {
+    const cx=w/2, cy=h/2;
+    drawLabel(ctx, cx, 26, '接触透明带 · 顶体反应', {size:16, bold:true, color:C.primary});
+
+    // Egg without corona (already passed), zona prominent
+    const eggX=cx+55, eggY=cy, eggR=82;
+    drawEgg(ctx, eggX, eggY, eggR, {showCorona:false, zonaHighlight:p>0.1&&p<0.55});
+
+    // Phase 1 (p 0-0.4): Sperm approaches zona
+    // Phase 2 (p 0.4-0.7): Sperm head contacts zona, ZP3 binding, acrosome reaction
+    // Phase 3 (p 0.7-1.0): Acrosin released, zona locally digested
+
+    const zonaOuterX=eggX-eggR+2, zonaInnerX=eggX-eggR+18;
+    let spermX, spermGlow;
+    if (p<0.35) {
+      spermX=zonaOuterX-25+(zonaOuterX-(zonaOuterX-25))*p/0.35;
+      spermGlow=0;
+    } else {
+      // Head-first penetration: only head enters zona, tail stays outside
+      spermX=zonaOuterX+(zonaInnerX-zonaOuterX)*Math.min(1,(p-0.35)/0.5);
+      spermGlow=p>0.35?1:0;
+    }
+    drawSperm(ctx, spermX, eggY-10, Math.PI, 1.5, {glow:spermGlow});
+
+    // ZP3 binding highlight (at contact point)
+    if (p>0.15 && p<0.55) {
+      // Glow at contact site
+      ctx.fillStyle = 'rgba(232,150,58,0.35)'; ctx.shadowColor=C.highlight; ctx.shadowBlur=16;
+      ctx.beginPath(); ctx.arc(zonaOuterX+3, eggY-10, 14, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur=0;
+      drawLabel(ctx, eggX-eggR-35, eggY-45, 'ZP3 识别结合', {size:10, bold:true, color:C.accent});
+    }
+
+    // Acrosome reaction burst
+    if (p>0.4 && p<0.75) {
+      const bP=(p-0.4)/0.35, bx=zonaOuterX+5, by=eggY-14;
+      const particles=[];
+      for (let i=0;i<16;i++) {
+        const ang=Math.random()*Math.PI*2, dist=bP*28;
+        particles.push({
+          x:bx+dist*Math.cos(ang), y:by+dist*Math.sin(ang),
+          r:1.5+Math.random()*2.5, color:Math.random()>0.5?C.enzyme:C.enzyme2,
+          alpha:1-bP*0.6
+        });
+      }
+      drawParticles(ctx, particles);
+    }
+
+    if (p>0.42 && p<0.65) drawLabel(ctx, eggX-eggR-48, eggY-55, '💥 顶体反应！', {size:11, bold:true, color:'#dc2626'});
+    if (p>0.55 && p<0.8) drawLabel(ctx, eggX-eggR-48, eggY-35, '顶体蛋白酶释放', {size:10, bold:true, color:C.accent});
+    if (p>0.75) drawLabel(ctx, eggX-15, eggY+8, '透明带局部水解', {size:10, bold:true, color:C.accent});
+  },
+
+  // Step 4: 透明带反应
+  3: function(ctx, p, w, h) {
+    const cx=w/2, cy=h/2;
+    drawLabel(ctx, cx, 28, '透明带反应', {size:16, bold:true, color:C.primary});
+
+    const eggX=cx+40, eggY=cy, eggR=82;
+
+    // Phase 1: sperm contact (p 0-0.3)
+    // Phase 2: cortical granules move (p 0.3-0.6)
+    // Phase 3: zona hardens (p 0.6-1.0)
+    const corticalGlow = p>0.25 ? Math.min(1, (p-0.25)/0.35) : 0;
+    const zonaHarden = p>0.55 ? Math.min(1, (p-0.55)/0.45) : 0;
+
+    drawEgg(ctx, eggX, eggY, eggR, {
+      showCorona:false, corticalGlow,
+      zonaHighlight:zonaHarden>0.5,
+      showCortical:true,
+    });
+
+    // Sperm at membrane — head faces egg (Math.PI), only head touches membrane
+    const spermX = eggX-eggR+25 + (p>0.4?(p-0.4)*10:0);
+    const spermOpacity = p>0.75 ? 1-(p-0.75)/0.25 : 1;
+    drawSperm(ctx, spermX, eggY-5, Math.PI, 1.4, {opacity:spermOpacity, glow:p<0.3?1:0});
+
+    // Cortical granule release particles
+    if (p>0.35 && p<0.7) {
+      const burstP = (p-0.35)/0.35;
+      const particles=[];
+      for (let i=0;i<10;i++) {
+        const ang=-0.5+Math.random()*1.0, dist=burstP*20;
+        particles.push({
+          x:eggX-eggR+30+dist*Math.cos(ang), y:eggY-5+dist*Math.sin(ang),
+          r:1.5+Math.random()*2, color:C.cortical, alpha:1-burstP*0.7
+        });
+      }
+      drawParticles(ctx, particles);
+    }
+
+    // Hardened zona indicator
+    if (zonaHarden>0.7) {
+      drawLabel(ctx, eggX+eggR+45, eggY-eggR+20, '透明带硬化', {size:10, bold:true, color:C.warn, align:'left'});
+      drawLabel(ctx, eggX+eggR+45, eggY-eggR+38, 'ZP3失活', {size:10, color:C.warn, align:'left'});
+    }
+    if (p>0.9) drawLabel(ctx, eggX+eggR+45, eggY-eggR+56, '✓ 阻止多精入卵', {size:10, bold:true, color:'#0891b2', align:'left'});
+  },
+
+  // Step 5: 精卵融合
+  4: function(ctx, p, w, h) {
+    const cx=w/2, cy=h/2;
+    drawLabel(ctx, cx, 28, '精卵融合', {size:16, bold:true, color:C.primary});
+
+    const eggX=cx+30, eggY=cy-8, eggR=78;
+    drawEgg(ctx, eggX, eggY, eggR, {
+      showCorona:false, membraneHighlight:p>0.15&&p<0.6, showSpindle:p>0.7,
+    });
+
+    // Sperm head-first entering egg. angle=Math.PI means head faces right (toward egg)
+    const entryP = Math.max(0, Math.min(1, (p-0.2)/0.6));
+    const spermX = eggX-eggR+28 + entryP*25;
+    const spermY = eggY-6 + entryP*15;
+    const spermScale = 1.4 - entryP*0.6;
+    const spermOpacity = p<0.75 ? 1 : Math.max(0, 1-(p-0.75)/0.25);
+
+    drawSperm(ctx, spermX, spermY, Math.PI, spermScale, {opacity:spermOpacity, showTail:p<0.7});
+
+    // Membrane fusion glow
+    if (p>0.1 && p<0.5) {
+      ctx.fillStyle = 'rgba(232,150,58,0.25)'; ctx.shadowColor=C.highlight; ctx.shadowBlur=14;
+      ctx.beginPath(); ctx.arc(eggX-eggR+32, eggY-6, 12, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur=0;
+    }
+
+    // Labels
+    if (p>0.15 && p<0.4) drawLabel(ctx, eggX-eggR+30, eggY-35, 'Izumo+Juno', {size:10, bold:true, color:C.accent});
+    if (p>0.4 && p<0.65) drawLabel(ctx, eggX-eggR+30, eggY-22, '胞质桥形成', {size:10, bold:true, color:C.accent});
+    if (p>0.6) drawLabel(ctx, eggX, eggY-20, '尾部退化', {size:10, color:C.textL});
+    if (p>0.85) drawLabel(ctx, eggX, eggY+20, '第二极体排出', {size:10, bold:true, color:C.primary});
+  },
+
+  // Step 6: 原核形成与融合
+  5: function(ctx, p, w, h) {
+    const cx=w/2, cy=h/2+5;
+    drawLabel(ctx, cx, 26, '原核形成与融合', {size:16, bold:true, color:C.primary});
+
+    // Egg outline (simplified, no zona)
+    ctx.strokeStyle = C.eggMem; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, 85, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = 'rgba(254,245,232,0.5)';
+    ctx.beginPath(); ctx.arc(cx, cy, 85, 0, Math.PI*2); ctx.fill();
+
+    // Draw zona pellucida (fading as embryo develops)
+    if (p<0.5) {
+      ctx.strokeStyle = setAlpha(C.zonaEdge, 1-p*2); ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(cx, cy, 95, 0, Math.PI*2); ctx.stroke();
+    }
+
+    // Pronuclei movement
+    const maleStartX=cx-40, maleStartY=cy+15, femaleStartX=cx+35, femaleStartY=cy-15;
+    const meetX=cx-5, meetY=cy-3;
+
+    let maleX, maleY, femaleX, femaleY, bothVisible;
+    if (p<0.35) {
+      // Phase 1: pronuclei forming
+      maleX=maleStartX; maleY=maleStartY;
+      femaleX=femaleStartX; femaleY=femaleStartY;
+      bothVisible = p>0.1;
+    } else if (p<0.7) {
+      // Phase 2: migrating toward center
+      const mp=(p-0.35)/0.35;
+      maleX=maleStartX+(meetX-maleStartX)*mp;
+      maleY=maleStartY+(meetY-maleStartY)*mp;
+      femaleX=femaleStartX+(meetX-femaleStartX)*mp;
+      femaleY=femaleStartY+(meetY-femaleStartY)*mp;
+      bothVisible=true;
+    } else {
+      // Phase 3: fusion (both disappear, new nucleus forms)
+      const fp=(p-0.7)/0.3;
+      bothVisible = fp<0.5;
+      maleX=meetX+fp*15; maleY=meetY-fp*10;
+      femaleX=meetX-fp*15; femaleY=meetY+fp*10;
+    }
+
+    if (bothVisible) {
+      // Draw pronuclei without built-in labels (we draw labels separately for spacing)
+      drawNucleus(ctx, maleX, maleY, 22, '#6090c8', null, p>0.2&&p<0.5?1:0);
+      drawNucleus(ctx, femaleX, femaleY, 22, '#c87898', null, p>0.2&&p<0.5?1:0);
+      // Labels with dynamic offset: push apart as pronuclei get closer
+      const dist = Math.max(1, Math.abs(maleX-femaleX));
+      const offset = Math.min(28, 60/dist*10); // max 28px offset when close
+      drawLabel(ctx, maleX-offset, maleY-28, '♂ 雄原核 (n)', {size:10, bold:true, color:'#6090c8'});
+      drawLabel(ctx, femaleX+offset, femaleY-28, '♀ 雌原核 (n)', {size:10, bold:true, color:'#c87898'});
+    }
+
+    // Fused zygote nucleus
+    if (p>0.75) {
+      const fp=(p-0.75)/0.25;
+      const nr=18+fp*12;
+      // Outer glow ring (pulses larger as fusion completes)
+      if (p>0.82) {
+        const gp=(p-0.82)/0.18;
+        const glowR=nr+8+Math.sin(gp*Math.PI*3)*6;
+        ctx.strokeStyle = `rgba(232,150,58,${0.5-gp*0.3})`; ctx.lineWidth=3;
+        ctx.shadowColor=C.highlight; ctx.shadowBlur=18;
+        ctx.beginPath(); ctx.arc(cx, cy, glowR, 0, Math.PI*2); ctx.stroke();
+        ctx.shadowBlur=0;
+      }
+      // Nucleus body
+      ctx.fillStyle = 'rgba(140,90,160,0.15)';
+      ctx.beginPath(); ctx.arc(cx, cy, nr, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = C.nucleus; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, nr, 0, Math.PI*2); ctx.stroke();
+      // Mixed chromatin
+      for (let i=0;i<8;i++) {
+        const a=i/8*Math.PI*2+0.4, d=nr*0.45;
+        ctx.fillStyle = i%2===0?'#6090c8':'#c87898';
+        ctx.beginPath(); ctx.arc(cx+d*Math.cos(a), cy+d*Math.sin(a), 3, 0, Math.PI*2); ctx.fill();
+      }
+      drawLabel(ctx, cx, cy-nr-12, '合子核 (2n)', {size:12, bold:true, color:C.nucleus});
+    }
+
+    // ── 受精成功标志 ──
+    if (p>0.88) {
+      const sp=(p-0.88)/0.12; // 0→1 for success animation
+      // Golden radial burst behind nucleus
+      const burstAlpha = (1-sp)*0.5;
+      for (let i=0;i<12;i++) {
+        const a=i/12*Math.PI*2, innerR=35, outerR=55+sp*30;
+        ctx.strokeStyle = `rgba(232,150,58,${burstAlpha})`; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(cx+innerR*Math.cos(a), cy+innerR*Math.sin(a));
+        ctx.lineTo(cx+outerR*Math.cos(a), cy+outerR*Math.sin(a));
+        ctx.stroke();
+      }
+      // Sparkle particles
+      for (let i=0;i<20;i++) {
+        const sa=(i/20)*Math.PI*2+sp*2, sd=25+sp*45;
+        const sx=cx+sd*Math.cos(sa), sy=cy+sd*Math.sin(sa);
+        ctx.fillStyle = i%3===0?C.enzyme2:(i%3===1?C.highlight:'#f8d878');
+        ctx.globalAlpha = Math.max(0, 1-sp)*0.9;
+        ctx.beginPath(); ctx.arc(sx, sy, 2+Math.random()*2, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // "受精成功" badge — golden shiny text
+      const badgeAlpha = Math.min(1, sp*3);
+      const badgeY = cy-62;
+      // Badge background
+      ctx.fillStyle = `rgba(255,255,255,${badgeAlpha*0.9})`;
+      ctx.strokeStyle = C.highlight; ctx.lineWidth=2.5;
+      ctx.shadowColor=C.highlight; ctx.shadowBlur=12*badgeAlpha;
+      ctx.beginPath(); ctx.roundRect(cx-72, badgeY-18, 144, 36, 20); ctx.fill(); ctx.stroke();
+      ctx.shadowBlur=0;
+      // Badge text
+      ctx.fillStyle = C.accent;
+      ctx.font = `bold ${16*badgeAlpha}px "Microsoft YaHei","PingFang SC",sans-serif`;
+      ctx.textAlign='center';
+      ctx.fillText('🏆 受精成功！', cx, badgeY+5);
+      ctx.fillStyle = C.primary;
+      ctx.font = `bold ${11*badgeAlpha}px "Microsoft YaHei","PingFang SC",sans-serif`;
+      ctx.fillText('合子(2n) · 全能细胞', cx, badgeY+22);
+    }
+
+    // Arrows showing migration
+    if (p>0.2 && p<0.65) {
+      ctx.setLineDash([3,3]); ctx.strokeStyle='rgba(140,90,160,0.4)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(maleX+25, maleY); ctx.lineTo(meetX, meetY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(femaleX-25, femaleY); ctx.lineTo(meetX, meetY); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  },
+
+  // Step 7: 总结
+  6: function(ctx, p, w, h) {
+    const cx=w/2, cy=h/2;
+    drawLabel(ctx, cx, 28, '受精的生物学意义', {size:17, bold:true, color:C.primary});
+
+    // Three key points in a visual layout
+    const cards = [
+      {x:cx-190, y:cy-15, icon:'🧬', title:'恢复二倍体', desc:'精子(n) + 卵(n) → 合子(2n)', color:'#6090c8'},
+      {x:cx, y:cy-15, icon:'🎲', title:'遗传多样性', desc:'父母基因重组', color:'#e8963a'},
+      {x:cx+190, y:cy-15, icon:'⚡', title:'激活发育', desc:'Ca²⁺信号启动卵裂', color:'#c87898'},
+    ];
+
+    cards.forEach(c=>{
+      const alpha = Math.min(1, p/0.3);
+      ctx.globalAlpha = alpha;
+      // Card background
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = c.color; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(c.x-80, c.y-25, 160, 90, 12); ctx.fill(); ctx.stroke();
+      // Icon
+      ctx.font = '28px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(c.icon, c.x, c.y+5);
+      // Title
+      drawLabel(ctx, c.x, c.y+30, c.title, {size:11, bold:true, color:c.color});
+      // Desc
+      drawLabel(ctx, c.x, c.y+48, c.desc, {size:10, color:C.textL});
+      ctx.globalAlpha = 1;
+    });
+
+    // Process summary at bottom
+    if (p>0.3) {
+      const summary='获能 → 顶体反应 → 穿越透明带 → 透明带反应 → 精卵融合 → 原核融合';
+      drawLabel(ctx, cx, h-40, summary, {size:11, color:C.primary, bg:'rgba(255,255,255,0.8)'});
+    }
+
+    if (p>0.7) drawLabel(ctx, cx, h-18, '🏆 受精的实质：精子与卵细胞的染色体融合', {size:12, bold:true, color:C.accent});
+  },
+};
+
+// ==============================
+//  STEP DEFINITIONS
+// ==============================
+const steps = [
+  {
+    id:1, title:'步骤一：精子获能', drawer:0,
+    instruction:`
+      <p><strong>精子在雌性生殖道中获能：</strong></p>
+      <ol>
+        <li>刚射出的精子<strong>没有受精能力</strong></li>
+        <li>精子在雌性生殖道中运行，接触获能因子</li>
+        <li>质膜<strong>胆固醇被移除</strong>，膜流动性增强</li>
+        <li>精子获得穿透卵子外层的能力→<strong>获能完成</strong></li>
+      </ol>`,
+    hint:'精子在雌性生殖道中经历获能过程，才具备受精能力。',
+    structures:[
+      {id:'acrosome',name:'顶体',desc:'精子头部的囊状结构，含透明质酸酶和顶体蛋白酶'},
+      {id:'spermNucleus',name:'精子细胞核',desc:'含单倍体染色体(n)，受精后形成雄原核'},
+    ],
+  },
+  {
+    id:2, title:'步骤二：穿过放射冠', drawer:1,
+    instruction:`
+      <p><strong>精子释放透明质酸酶穿过放射冠：</strong></p>
+      <ol>
+        <li>获能精子游近卵子，首先遇到<strong>放射冠（卵丘细胞层）</strong></li>
+        <li>精子顶体释放<strong>透明质酸酶</strong>，分解卵丘细胞间的透明质酸</li>
+        <li>卵丘细胞逐渐<strong>散开</strong>，为精子打开通道</li>
+        <li>精子穿过放射冠 → 抵达<strong>透明带</strong>表面</li>
+      </ol>
+      <p style="color:#9c3a6d;margin-top:4px;">⚠ 此时顶体酶只是部分释放，真正的<strong>顶体反应</strong>在接触透明带后才完全触发！</p>`,
+    hint:'透明质酸酶分解卵丘细胞间质，精子穿过放射冠抵达透明带。',
+    structures:[
+      {id:'corona',name:'放射冠（卵丘细胞）',desc:'卵子最外层的卵泡细胞，放射状排列。精子需先穿过此层才能接触透明带'},
+    ],
+  },
+  {
+    id:3, title:'步骤三：接触透明带与顶体反应', drawer:2,
+    instruction:`
+      <p><strong>精子头部接触透明带，触发顶体反应：</strong></p>
+      <ol>
+        <li>精子到达透明带表面，<strong style="color:#dc2626;">精子头部直接接触透明带</strong></li>
+        <li>顶体内膜上的受体识别透明带中的<strong>ZP3糖蛋白</strong></li>
+        <li>ZP3结合 → 触发<strong>顶体反应完全发生</strong>：顶体外膜与质膜多点融合、破裂</li>
+        <li>大量<strong>顶体蛋白酶（acrosin）</strong>释放到透明带表面</li>
+        <li>顶体蛋白酶<strong>局部水解</strong>透明带，精子准备穿透</li>
+      </ol>
+      <p style="color:#9c3a6d;margin-top:4px;">🔑 <strong>ZP3</strong>是触发顶体反应的关键分子——具有<strong>物种特异性</strong>，确保只有同种精子才能受精！</p>`,
+    hint:'精子头部接触透明带→ZP3识别→顶体反应完全触发→顶体蛋白酶释放。这是受精的关键识别步骤。',
+    structures:[
+      {id:'zona',name:'透明带',desc:'由ZP1/ZP2/ZP3糖蛋白组成。ZP3是精子受体，触发顶体反应，具有物种特异性'},
+      {id:'acrosome',name:'顶体',desc:'精子头部囊状结构。接触透明带ZP3后完全破裂，释放顶体蛋白酶水解透明带'},
+    ],
+  },
+  {
+    id:4, title:'步骤四：透明带反应', drawer:3,
+    instruction:`
+      <p><strong>第一个精子接触卵质膜后触发透明带反应：</strong></p>
+      <ol>
+        <li>精子头部接触<strong>卵细胞膜</strong></li>
+        <li><strong>皮质颗粒</strong>向质膜移动→融合→胞吐</li>
+        <li>释放的酶修饰ZP3（失活）、水解ZP2（硬化）</li>
+        <li><strong style="color:#dc2626;">阻止多精入卵！</strong></li>
+      </ol>`,
+    hint:'皮质颗粒释放改变透明带结构，阻止其他精子进入。',
+    structures:[
+      {id:'cortical',name:'皮质颗粒',desc:'质膜下方的分泌小泡，含酶可修饰透明带阻止多精入卵'},
+    ],
+  },
+  {
+    id:5, title:'步骤五：精卵融合', drawer:4,
+    instruction:`
+      <p><strong>精子与卵子质膜融合：</strong></p>
+      <ol>
+        <li>精子<strong>赤道段</strong>质膜与卵质膜接触</li>
+        <li>Izumo（精子）与Juno（卵子）蛋白特异性结合</li>
+        <li>质膜融合→<strong>胞质桥</strong>形成</li>
+        <li>精子整体进入卵细胞→尾部退化</li>
+        <li>卵细胞完成<strong>第二次减数分裂</strong></li>
+      </ol>`,
+    hint:'Izumo+Juno蛋白对介导精卵质膜融合，精子整体进入卵子。',
+    structures:[
+      {id:'membrane',name:'卵细胞膜',desc:'精卵融合的位点，Izumo-Juno蛋白对介导膜融合'},
+    ],
+  },
+  {
+    id:6, title:'步骤六：原核形成与融合', drawer:5,
+    instruction:`
+      <p><strong>雌雄原核形成并融合：</strong></p>
+      <ol>
+        <li>精子核膜破裂→染色质去浓缩→新核膜形成→<strong>雄原核(n)</strong></li>
+        <li>卵细胞完成MⅡ→剩余染色质→<strong>雌原核(n)</strong></li>
+        <li>两个原核向中央<strong>迁移</strong></li>
+        <li>核膜消失→染色体混合→<strong>合子(2n)形成</strong></li>
+      </ol>`,
+    hint:'雌雄原核融合恢复二倍体——受精的实质。',
+    structures:[
+      {id:'pronuclei',name:'雌/雄原核',desc:'各自含单倍体染色体组，融合后恢复二倍体(2n)'},
+    ],
+  },
+  {
+    id:7, title:'步骤七：受精的生物学意义', drawer:6,
+    instruction:`
+      <p><strong>总结受精的三大意义：</strong></p>
+      <ol>
+        <li><strong>恢复二倍体(2n)：</strong>维持物种染色体数恒定</li>
+        <li><strong>遗传重组：</strong>父母双方遗传物质混合→遗传多样性</li>
+        <li><strong>激活卵细胞：</strong>Ca²⁺信号启动胚胎发育程序</li>
+      </ol>
+      <div style="background:#fef5f9;border:1px solid #f0c8d8;border-radius:8px;padding:10px;margin-top:8px;">
+        <p><strong>🔑 受精过程链：</strong>获能→穿过放射冠→接触透明带(顶体反应)→穿越透明带→透明带反应→精卵融合→原核融合</p>
+      </div>`,
+    hint:'回顾受精全过程，理解受精的生物学意义。',
+    structures:[
+      {id:'acrosome',name:'顶体',desc:''},
+      {id:'zona',name:'透明带',desc:''},
+      {id:'cortical',name:'皮质颗粒',desc:''},
+    ],
+  },
+];
+
+// ==============================
+//  ANIMATION ENGINE
+// ==============================
+class AnimEngine {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.drawer = null;
+    this.progress = 0;
+    this.targetProgress = 0;
+    this.animId = null;
+    this.onProgress = null;
+    this.onComplete = null;
+    this.paused = false;
+    this.dpr = window.devicePixelRatio||1;
+    this.resize();
+    window.addEventListener('resize', ()=>this.resize());
+  }
+
+  resize() {
+    const rect = this.canvas.parentElement.getBoundingClientRect();
+    this.w = rect.width; this.h = rect.height;
+    this.canvas.width = this.w * this.dpr;
+    this.canvas.height = this.h * this.dpr;
+    this.canvas.style.width = this.w+'px';
+    this.canvas.style.height = this.h+'px';
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.render();
+  }
+
+  setDrawer(drawer) {
+    this.drawer = drawer;
+    this.progress = 0;
+    this.targetProgress = 0;
+    this.paused = false;
+    if (this.animId) { cancelAnimationFrame(this.animId); this.animId=null; }
+    this.render();
+  }
+
+  animateTo(target, duration, onProgress, onComplete) {
+    this.targetProgress = target;
+    this.startProgress = this.progress;
+    this.startTime = performance.now();
+    this.duration = duration||2000;
+    this.onProgress = onProgress;
+    this.onComplete = onComplete;
+    this.paused = false;
+    if (!this.animId) this.tick();
+  }
+
+  tick() {
+    if (this.paused) { this.animId=null; return; }
+    const elapsed = performance.now()-this.startTime;
+    const t = Math.min(1, elapsed/this.duration);
+    // Ease in-out
+    const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+    this.progress = this.startProgress+(this.targetProgress-this.startProgress)*ease;
+    this.render();
+    if (this.onProgress) this.onProgress(this.progress);
+    if (t>=1) {
+      this.progress = this.targetProgress;
+      this.animId = null;
+      if (this.onComplete) this.onComplete();
+    } else {
+      this.animId = requestAnimationFrame(()=>this.tick());
+    }
+  }
+
+  render() {
+    const ctx=this.ctx, w=this.w, h=this.h;
+    ctx.clearRect(0, 0, w, h);
+    // Subtle grid
+    ctx.strokeStyle = 'rgba(200,160,180,0.06)'; ctx.lineWidth = 0.5;
+    for (let x=0;x<w;x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+    for (let y=0;y<h;y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+    if (this.drawer) this.drawer(ctx, this.progress, w, h);
+  }
+
+  stop() {
+    this.paused = true;
+    if (this.animId) { cancelAnimationFrame(this.animId); this.animId=null; }
+  }
+}
+
+// ==============================
+//  UI CONTROLLER
+// ==============================
+let engine=null, currentStep=0, completedSteps=new Set();
+let animSegments=[], animSegIdx=0;
+
+function init() {
+  const canvas=document.getElementById('mainCanvas');
+  engine = new AnimEngine(canvas);
+  renderStep();
+}
+
+function renderStep() {
+  const step = steps[currentStep];
+  document.getElementById('stepTitle').textContent = step.title;
+  document.getElementById('instructionText').innerHTML = step.instruction;
+  document.getElementById('hintText').textContent = step.hint;
+  document.getElementById('btnPrev').disabled = currentStep===0;
+  document.getElementById('btnNext').textContent = currentStep===steps.length-1?'🏆 完成学习':'下一步 ▶';
+  document.getElementById('knowledgeBox').style.display = 'none';
+
+  renderProgressBar();
+  renderStructures();
+  engine.setDrawer(stepDrawers[step.drawer]);
+  addDemoButton();
+}
+
+function renderProgressBar() {
+  const bar=document.getElementById('progressBar'); bar.innerHTML='';
+  steps.forEach((s,i)=>{
+    if(i>0){const c=document.createElement('div');c.className='step-connector'+(completedSteps.has(i-1)?' done':'');bar.appendChild(c);}
+    const d=document.createElement('div');d.className='step-dot';
+    if(i===currentStep)d.classList.add('active');
+    if(completedSteps.has(i))d.classList.add('done');
+    d.textContent=i+1;d.title=s.title;
+    d.addEventListener('click',()=>{if(completedSteps.has(i)||i<currentStep){cleanupAnim();currentStep=i;renderStep();}});
+    bar.appendChild(d);
+  });
+}
+
+function renderStructures() {
+  const list=document.getElementById('structureList'); list.innerHTML='';
+  (steps[currentStep].structures||[]).forEach(st=>{
+    const card=document.createElement('div');card.className='structure-card highlight';
+    card.innerHTML=`<div class="st-icon"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#c87898" stroke-width="2"/><circle cx="18" cy="18" r="5" fill="#e8963a" opacity="0.6"/></svg></div><div><div class="st-name">${st.name}</div>${st.desc?`<div class="st-desc">${st.desc}</div>`:''}</div>`;
+    list.appendChild(card);
+  });
+}
+
+function addDemoButton() {
+  const container=document.getElementById('canvasContainer');
+  let old=container.querySelector('.demo-btn'); if(old)old.remove();
+  const btn=document.createElement('button');
+  btn.className='btn btn-accent demo-btn';
+  btn.style.cssText='position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:20;font-size:0.85rem;padding:8px 20px;';
+  btn.textContent='▶ 演示动画';
+  btn.addEventListener('click',e=>{e.stopPropagation();playAnimation();});
+  container.appendChild(btn);
+}
+
+// Define animation segments: [0→p1, p1→p2, p2→p3, ...]
+function getSegments(stepIdx) {
+  switch(stepIdx) {
+    case 0: return [
+      {to:0.3, tip:'🐟 刚射出的精子：质膜完整，胆固醇含量高，顶体被膜包裹完好，没有穿透卵子外层的能力。显微镜下可见精子形态完整但活力有限'},
+      {to:0.6, tip:'🏃 精子沿雌性生殖道向上游动，经过子宫进入输卵管。此过程中与生殖道分泌液接触，膜表面糖蛋白和胆固醇逐渐被清除'},
+      {to:1.0, tip:'⚡ 获能完成！精子质膜流动性↑、呼吸速率↑、尾部摆动频率↑。顶体膜变得不稳定——为后续顶体反应做好准备。获能是精子获得受精能力的必要生理过程'},
+    ];
+    case 1: return [
+      {to:0.3, tip:'🧪 获能精子游向卵子，首先遇到放射冠——由卵丘细胞组成的放射状外层。这是卵子的第一道保护屏障。精子顶体开始释放少量透明质酸酶'},
+      {to:0.65, tip:'🧹 透明质酸酶水解卵丘细胞间的透明质酸（一种黏多糖），卵丘细胞逐渐散开，为精子打开一条通道。注意：此时顶体酶只是部分释放'},
+      {to:1.0, tip:'✅ 精子成功穿过放射冠！精子头部抵达透明带表面——透明带是卵子的第二道屏障。接下来精子头部必须接触透明带才能触发真正的顶体反应'},
+    ];
+    case 2: return [
+      {to:0.3, tip:'🎯 精子头部直接接触透明带！透明带由ZP1、ZP2、ZP3三种糖蛋白组成。其中ZP3是关键的"精子受体"——精子顶体内膜上的受体特异性识别并结合ZP3'},
+      {to:0.65, tip:'💥 ZP3结合触发<strong>顶体反应完全发生</strong>！顶体外膜与质膜多点融合→破裂→大量顶体内容物（顶体蛋白酶/acrosin）释放。这是受精过程中最关键的特异性识别步骤——ZP3的物种差异确保只有同种精子才能受精'},
+      {to:1.0, tip:'🔬 释放的顶体蛋白酶局部水解透明带蛋白。精子以"钻孔"方式开始穿透透明带，进入卵周隙。下一步将详细展示精子如何穿越透明带'},
+    ];
+    case 3: return [
+      {to:0.3, tip:'🤝 精子头部接触卵细胞膜。透明带反应是继顶体反应后的第二个关键反应——由精子与卵质膜的接触触发'},
+      {to:0.65, tip:'📦 卵细胞内的皮质颗粒向质膜移动并融合，内容物通过胞吐释放到卵周隙。释放的酶修饰ZP3使其失活，水解ZP2使透明带"硬化"'},
+      {to:1.0, tip:'🚫 透明带反应的结果：其他精子不能再与透明带ZP3结合，也无法穿透已"硬化"的透明带。这是防止多精入卵（polyspermy）的快速屏障'},
+    ];
+    case 4: return [
+      {to:0.25, tip:'🤝 精子赤道段（顶体后方）的质膜与卵细胞膜紧密接触。精子表面的Izumo蛋白与卵细胞膜上的Juno受体特异性结合——这是精卵融合的分子基础'},
+      {to:0.55, tip:'🔗 Izumo-Juno结合后，精子质膜与卵质膜脂双层融合，在两细胞间形成胞质桥——精子细胞质与卵细胞质连通。精子整体进入卵细胞'},
+      {to:1.0, tip:'🧹 进入后精子尾部退化消失。卵细胞被激活，完成停滞在MⅡ期的第二次减数分裂，排出第二极体。合子(2n)即将形成！'},
+    ];
+    case 5: return [
+      {to:0.35, tip:'🔵 雄原核形成：精子核膜破裂→染色质去浓缩→组蛋白替换鱼精蛋白→新核膜重新形成→雄原核(n)。卵细胞完成MⅡ后形成雌原核(n)'},
+      {to:0.7, tip:'🏃 两个原核在微管的引导下各自向卵细胞中央迁移。此时两个原核内的DNA都在进行S期复制，为第一次卵裂准备'},
+      {to:1.0, tip:'🎉🏆 受精成功！两个原核相遇→核膜消失→父方和母方染色体混合→合子(2n)形成！这个具有全能性的单细胞，将在未来发育为一个完整的个体。受精的实质完成！'},
+    ];
+    case 6: return [
+      {to:0.4, tip:'🧬 恢复二倍体：精子(n=23)+卵细胞(n=23)→合子(2n=46)。维持了人类世代染色体数的恒定——这是有性生殖的核心意义之一'},
+      {to:0.8, tip:'🎲 遗传重组增加多样性：减数分裂中的交叉互换+精卵随机结合=后代拥有独特的基因组合。这是有性生殖优于无性生殖的关键优势'},
+      {to:1.0, tip:'🏆 恭喜！你已完整了解哺乳动物受精的全过程。从获能到原核融合，每个环节都精确调控，确保一个精子与一个卵子成功结合，开启新生命的旅程'},
+    ];
+    default: return [{to:1.0, tip:''}];
+  }
+}
+
+function playAnimation() {
+  engine.stop();
+  animSegments = getSegments(currentStep);
+  animSegIdx = -1;
+  showAnimNav();
+  advanceSegment();
+}
+
+function advanceSegment() {
+  animSegIdx++;
+  if (animSegIdx >= animSegments.length) {
+    finishAnimation();
+    return;
+  }
+  const seg = animSegments[animSegIdx];
+  const fromP = animSegIdx===0 ? 0 : animSegments[animSegIdx-1].to;
+  updateAnimNav();
+
+  engine.animateTo(seg.to, 2500, null, ()=>{
+    showKnowledge(seg.tip, animSegIdx+1, animSegments.length);
+  });
+}
+
+function retreatSegment() {
+  if (animSegIdx <= 0) return;
+  animSegIdx--;
+  const fromP = animSegIdx===0 ? 0 : animSegments[animSegIdx-1].to;
+  const seg = animSegments[animSegIdx];
+  updateAnimNav();
+  // Hide knowledge during retreat
+  document.getElementById('knowledgeBox').style.display='none';
+  engine.animateTo(fromP, 800, null, ()=>{
+    showKnowledge(seg.tip, animSegIdx+1, animSegments.length);
+  });
+}
+
+function showAnimNav() {
+  let old=document.querySelector('.anim-nav'); if(old)old.remove();
+  const container=document.getElementById('canvasContainer');
+  const nav=document.createElement('div'); nav.className='anim-nav';
+  nav.innerHTML=`
+    <button class="btn btn-outline btn-sm" id="animPrev">◀ 上一步</button>
+    <span id="animCounter">1/${animSegments.length}</span>
+    <button class="btn btn-primary btn-sm" id="animNext">下一步 ▶</button>
+    <button class="btn btn-outline btn-sm" id="animClose">✕</button>`;
+  nav.querySelector('#animPrev').addEventListener('click',retreatSegment);
+  nav.querySelector('#animNext').addEventListener('click',advanceSegment);
+  nav.querySelector('#animClose').addEventListener('click',finishAnimation);
+  // Hide demo button
+  const demoBtn=container.querySelector('.demo-btn'); if(demoBtn)demoBtn.style.display='none';
+  container.appendChild(nav);
+}
+
+function updateAnimNav() {
+  const cnt=document.getElementById('animCounter');
+  if(cnt)cnt.textContent=(animSegIdx+1)+'/'+animSegments.length;
+  const prev=document.getElementById('animPrev');
+  if(prev)prev.disabled=animSegIdx<=0;
+  const next=document.getElementById('animNext');
+  if(next)next.textContent=animSegIdx>=animSegments.length-1?'✅ 完成':'下一步 ▶';
+}
+
+function finishAnimation() {
+  engine.stop();
+  const nav=document.querySelector('.anim-nav'); if(nav)nav.remove();
+  const last=animSegments[animSegments.length-1];
+  if(last) showKnowledge(last.tip, animSegments.length, animSegments.length);
+  // Ease back to full progress
+  engine.animateTo(1.0, 400);
+  // Restore demo button
+  setTimeout(()=>{
+    const container=document.getElementById('canvasContainer');
+    const demoBtn=container.querySelector('.demo-btn'); if(demoBtn)demoBtn.style.display='';
+  }, 500);
+}
+
+function showKnowledge(msg, idx, total) {
+  const kb=document.getElementById('knowledgeBox'); kb.style.display='block';
+  document.getElementById('knowledgeText').textContent=msg;
+  document.getElementById('knowledgeBadge').textContent=idx+'/'+total;
+}
+
+function cleanupAnim() {
+  engine.stop();
+  const nav=document.querySelector('.anim-nav'); if(nav)nav.remove();
+  document.getElementById('knowledgeBox').style.display='none';
+}
+
+// ===== NAVIGATION =====
+function prevStep() {
+  if(currentStep>0){cleanupAnim();currentStep--;renderStep();}
+}
+function nextStep() {
+  if(currentStep<steps.length-1){
+    completedSteps.add(currentStep);cleanupAnim();
+    currentStep++;renderStep();
+    showToast(`✅ 已完成：${steps[currentStep-1].title}`,'success');
+  }else{
+    completedSteps.add(currentStep);showCompletionModal();
+  }
+}
+function showCompletionModal() {
+  document.getElementById('modalContainer').innerHTML=`
+    <div class="modal-overlay" onclick="this.remove()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <h2>🏆 学习完成！</h2>
+        <p>🎉 恭喜你完成了<strong>哺乳动物受精过程</strong>的学习！</p>
+        <p style="font-size:0.82rem;color:var(--textL);line-height:1.8;">
+          ✅ 精子获能 → ✅ 顶体反应 → ✅ 穿越透明带<br>
+          ✅ 透明带反应 → ✅ 精卵融合 → ✅ 原核融合
+        </p>
+        <p style="font-size:0.75rem;color:var(--textL);">
+          📝 受精的实质：精子与卵细胞的<strong>染色体融合</strong>，恢复二倍体，形成合子。
+        </p>
+        <button class="btn btn-primary" onclick="resetAll();document.getElementById('modalContainer').innerHTML='';">🔄 重新学习</button>
+      </div>
+    </div>`;
+}
+function resetAll() {
+  cleanupAnim();currentStep=0;completedSteps=new Set();
+  renderStep();showToast('已重置','info');
+}
+function showToast(msg,type){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;
+  c.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>
