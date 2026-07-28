@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>孟德尔分离定律 — 互动演示</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: linear-gradient(135deg, #0b2b44 0%, #0d3b5c 30%, #134b6e 60%, #0b2b44 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+/* 返回按钮 */
+.back-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  background: rgba(26,82,118,0.85);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+}
+.back-btn:hover {
+  background: rgba(41,128,185,0.95);
+  border-color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 0 16px rgba(52,152,219,0.5);
+}
+.container {
+  width: min(1300px, 98vw);
+  height: min(98vh, 900px);
+  background: #eef4fb;
+  border-radius: 14px;
+  box-shadow: 0 10px 50px rgba(0,20,40,0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* 顶部标题栏 */
+.topbar {
+  background: linear-gradient(135deg, #1a5276, #2980b9);
+  color: #eef4fb;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.topbar h1 { font-size: 20px; letter-spacing: 2px; white-space: nowrap; }
+.topbar .step-title { font-size: 14px; color: #b8d8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .step-dots { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.topbar .step-dots .dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  cursor: pointer; transition: all 0.3s;
+  flex-shrink: 0;
+}
+.topbar .step-dots .dot.active {
+  background: #ffe066;
+  box-shadow: 0 0 6px #ffe066;
+}
+.topbar .step-dots .dot.done { background: rgba(255,255,255,0.65); }
+
+/* 主体 */
+.main { display: flex; flex: 1; min-height: 0; }
+.left-panel {
+  flex: 0 0 min(750px, 58vw);
+  position: relative;
+  background: linear-gradient(180deg, #d4e6f9 0%, #e8f0f8 35%, #dce8f4 100%);
+  cursor: pointer;
+}
+.left-panel canvas { display: block; width: 100%; height: 100%; }
+.left-panel .click-hint {
+  position: absolute; bottom: 8px; left: 50%;
+  transform: translateX(-50%);
+  color: rgba(0,0,0,0.3); font-size: 12px; pointer-events: none;
+}
+/* 右侧知识点 */
+.right-panel {
+  flex: 1;
+  background: #f5f8fc;
+  padding: 16px;
+  overflow-y: auto;
+  border-left: 2px solid #d0dce8;
+}
+.right-panel h2 {
+  font-size: 16px; color: #1a5276;
+  border-left: 4px solid #3498db;
+  padding-left: 10px; margin-bottom: 10px;
+}
+.right-panel .kb-block {
+  margin-bottom: 12px; padding: 10px 12px;
+  background: #fff; border-radius: 7px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.35s ease;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.right-panel .kb-block h3 { font-size: 13px; color: #2471a3; margin-bottom: 4px; }
+.right-panel .kb-block p, .right-panel .kb-block li { font-size: 13px; line-height: 1.75; color: #444; }
+.right-panel .kb-block ul, .right-panel .kb-block ol { padding-left: 18px; }
+.right-panel .kb-block .hl {
+  background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: bold;
+}
+
+/* 底部 */
+.bottombar {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 20px;
+  background: #e2ecf5;
+  border-top: 1px solid #ccd8e4;
+}
+.bottombar button {
+  padding: 7px 16px; border: none; border-radius: 5px;
+  font-size: 13px; font-family: inherit; cursor: pointer;
+  font-weight: bold; transition: all 0.15s;
+}
+.bottombar button:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+.btn-prev      { background: #d5dbdf; color: #555; }
+.btn-next      { background: #3498db; color: #fff; }
+.btn-reset     { background: #e74c3c; color: #fff; }
+.btn-autoplay  { background: #2e86c1; color: #fff; }
+.step-counter  { margin-left: auto; font-size: 13px; color: #777; }
+</style>
+</head>
+<body>
+
+<a href="main2.html" class="back-btn" title="返回主页">←</a>
+<div class="container">
+  <div class="topbar">
+    <h1>孟德尔的分离定律</h1>
+    <span class="step-title" id="stepTitle">亲代杂交</span>
+    <div class="step-dots" id="stepDots"></div>
+  </div>
+
+  <div class="main">
+    <div class="left-panel" onclick="nextStep()">
+      <canvas id="c" width="750" height="600"></canvas>
+      <div class="click-hint" id="clickHint">点击画面 / 按 → 前进</div>
+    </div>
+    <div class="right-panel" id="rightPanel"></div>
+  </div>
+
+  <div class="bottombar">
+    <button class="btn-prev" onclick="prevStep()">◀ 上一步</button>
+    <button class="btn-next" id="btnNext" onclick="nextStep()">下一步 ▶</button>
+    <button class="btn-autoplay" id="btnAuto" onclick="toggleAuto()">▶ 自动播放</button>
+    <button class="btn-reset" onclick="resetAll()">↺ 重置</button>
+    <span class="step-counter" id="stepCounter">0 / 0</span>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 750, H = 600;
+
+const TOTAL_STEPS = 14;
+let currentStep = 0;
+let autoPlay = false;
+let autoTimer = null;
+
+// ─── 绘制工具 ───
+
+function skyGnd() {
+  ctx.clearRect(0, 0, W, H);
+  // 浅蓝天空
+  const sg = ctx.createLinearGradient(0, 0, 0, H*0.32);
+  sg.addColorStop(0, '#bfdbf7'); sg.addColorStop(1, '#dce8f5');
+  ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H*0.32);
+  // 浅褐地面
+  const gg = ctx.createLinearGradient(0, H*0.32, 0, H);
+  gg.addColorStop(0, '#dcd0b8'); gg.addColorStop(1, '#ccc0a4');
+  ctx.fillStyle = gg; ctx.fillRect(0, H*0.32, W, H*0.68);
+}
+
+function title(t) {
+  ctx.fillStyle = '#1a5276';
+  ctx.font = 'bold 17px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText(t, W/2, 32);
+}
+
+// 豌豆植株: (x,y)为花盆泥土顶部坐标。矮茎更短。
+function plant(x, y, gt, s) {
+  s = s || 1;
+  const sh = (gt === 'dd') ? 38 : 65;
+  // 花盆
+  ctx.fillStyle = '#c8956c';
+  ctx.beginPath();
+  ctx.moveTo(x-19*s, y+32*s); ctx.lineTo(x+19*s, y+32*s);
+  ctx.lineTo(x+14*s, y+16*s); ctx.lineTo(x-14*s, y+16*s);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#8b6914'; ctx.lineWidth = 1.3*s; ctx.stroke();
+  ctx.fillStyle = '#6b4226';
+  ctx.beginPath(); ctx.ellipse(x, y+18*s, 17*s, 5*s, 0, 0, Math.PI*2); ctx.fill();
+  // 茎
+  ctx.strokeStyle = '#4a8c3f'; ctx.lineWidth = 3*s;
+  ctx.beginPath(); ctx.moveTo(x, y+16*s); ctx.lineTo(x, y - sh*s + 12*s); ctx.stroke();
+  const topY = y - sh*s + 12*s;
+  // 叶
+  ctx.fillStyle = '#5cb85c';
+  ctx.beginPath(); ctx.ellipse(x-12*s, topY+12*s, 15*s, 5*s, -0.4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+12*s, topY+12*s, 15*s, 5*s, 0.4, 0, Math.PI*2); ctx.fill();
+  // 花
+  const fY = topY - 5*s;
+  ctx.fillStyle = (gt === 'dd') ? '#c8b8d8' : '#f0a0c0';
+  for (let i = 0; i < 3; i++) {
+    const a = (i/3)*Math.PI*2 - Math.PI/2;
+    ctx.beginPath(); ctx.ellipse(x+Math.cos(a)*5*s, fY, 8*s, 5*s, a, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle = '#ffe066';
+  ctx.beginPath(); ctx.arc(x, fY, 5*s, 0, Math.PI*2); ctx.fill();
+
+  // 标签放在花朵上方，留足够间距
+  const labelY = fY - 14*s;
+  ctx.fillStyle = '#333';
+  ctx.font = `bold ${13*s}px "Microsoft YaHei"`;
+  ctx.textAlign = 'center';
+  ctx.fillText(gt, x, labelY);
+  ctx.font = `${11*s}px "Microsoft YaHei"`;
+  ctx.fillStyle = (gt === 'dd') ? '#2980b9' : '#c0392b';
+  const trait = (gt === 'DD' || gt === 'Dd') ? '高茎' : '矮茎';
+  ctx.fillText(trait, x, labelY + 15*s);
+}
+
+function chrPair(x, y, a1, a2, scale, gap) {
+  const s = scale || 1, g = (gap || 0) * 50 * s;
+  for (let i = 0; i < 2; i++) {
+    const xo = (i === 0 ? -1 : 1) * g;
+    const al = i === 0 ? a1 : a2;
+    const col = al === 'D' ? '#c0392b' : '#2980b9';
+    const cx = x + xo;
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(cx-5*s, y, 13*s, 4.5*s, -0.25, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx+5*s, y, 13*s, 4.5*s, 0.25, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, y, 4.5*s, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${11*s}px "Microsoft YaHei"`;
+    ctx.textAlign = 'center';
+    ctx.fillText(al, cx, y + 4*s);
+  }
+}
+
+function singleChr(x, y, al) {
+  const col = al === 'D' ? '#c0392b' : '#2980b9';
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(x-3.5, y, 9, 3.5, -0.25, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+3.5, y, 9, 3.5, 0.25, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 10px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText(al, x, y + 3.5);
+}
+
+function sperm(x, y, al) {
+  const col = al === 'D' ? '#f0a0a0' : '#a0c8f0';
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(x, y, 10, 7, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#777'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1.1;
+  ctx.beginPath(); ctx.moveTo(x+7, y-2); ctx.quadraticCurveTo(x+14, y+7, x+20, y-3); ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 9px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText(al, x, y + 3.5);
+}
+
+function egg(x, y, al) {
+  const col = al === 'D' ? '#f0a0a0' : '#a0c8f0';
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.arc(x, y, 11, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#777'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 9px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText(al, x, y + 3.5);
+}
+
+function arrowD(x, y, dir) {
+  ctx.fillStyle = '#3498db';
+  ctx.beginPath();
+  if (dir === 'down')      { ctx.moveTo(x,y); ctx.lineTo(x-5,y-10); ctx.lineTo(x+5,y-10); }
+  else if (dir === 'right'){ ctx.moveTo(x,y); ctx.lineTo(x-10,y-5); ctx.lineTo(x-10,y+5); }
+  else if (dir === 'up')   { ctx.moveTo(x,y); ctx.lineTo(x-5,y+10); ctx.lineTo(x+5,y+10); }
+  else                      { ctx.moveTo(x,y); ctx.lineTo(x+10,y-5); ctx.lineTo(x+10,y+5); }
+  ctx.closePath(); ctx.fill();
+}
+
+function punnett(x, y, cw, ch, rows, cols) {
+  const nr = rows.length, nc = cols.length;
+  ctx.fillStyle = '#dce6f0';
+  for (let j = 0; j < nc; j++) {
+    ctx.fillRect(x+(j+1)*cw, y, cw, ch);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 13px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText(cols[j], x+(j+1.5)*cw, y+ch/2+5);
+    ctx.fillStyle = '#dce6f0';
+  }
+  for (let i = 0; i < nr; i++) {
+    ctx.fillRect(x, y+(i+1)*ch, cw, ch);
+    ctx.fillStyle = '#333';
+    ctx.fillText(rows[i], x+cw/2, y+(i+1.5)*ch+5);
+    ctx.fillStyle = '#dce6f0';
+  }
+  for (let i = 0; i < nr; i++) {
+    for (let j = 0; j < nc; j++) {
+      const cx = x+(j+1)*cw, cy = y+(i+1)*ch;
+      const gt = rows[i]+cols[j];
+      let bg = '#fff';
+      if (gt === 'DD') bg = '#fde0e0';
+      else if (gt === 'Dd' || gt === 'dD') bg = '#fef9e0';
+      else bg = '#e0effa';
+      ctx.fillStyle = bg; ctx.fillRect(cx, cy, cw, ch);
+      ctx.strokeStyle = '#999'; ctx.lineWidth = 1; ctx.strokeRect(cx, cy, cw, ch);
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 13px "Microsoft YaHei"';
+      ctx.fillText(gt === 'dD' ? 'Dd' : gt, cx+cw/2, cy+ch/2+5);
+    }
+  }
+  ctx.fillStyle = '#555';
+  ctx.font = '11px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText('♂ 雄配子 →', x+cw+(nc*cw)/2, y-4);
+  ctx.fillText('♀ 雌配子 ↓', x-12, y+ch+(nr*ch)/2+5);
+}
+
+function pie(cx, cy, r) {
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  ctx.arc(cx,cy,r,-Math.PI/2,Math.PI,false); ctx.closePath();
+  ctx.fillStyle = '#c0392b'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  ctx.arc(cx,cy,r,Math.PI,-Math.PI/2,false); ctx.closePath();
+  ctx.fillStyle = '#2980b9'; ctx.fill();
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 10px "Microsoft YaHei"'; ctx.textAlign = 'center';
+  ctx.fillText('高茎 3/4', cx-18, cy-8);
+  ctx.fillText('矮茎 1/4', cx+20, cy+10);
+}
+
+// ─── 步骤定义 ───
+const steps = [];
+
+// Step 0
+steps.push({
+  title: '亲代：纯合高茎 × 纯合矮茎',
+  knowledge: [
+    {title:'性状与遗传因子', html:`<p>孟德尔用豌豆的<b>高茎</b>和<b>矮茎</b>这一对<b>相对性状</b>进行研究。高茎由显性因子<b class="hl">D</b>控制，矮茎由隐性因子<b class="hl">d</b>控制。</p>`},
+    {title:'核心概念', html:`<ul><li><b>纯合子</b>：两个遗传因子相同（DD 或 dd）</li><li>左侧<b>纯合高茎 (DD)</b>，右侧<b>纯合矮茎 (dd)</b></li><li>孟德尔让它们进行<b>杂交</b></li></ul>`}
+  ],
+  draw() {
+    skyGnd(); title('亲代 (P) — 纯种高茎 × 纯种矮茎');
+
+    plant(200, 165, 'DD', 1.1);
+    plant(550, 195, 'dd', 1.1);
+
+    ctx.fillStyle = '#555';
+    ctx.font = 'bold 44px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('×', W/2, 285);
+
+    ctx.fillStyle = '#777';
+    ctx.font = '12px "Microsoft YaHei"';
+    ctx.fillText('杂交：人工去雄后授粉', W/2, 315);
+
+    chrPair(200, 400, 'D', 'D', 0.85, 0);
+    chrPair(550, 400, 'd', 'd', 0.85, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = '12px "Microsoft YaHei"';
+    ctx.fillText('体细胞中遗传因子成对存在', W/2, 450);
+  }
+});
+
+// Step 1
+steps.push({
+  title: '纯合高茎 (DD) 产生配子',
+  knowledge: [
+    {title:'配子形成的关键', html:`<p>形成<b class="hl">配子</b>时，成对的遗传因子<b class="hl">彼此分离</b>。纯合高茎(DD)的两个D分离后，每个配子都只含一个<b class="hl">D</b>，只产生<b>一种</b>配子。</p>`}
+  ],
+  draw() {
+    skyGnd(); title('亲代产生配子 — 遗传因子彼此分离');
+
+    plant(310, 130, 'DD', 0.9);
+    chrPair(310, 260, 'D', 'D', 0.85, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = '12px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('体细胞中 DD 成对', 310, 295);
+
+    // 箭头
+    ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(310, 308); ctx.lineTo(310, 348); ctx.stroke();
+    arrowD(310, 348, 'down');
+
+    // 分离虚线
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(310, 308); ctx.lineTo(200, 360); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(310, 308); ctx.lineTo(420, 360); ctx.stroke();
+    ctx.setLineDash([]);
+
+    singleChr(200, 375, 'D');
+    singleChr(420, 375, 'D');
+
+    sperm(200, 435, 'D');
+    sperm(420, 435, 'D');
+
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('每个配子只含一个 D', W/2, 490);
+  }
+});
+
+// Step 2
+steps.push({
+  title: '纯合矮茎 (dd) 产生配子',
+  knowledge: [
+    {title:'纯合矮茎的配子', html:`<p>纯合矮茎(dd)的两个d分离后，每个配子只含一个<b class="hl">d</b>，也只产生<b>一种</b>配子。</p>`},
+    {title:'关键理解', html:`<p>无论是DD还是dd，纯合子都只能产生<b>一种</b>类型的配子。配子中遗传因子数目是体细胞的<b>一半</b>。</p>`}
+  ],
+  draw() {
+    skyGnd(); title('同理：纯合矮茎 (dd) 产生配子');
+
+    plant(480, 130, 'dd', 0.9);
+    chrPair(480, 260, 'd', 'd', 0.85, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = '12px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('体细胞中 dd 成对', 480, 295);
+
+    ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(480, 308); ctx.lineTo(480, 348); ctx.stroke();
+    arrowD(480, 348, 'down');
+
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle = '#2980b9'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(480, 308); ctx.lineTo(370, 360); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(480, 308); ctx.lineTo(590, 360); ctx.stroke();
+    ctx.setLineDash([]);
+
+    singleChr(370, 375, 'd');
+    singleChr(590, 375, 'd');
+
+    egg(370, 435, 'd');
+    egg(590, 435, 'd');
+
+    ctx.fillStyle = '#1a5276';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('每个配子只含一个 d', W/2, 490);
+  }
+});
+
+// Step 3
+steps.push({
+  title: '配子汇总 — 准备受精',
+  knowledge: [
+    {title:'配子类型总结', html:`<ul><li>纯合高茎 (DD) → 全部配子含 <b class="hl">D</b></li><li>纯合矮茎 (dd) → 全部配子含 <b class="hl">d</b></li><li>含D的雄配子与含d的雌配子将<b>随机结合</b></li></ul>`},
+    {title:'分离定律要点①', html:`<p style="font-size:14px;color:#c0392b;"><b>形成配子时，成对的遗传因子彼此分离，每个配子只含有一个遗传因子。</b></p>`}
+  ],
+  draw() {
+    skyGnd(); title('配子类型汇总');
+
+    // 左框
+    ctx.fillStyle = '#fdf0f0'; ctx.fillRect(40, 65, 240, 180);
+    ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2; ctx.strokeRect(40, 65, 240, 180);
+    ctx.fillStyle = '#333'; ctx.font = 'bold 13px "Microsoft YaHei"'; ctx.textAlign = 'center';
+    ctx.fillText('来自纯合高茎 (♂)', 160, 88);
+    sperm(120, 140, 'D'); sperm(200, 140, 'D');
+    ctx.fillText('全部配子含 D', 160, 210);
+
+    // 右框
+    ctx.fillStyle = '#f0f5fb'; ctx.fillRect(470, 65, 240, 180);
+    ctx.strokeStyle = '#2980b9'; ctx.lineWidth = 2; ctx.strokeRect(470, 65, 240, 180);
+    ctx.fillText('来自纯合矮茎 (♀)', 590, 88);
+    egg(530, 140, 'd'); egg(650, 140, 'd');
+    ctx.fillText('全部配子含 d', 590, 210);
+
+    // 中间箭头
+    ctx.strokeStyle = '#3498db'; ctx.lineWidth = 3;
+    const a = Math.sin(Date.now()/500)*4;
+    ctx.beginPath(); ctx.moveTo(300, 155+a); ctx.lineTo(430, 155+a); ctx.stroke();
+    arrowD(430, 155+a, 'right');
+
+    // 受精示意
+    ctx.fillStyle = '#fef9e0';
+    ctx.beginPath(); ctx.arc(W/2, 335, 30, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 15px "Microsoft YaHei"';
+    ctx.fillText('受精', W/2, 341);
+    ctx.font = '13px "Microsoft YaHei"';
+    ctx.fillStyle = '#666';
+    ctx.fillText('D 配子 + d 配子 → 结合！', W/2, 390);
+  }
+});
+
+// Step 4
+steps.push({
+  title: '受精 → F₁代基因型',
+  knowledge: [
+    {title:'F₁代的基因组成', html:`<p>含<b class="hl">D</b>的配子与含<b class="hl">d</b>的配子结合形成<b>受精卵</b>，遗传因子恢复<b>成对</b>状态：<b class="hl">Dd</b></p>`},
+    {title:'重要概念', html:`<ul><li><b>配子</b>：遗传因子<b>单个</b>存在（D或d）</li><li><b>体细胞</b>（含受精卵）：遗传因子<b>成对</b>存在（Dd）</li><li>受精使遗传因子<b>恢复成对</b></li></ul>`}
+  ],
+  draw() {
+    skyGnd(); title('受精 — 遗传因子恢复成对');
+
+    // 配子+结合 → Dd
+    const rowY = 155;
+    sperm(210, rowY, 'D');
+    egg(390, rowY, 'd');
+
+    ctx.fillStyle = '#555';
+    ctx.font = 'bold 28px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('+', 305, rowY+8);
+    ctx.fillText('=', 450, rowY+8);
+
+    ctx.fillStyle = '#fef9e0';
+    ctx.beginPath(); ctx.arc(515, rowY, 28, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 16px "Microsoft YaHei"';
+    ctx.fillText('Dd', 515, rowY+6);
+
+    // F1植株，留足空间
+    plant(W/2, 310, 'Dd', 1.15);
+
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('F₁代 — 全部为高茎（杂合子 Dd）', W/2, 460);
+    ctx.fillText('虽然含有 d，但因 D 是显性，所以表现高茎', W/2, 485);
+  }
+});
+
+// Step 5
+steps.push({
+  title: 'F₁代表现型 — 全部高茎',
+  knowledge: [
+    {title:'F₁代性状表现', html:`<p>F₁代基因型都是<b class="hl">Dd</b>（杂合子）。由于<b class="hl">D对d为显性</b>，所有F₁植株<b>都表现为高茎</b>。这就是<b>显性现象</b>：杂合子中，显性基因掩盖了隐性基因的表达。</p>`},
+    {title:'重要结论', html:`<p>孟德尔实验：纯种高茎×矮茎，F₁<b>全部为高茎</b>，没有中间类型也没有矮茎。这否定了"融合遗传"假说，证明了遗传因子是<b>独立、不融合</b>的粒子。</p>`}
+  ],
+  draw() {
+    skyGnd(); title('F₁代 — 显性性状完全表现');
+
+    for (let i = 0; i < 3; i++) {
+      plant(130 + i*245, 160, 'Dd', 1.0);
+    }
+
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 15px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('全是高茎！没有矮茎！', W/2, 355);
+
+    chrPair(W/2, 415, 'D', 'd', 0.85, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = '13px "Microsoft YaHei"';
+    ctx.fillText('基因型 Dd — D(高茎)为显性，掩盖了 d(矮茎)', W/2, 458);
+    ctx.fillText('注意：d 因子并没有消失，只是被掩盖了', W/2, 480);
+  }
+});
+
+// Step 6: 核心
+steps.push({
+  title: 'F₁自交 — 杂合子产生两种配子 ★',
+  knowledge: [
+    {title:'理解分离定律最关键的一步！', html:`<p>F₁植株基因型是<b class="hl">Dd</b>，它的体细胞中有一个D和一个d。</p><p>在形成配子时，D和d<b class="hl">彼此分离</b>，分别进入不同的配子。</p><p>结果：产生<b>两种</b>类型的配子——含D和含d的，比例<b class="hl">1:1</b></p>`}
+  ],
+  draw() {
+    skyGnd(); title('F₁自交 — 杂合子 (Dd) 产生两种配子 ★');
+
+    // 植物放低一些避免标题重叠
+    plant(W/2, 115, 'Dd', 0.8);
+    chrPair(W/2, 230, 'D', 'd', 0.85, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = '12px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('F₁体细胞：Dd 成对存在', W/2, 272);
+
+    // 分离虚线
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W/2, 252); ctx.lineTo(200, 320); ctx.stroke();
+    ctx.strokeStyle = '#2980b9';
+    ctx.beginPath(); ctx.moveTo(W/2, 252); ctx.lineTo(550, 320); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(W/2, 252); ctx.lineTo(W/2, 290); ctx.stroke();
+    arrowD(W/2, 290, 'down');
+
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 16px "Microsoft YaHei"';
+    ctx.fillText('分离！', W/2, 305);
+
+    sperm(200, 340, 'D');
+    sperm(550, 340, 'd');
+    ctx.fillStyle = '#333';
+    ctx.font = '13px "Microsoft YaHei"';
+    ctx.fillText('含 D 的配子', 200, 378);
+    ctx.fillText('含 d 的配子', 550, 378);
+
+    ctx.fillStyle = '#fef9e0';
+    ctx.fillRect(W/2-90, 405, 180, 30);
+    ctx.fillStyle = '#8b6914';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('D配子 : d配子 = 1 : 1', W/2, 426);
+
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('★ 杂合子产生两种配子，这是F₂出现性状分离的根本原因', W/2, 480);
+  }
+});
+
+// Step 7
+steps.push({
+  title: 'F₁的配子 — D : d = 1 : 1',
+  knowledge: [
+    {title:'雄配子的种类', html:`<p>F₁植株产生的<b>雄配子</b>（花粉粒）有两种：含<b class="hl">D</b>和含<b class="hl">d</b>的，数量<b>相等</b>（1:1）。雌配子同理，也是 D : d = 1 : 1。</p>`}
+  ],
+  draw() {
+    skyGnd(); title('F₁产生的配子 — D : d = 1 : 1');
+
+    const sd = [
+      {x:90,y:100,a:'D'},{x:180,y:92,a:'d'},{x:270,y:105,a:'D'},
+      {x:360,y:88,a:'d'},{x:450,y:100,a:'D'},{x:540,y:94,a:'d'},
+      {x:630,y:102,a:'D'},
+    ];
+    sd.forEach(s => sperm(s.x, s.y, s.a));
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 13px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('D 型 : d 型 = 1 : 1', W/2, 155);
+
+    // 柱状图
+    ctx.fillStyle = '#c0392b';
+    ctx.fillRect(240, 200, 70, 120);
+    ctx.fillStyle = '#2980b9';
+    ctx.fillRect(440, 200, 70, 120);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 13px "Microsoft YaHei"';
+    ctx.fillText('D 配子', 275, 340);
+    ctx.fillText('d 配子', 475, 340);
+    ctx.fillText('50%', 275, 190);
+    ctx.fillText('50%', 475, 190);
+
+    ctx.fillStyle = '#555';
+    ctx.font = '13px "Microsoft YaHei"';
+    ctx.fillText('F₁产生的雄配子：D : d = 1 : 1，数量相等', W/2, 390);
+    ctx.fillText('雌配子同理，也是 D : d = 1 : 1', W/2, 415);
+  }
+});
+
+// Step 8
+steps.push({
+  title: '雌雄配子随机结合 — Punnett方格',
+  knowledge: [
+    {title:'配子随机结合', html:`<p>受精时，雌配子和雄配子<b class="hl">随机结合</b>。Punnett方格（棋盘法）展示所有可能：</p><ul><li>雄配子：½ D、½ d</li><li>雌配子：½ D、½ d</li><li>组合：DD ¼、Dd ¼、dD ¼、dd ¼</li></ul><p>Dd和dD基因型相同，合并后：<b class="hl">DD : Dd : dd = 1 : 2 : 1</b></p>`},
+    {title:'分离定律要点②', html:`<p style="font-size:14px;color:#c0392b;"><b>受精时，雌雄配子随机结合，使遗传因子恢复成对状态。</b></p>`}
+  ],
+  draw() {
+    skyGnd(); title('Punnett 方格 — 配子随机结合');
+    punnett(190, 70, 90, 60, ['D','d'], ['D','d']);
+  }
+});
+
+// Step 9: F2 3:1
+steps.push({
+  title: 'F₂代 — 性状分离 3 : 1',
+  knowledge: [
+    {title:'F₂代基因型分析', html:`<ul><li><b class="hl">DD</b>：¼（纯合显性）— 高茎</li><li><b class="hl">Dd</b>：½（杂合子）&nbsp;&nbsp;— 高茎</li><li><b class="hl">dd</b>：¼（纯合隐性）— 矮茎</li></ul><p>基因型比例 = <b class="hl">1 : 2 : 1</b></p><p>表现型：高茎 ¾ : 矮茎 ¼ = <b class="hl">3 : 1</b></p>`}
+  ],
+  draw() {
+    skyGnd(); title('F₂代的基因型与表现型');
+
+    const d = [
+      {x:90,  gt:'DD', tr:'高茎'},
+      {x:290, gt:'Dd', tr:'高茎'},
+      {x:490, gt:'Dd', tr:'高茎'},
+      {x:690, gt:'dd', tr:'矮茎'},
+    ];
+    // s=0.68, 茎高差更明显
+    d.forEach(p => {
+      plant(p.x, 130, p.gt, 0.68);
+      ctx.fillStyle = (p.gt === 'dd') ? '#2980b9' : '#c0392b';
+      ctx.font = 'bold 11px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.tr, p.x, 215);
+    });
+
+    // 框3株高茎：x范围约 55~565
+    ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 3;
+    ctx.setLineDash([6,3]);
+    ctx.strokeRect(50, 60, 520, 175);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#e67e22';
+    ctx.font = 'bold 12px "Microsoft YaHei"';
+    ctx.textAlign = 'left';
+    ctx.fillText('高茎 3 株', 55, 52);
+    ctx.textAlign = 'center';
+
+    // 框1株矮茎：x范围约 575~740
+    ctx.strokeStyle = '#2980b9'; ctx.lineWidth = 2.5;
+    ctx.strokeRect(570, 60, 150, 175);
+    ctx.fillStyle = '#2980b9';
+    ctx.textAlign = 'left';
+    ctx.fillText('矮茎 1 株', 575, 52);
+    ctx.textAlign = 'center';
+
+    // 比例文字
+    ctx.fillStyle = '#fef9e0';
+    ctx.fillRect(W/2-180, 268, 360, 54);
+    ctx.fillStyle = '#8b6914';
+    ctx.font = 'bold 15px "Microsoft YaHei"';
+    ctx.fillText('高茎 : 矮茎 = 3 : 1', W/2, 292);
+    ctx.fillText('基因型 DD : Dd : dd = 1 : 2 : 1', W/2, 314);
+
+    pie(W/2, 408, 50);
+  }
+});
+
+// Step 10
+steps.push({
+  title: '分离定律完整总结',
+  knowledge: [
+    {title:'分离定律（孟德尔第一定律）', html:`<p>在生物体的<b class="hl">体细胞</b>中，控制同一性状的遗传因子<b class="hl">成对存在</b>，不相融合；在形成<b class="hl">配子</b>时，成对的遗传因子发生<b class="hl">分离</b>，分离后的遗传因子分别进入不同的配子中，<b class="hl">随配子遗传给后代</b>。</p>`},
+    {title:'三个关键时间点', html:`<ol><li><b>体细胞中</b>：遗传因子成对</li><li><b>形成配子时</b>：成对因子分离（减数分裂）</li><li><b>受精时</b>：雌雄配子随机结合，恢复成对</li></ol>`}
+  ],
+  draw() {
+    skyGnd(); title('分离定律 — 完整过程回顾');
+
+    const bx = W/2 - 155;
+    const boxes = [
+      {y:60,  t:'P: DD × dd',     s:'(成对存在)',          col:'#fdf0f0', br:'#c0392b'},
+      {y:155, t:'配子: D    d',    s:'(单个存在)',          col:'#e8f2f0', br:'#3498db'},
+      {y:250, t:'F₁: 全部 Dd',     s:'(恢复成对，全为高茎)',  col:'#fef9e0', br:'#e67e22'},
+      {y:345, t:'F₁配子: D 或 d',  s:'(D:d = 1:1)',        col:'#e8f2f0', br:'#3498db'},
+      {y:440, t:'F₂: DD Dd Dd dd', s:'高 : 矮 = 3 : 1',    col:'#f0f5fb', br:'#2980b9'},
+    ];
+
+    boxes.forEach((b, i) => {
+      ctx.fillStyle = b.col;
+      ctx.fillRect(bx, b.y, 140, 48);
+      ctx.strokeStyle = b.br; ctx.lineWidth = 2; ctx.strokeRect(bx, b.y, 140, 48);
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 12px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.t, bx+70, b.y+18);
+      ctx.fillText(b.s, bx+70, b.y+38);
+
+      if (i < boxes.length-1) {
+        ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(bx+70, b.y+49);
+        ctx.lineTo(bx+70, boxes[i+1].y-4);
+        ctx.stroke();
+        arrowD(bx+70, boxes[i+1].y-4, 'down');
+      }
+    });
+
+    // 右侧要点框
+    ctx.fillStyle = '#fef9e0';
+    ctx.fillRect(W/2+15, 55, 210, 440);
+    ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 2.5; ctx.strokeRect(W/2+15, 55, 210, 440);
+    ctx.fillStyle = '#8b6914';
+    ctx.font = 'bold 13px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('核心要点', W/2+120, 78);
+    ctx.font = '12px "Microsoft YaHei"';
+    const tips = [
+      '1. 体细胞：成对存在',
+      '2. 形成配子：彼此分离',
+      '3. 配子中：单个存在',
+      '4. 受精：恢复成对',
+      '5. 杂合子不表现隐性',
+      '   但隐性因子未消失',
+      '6. F₂性状分离比 3:1',
+      '7. 基因型比 1:2:1',
+    ];
+    tips.forEach((t, i) => ctx.fillText(t, W/2+120, 106 + i*42));
+  }
+});
+
+// Step 11
+steps.push({
+  title: '细胞学基础 — 减数分裂',
+  knowledge: [
+    {title:'分离定律的细胞学基础', html:`<p>分离定律的实质是：<b class="hl">减数分裂</b>过程中，<b class="hl">同源染色体</b>的分离导致了等位基因的分离。</p><ul><li>等位基因位于同源染色体的相同位置上</li><li>减数第一次分裂时，同源染色体分开</li><li>等位基因随之分别进入两个子细胞</li></ul><p>这就是遗传因子分离的<b>细胞学本质</b>。</p>`}
+  ],
+  draw() {
+    skyGnd(); title('分离定律的细胞学基础 — 减数分裂');
+
+    // 体细胞
+    ctx.fillStyle = '#f5deb3';
+    ctx.beginPath(); ctx.ellipse(W/2, 115, 85, 48, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#8b7355'; ctx.lineWidth = 2.5; ctx.stroke();
+    chrPair(W/2, 115, 'D', 'd', 1.0, 0);
+    ctx.fillStyle = '#666';
+    ctx.font = '12px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('体细胞：同源染色体上等位基因成对', W/2, 82);
+
+    // 纺锤丝
+    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(W/2, 168); ctx.lineTo(W/2-140, 265); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W/2, 168); ctx.lineTo(W/2+140, 265); ctx.stroke();
+    ctx.setLineDash([]);
+
+    singleChr(W/2-120, 280, 'D');
+    singleChr(W/2+120, 280, 'd');
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 13px "Microsoft YaHei"';
+    ctx.fillText('同源染色体分离', 80, 306);
+    ctx.fillStyle = '#2980b9';
+    ctx.fillText('等位基因随之分开', 670, 306);
+
+    // 子细胞
+    for (let s = -1; s <= 1; s += 2) {
+      ctx.fillStyle = '#f5deb3';
+      ctx.beginPath(); ctx.ellipse(W/2+s*120, 378, 60, 33, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#8b7355'; ctx.lineWidth = 2; ctx.stroke();
+      singleChr(W/2+s*120, 378, s === -1 ? 'D' : 'd');
+    }
+
+    ctx.fillStyle = '#1a5276';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('含 D 的配子', W/2-120, 438);
+    ctx.fillText('含 d 的配子', W/2+120, 438);
+    ctx.fillText('→ 遗传因子彼此分离的细胞学本质', W/2, 480);
+  }
+});
+
+// Step 12
+steps.push({
+  title: '验证 — 测交实验',
+  knowledge: [
+    {title:'测交验证分离定律', html:`<p>孟德尔设计了<b class="hl">测交实验</b>来验证：让F₁(Dd)与<b>隐性纯合子(dd)</b>杂交。</p><p>预测后代<b class="hl">高茎 : 矮茎 = 1 : 1</b></p><p>实验结果与预测一致，完美验证了分离定律！</p>`},
+    {title:'补充概念', html:`<ul><li><b>自交</b>：基因型相同的个体间交配（如 Dd × Dd）</li><li><b>测交</b>：与隐性纯合子交配，用于检测基因型</li><li><b>杂交</b>：基因型不同的个体间交配</li></ul>`}
+  ],
+  draw() {
+    skyGnd(); title('测交验证 — F₁ × 隐性纯合子');
+
+    ctx.fillStyle = '#555';
+    ctx.font = '13px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('F₁ (Dd) 的配子', 150, 54);
+    sperm(100, 78, 'D');
+    sperm(200, 78, 'd');
+
+    ctx.fillText('隐性纯合 (dd) 的配子', 510, 54);
+    egg(480, 78, 'd');
+
+    // Punnett
+    punnett(240, 118, 80, 60, ['D','d'], ['d']);
+
+    // 结果
+    ctx.fillStyle = '#fef9e0';
+    ctx.fillRect(W/2-120, 278, 240, 36);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('Dd (高茎) : dd (矮茎) = 1 : 1', W/2, 302);
+
+    // 两株植物
+    plant(180, 365, 'Dd', 0.72);
+    plant(570, 395, 'dd', 0.72);
+
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 12px "Microsoft YaHei"';
+    ctx.fillText('高茎 1', 180, 452);
+    ctx.fillStyle = '#2980b9';
+    ctx.fillText('矮茎 1', 570, 482);
+
+    ctx.fillStyle = '#1a5276';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.fillText('实验结果与理论预测一致 → 分离定律得到验证！', W/2, 535);
+  }
+});
+
+// Step 13
+steps.push({
+  title: '知识总结 — 完整知识图谱',
+  knowledge: [
+    {title:'分离定律（完整表述）', html:`<p style="font-size:14px;">在生物体的<b class="hl">体细胞</b>中，控制同一性状的遗传因子<b class="hl">成对存在</b>，不相融合；在形成<b class="hl">配子</b>时，成对的遗传因子发生<b class="hl">分离</b>，分离后的遗传因子分别进入不同的配子中，<b class="hl">随配子遗传给后代</b>。</p>`},
+    {title:'考试高频考点', html:`<ul><li>分离定律发生在<b class="hl">减数分裂产生配子</b>时，不是受精时</li><li>分离的是<b class="hl">等位基因</b>（同源染色体上的）</li><li>F₂出现3:1的条件：完全显性、配子随机结合、后代足够多</li><li>测交后代比例1:1可验证分离定律</li></ul>`},
+    {title:'必记比例', html:`<ul><li>杂合子配子类型比：<b class="hl">D : d = 1 : 1</b></li><li>F₂基因型比：<b class="hl">DD : Dd : dd = 1 : 2 : 1</b></li><li>F₂表现型比：<b class="hl">高茎 : 矮茎 = 3 : 1</b></li><li>测交后代比：<b class="hl">1 : 1</b></li></ul>`}
+  ],
+  draw() {
+    skyGnd(); title('分离定律 — 完整知识图谱');
+
+    const cx = W/2-15, cy = 145;
+    // 中心圆
+    ctx.fillStyle = '#fef9e0';
+    ctx.beginPath(); ctx.arc(cx, cy, 52, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#8b6914';
+    ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('分离定律', cx, cy-6);
+    ctx.fillText('成对→分离', cx, cy+16);
+    ctx.fillText('→单个→恢复', cx, cy+35);
+
+    const brs = [
+      {lb:'体细胞', sb:'成对存在', x:cx-230, y:70,  col:'#c0392b'},
+      {lb:'配子形成', sb:'彼此分离', x:cx-270, y:220, col:'#3498db'},
+      {lb:'配子', sb:'单个存在', x:cx-220, y:370, col:'#2980b9'},
+      {lb:'受精', sb:'恢复成对', x:cx+160, y:360, col:'#e67e22'},
+      {lb:'F₁', sb:'全为显性', x:cx+200, y:210, col:'#c0392b'},
+      {lb:'F₂', sb:'3:1分离', x:cx+200, y:70,  col:'#2980b9'},
+    ];
+    brs.forEach(b => {
+      ctx.fillStyle = b.col;
+      ctx.fillRect(b.x-50, b.y-14, 100, 36);
+      ctx.strokeStyle = '#999'; ctx.lineWidth = 1.2; ctx.strokeRect(b.x-50, b.y-14, 100, 36);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 12px "Microsoft YaHei"';
+      ctx.fillText(b.lb, b.x, b.y+2);
+      ctx.fillText(b.sb, b.x, b.y+20);
+
+      ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      const ang = Math.atan2(b.y-cy, b.x-cx);
+      ctx.moveTo(cx+Math.cos(ang)*52, cy+Math.sin(ang)*52);
+      ctx.lineTo(b.x-Math.cos(ang)*50, b.y-Math.sin(ang)*18);
+      ctx.stroke();
+    });
+
+    ctx.fillStyle = '#1a5276';
+    ctx.font = 'italic 13px "Microsoft YaHei"';
+    ctx.fillText('"遗传不是融合，而是粒子式的传递。" — 孟德尔遗传学的核心思想', W/2, 470);
+  }
+});
+
+// ─── 右侧面板 ───
+function updateRight(idx) {
+  const panel = document.getElementById('rightPanel');
+  const step = steps[idx];
+  let html = `<h2>知识点 — 第${idx+1}步</h2>`;
+  step.knowledge.forEach(kb => {
+    html += `<div class="kb-block"><h3>${kb.title}</h3>${kb.html}</div>`;
+  });
+  panel.innerHTML = html;
+  panel.scrollTop = 0;
+}
+
+// ─── 导航 ───
+function renderAll() {
+  steps[currentStep].draw();
+  document.getElementById('stepTitle').textContent = steps[currentStep].title;
+  document.getElementById('stepCounter').textContent = `${currentStep+1} / ${TOTAL_STEPS}`;
+
+  const dots = document.getElementById('stepDots');
+  let dh = '';
+  for (let i = 0; i < TOTAL_STEPS; i++) {
+    let cls = '';
+    if (i < currentStep) cls = 'done';
+    else if (i === currentStep) cls = 'active';
+    dh += `<span class="dot ${cls}" onclick="goToStep(${i})" title="第${i+1}步"></span>`;
+  }
+  dots.innerHTML = dh;
+
+  updateRight(currentStep);
+
+  document.getElementById('btnNext').textContent =
+    (currentStep === TOTAL_STEPS-1) ? '🔄 回到开头' : '下一步 ▶';
+}
+
+function nextStep() {
+  currentStep = (currentStep < TOTAL_STEPS-1) ? currentStep+1 : 0;
+  renderAll();
+}
+function prevStep() {
+  currentStep = (currentStep > 0) ? currentStep-1 : TOTAL_STEPS-1;
+  renderAll();
+}
+function goToStep(i) { currentStep = i; renderAll(); }
+function resetAll() { currentStep = 0; stopAuto(); renderAll(); }
+
+function toggleAuto() { autoPlay ? stopAuto() : startAuto(); }
+function startAuto() {
+  autoPlay = true;
+  document.getElementById('btnAuto').textContent = '⏸ 停止';
+  document.getElementById('clickHint').textContent = '🔁 自动播放中...';
+  autoTimer = setInterval(() => { nextStep(); }, 3500);
+}
+function stopAuto() {
+  autoPlay = false;
+  document.getElementById('btnAuto').textContent = '▶ 自动播放';
+  document.getElementById('clickHint').textContent = '点击画面 / 按 → 前进';
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStep(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
+  else if (e.key === 'r' || e.key === 'R') { resetAll(); }
+});
+canvas.addEventListener('touchstart', e => { e.preventDefault(); nextStep(); });
+
+renderAll();
+</script>
+</body>
+</html>
