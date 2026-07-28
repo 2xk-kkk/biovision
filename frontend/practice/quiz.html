@@ -714,15 +714,173 @@
         .result-content {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 28px;
-            padding: 60px;
+            padding: 40px;
             text-align: center;
-            max-width: 520px;
+            max-width: 600px;
             width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
             animation: scaleUp 0.4s ease;
             border: 1px solid rgba(102, 187, 255, 0.2);
             box-shadow: 
                 0 30px 80px rgba(102, 187, 255, 0.15),
                 0 0 60px rgba(102, 187, 255, 0.1);
+        }
+
+        .result-content.with-card {
+            text-align: left;
+        }
+
+        .result-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .result-body-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .body-stat-item {
+            text-align: center;
+        }
+
+        .body-stat-value {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .body-stat-value.correct { color: #059669; }
+        .body-stat-value.wrong { color: #dc2626; }
+        .body-stat-value.unanswered { color: #94a3b8; }
+        .body-stat-value.total { color: #3b82f6; }
+
+        .body-stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .answer-card-section {
+            margin-bottom: 20px;
+        }
+
+        .answer-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .answer-card-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .question-type-group {
+            margin-bottom: 16px;
+        }
+
+        .question-type-header {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 10px;
+            padding-left: 4px;
+        }
+
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+
+        .question-cell {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .question-cell.correct {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .question-cell.wrong {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .question-cell.unanswered {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+        }
+
+        .question-cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .view-all-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 15px;
+        }
+
+        .view-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .time-display {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .time-display .time-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .time-display .time-label {
+            font-size: 14px;
+            color: #64748b;
         }
 
         @keyframes scaleUp {
@@ -949,25 +1107,45 @@
     <div class="submit-warning" id="submitWarning">⚠️ 请先选择答案</div>
 
     <div class="result-modal" id="resultModal">
-        <div class="result-content">
-            <div class="result-icon" id="resultIcon">🎉</div>
-            <div class="result-title" id="resultTitle">练习完成！</div>
-            <div class="result-desc" id="resultDesc">恭喜你完成了本次练习</div>
-            <div class="result-stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="resultTotal">0</div>
-                    <div class="stat-label">总题数</div>
+        <div class="result-content with-card">
+            <div class="result-header">
+                <div class="result-icon" id="resultIcon">🎉</div>
+                <div class="result-title" id="resultTitle">练习完成！</div>
+                <div class="result-desc" id="resultDesc">恭喜你完成了本次练习</div>
+            </div>
+            
+            <div class="time-display">
+                <span class="time-value" id="resultTime">00:00</span>
+                <span class="time-label">用时</span>
+            </div>
+            
+            <div class="result-body-stats">
+                <div class="body-stat-item">
+                    <div class="body-stat-value total" id="statTotal">0</div>
+                    <div class="body-stat-label">题量</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="resultCorrect">0</div>
-                    <div class="stat-label">正确数</div>
+                <div class="body-stat-item">
+                    <div class="body-stat-value correct" id="statCorrect">0</div>
+                    <div class="body-stat-label">答对</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="resultRate">0%</div>
-                    <div class="stat-label">正确率</div>
+                <div class="body-stat-item">
+                    <div class="body-stat-value wrong" id="statWrong">0</div>
+                    <div class="body-stat-label">答错</div>
+                </div>
+                <div class="body-stat-item">
+                    <div class="body-stat-value unanswered" id="statUnanswered">0</div>
+                    <div class="body-stat-label">未答</div>
                 </div>
             </div>
-            <div class="result-actions">
+
+            <div class="answer-card-section">
+                <div class="answer-card-title">📋 答题卡</div>
+                <div id="answerCardContent"></div>
+            </div>
+
+            <button class="view-all-btn" onclick="viewAllQuestions()">查看全部题目</button>
+            
+            <div class="result-actions" style="margin-top: 20px;">
                 <button class="btn btn-secondary btn-large" onclick="closeResult()">返回列表</button>
                 <button class="btn btn-success btn-large" onclick="restartQuiz()">再做一次</button>
             </div>
@@ -1437,16 +1615,38 @@
             }
         }
 
+        let viewAllMode = false;
+
         function showResult() {
             stopTimer();
             
             const total = quizQuestions.length;
-            const correct = correctCount;
-            const rate = Math.round((correct / total) * 100);
+            let correct = 0;
+            let wrong = 0;
+            let unanswered = 0;
 
-            document.getElementById('resultTotal').textContent = total;
-            document.getElementById('resultCorrect').textContent = correct;
-            document.getElementById('resultRate').textContent = `${rate}%`;
+            quizQuestions.forEach(q => {
+                const userAnswer = answers[q.id];
+                if (userAnswer === undefined || userAnswer === null || userAnswer === '') {
+                    unanswered++;
+                } else if (results[q.id]) {
+                    correct++;
+                } else {
+                    wrong++;
+                }
+            });
+
+            const rate = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statCorrect').textContent = correct;
+            document.getElementById('statWrong').textContent = wrong;
+            document.getElementById('statUnanswered').textContent = unanswered;
+
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('resultTime').textContent = `${minutes}:${seconds}`;
 
             let icon = '🎉';
             let title = '练习完成！';
@@ -1474,7 +1674,164 @@
             document.getElementById('resultTitle').textContent = title;
             document.getElementById('resultDesc').textContent = desc;
 
+            renderAnswerCard();
+
+            viewAllMode = false;
             document.getElementById('resultModal').classList.add('show');
+        }
+
+        function renderAnswerCard() {
+            const content = document.getElementById('answerCardContent');
+            
+            const typeNames = {
+                'choice': '一、选择题',
+                'fill': '二、填空题',
+                'essay': '三、大题'
+            };
+
+            const grouped = {};
+            quizQuestions.forEach((q, idx) => {
+                const qType = getQuestionType(q);
+                if (!grouped[qType]) grouped[qType] = [];
+                grouped[qType].push({ ...q, originalIndex: idx + 1 });
+            });
+
+            let html = '';
+            const typeOrder = ['choice', 'fill', 'essay'];
+            
+            typeOrder.forEach(type => {
+                if (grouped[type] && grouped[type].length > 0) {
+                    html += `<div class="question-type-group">`;
+                    html += `<div class="question-type-header">${typeNames[type] || type}</div>`;
+                    html += `<div class="question-grid">`;
+                    
+                    grouped[type].forEach(q => {
+                        const userAnswer = answers[q.id];
+                        let statusClass = 'unanswered';
+                        
+                        if (userAnswer !== undefined && userAnswer !== null && userAnswer !== '') {
+                            statusClass = results[q.id] ? 'correct' : 'wrong';
+                        }
+                        
+                        html += `<div class="question-cell ${statusClass}" onclick="goToQuestion(${q.originalIndex - 1})" title="第${q.originalIndex}题">${q.originalIndex}</div>`;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+            });
+
+            if (Object.keys(grouped).length === 0) {
+                html = '<div style="text-align:center; padding:20px; color:#94a3b8;">暂无题目</div>';
+            }
+
+            content.innerHTML = html;
+        }
+
+        function goToQuestion(index) {
+            if (viewAllMode) {
+                showSingleQuestion(index);
+            } else {
+                currentQuestionIndex = index;
+                viewAllMode = true;
+                renderViewAllMode();
+            }
+        }
+
+        function viewAllQuestions() {
+            viewAllMode = true;
+            renderViewAllMode();
+        }
+
+        function renderViewAllMode() {
+            const mainContent = document.querySelector('.main-content');
+            if (!mainContent) return;
+
+            let html = `
+                <div class="view-all-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2 style="font-size:24px; font-weight:600; color:#1e293b;">全部题目</h2>
+                    <button onclick="exitViewAll()" style="padding:10px 20px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; font-size:14px;">返回结果</button>
+                </div>
+            `;
+
+            quizQuestions.forEach((q, idx) => {
+                const userAnswer = answers[q.id];
+                const isCorrect = results[q.id];
+                const questionType = getQuestionType(q);
+                
+                let statusClass = 'unanswered';
+                let statusText = '未答';
+                if (userAnswer !== undefined && userAnswer !== null && userAnswer !== '') {
+                    statusClass = isCorrect ? 'correct' : 'wrong';
+                    statusText = isCorrect ? '✅ 正确' : '❌ 错误';
+                }
+
+                html += `
+                    <div class="view-all-question" style="background:white; border-radius:16px; padding:24px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <div style="font-size:14px; color:#64748b;">第 ${idx + 1} 题 · ${questionType === 'choice' ? '选择题' : questionType === 'fill' ? '填空题' : '大题'}</div>
+                            <div style="padding:4px 12px; border-radius:8px; font-size:12px; font-weight:500; background:${statusClass === 'correct' ? '#dcfce7' : statusClass === 'wrong' ? '#fee2e2' : '#f1f5f9'}; color:${statusClass === 'correct' ? '#166534' : statusClass === 'wrong' ? '#991b1b' : '#94a3b8'};">${statusText}</div>
+                        </div>
+                `;
+
+                if (questionType === 'choice') {
+                    html += `<div style="font-size:16px; color:#1e293b; margin-bottom:15px;">${q.stem}</div>`;
+                    html += '<div style="display:flex; flex-direction:column; gap:10px;">';
+                    const optionKeys = ['A', 'B', 'C', 'D'];
+                    optionKeys.forEach(key => {
+                        const optionValue = q.options ? q.options[key] : '';
+                        if (!optionValue) return;
+                        let optionClass = '';
+                        if (isAnswerSubmitted) {
+                            if (key === q.answer) optionClass = 'correct-option';
+                            else if (key === userAnswer) optionClass = 'wrong-option';
+                        }
+                        html += `<div style="padding:12px 16px; border-radius:8px; border:1px solid ${optionClass === 'correct-option' ? '#059669' : optionClass === 'wrong-option' ? '#dc2626' : '#e2e8f0'}; background:${optionClass === 'correct-option' ? '#dcfce7' : optionClass === 'wrong-option' ? '#fee2e2' : 'transparent'}; font-size:15px; color:#334155;">
+                            <strong>${key}.</strong> ${optionValue}
+                        </div>`;
+                    });
+                    html += '</div>';
+                } else if (questionType === 'essay') {
+                    html += `<div style="font-size:16px; color:#1e293b; margin-bottom:15px;">${q.stem}</div>`;
+                    if (userAnswer) {
+                        html += `<div style="padding:12px; background:#f1f5f9; border-radius:8px; margin-bottom:10px;"><strong style="color:#64748b;">你的答案：</strong><span style="color:#334155;">${userAnswer}</span></div>`;
+                    }
+                    if (q.answer) {
+                        html += `<div style="padding:12px; background:#dcfce7; border-radius:8px; margin-bottom:10px;"><strong style="color:#059669;">参考答案：</strong><span style="color:#166534;">${q.answer}</span></div>`;
+                    }
+                } else {
+                    let stemHtml = q.stem;
+                    const blanks = stemHtml.match(/_+/g) || [];
+                    if (blanks.length > 0 && userAnswer) {
+                        const userParts = userAnswer.split(';');
+                        const correctParts = q.answer ? q.answer.split(';') : [];
+                        for (let i = 0; i < blanks.length; i++) {
+                            const userPart = userParts[i] || '';
+                            const correctPart = correctParts[i] || '';
+                            const isCorrect = userPart.trim() === correctPart.trim();
+                            stemHtml = stemHtml.replace(/_+/, `<span style="padding:2px 8px; border-radius:4px; background:${isCorrect ? '#dcfce7' : '#fee2e2'}; color:${isCorrect ? '#166534' : '#991b1b'}; font-weight:500;">${userPart || '未填'}</span>`);
+                        }
+                    }
+                    html += `<div style="font-size:16px; color:#1e293b; margin-bottom:15px; line-height:2;">${stemHtml}</div>`;
+                    if (q.answer) {
+                        html += `<div style="padding:12px; background:#dcfce7; border-radius:8px; margin-bottom:10px;"><strong style="color:#059669;">参考答案：</strong><span style="color:#166534;">${q.answer}</span></div>`;
+                    }
+                }
+
+                if (q.analysis && q.analysis.trim()) {
+                    html += `<div style="margin-top:15px; padding:12px; background:#fef3c7; border-radius:8px; border-left:4px solid #f59e0b;"><strong style="color:#92400e;">💡 解析：</strong><span style="color:#78350f;">${q.analysis}</span></div>`;
+                }
+
+                html += '</div>';
+            });
+
+            mainContent.innerHTML = html;
+            document.getElementById('resultModal').classList.remove('show');
+        }
+
+        function exitViewAll() {
+            viewAllMode = false;
+            document.getElementById('resultModal').classList.add('show');
+            loadExam();
         }
 
         function closeResult() {
