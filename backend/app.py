@@ -1,13 +1,14 @@
 # app.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import user, post, exam, question
+from routers import user, post, exam, question, ppt
 from utils.response import ApiResponse
 from database.db import init_db
 import os
 from fastapi.staticfiles import StaticFiles
 from service.chart import get_forum_stats
-from routers import chart  
+from routers import chart
+from PPT.generator import OUTPUT_DIR as PPT_OUTPUT_DIR, ASSET_DIR as PPT_ASSET_DIR  
 
 init_db()
 
@@ -47,6 +48,13 @@ app.include_router(post.router, prefix="/api", tags=["发帖"])
 app.include_router(chart.router, prefix="/api", tags=["统计"])
 app.include_router(exam.router, prefix="/api", tags=["试卷"])
 app.include_router(question.router, prefix="/api", tags=["题目"])
+app.include_router(ppt.router, prefix="/api", tags=["PPT生成"])
+
+# 挂载 PPT 输出文件和资源文件（需要挂载两个路径，因为 HTML 内相对路径 ../assets/ 会解析到 /api/ppt/decks/assets/）
+os.makedirs(PPT_OUTPUT_DIR, exist_ok=True)
+os.makedirs(PPT_ASSET_DIR, exist_ok=True)
+app.mount("/api/ppt/assets", StaticFiles(directory=str(PPT_ASSET_DIR)), name="ppt_assets")
+app.mount("/api/ppt/decks/assets", StaticFiles(directory=str(PPT_ASSET_DIR)), name="ppt_decks_assets")
 
 #根路径 - 提供前端页面
 @app.get("/")

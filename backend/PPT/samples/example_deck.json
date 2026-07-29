@@ -1,0 +1,141 @@
+{
+  "title": "ESP32-S3 与 AIoT 控制闭环",
+  "description": "面向嵌入式系统开发课程的网页 PPT 示例。",
+  "topline": "嵌入式系统开发 · ESP32-S3 与 AIoT",
+  "slides": [
+    {
+      "type": "cover",
+      "eyebrow": "Embedded Systems",
+      "title": "ESP32-S3 与 AIoT 控制闭环",
+      "subtitle": "从传感器数据采集、网络通信到大模型辅助解释，建立可验证的物联网系统思维。",
+      "tags": [
+        { "text": "ESP32-S3", "tone": "cyan" },
+        { "text": "MQTT", "tone": "green" },
+        { "text": "LLM" },
+        { "text": "控制闭环", "tone": "amber" }
+      ]
+    },
+    {
+      "type": "cards",
+      "eyebrow": "Learning Goals",
+      "title": "本节课学习目标",
+      "lead": "把硬件、后端和大模型放到同一个工程链路中理解。",
+      "cards": [
+        {
+          "title": "理解设备侧职责",
+          "text": "ESP32-S3 负责采集传感器数据、执行确定性控制，并通过日志暴露运行状态。"
+        },
+        {
+          "title": "理解服务侧职责",
+          "text": "后端维护规则、权限、设备状态和历史记录，避免让模型直接控制硬件。"
+        },
+        {
+          "title": "理解模型侧职责",
+          "text": "LLM 负责自然语言解析、状态解释和摘要生成，输出仍需要结构化校验。"
+        }
+      ]
+    },
+    {
+      "type": "metrics",
+      "eyebrow": "System Boundary",
+      "title": "AIoT 系统先分清四类问题",
+      "lead": "同一句自然语言请求，可能同时包含事实、判断、表达和执行。",
+      "tag": "先分工，再接入模型",
+      "metrics": [
+        {
+          "label": "事实",
+          "title": "真实世界发生什么",
+          "text": "光照值、温湿度、在线状态和报警记录必须来自传感器、消息流或数据库。"
+        },
+        {
+          "label": "判断",
+          "title": "规则如何得到结论",
+          "text": "是否超过阈值、是否允许控制、是否触发报警，适合由后端规则计算。"
+        },
+        {
+          "label": "表达",
+          "title": "怎样让人理解状态",
+          "text": "LLM 把结构化状态解释成清楚文本，也可以按学生提问角度调整说明。"
+        },
+        {
+          "label": "执行",
+          "title": "哪些动作真的下发设备",
+          "text": "控制命令必须经过字段校验、权限检查、范围限制和执行日志。"
+        }
+      ]
+    },
+    {
+      "type": "compare",
+      "eyebrow": "Rule vs LLM",
+      "title": "确定性程序和大模型的边界",
+      "lead": "工程系统需要把稳定执行和语言生成分开设计。",
+      "columns": [
+        {
+          "title": "确定性程序",
+          "points": [
+            "适合 GPIO 控制、阈值判断、状态机和通信重试。",
+            "输入相同，结果应保持稳定。",
+            "便于测试、追踪和复现。"
+          ]
+        },
+        {
+          "title": "大语言模型",
+          "points": [
+            "适合解释状态、生成摘要、解析自然语言意图。",
+            "输出需要结构化约束和后端校验。",
+            "不能直接替代安全控制链路。"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "process",
+      "eyebrow": "Control Loop",
+      "title": "从自然语言到设备动作",
+      "lead": "可靠控制链路需要让每一步都有输入、输出和校验依据。",
+      "steps": [
+        {
+          "title": "用户提出需求",
+          "text": "例如“如果光照超过 200 lux，就把状态标记为异常”。"
+        },
+        {
+          "title": "模型解析意图",
+          "text": "把自然语言转换成 JSON 配置草案，而不是直接控制设备。"
+        },
+        {
+          "title": "后端校验规则",
+          "text": "检查字段、阈值范围、权限和设备在线状态。"
+        },
+        {
+          "title": "设备执行并回传",
+          "text": "ESP32-S3 执行命令，回传结果、错误码和日志。"
+        }
+      ]
+    },
+    {
+      "type": "code",
+      "eyebrow": "Structured Command",
+      "title": "模型输出应是可校验的结构",
+      "lead": "教学平台可以要求模型输出 JSON，再由程序做严格校验。",
+      "language": "JSON",
+      "code": "{\n  \"device_id\": \"esp32s3-lab-01\",\n  \"intent\": \"set_alarm_rule\",\n  \"condition\": {\n    \"sensor\": \"lux\",\n    \"op\": \">\",\n    \"value\": 200\n  },\n  \"action\": \"mark_abnormal\"\n}",
+      "notes": [
+        "字段名固定，方便后端解析。",
+        "阈值范围由程序校验。",
+        "真正的控制动作由设备和后端共同确认。"
+      ]
+    },
+    {
+      "type": "summary",
+      "eyebrow": "Summary",
+      "title": "本节总结",
+      "subtitle": "AIoT 不是把模型直接接到硬件上，而是让模型参与语言层，让程序守住执行层。",
+      "items": [
+        { "title": "事实来自设备" },
+        { "title": "规则由程序校验", "tone": "cyan" },
+        { "title": "LLM 负责表达", "tone": "green" },
+        { "title": "执行必须可追踪" }
+      ]
+    }
+  ]
+}

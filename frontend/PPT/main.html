@@ -1391,6 +1391,22 @@
           </div>
         </section>
 
+        <section class="card" id="resultCard" style="margin-top: 18px; display: none;">
+          <div class="card-head">
+            <div>
+              <p class="card-title">生成结果</p>
+              <p class="card-sub" id="resultStatus">点击上方「一键生成」后结果将显示在这里。</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="actions" id="resultActions">
+              <a class="btn btn-primary" id="resultPreviewLink" href="#" target="_blank" style="display:none; text-decoration:none;">预览 PPT</a>
+              <a class="btn btn-ghost" id="resultDownloadLink" href="#" target="_blank" style="display:none; text-decoration:none;">下载 HTML</a>
+              <button class="btn btn-ghost" id="resultRetryBtn" style="display:none;">重新生成</button>
+            </div>
+          </div>
+        </section>
+
         <div style="margin-top: 18px;">
           <div class="module-grid">
             <a class="module-card" href="my_PPT.html">
@@ -1457,6 +1473,11 @@
               <div class="field">
                 <label for="titleInput">题目</label>
                 <input id="titleInput" type="text" placeholder="请输入 PPT 题目" />
+              </div>
+
+              <div class="field">
+                <label for="slideCountInput">生成页数</label>
+                <input id="slideCountInput" type="number" min="4" max="15" value="8" />
               </div>
 
               <div class="field">
@@ -1864,27 +1885,82 @@
       renderTemplateSummary();
     });
 
-    generateBtn.addEventListener('click', () => {
-      updateProgress(0, '正在分析内容');
+    const API_BASE = 'http://127.0.0.1:8000';
+    const slideCountInput = document.getElementById('slideCountInput');
+    const resultCard = document.getElementById('resultCard');
+    const resultStatus = document.getElementById('resultStatus');
+    const resultPreviewLink = document.getElementById('resultPreviewLink');
+    const resultDownloadLink = document.getElementById('resultDownloadLink');
+    const resultRetryBtn = document.getElementById('resultRetryBtn');
 
-      const steps = [
-        { value: 22, label: '整理知识点' },
-        { value: 48, label: '构建大纲' },
-        { value: 74, label: '生成页面建议' },
-        { value: 100, label: '生成完成' }
-      ];
+    function showResult(success, data) {
+      resultCard.style.display = 'block';
+      resultPreviewLink.style.display = 'none';
+      resultDownloadLink.style.display = 'none';
+      resultRetryBtn.style.display = 'none';
 
-      const runStep = () => {
-        const step = steps.shift();
-        if (!step) {
+      if (success) {
+        resultStatus.textContent = 'PPT 生成成功！点击下方按钮查看或下载。';
+        resultPreviewLink.href = API_BASE + data.html_url;
+        resultPreviewLink.style.display = 'inline-flex';
+        resultDownloadLink.href = API_BASE + data.download_url;
+        resultDownloadLink.style.display = 'inline-flex';
+      } else {
+        resultStatus.textContent = '生成失败：' + (data.message || '未知错误');
+        resultRetryBtn.style.display = 'inline-flex';
+      }
+    }
+
+    resultRetryBtn.addEventListener('click', () => {
+      generateBtn.click();
+    });
+
+    generateBtn.addEventListener('click', async () => {
+      const topic = titleInput.value.trim();
+      const requirements = mainContent.value.trim();
+
+      if (!topic) {
+        updateProgress(0, '请输入题目');
+        return;
+      }
+
+      updateProgress(10, '正在提取知识点内容...');
+      resultCard.style.display = 'none';
+
+      const payload = {
+        topic: topic,
+        requirements: requirements,
+        chapter_keys: selectedKnowledge,
+        model: modelSelect.value,
+        slide_count: parseInt(slideCountInput.value) || 8,
+        style: selectedStylePreset,
+        theme: selectedThemeMode
+      };
+
+      try {
+        updateProgress(25, '正在调用 AI 模型生成课件...');
+        const res = await fetch(API_BASE + '/api/ppt/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        updateProgress(70, 'AI 生成完成，正在渲染页面...');
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          updateProgress(0, '生成失败');
+          showResult(false, { message: data.detail || '服务器返回错误' });
           return;
         }
 
-        updateProgress(step.value, step.label);
-        setTimeout(runStep, 420);
-      };
-
-      setTimeout(runStep, 350);
+        updateProgress(100, '生成完成');
+        showResult(true, data);
+      } catch (err) {
+        updateProgress(0, '请求失败');
+        showResult(false, { message: '无法连接到后端服务，请确认 api_server.py 已启动。错误：' + err.message });
+      }
     });
 
     applyDefaults();
