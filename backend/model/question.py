@@ -262,8 +262,26 @@ def get_exam_stats(db, exam_id, user_id):
         'wrong': answered - correct
     }
 
+def normalize_textbook_name(textbook):
+    name_map = {
+        '必修一': '必修一：分子与细胞',
+        '必修二': '必修二：遗传与进化',
+        '选修一': '选择性必修一：稳态与调节',
+        '选修二': '选择性必修二：生物与环境',
+        '选修三': '选择性必修三：生物技术与工程',
+    }
+    if textbook in name_map:
+        return name_map[textbook]
+    for key, value in name_map.items():
+        if key in textbook:
+            return value
+    return textbook
+
 def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, question_type=None):
     cursor = db.cursor()
+    
+    if textbook:
+        textbook = normalize_textbook_name(textbook)
     
     query = 'SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, textbook, chapter, section, type, analysis FROM questions WHERE 1=1'
     params = []
