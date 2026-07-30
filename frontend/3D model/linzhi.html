@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>磷脂双分子层 — 3D 交互模型</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: rgba(13,17,23,0.9);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --cyan: #79c0ff;
+    --orange: #f0a040;
+    --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    font-family: "Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  #three-canvas { position: fixed; inset: 0; display: block; }
+
+  /* 顶部栏 */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 48px; display: flex; align-items: center; gap: 14px;
+    padding: 0 18px;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .back-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.05);
+    color: #c9d1d9; font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.25s; flex-shrink: 0;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.12); border-color: #fff; box-shadow: 0 0 14px rgba(121,192,255,0.2); }
+  .topbar h1 {
+    font-size: 15px; font-weight: 600; letter-spacing: 0.5px;
+    background: linear-gradient(90deg, var(--cyan), #f0a040);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .topbar-actions { margin-left: auto; display: flex; gap: 6px; }
+  .tb-btn {
+    padding: 5px 13px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: #b0b8c0; font-size: 12px; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .tb-btn:hover { background: rgba(255,255,255,0.1); color: #e6edf3; }
+  .tb-btn.on {
+    background: rgba(121,192,255,0.15); border-color: rgba(121,192,255,0.4); color: var(--cyan);
+  }
+
+  /* 图例 */
+  .legend {
+    position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
+    z-index: 50; background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+    padding: 14px 16px; min-width: 175px;
+    backdrop-filter: blur(10px); box-shadow: var(--shadow);
+  }
+  .legend h3 { font-size: 11px; color: var(--muted); margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
+  .lg-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 5px 6px; margin: 1px -6px; border-radius: 5px;
+    font-size: 11px; color: #b0b8c0; cursor: pointer; transition: background 0.15s;
+  }
+  .lg-item:hover { background: rgba(255,255,255,0.04); }
+  .lg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .lg-dot.head { background: #f0a040; }
+  .lg-dot.tail { background: #6b8db5; }
+  .lg-dot.chol { background: #f5c842; border-radius: 3px; }
+  .lg-dot.carrier { background: #b07cd8; }
+  .lg-dot.channel { background: #58b9e8; }
+  .lg-dot.glyco { background: #e0556a; }
+  .lg-dot.peripheral { background: #5cc98b; }
+
+  /* 弹窗 */
+  .info-popup {
+    position: fixed; z-index: 200; pointer-events: none;
+    opacity: 0; transform: translate(-50%,-115%);
+    transition: opacity 0.25s, transform 0.25s;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; padding: 13px 16px;
+    box-shadow: var(--shadow); max-width: 250px;
+    backdrop-filter: blur(12px);
+  }
+  .info-popup.show { opacity: 1; transform: translate(-50%,-130%); }
+  .info-popup h4 { font-size: 13px; margin-bottom: 5px; }
+  .info-popup p { font-size: 11px; color: var(--muted); line-height: 1.55; }
+  .info-popup::after {
+    content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 7px solid transparent; border-right: 7px solid transparent;
+    border-top: 7px solid rgba(13,17,23,0.95);
+  }
+
+  /* 底部提示 */
+  .hint {
+    position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+    z-index: 50; padding: 7px 18px; border-radius: 999px;
+    background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.06);
+    font-size: 11px; color: var(--muted); letter-spacing: 0.5px;
+    backdrop-filter: blur(8px); pointer-events: none;
+  }
+  .hint em { color: var(--cyan); font-style: normal; }
+
+  @media (max-width: 768px) {
+    .legend { right: 2px; padding: 10px 12px; min-width: 145px; }
+    .legend h3 { font-size: 10px; }
+    .lg-item { font-size: 10px; }
+    .topbar h1 { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main.html" class="back-btn" title="返回">←</a>
+  <h1>磷脂双分子层 · 流动镶嵌模型</h1>
+  <div class="topbar-actions">
+    <button class="tb-btn on" id="btnAuto" onclick="toggleAuto()">⟳ 自动旋转</button>
+    <button class="tb-btn on" id="btnLabel" onclick="toggleLabels()">🏷 标注</button>
+    <button class="tb-btn on" id="btnProt" onclick="toggleProteins()">🧬 蛋白质</button>
+    <button class="tb-btn" onclick="resetView()">↺ 重置</button>
+  </div>
+</div>
+
+<canvas id="three-canvas"></canvas>
+
+<div class="legend">
+  <h3>图例</h3>
+  <div class="lg-item"><div class="lg-dot head"></div> 亲水头部（磷酸）</div>
+  <div class="lg-item"><div class="lg-dot tail"></div> 疏水尾部（脂肪酸）</div>
+  <div class="lg-item"><div class="lg-dot chol"></div> 胆固醇</div>
+  <div class="lg-item" data-p="carrier"><div class="lg-dot carrier"></div> 载体蛋白</div>
+  <div class="lg-item" data-p="channel"><div class="lg-dot channel"></div> 通道蛋白</div>
+  <div class="lg-item" data-p="glyco"><div class="lg-dot glyco"></div> 糖蛋白</div>
+  <div class="lg-item" data-p="peripheral"><div class="lg-dot peripheral"></div> 外周蛋白</div>
+</div>
+
+<div class="info-popup" id="popup"><h4 id="popTitle"></h4><p id="popDesc"></p></div>
+<div class="hint">🖱 <em>拖拽</em>旋转 &nbsp;|&nbsp; 🔍 <em>滚轮</em>缩放 &nbsp;|&nbsp; 👆 <em>点击</em>蛋白质查看详情</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+window.addEventListener('error', function(e) {
+  document.body.innerHTML += '<div style="position:fixed;top:60px;left:20px;z-index:9999;color:red;background:#111;padding:12px;font-size:12px;max-width:90%;">ERROR: ' + e.message + '</div>';
+});
+
+try {
+
+// ===================== 场景 =====================
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1117);
+scene.fog = new THREE.Fog(0x0d1117, 15, 40);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.5, 60);
+camera.position.set(0.4, 0.2, 12.5);
+camera.lookAt(0, 0, 0);
+
+// ===================== 光照 =====================
+scene.add(new THREE.AmbientLight(0x3a4e6b, 3.0));
+
+const sun = new THREE.DirectionalLight(0xfff5e8, 5.8);
+sun.position.set(8, 5, 7);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 50;
+sun.shadow.camera.left = -14; sun.shadow.camera.right = 14;
+sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -8;
+sun.shadow.bias = -0.00015;
+sun.shadow.normalBias = 0.02;
+scene.add(sun);
+
+const fill = new THREE.DirectionalLight(0x8899cc, 2.2);
+fill.position.set(-4, 0, -3);
+scene.add(fill);
+
+const rim = new THREE.DirectionalLight(0xb0c8ff, 2.5);
+rim.position.set(0, -1.5, 5);
+scene.add(rim);
+
+// ===================== OrbitControls =====================
+const ctrl = new OrbitControls(camera, renderer.domElement);
+ctrl.target.set(0, 0, 0);
+ctrl.enableDamping = true;
+ctrl.dampingFactor = 0.08;
+ctrl.minDistance = 3.5;
+ctrl.maxDistance = 22;
+ctrl.maxPolarAngle = Math.PI * 0.72;
+ctrl.minPolarAngle = 0.18;
+ctrl.autoRotate = true;
+ctrl.autoRotateSpeed = 0.4;
+ctrl.update();
+
+// ===================== 材质 =====================
+const matHead = new THREE.MeshStandardMaterial({ color: 0xf0a040, roughness: 0.35, metalness: 0.04 });
+const matTail = new THREE.MeshStandardMaterial({ color: 0x6b8db5, roughness: 0.48, metalness: 0.03 });
+
+// ===================== 波浪形脂肪酸尾巴 =====================
+function createWavyTail(startY, endY, kink) {
+  const pts = [];
+  const len = endY - startY;
+  const n = 10;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const y = startY + len * t;
+    let wx = Math.sin(t * Math.PI * 2.8) * 0.09 + Math.cos(t * Math.PI * 1.6) * 0.04;
+    if (kink > 0) {
+      const kc = 0.35, kw = 0.12;
+      const dist = Math.abs(t - kc) / kw;
+      if (dist < 1) wx += kink * 0.2 * (1 - dist) * (1 - dist);
+    }
+    const wz = Math.cos(t * Math.PI * 2.2) * 0.05;
+    pts.push(new THREE.Vector3(wx, y, wz));
+  }
+  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 14, 0.048, 6, false);
+}
+
+// ===================== 单个磷脂分子（更紧凑） =====================
+function createPhospholipid(headY, tailDir) {
+  const g = new THREE.Group();
+
+  // 头部 — 扁球形，略小更紧密
+  const hGeo = new THREE.SphereGeometry(0.25, 18, 12);
+  const hMesh = new THREE.Mesh(hGeo, matHead);
+  hMesh.scale.set(1, 0.55, 1);
+  hMesh.position.y = headY;
+  hMesh.castShadow = true; hMesh.receiveShadow = true;
+  g.add(hMesh);
+
+  // 两条尾巴
+  const tailEnd = headY + tailDir * 1.35;
+  const tailStart = headY + tailDir * 0.1;
+  const tail1Geo = createWavyTail(tailStart, tailEnd, 0);
+  const tail2Geo = createWavyTail(tailStart, tailEnd, 1.0);
+  for (const tGeo of [tail1Geo, tail2Geo]) {
+    const tMesh = new THREE.Mesh(tGeo, matTail);
+    tMesh.castShadow = true;
+    g.add(tMesh);
+  }
+  return g;
+}
+
+// ===================== 更紧密的网格 =====================
+const COLS = 10, ROWS = 6, SP = 0.7;
+const ox = -(COLS-1)*SP/2;
+const oz = -(ROWS-1)*SP/2;
+
+const pZones = {
+  carrier:    { cx:[2,3], rx:[1,2] },
+  channel:    { cx:[6,7], rx:[1,2] },
+  glyco:      { cx:[7,8], rx:[3,4] },
+  peripheral: { cx:[1],   rx:[3,4] },
+};
+function inZone(c,r,ly) {
+  for (const [k,z] of Object.entries(pZones)) {
+    if (k==='peripheral' && ly==='upper') continue;
+    if (z.cx.includes(c) && z.rx.includes(r)) return k;
+  }
+  return null;
+}
+
+// ===================== 构建双层 =====================
+const membrane = new THREE.Group();
+scene.add(membrane);
+
+for (let c=0; c<COLS; c++) {
+  for (let r=0; r<ROWS; r++) {
+    if (!inZone(c,r,'upper')) {
+      const mol = createPhospholipid(0.72, -1);
+      mol.position.set(ox + c*SP + (Math.random()-0.5)*0.08, 0, oz + r*SP + (Math.random()-0.5)*0.08);
+      membrane.add(mol);
+    }
+    if (!inZone(c,r,'lower')) {
+      const mol = createPhospholipid(-0.72, 1);
+      mol.position.set(ox + c*SP + (Math.random()-0.5)*0.08, 0, oz + r*SP + (Math.random()-0.5)*0.08);
+      membrane.add(mol);
+    }
+  }
+}
+
+// ===================== 胆固醇 =====================
+const matChol = new THREE.MeshStandardMaterial({ color: 0xf5c842, roughness: 0.32, metalness: 0.04 });
+const cholGroup = new THREE.Group();
+membrane.add(cholGroup);
+
+function addCholesterol(x, z) {
+  const g = new THREE.Group();
+  const ringGeo = new THREE.BoxGeometry(0.14, 0.1, 0.1, 4, 4, 4);
+  const ring = new THREE.Mesh(ringGeo, matChol);
+  ring.position.y = 0.08; ring.castShadow = true;
+  g.add(ring);
+  const ohGeo = new THREE.SphereGeometry(0.06, 8, 8);
+  const oh = new THREE.Mesh(ohGeo, matChol);
+  oh.position.y = 0.18;
+  g.add(oh);
+  const tailGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.25, 6);
+  const tail = new THREE.Mesh(tailGeo, matChol);
+  tail.position.y = -0.08;
+  g.add(tail);
+  g.position.set(x, 0, z);
+  cholGroup.add(g);
+}
+[
+  [-2.4,-0.8],[0.6,0.5],[3.0,-1.2],[-0.4,1.5],[1.6,-1.5],[-2.8,0.2],[2.2,0.8],[-1.2,-1.6]
+].forEach(([x,z]) => addCholesterol(x,z));
+
+// ===================== 蛋白质 =====================
+const protGroup = new THREE.Group();
+membrane.add(protGroup);
+const clickTargets = [];
+
+function zonePos(k) {
+  const z = pZones[k];
+  return {
+    x: ox + ((z.cx[0]+z.cx[z.cx.length-1])/2)*SP,
+    z: oz + ((z.rx[0]+z.rx[z.rx.length-1])/2)*SP
+  };
+}
+
+function blobGroup(defs, material) {
+  const g = new THREE.Group();
+  defs.forEach(d => {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(d.r, 14, 12), material);
+    m.position.set(d.x, d.y, d.z);
+    m.castShadow = true; m.receiveShadow = true;
+    g.add(m);
+  });
+  return g;
+}
+
+// ============ 载体蛋白 — 双叶结构 + 结合位点凹槽 ============
+{
+  const mat = new THREE.MeshStandardMaterial({ color: 0xb07cd8, roughness: 0.36, metalness: 0.05 });
+  const pos = zonePos('carrier');
+  // 左右两叶，中间有明显的V形凹槽（结合位点）
+  const blobs = [
+    // 左叶
+    {x:-0.22,y:0.25,z:0.05,r:0.32}, {x:-0.28,y:-0.1,z:0.06,r:0.35},
+    {x:-0.26,y:-0.48,z:0.02,r:0.33}, {x:-0.2,y:-0.8,z:0.04,r:0.3},
+    {x:-0.14,y:-0.98,z:0.02,r:0.25},
+    // 右叶
+    {x:0.22,y:0.25,z:-0.05,r:0.32}, {x:0.28,y:-0.1,z:-0.06,r:0.35},
+    {x:0.26,y:-0.48,z:-0.02,r:0.33}, {x:0.2,y:-0.8,z:-0.04,r:0.3},
+    {x:0.14,y:-0.98,z:-0.02,r:0.25},
+    // 底部融合
+    {x:0,y:-0.72,z:0,r:0.34}, {x:0,y:-0.96,z:0,r:0.26},
+    // 顶部两个"唇"（形成凹槽入口）
+    {x:-0.16,y:0.62,z:0,r:0.24}, {x:0.16,y:0.62,z:0,r:0.24},
+  ];
+  const g = blobGroup(blobs, mat);
+
+  // 结合位点中的底物分子（绿色小球，座落在凹槽中）
+  const subGeo = new THREE.SphereGeometry(0.12, 10, 10);
+  const subMat = new THREE.MeshStandardMaterial({ color: 0x4cdf80, roughness: 0.25, metalness: 0.1, emissive: 0x2ecc40, emissiveIntensity: 0.35 });
+  const substrate = new THREE.Mesh(subGeo, subMat);
+  substrate.position.set(0, 0.65, 0.1);
+  substrate.castShadow = true;
+  g.add(substrate);
+
+  g.position.set(pos.x, 0, pos.z);
+  g.userData = { proteinName:'carrier', title:'载体蛋白',
+    desc:'与被转运物质特异性结合，像"锁钥"一样。结合位点（凹槽处的绿色底物）识别特定分子后，载体发生构象改变，将物质从膜一侧转运至另一侧。',
+    color:'#b07cd8' };
+  protGroup.add(g);
+  clickTargets.push(g);
+}
+
+// ============ 通道蛋白 — 漏斗形 + 极明显贯穿孔 ============
+{
+  const mat = new THREE.MeshStandardMaterial({ color: 0x58b9e8, roughness: 0.34, metalness: 0.05 });
+  const pos = zonePos('channel');
+  const blobs = [];
+
+  // 漏斗形通道：顶部和底部扩大，中间收窄但仍保持孔道
+  const rings = 8;
+  for (let i = 0; i < rings; i++) {
+    const t = i / (rings - 1); // 0=底, 1=顶
+    const y = -1.25 + t * 2.5;
+    // 两头宽（漏斗），中间略窄
+    const edgeDist = Math.min(t, 1 - t); // 0 at ends, 0.5 in middle
+    const funnel = 0.08 + edgeDist * 0.2; // wider at ends
+    const r = 0.42 + funnel;
+    const nSphere = 10;
+    for (let a = 0; a < nSphere; a++) {
+      const angle = a / nSphere * Math.PI * 2 + i * 0.15;
+      blobs.push({ x: Math.cos(angle) * r, y, z: Math.sin(angle) * r, r: 0.13 + funnel * 0.06 });
+    }
+  }
+  // 顶部大环（漏斗口）
+  for (let a = 0; a < 12; a++) {
+    const angle = a / 12 * Math.PI * 2;
+    blobs.push({ x: Math.cos(angle) * 0.52, y: 1.28, z: Math.sin(angle) * 0.52, r: 0.17 });
+    blobs.push({ x: Math.cos(angle) * 0.52, y: -1.28, z: Math.sin(angle) * 0.52, r: 0.17 });
+  }
+
+  const g = blobGroup(blobs, mat);
+
+  // 通道内的离子（小紫色球，悬浮在孔道中）
+  const ionGeo = new THREE.SphereGeometry(0.08, 8, 8);
+  const ionMat = new THREE.MeshStandardMaterial({ color: 0xdda0ff, roughness: 0.2, metalness: 0.2, emissive: 0x9944cc, emissiveIntensity: 0.5 });
+  const ion = new THREE.Mesh(ionGeo, ionMat);
+  ion.position.set(0, 0.3, 0);
+  ion.name = 'channelIon';
+  g.add(ion);
+
+  g.position.set(pos.x, 0, pos.z);
+  g.userData = { proteinName:'channel', title:'通道蛋白',
+    desc:'形成贯穿脂双层的亲水性孔道，两端呈漏斗形扩口。允许特定离子（孔道中的紫色Na⁺/K⁺）顺浓度梯度快速通过。具有离子选择性，无需构象改变。',
+    color:'#58b9e8' };
+  protGroup.add(g);
+  clickTargets.push(g);
+}
+
+// ============ 糖蛋白 — 茂密糖链"树冠" ============
+{
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xe0556a, roughness: 0.34, metalness: 0.05 });
+  const sugarMat = new THREE.MeshStandardMaterial({ color: 0xf7c948, roughness: 0.28, metalness: 0.04 });
+  const sugarMat2 = new THREE.MeshStandardMaterial({ color: 0xff8c42, roughness: 0.28, metalness: 0.04 }); // 交替颜色
+  const pos = zonePos('glyco');
+
+  // 蛋白主体（较小，大部分在膜内）
+  const blobs = [
+    {x:0,y:0.2,z:0,r:0.3}, {x:0.08,y:-0.15,z:0.04,r:0.33},
+    {x:-0.06,y:-0.5,z:-0.03,r:0.3}, {x:0.03,y:-0.8,z:0.02,r:0.27},
+    {x:0.2,y:0.05,z:0.18,r:0.14}, {x:-0.18,y:-0.2,z:-0.16,r:0.15},
+  ];
+  const g = blobGroup(blobs, bodyMat);
+
+  // 茂密糖链树冠 — 6条分支，每条5-7个糖单元
+  const branchDefs = [
+    { start:[0.05,1.25,0.03], dir:[0.12,0.3,0.15], n:6 },
+    { start:[-0.1,1.22,-0.06], dir:[-0.2,0.32,-0.1], n:7 },
+    { start:[0.0,1.2,-0.15], dir:[0.04,0.35,-0.25], n:5 },
+    { start:[0.08,1.28,0.1], dir:[0.18,0.28,0.22], n:6 },
+    { start:[-0.06,1.24,0.12], dir:[-0.15,0.3,0.2], n:5 },
+    { start:[0.02,1.18,-0.22], dir:[0.2,0.3,-0.05], n:6 },
+  ];
+
+  branchDefs.forEach(({start, dir, n}, bi) => {
+    let cx = start[0], cy = start[1], cz = start[2];
+    for (let i = 0; i < n; i++) {
+      const r = 0.13 - i * 0.012;
+      if (r < 0.06) break;
+      const useMat = i % 2 === 0 ? sugarMat : sugarMat2; // 交替糖残基颜色
+      const s = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 8), useMat);
+      s.position.set(cx, cy, cz);
+      s.castShadow = true;
+      g.add(s);
+      // 随机微调方向，模拟分支
+      cx += dir[0] + (Math.random() - 0.5) * 0.08;
+      cy += dir[1] + Math.random() * 0.04;
+      cz += dir[2] + (Math.random() - 0.5) * 0.08;
+    }
+  });
+
+  g.position.set(pos.x, 0, pos.z);
+  g.userData = { proteinName:'glyco', title:'糖蛋白',
+    desc:'蛋白质与寡糖链共价结合。茂密的糖链"树冠"伸向细胞外表面，是细胞的"身份证"，参与细胞识别、免疫应答、信号转导及细胞间粘附。',
+    color:'#e0556a' };
+  protGroup.add(g);
+  clickTargets.push(g);
+}
+
+// ============ 外周蛋白 + 细胞骨架细丝 ============
+{
+  const mat = new THREE.MeshStandardMaterial({ color: 0x5cc98b, roughness: 0.38, metalness: 0.04 });
+  const pos = zonePos('peripheral');
+  const blobs = [
+    {x:0,y:-0.9,z:0,r:0.3}, {x:0.2,y:-1.0,z:0.1,r:0.24},
+    {x:-0.18,y:-1.02,z:-0.1,r:0.23}, {x:0.06,y:-1.1,z:-0.18,r:0.2},
+    {x:-0.1,y:-0.84,z:0.18,r:0.18}, {x:0.22,y:-0.78,z:-0.12,r:0.16},
+  ];
+  const g = blobGroup(blobs, mat);
+
+  // 细胞骨架细丝 — 从外周蛋白向下延伸的微丝
+  const filMat = new THREE.MeshStandardMaterial({ color: 0x7ed6a0, roughness: 0.5, metalness: 0.02 });
+  const filamentDefs = [
+    { start:[0.1,-1.15,0.05], end:[0.25,-2.5,0.2] },
+    { start:[-0.08,-1.12,-0.08], end:[-0.3,-2.3,-0.3] },
+    { start:[0.05,-1.18,-0.15], end:[0.1,-2.7,-0.1] },
+  ];
+  filamentDefs.forEach(({start, end}) => {
+    const fpts = [
+      new THREE.Vector3(start[0], start[1], start[2]),
+      new THREE.Vector3(start[0]+(end[0]-start[0])*0.3, start[1]+(end[1]-start[1])*0.3, start[2]+(end[2]-start[2])*0.3+(Math.random()-0.5)*0.15),
+      new THREE.Vector3(end[0], end[1], end[2]),
+    ];
+    const curve = new THREE.CatmullRomCurve3(fpts);
+    const tGeo = new THREE.TubeGeometry(curve, 12, 0.025, 5, false);
+    const tMesh = new THREE.Mesh(tGeo, filMat);
+    g.add(tMesh);
+  });
+
+  g.position.set(pos.x, 0, pos.z);
+  g.userData = { proteinName:'peripheral', title:'外周蛋白',
+    desc:'不贯穿脂双层，附着在细胞膜内表面，通过下方延伸的细胞骨架微丝（绿色细丝）锚定在细胞骨架上，参与维持细胞形态和信号转导。',
+    color:'#5cc98b' };
+  protGroup.add(g);
+  clickTargets.push(g);
+}
+
+// ===================== 参考虚线 =====================
+const dashMat = new THREE.LineBasicMaterial({ color: 0x5a7a9a, transparent: true, opacity: 0.4 });
+function dashLine(y, x0, x1) {
+  const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x0,y,4.0), new THREE.Vector3(x1,y,4.0)]);
+  return new THREE.Line(geo, dashMat);
+}
+const refLines = new THREE.Group();
+refLines.add(dashLine(1.2, -5, 5));
+refLines.add(dashLine(-1.2, -5, 5));
+scene.add(refLines);
+
+// ===================== CSS 标签 =====================
+const cssLabels = [];
+function addCSSLabel(text, worldPos, color='#e6edf3') {
+  const d = document.createElement('div');
+  d.textContent = text;
+  d.style.cssText = `position:fixed;z-index:55;pointer-events:none;font-size:12px;font-weight:600;color:${color};text-shadow:0 0 8px rgba(0,0,0,0.9);letter-spacing:1px;white-space:nowrap;transition:opacity 0.35s;`;
+  document.body.appendChild(d);
+  cssLabels.push({ d, worldPos });
+}
+addCSSLabel('细胞外', new THREE.Vector3(5.2, 1.8, 0), '#79c0ff');
+addCSSLabel('细胞内', new THREE.Vector3(5.2, -1.8, 0), '#79c0ff');
+
+let showLabels = true;
+function updateCSSLabels() {
+  cssLabels.forEach(function(item) {
+    const v = item.worldPos.clone().project(camera);
+    item.d.style.left = ((v.x*0.5+0.5)*innerWidth)+'px';
+    item.d.style.top = ((-v.y*0.5+0.5)*innerHeight)+'px';
+    item.d.style.transform = 'translate(-50%,-50%)';
+    item.d.style.opacity = (showLabels && v.z<1) ? '1' : '0';
+  });
+}
+
+const layerDivs = [];
+function addLayerLabel(text, topPct, color) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  d.style.cssText = `position:fixed;left:18px;top:${topPct}%;z-index:55;pointer-events:none;font-size:11px;color:${color};border-left:2px solid ${color};padding-left:7px;opacity:0.55;letter-spacing:2px;font-weight:600;transition:opacity 0.35s;`;
+  document.body.appendChild(d);
+  layerDivs.push(d);
+}
+addLayerLabel('细胞外液', '29%', '#79c0ff');
+addLayerLabel('磷脂双分子层', '47%', '#f0a040');
+addLayerLabel('细胞质', '63%', '#79c0ff');
+
+function updateLayerDivs() {
+  layerDivs.forEach(d => d.style.opacity = showLabels ? '0.55' : '0');
+}
+
+// ===================== 点击检测 =====================
+const raycaster = new THREE.Raycaster();
+const popup = document.getElementById('popup');
+const popTitle = document.getElementById('popTitle');
+const popDesc = document.getElementById('popDesc');
+let highlighted = null, popTimer = null;
+
+canvas.addEventListener('click', ev => {
+  const m = new THREE.Vector2();
+  m.x = (ev.clientX/innerWidth)*2 - 1;
+  m.y = -(ev.clientY/innerHeight)*2 + 1;
+  raycaster.setFromCamera(m, camera);
+  const meshes = [];
+  clickTargets.forEach(g => g.traverse(c => { if(c.isMesh) meshes.push({m:c, g}); }));
+  const hits = raycaster.intersectObjects(meshes.map(a=>a.m), false);
+  if (hits.length) {
+    const found = meshes.find(a=>a.m===hits[0].object);
+    if (found) { showPopup(ev.clientX, ev.clientY, found.g.userData); highlight(found.g); return; }
+  }
+  hidePopup(); unhighlight();
+});
+
+function showPopup(x,y,d) {
+  clearTimeout(popTimer);
+  popTitle.textContent = d.title; popTitle.style.color = d.color;
+  popDesc.textContent = d.desc;
+  popup.style.left = x+'px'; popup.style.top = y+'px';
+  popup.classList.add('show');
+}
+function hidePopup() {
+  popup.classList.remove('show');
+  popTimer = setTimeout(() => { popTitle.textContent=''; popDesc.textContent=''; }, 250);
+}
+function highlight(g) {
+  unhighlight(); highlighted = g;
+  g.traverse(c => {
+    if (c.isMesh && c.material.emissive) {
+      c.userData._e = c.material.emissive.getHex();
+      c.userData._ei = c.material.emissiveIntensity || 0;
+      c.material.emissive = new THREE.Color(c.material.color).multiplyScalar(0.45);
+      c.material.emissiveIntensity = 0.55;
+    }
+  });
+}
+function unhighlight() {
+  if (!highlighted) return;
+  highlighted.traverse(c => {
+    if (c.isMesh && c.userData._e !== undefined) {
+      c.material.emissive.setHex(c.userData._e);
+      c.material.emissiveIntensity = c.userData._ei;
+    }
+  });
+  highlighted = null;
+}
+
+// ===================== 按钮 =====================
+window.toggleAuto = () => {
+  ctrl.autoRotate = !ctrl.autoRotate;
+  document.getElementById('btnAuto').classList.toggle('on', ctrl.autoRotate);
+};
+window.toggleLabels = () => {
+  showLabels = !showLabels;
+  document.getElementById('btnLabel').classList.toggle('on', showLabels);
+  updateCSSLabels(); updateLayerDivs();
+};
+let showProts = true;
+window.toggleProteins = () => {
+  showProts = !showProts;
+  document.getElementById('btnProt').classList.toggle('on', showProts);
+  protGroup.visible = showProts;
+  cholGroup.visible = showProts;
+};
+window.resetView = () => {
+  const sT = ctrl.target.clone(), eT = new THREE.Vector3(0,0,0);
+  const sC = camera.position.clone(), eC = new THREE.Vector3(0.4,0.2,12.5);
+  const t0 = performance.now();
+  function anim(now) {
+    const t = Math.min((now-t0)/800, 1);
+    const e = t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+    ctrl.target.lerpVectors(sT, eT, e);
+    camera.position.lerpVectors(sC, eC, e);
+    ctrl.update();
+    if (t<1) requestAnimationFrame(anim);
+  }
+  requestAnimationFrame(anim);
+  hidePopup(); unhighlight();
+};
+
+// ===================== 通道离子浮动 =====================
+const channelIonGroup = protGroup.children.find(function(g) { return g.userData && g.userData.proteinName === 'channel'; });
+let ionMesh = null;
+if (channelIonGroup) {
+  channelIonGroup.traverse(c => { if (c.name === 'channelIon') ionMesh = c; });
+}
+
+// ===================== 动画循环 =====================
+function animate() {
+  requestAnimationFrame(animate);
+  ctrl.update();
+  updateCSSLabels(); updateLayerDivs();
+
+  // 通道内离子微微浮动
+  if (ionMesh) {
+    const t = performance.now() * 0.001;
+    ionMesh.position.y = 0.3 + Math.sin(t * 1.5) * 0.5;
+  }
+
+  renderer.render(scene, camera);
+}
+
+// ===================== 事件 =====================
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+window.addEventListener('keydown', e => {
+  switch(e.key.toLowerCase()) {
+    case 'r': resetView(); break;
+    case 'a': toggleAuto(); break;
+    case 'l': toggleLabels(); break;
+    case 'p': toggleProteins(); break;
+    case 'escape': hidePopup(); unhighlight(); break;
+  }
+});
+
+animate();
+console.log('🧬 磷脂双分子层 · 流动镶嵌模型 已就绪');
+
+} catch(e) {
+  console.error('初始化失败:', e);
+  document.body.innerHTML += '<div style="position:fixed;top:80px;left:20px;z-index:9999;color:#ff4444;background:#0a0a0a;padding:16px;font-size:13px;border:1px solid red;border-radius:8px;max-width:90%;"><b>初始化错误:</b> ' + e.message + '<br><small>' + e.stack + '</small></div>';
+}
+</script>
+</body>
+</html>

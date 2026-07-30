@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>植物细胞 — 3D 交互模型</title>
+<style>
+  :root{--bg:#0d1117;--panel:rgba(13,17,23,0.9);--text:#e6edf3;--muted:#8b949e;--cyan:#79c0ff}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:var(--text);background:var(--bg)}
+  #cv{position:fixed;inset:0}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;display:flex;align-items:center;gap:14px;padding:0 18px;background:rgba(13,17,23,0.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.07)}
+  .back-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);color:#c9d1d9;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .25s;flex-shrink:0}
+  .back-btn:hover{background:rgba(255,255,255,.12);border-color:#fff;box-shadow:0 0 14px rgba(121,192,255,.2)}
+  .topbar h1{font-size:15px;font-weight:600;letter-spacing:.5px;background:linear-gradient(90deg,#58d68d,#f0a040);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px}
+  .tb-btn{padding:5px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#b0b8c0;font-size:12px;font-family:inherit;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .tb-btn:hover{background:rgba(255,255,255,.1);color:#e6edf3}
+  .tb-btn.on{background:rgba(121,192,255,.15);border-color:rgba(121,192,255,.4);color:var(--cyan)}
+  .legend{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:50;background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;min-width:175px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+  .legend h3{font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:1px}
+  .lg-item{display:flex;align-items:center;gap:9px;padding:5px 6px;margin:1px -6px;border-radius:5px;font-size:11px;color:#b0b8c0;cursor:pointer;transition:background .15s}
+  .lg-item:hover{background:rgba(255,255,255,.04)}
+  .lg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .lg-dot.wall{background:#c4a96a;border:2px solid #e0cc90}
+  .lg-dot.mem{background:rgba(190,210,225,.8);border:2px solid rgba(210,225,240,.9)}
+  .lg-dot.vac{background:rgba(130,200,230,.7);border:2px solid rgba(160,215,240,.8)}
+  .lg-dot.nuc{background:#b07cd8}
+  .lg-dot.chl{background:#2ecc71}
+  .lg-dot.mit{background:#e74c3c}
+  .lg-dot.er{background:#5dade2}
+  .lg-dot.gol{background:#f4d03f}
+  .info-popup{position:fixed;z-index:200;pointer-events:none;opacity:0;transform:translate(-50%,-115%);transition:opacity .25s,transform .25s;background:var(--panel);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:13px 16px;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:250px;backdrop-filter:blur(12px)}
+  .info-popup.show{opacity:1;transform:translate(-50%,-130%)}
+  .info-popup h4{font-size:13px;margin-bottom:5px}
+  .info-popup p{font-size:11px;color:var(--muted);line-height:1.55}
+  .info-popup::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid rgba(13,17,23,.95)}
+  .hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:50;padding:7px 18px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--muted);letter-spacing:.5px;backdrop-filter:blur(8px);pointer-events:none}
+  .hint em{color:var(--cyan);font-style:normal}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main.html" class="back-btn">←</a>
+  <h1>植物细胞结构</h1>
+  <div class="topbar-actions">
+    <button class="tb-btn on" id="btnAuto" onclick="toggleAuto()">⟳ 自动旋转</button>
+    <button class="tb-btn on" id="btnLabel" onclick="toggleLabels()">🏷 标注</button>
+    <button class="tb-btn" onclick="resetView()">↺ 重置</button>
+  </div>
+</div>
+
+<canvas id="cv"></canvas>
+
+<div class="legend">
+  <h3>细胞结构</h3>
+  <div class="lg-item" data-p="wall"><div class="lg-dot wall"></div> 细胞壁</div>
+  <div class="lg-item" data-p="mem"><div class="lg-dot mem"></div> 细胞膜</div>
+  <div class="lg-item" data-p="vac"><div class="lg-dot vac"></div> 中央大液泡</div>
+  <div class="lg-item" data-p="nuc"><div class="lg-dot nuc"></div> 细胞核</div>
+  <div class="lg-item" data-p="chl"><div class="lg-dot chl"></div> 叶绿体</div>
+  <div class="lg-item" data-p="mit"><div class="lg-dot mit"></div> 线粒体</div>
+  <div class="lg-item" data-p="er"><div class="lg-dot er"></div> 内质网</div>
+  <div class="lg-item" data-p="gol"><div class="lg-dot gol"></div> 高尔基体</div>
+</div>
+
+<div class="info-popup" id="popup"><h4 id="popTitle"></h4><p id="popDesc"></p></div>
+<div class="hint">🖱 <em>拖拽</em>旋转 | 🔍 <em>滚轮</em>缩放 | 👆 <em>点击</em>细胞器看详情</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ===== 场景 =====
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('cv'),antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0d1117);
+scene.fog=new THREE.Fog(0x0d1117,16,45);
+
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.5,60);
+camera.position.set(5,2.5,12);camera.lookAt(0,0,0);
+
+scene.add(new THREE.AmbientLight(0x556677,4));
+const key=new THREE.DirectionalLight(0xfffbe8,7);key.position.set(10,8,8);key.castShadow=true;
+key.shadow.mapSize.set(2048,2048);key.shadow.camera.near=0.5;key.shadow.camera.far=50;
+key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=15;key.shadow.camera.bottom=-15;
+key.shadow.bias=-0.0001;scene.add(key);
+scene.add(new THREE.DirectionalLight(0x8899cc,2).position.set(-6,0,-4));
+scene.add(new THREE.DirectionalLight(0xb0c8ff,2.5).position.set(0,-3,6));
+
+const ctrl=new OrbitControls(camera,renderer.domElement);
+ctrl.target.set(0,0,0);ctrl.enableDamping=true;ctrl.dampingFactor=0.08;
+ctrl.minDistance=5;ctrl.maxDistance=22;ctrl.autoRotate=true;ctrl.autoRotateSpeed=0.3;
+ctrl.update();
+
+// ===== 材质 =====
+const matWall=new THREE.MeshPhysicalMaterial({color:0xd4c48a,roughness:0.45,metalness:0.03,transparent:true,opacity:0.18,depthWrite:false});
+const matWallEdge=new THREE.MeshStandardMaterial({color:0xb09850,roughness:0.3,metalness:0.08});
+const matMem=new THREE.MeshPhysicalMaterial({color:0xc8dae8,roughness:0.25,metalness:0.03,transparent:true,opacity:0.22,depthWrite:false});
+const matMemEdge=new THREE.MeshStandardMaterial({color:0x90b0c0,roughness:0.2,metalness:0.1});
+const matVac=new THREE.MeshPhysicalMaterial({color:0x90d0e8,roughness:0.15,metalness:0.02,transparent:true,opacity:0.38,depthWrite:false});
+const matVacRim=new THREE.MeshStandardMaterial({color:0x80c0d8,roughness:0.2,metalness:0.08,transparent:true,opacity:0.5});
+const matNucOut=new THREE.MeshStandardMaterial({color:0x9b59b6,roughness:0.22,metalness:0.08,transparent:true,opacity:0.75});
+const matNucIn=new THREE.MeshStandardMaterial({color:0xd7bde2,roughness:0.35,metalness:0.03});
+const matNol=new THREE.MeshStandardMaterial({color:0x5b2c6f,roughness:0.2,metalness:0.1});
+const matChl=new THREE.MeshStandardMaterial({color:0x2ecc71,roughness:0.25,metalness:0.05});
+const matGrana=new THREE.MeshStandardMaterial({color:0x1a6e3a,roughness:0.35,metalness:0.06});
+const matMito=new THREE.MeshStandardMaterial({color:0xe74c3c,roughness:0.25,metalness:0.06});
+const matCrista=new THREE.MeshStandardMaterial({color:0x922b21,roughness:0.35,metalness:0.04});
+const matER=new THREE.MeshStandardMaterial({color:0x5dade2,roughness:0.3,metalness:0.05});
+const matRibo=new THREE.MeshStandardMaterial({color:0x1a5276,roughness:0.25,metalness:0.08});
+const matGolgi=new THREE.MeshStandardMaterial({color:0xf4d03f,roughness:0.25,metalness:0.07});
+
+const clickTargets=[];
+function clk(g,d){g.userData=d;clickTargets.push(g);}
+
+// ===== 细胞壁（方形外层） =====
+const boxW=7.5,boxH=6.5,boxD=5.5;
+const wallGeo=new THREE.BoxGeometry(boxW+0.4,boxH+0.4,boxD+0.4);
+const wall=new THREE.Mesh(wallGeo,matWall);wall.renderOrder=0;scene.add(wall);
+const wallEdge=new THREE.LineSegments(new THREE.EdgesGeometry(wallGeo),new THREE.LineBasicMaterial({color:0xb09850,transparent:true,opacity:0.4}));
+wall.add(wallEdge);
+clk(wall,{name:'wall',title:'细胞壁',desc:'植物细胞特有的刚性外层，主要成分为纤维素和果胶。起支持和保护作用，维持细胞形态（方形），防止吸水过多破裂。具有全透性。',color:'#d4c48a'});
+
+// ===== 细胞膜（壁内侧，方形） =====
+const memGeo=new THREE.BoxGeometry(boxW,boxH,boxD);
+const mem=new THREE.Mesh(memGeo,matMem);mem.renderOrder=1;scene.add(mem);
+// 膜的棱边（定义方形轮廓）
+const edgeGeo=new THREE.EdgesGeometry(memGeo);
+const edgeLine=new THREE.LineSegments(edgeGeo,new THREE.LineBasicMaterial({color:0x90b0c0,transparent:true,opacity:0.5}));
+mem.add(edgeLine);
+clk(mem,{name:'mem',title:'细胞膜（质膜）',desc:'以磷脂双分子层为基本骨架，具有选择透过性。位于细胞壁内侧，控制物质进出细胞。',color:'#c8dae8'});
+
+// 细胞质背景
+const cyto=new THREE.Mesh(new THREE.BoxGeometry(boxW-0.2,boxH-0.2,boxD-0.2),new THREE.MeshBasicMaterial({color:0x2a3040,transparent:true,opacity:0.08,depthWrite:false}));
+scene.add(cyto);
+
+// ===== 中央大液泡 =====
+const vacG=new THREE.Group();vacG.position.set(0.5,-0.1,0);scene.add(vacG);
+const vacGeo=new THREE.SphereGeometry(2.3,40,28);vacGeo.scale(1,0.8,1.1);
+const vac=new THREE.Mesh(vacGeo,matVac);vac.renderOrder=3;vacG.add(vac);
+const vacRim=new THREE.Mesh(new THREE.TorusGeometry(2.3,0.06,10,48),matVacRim);
+vacRim.rotation.x=Math.PI/2.1;vacG.add(vacRim);
+for(let i=0;i<5;i++){
+  const cr=new THREE.Mesh(new THREE.OctahedronGeometry(0.12+Math.random()*0.15,0),new THREE.MeshStandardMaterial({color:0xe8f8ff,roughness:0.2,metalness:0.1,transparent:true,opacity:0.4}));
+  cr.position.set((Math.random()-0.5)*2.5,(Math.random()-0.5)*1.5,(Math.random()-0.5)*2.5);
+  cr.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+  vacG.add(cr);
+}
+clk(vacG,{name:'vac',title:'中央大液泡',desc:'植物细胞特有的大型细胞器，内含细胞液。成熟植物细胞中可占体积90%，将细胞核挤到一侧。调节渗透压，维持膨压。',color:'#90d0e8'});
+
+// ===== 细胞核（被液泡挤到一侧） =====
+const nucG=new THREE.Group();nucG.position.set(-2.2,1.6,-0.4);scene.add(nucG);
+const nucOuter=new THREE.Mesh(new THREE.SphereGeometry(1.0,32,22),matNucOut);nucG.add(nucOuter);
+const nucInner=new THREE.Mesh(new THREE.SphereGeometry(0.88,32,22),matNucIn);nucG.add(nucInner);
+const nol=new THREE.Mesh(new THREE.SphereGeometry(0.38,18,14),matNol);
+nol.position.set(0.2,0.15,0.3);nucG.add(nol);
+for(let i=0;i<8;i++){
+  const phi=Math.random()*Math.PI,theta=Math.random()*Math.PI*2;
+  const px=0.98*Math.sin(phi)*Math.cos(theta),py=0.98*Math.sin(phi)*Math.sin(theta),pz=0.98*Math.cos(phi);
+  const pore=new THREE.Mesh(new THREE.TorusGeometry(0.08,0.04,6,8),new THREE.MeshStandardMaterial({color:0xe8d0f0,roughness:0.15,metalness:0.12}));
+  pore.position.set(px,py,pz);pore.lookAt(new THREE.Vector3(px*3,py*3,pz*3));nucG.add(pore);
+}
+clk(nucG,{name:'nuc',title:'细胞核',desc:'遗传信息库，代谢和遗传的控制中心。被中央液泡挤压到细胞一侧——植物细胞的典型特征。',color:'#9b59b6'});
+
+// ===== 叶绿体 =====
+function mkChl(x,y,z,ry,rz){
+  const g=new THREE.Group();
+  // 外膜 — 镜片形
+  const outGeo=new THREE.SphereGeometry(0.7,24,16);
+  const out=new THREE.Mesh(outGeo,matChl);out.scale.set(1,0.35,1.5);g.add(out);
+  // 基粒 — 类囊体堆
+  for(let gi=0;gi<5;gi++){
+    const grG=new THREE.Group();
+    const gx=(gi-2)*0.22;
+    for(let ti=0;ti<7;ti++){
+      const th=new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.14,0.035,12),matGrana);
+      th.position.set(gx,ti*0.05-0.16,0);grG.add(th);
+    }
+    grG.rotation.z=(Math.random()-0.5)*0.2;g.add(grG);
+  }
+  // 淀粉粒
+  const st=new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8),new THREE.MeshStandardMaterial({color:0xfef9e7,roughness:0.2}));
+  st.position.set(0.2,0,0.5);g.add(st);
+  g.position.set(x,y,z);g.rotation.y=ry;g.rotation.z=rz;
+  return g;
+}
+[[2.5,1.0,1.8,0.3,0.15],[-0.5,-0.8,-2.2,1.5,-0.1],[2.8,-1.2,-0.8,2.2,0.2],[-0.2,2.8,0.6,0.8,0.4]].forEach(([x,y,z,ry,rz])=>{
+  const ch=mkChl(x,y,z,ry,rz);scene.add(ch);
+  clk(ch,{name:'chl',title:'叶绿体',desc:'光合作用的场所——"养料制造车间"。双层膜结构，内含基粒（类囊体堆叠——绿色小圆片），含叶绿素和自身DNA。将光能→化学能（有机物）。',color:'#2ecc71'});
+});
+
+// ===== 线粒体 =====
+function mkMito(x,y,z,ry,rz){
+  const g=new THREE.Group();
+  const outGeo=new THREE.SphereGeometry(0.5,20,14);
+  const out=new THREE.Mesh(outGeo,matMito);out.scale.set(1,0.42,1.6);g.add(out);
+  for(let i=0;i<8;i++){const t=(i-3.5)*0.14;const c=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.22,1.0),matCrista);c.position.z=t;g.add(c)}
+  g.position.set(x,y,z);g.rotation.y=ry;g.rotation.z=rz;return g;
+}
+[[1.5,-2.0,2.0,0.4,0.1],[-2.5,-2.2,-0.8,1.6,-0.2],[1.0,2.6,-1.5,2.5,0.3]].forEach(([x,y,z,ry,rz])=>{
+  const m=mkMito(x,y,z,ry,rz);scene.add(m);
+  clk(m,{name:'mit',title:'线粒体',desc:'有氧呼吸主要场所——"动力车间"。双层膜，内膜向内折叠成嵴（红色薄片）。含自身DNA和核糖体。',color:'#e74c3c'});
+});
+
+// ===== 粗面内质网 =====
+const erG=new THREE.Group();erG.position.set(2.0,2.4,-0.8);scene.add(erG);
+function mkERTube(cps){return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cps.map(([x,y,z])=>new THREE.Vector3(x,y,z))),24,0.09,8,false),matER)}
+const erDefs=[
+  [[0,0,0],[0.3,0.15,0.3],[0.6,0.35,0.1],[0.9,0.55,0.35],[1.2,0.7,0.15],[1.4,0.55,0]],
+  [[0.1,0.08,0.15],[0.4,-0.15,0.35],[0.7,0,0.6],[1.0,0.25,0.5]],
+  [[0.7,0.25,-0.25],[0.5,0.5,-0.15],[0.25,0.75,-0.3],[-0.1,0.9,-0.2]],
+];
+erDefs.forEach(cps=>erG.add(mkERTube(cps)));
+erDefs.forEach(cps=>{const curve=new THREE.CatmullRomCurve3(cps.map(([x,y,z])=>new THREE.Vector3(x,y,z)));for(let i=0;i<12;i++){const pt=curve.getPointAt(Math.random());const r=new THREE.Mesh(new THREE.SphereGeometry(0.05,6,6),matRibo);r.position.copy(pt).add(new THREE.Vector3((Math.random()-0.5)*0.2,(Math.random()-0.5)*0.2,(Math.random()-0.5)*0.2));erG.add(r)}});
+clk(erG,{name:'er',title:'粗面内质网',desc:'表面附着核糖体（深蓝小点），是蛋白质合成、加工和运输的场所。与核膜相连，在分泌旺盛的细胞中尤为发达。',color:'#5dade2'});
+
+// ===== 高尔基体 =====
+const golG=new THREE.Group();golG.position.set(-1.8,2.8,1.8);scene.add(golG);
+for(let i=0;i<5;i++){const r=0.38-i*0.04;const disc=new THREE.Mesh(new THREE.CylinderGeometry(r,r,0.05,20),matGolgi);disc.position.y=i*0.13-0.26;disc.rotation.x=0.3;disc.rotation.z=-0.2;golG.add(disc)}
+for(let i=0;i<8;i++){const v=new THREE.Mesh(new THREE.SphereGeometry(0.05+Math.random()*0.06,8,8),matGolgi);v.position.set((Math.random()-0.5)*0.8,-0.4+Math.random()*0.1,(Math.random()-0.5)*0.6);golG.add(v)}
+clk(golG,{name:'gol',title:'高尔基体',desc:'扁平膜囊堆叠——蛋白质加工和发送站。与细胞壁形成有关（合成纤维素和果胶）。',color:'#f4d03f'});
+
+// ===== 标注 =====
+const cssL=[];
+function adL(t,wp,c){const d=document.createElement('div');d.textContent=t;d.style.cssText=`position:fixed;z-index:55;pointer-events:none;font-size:11px;font-weight:600;color:${c};text-shadow:0 0 8px rgba(0,0,0,.9);letter-spacing:1px;white-space:nowrap;transition:opacity .35s`;document.body.appendChild(d);cssL.push({d,wp})}
+adL('细胞壁',new THREE.Vector3(4.0,3.2,-2.8),'#e0cc90');
+adL('细胞膜',new THREE.Vector3(3.8,0,2.8),'#c8dae8');
+adL('中央液泡',new THREE.Vector3(1.5,0.8,2.5),'#90d0e8');
+adL('细胞核',new THREE.Vector3(-3.0,2.5,-1.0),'#b07cd8');
+adL('叶绿体',new THREE.Vector3(3.2,1.5,2.2),'#2ecc71');
+adL('线粒体',new THREE.Vector3(2.0,-2.5,2.5),'#e74c3c');
+adL('内质网',new THREE.Vector3(3.2,3.2,-1.5),'#5dade2');
+adL('高尔基体',new THREE.Vector3(-2.5,3.5,2.5),'#f4d03f');
+
+let sL=true;
+function uL(){cssL.forEach(({d,wp})=>{const v=wp.clone().project(camera);d.style.left=((v.x*0.5+0.5)*innerWidth)+'px';d.style.top=((-v.y*0.5+0.5)*innerHeight)+'px';d.style.transform='translate(-50%,-50%)';d.style.opacity=(sL&&v.z<1)?'1':'0'})}
+
+// ===== 点击 =====
+const rc=new THREE.Raycaster();
+const pp=document.getElementById('popup'),pt=document.getElementById('popTitle'),pd=document.getElementById('popDesc');
+document.getElementById('cv').addEventListener('click',ev=>{
+  const m=new THREE.Vector2();m.x=(ev.clientX/innerWidth)*2-1;m.y=-(ev.clientY/innerHeight)*2+1;
+  rc.setFromCamera(m,camera);
+  const ms=[];clickTargets.forEach(g=>g.traverse(c=>{if(c.isMesh)ms.push({m:c,g})}));
+  const hits=rc.intersectObjects(ms.map(a=>a.m),false);
+  if(hits.length){const f=ms.find(a=>a.m===hits[0].object);if(f){sp(ev.clientX,ev.clientY,f.g.userData);return}}
+  hp();
+});
+function sp(x,y,d){pt.textContent=d.title;pt.style.color=d.color;pd.textContent=d.desc;pp.style.left=x+'px';pp.style.top=y+'px';pp.classList.add('show')}
+function hp(){pp.classList.remove('show')}
+
+window.toggleAuto=()=>{ctrl.autoRotate=!ctrl.autoRotate;document.getElementById('btnAuto').classList.toggle('on',ctrl.autoRotate)}
+window.toggleLabels=()=>{sL=!sL;document.getElementById('btnLabel').classList.toggle('on',sL);uL()}
+window.resetView=()=>{const sT=ctrl.target.clone(),eT=new THREE.Vector3(0,0,0);const sC=camera.position.clone(),eC=new THREE.Vector3(5,2.5,12);const t0=performance.now();(function a(n){const t=Math.min((n-t0)/800,1);const e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;ctrl.target.lerpVectors(sT,eT,e);camera.position.lerpVectors(sC,eC,e);ctrl.update();if(t<1)requestAnimationFrame(a)})();hp()}
+
+function animate(){requestAnimationFrame(animate);ctrl.update();uL();renderer.render(scene,camera)}
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+window.addEventListener('keydown',e=>{switch(e.key.toLowerCase()){case'r':resetView();break;case'a':toggleAuto();break;case'l':toggleLabels();break;case'escape':hp();break}});
+animate();
+</script>
+</body>
+</html>
