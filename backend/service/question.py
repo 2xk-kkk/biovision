@@ -1,5 +1,5 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count
 from utils.response import ApiResponse
 import json
 import os
@@ -172,6 +172,22 @@ def toggle_mastered_service(user_id, question_id, mastered=1):
         return ApiResponse.error(msg=f"操作失败: {str(e)}")
     finally:
         db.close()
+
+def get_user_daily_answers(user_id, days=90):
+    """获取用户最近N天每天的做题数量统计 + 总做题数"""
+    db = get_db_connection()
+    try:
+        daily_counts = get_daily_answer_counts(db, user_id, days)
+        total_count = get_total_answer_count(db, user_id)
+        return ApiResponse.success(data={
+            "daily_counts": daily_counts,
+            "total_count": total_count
+        })
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取每日做题数据失败: {str(e)}")
+    finally:
+        db.close()
+
 
 def get_questions_by_textbook_service(textbook=None, chapter=None, section=None, question_type=None):
     db = get_db_connection()

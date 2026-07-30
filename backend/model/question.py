@@ -332,6 +332,31 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, que
         })
     return questions
 
+def get_daily_answer_counts(db, user_id, days=90):
+    """获取用户最近N天每天的做题数量，返回 {date_str: count} 字典"""
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT DATE(create_at) as answer_date, COUNT(*) as count
+        FROM user_answers
+        WHERE user_id = ?
+        AND create_at >= DATE('now', ?)
+        GROUP BY DATE(create_at)
+        ORDER BY answer_date
+    ''', (user_id, f'-{days} days'))
+    results = {}
+    for row in cursor.fetchall():
+        results[row[0]] = row[1]
+    return results
+
+
+def get_total_answer_count(db, user_id):
+    """获取用户总做题数（去重题目数）"""
+    cursor = db.cursor()
+    cursor.execute('SELECT COUNT(*) FROM user_answers WHERE user_id = ?', (user_id,))
+    row = cursor.fetchone()
+    return row[0] if row else 0
+
+
 def get_questions_by_type(db, textbook=None, chapter=None, section=None, question_type=None):
     cursor = db.cursor()
     

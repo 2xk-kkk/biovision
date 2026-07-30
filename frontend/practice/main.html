@@ -611,48 +611,107 @@
             color: #1ab9c4;
         }
 
-        /* 日历热力图 */
+        /* 日历热力图 - 三月并排，每月独立网格 */
         .heatmap-container {
-            margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
         }
 
-        .heatmap-months {
+        .heatmap-month-block {
+            flex: 1;
             display: flex;
-            margin-left: 28px;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .heatmap-month-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
             margin-bottom: 4px;
         }
 
-        .heatmap-month {
-            font-size: 11px;
-            color: #8c8c8c;
-        }
-
-        .heatmap-grid {
+        .heatmap-weekdays {
             display: grid;
-            grid-template-columns: 24px repeat(13, 1fr);
-            grid-template-rows: 18px repeat(7, 1fr);
-            gap: 3px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            width: 100%;
+            margin-bottom: 2px;
         }
 
-        .heatmap-day-label {
-            font-size: 10px;
-            color: #8c8c8c;
-            display: flex;
-            align-items: center;
+        .heatmap-weekday {
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+        }
+
+        .heatmap-month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            width: 100%;
         }
 
         .heatmap-cell {
             aspect-ratio: 1;
-            border-radius: 3px;
+            border-radius: 2px;
             background: #ebedf0;
+            transition: transform 0.15s;
+            cursor: pointer;
+            position: relative;
         }
+
+        .heatmap-cell:hover {
+            transform: scale(1.5);
+            z-index: 2;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+        }
+
+        .heatmap-cell[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .heatmap-cell.placeholder {
+            background: transparent !important;
+            pointer-events: none;
+        }
+
+        .heatmap-cell.out-of-range {
+            background: #f5f5f5 !important;
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        /* 5级颜色：由浅到深 */
+        .heatmap-level-0 { background: #ebedf0; }
+        .heatmap-level-1 { background: #c6f2e8; }
+        .heatmap-level-2 { background: #7ee0ce; }
+        .heatmap-level-3 { background: #3cc9b0; }
+        .heatmap-level-4 { background: #1a9e8b; }
+        .heatmap-level-5 { background: #0d6b5e; }
 
         .heatmap-legend {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 11px;
+            gap: 6px;
+            font-size: 10px;
             color: #8c8c8c;
+            margin-top: 8px;
+            justify-content: flex-end;
         }
 
         .heatmap-legend-cells {
@@ -664,14 +723,6 @@
             width: 12px;
             height: 12px;
             border-radius: 2px;
-        }
-
-        .legend-less {
-            background: #ebedf0;
-        }
-
-        .legend-more {
-            background: #1ac4b0;
         }
 
         /* 右列 - 公告栏（原在中间） */
@@ -1095,8 +1146,8 @@
                 <div class="stat-icon green">✓</div>
                 <div class="stat-info">
                     <div class="stat-label">已做题数</div>
-                    <div class="stat-value">0</div>
-                    <div class="stat-desc">完成度 0%</div>
+                    <div class="stat-value" id="answeredCount">0</div>
+                    <div class="stat-desc" id="completionRate">完成度 0%</div>
                 </div>
             </div>
             
@@ -1129,36 +1180,33 @@
                 <div class="contribution-stats">
                     <div class="contribution-stat">
                         <span class="contribution-stat-label">做题天数</span>
-                        <span class="contribution-stat-value">0</span>
+                        <span class="contribution-stat-value" id="activeDays">0</span>
                     </div>
                     <div class="contribution-stat">
                         <span class="contribution-stat-label">连续天数</span>
-                        <span class="contribution-stat-value">0</span>
+                        <span class="contribution-stat-value" id="streakDays">0</span>
+                    </div>
+                    <div class="contribution-stat">
+                        <span class="contribution-stat-label">总做题数</span>
+                        <span class="contribution-stat-value" id="totalAnswers">0</span>
                     </div>
                 </div>
-                
-                <div class="heatmap-container">
-                    <div class="heatmap-months">
-                        <span class="heatmap-month">2月</span>
-                        <span class="heatmap-month">3月</span>
-                        <span class="heatmap-month">4月</span>
-                        <span class="heatmap-month">5月</span>
-                    </div>
-                    <div class="heatmap-grid" id="heatmapGrid">
-                        <!-- 热力图格子由JS生成 -->
-                    </div>
+
+                <div class="heatmap-container" id="heatmapContainer">
+                    <!-- 每月一行，由JS动态生成 -->
                 </div>
-                
+
                 <div class="heatmap-legend">
-                    <span>少</span>
+                    <span>0</span>
                     <div class="heatmap-legend-cells">
-                        <div class="heatmap-legend-cell legend-less"></div>
-                        <div class="heatmap-legend-cell legend-less"></div>
-                        <div class="heatmap-legend-cell legend-less"></div>
-                        <div class="heatmap-legend-cell legend-less"></div>
-                        <div class="heatmap-legend-cell legend-more"></div>
+                        <div class="heatmap-legend-cell heatmap-level-0"></div>
+                        <div class="heatmap-legend-cell heatmap-level-1"></div>
+                        <div class="heatmap-legend-cell heatmap-level-2"></div>
+                        <div class="heatmap-legend-cell heatmap-level-3"></div>
+                        <div class="heatmap-legend-cell heatmap-level-4"></div>
+                        <div class="heatmap-legend-cell heatmap-level-5"></div>
                     </div>
-                    <span>多</span>
+                    <span>50+</span>
                 </div>
             </div>
 
@@ -1550,30 +1598,222 @@
             }
         }
 
-        // 生成日历热力图
-        function generateHeatmap() {
-            const grid = document.getElementById('heatmapGrid');
-            const days = ['周一', '', '周三', '', '周五', '', '周日'];
-            const weeks = 13;
-            
-            for (let i = 0; i < 7; i++) {
-                const label = document.createElement('div');
-                label.className = 'heatmap-day-label';
-                label.textContent = days[i];
-                grid.appendChild(label);
+        // ==================== 做题贡献 - 动态热力图 ====================
+
+        /**
+         * 格式化日期为 YYYY-MM-DD
+         */
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        /**
+         * 根据做题数量返回颜色等级 (0-5)
+         * 0题=0级, 1-10=1级, 10-20=2级, 20-30=3级, 30-40=4级, 40+ =5级
+         */
+        function getColorLevel(count) {
+            if (!count || count === 0) return 0;
+            if (count <= 10) return 1;
+            if (count <= 20) return 2;
+            if (count <= 30) return 3;
+            if (count <= 40) return 4;
+            return 5;
+        }
+
+        /**
+         * 计算连续打卡天数（从今天往前数，直到遇到0题的那天）
+         */
+        function calculateStreak(dateMap) {
+            let streak = 0;
+            const today = new Date();
+            const checkDate = new Date(today);
+
+            for (let i = 0; i < 90; i++) {
+                const dateStr = formatDate(checkDate);
+                const count = dateMap[dateStr] || 0;
+                if (count > 0) {
+                    streak++;
+                } else {
+                    break;
+                }
+                checkDate.setDate(checkDate.getDate() - 1);
             }
-            
-            for (let week = 0; week < weeks; week++) {
-                for (let day = 0; day < 7; day++) {
+            return streak;
+        }
+
+        /**
+         * 渲染热力图 - 三月并排，每月独立7列日历网格
+         */
+        function renderHeatmap(apiData) {
+            const container = document.getElementById('heatmapContainer');
+            container.innerHTML = '';
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const rangeStart = new Date(today);
+            rangeStart.setDate(rangeStart.getDate() - 89);
+
+            const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+            const weekdayNames = ['日','一','二','三','四','五','六'];
+
+            // 构建日期映射
+            const dailyData = apiData && apiData.daily_counts ? apiData.daily_counts : {};
+            const totalCount = apiData && apiData.total_count ? apiData.total_count : 0;
+            const dateMap = {};
+            for (const [date, count] of Object.entries(dailyData)) {
+                dateMap[date] = count;
+            }
+
+            // 统计数据
+            let activeDayCount = 0;
+            let totalAnswerCount = 0;
+            for (const [date, count] of Object.entries(dateMap)) {
+                if (count > 0) { activeDayCount++; totalAnswerCount += count; }
+            }
+
+            // 更新统计卡片
+            const totalQuestions = 877;
+            const rate = totalQuestions > 0 ? Math.round((totalCount / totalQuestions) * 100) : 0;
+            document.getElementById('answeredCount').textContent = totalCount;
+            document.getElementById('completionRate').textContent = `完成度 ${rate}%`;
+            document.getElementById('activeDays').textContent = activeDayCount;
+            document.getElementById('streakDays').textContent = calculateStreak(dateMap);
+            document.getElementById('totalAnswers').textContent = totalAnswerCount;
+
+            // 确定要展示的月份
+            const months = [];
+            const cursor = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
+            while (cursor <= today) {
+                months.push({ year: cursor.getFullYear(), month: cursor.getMonth() });
+                cursor.setMonth(cursor.getMonth() + 1);
+            }
+
+            // 为每个月渲染一个日历块
+            months.forEach(({ year, month }) => {
+                const totalDays = new Date(year, month + 1, 0).getDate();
+                const firstDay = new Date(year, month, 1).getDay(); // 1号的星期几
+
+                const block = document.createElement('div');
+                block.className = 'heatmap-month-block';
+
+                // 月份标题
+                const title = document.createElement('div');
+                title.className = 'heatmap-month-title';
+                title.textContent = monthNames[month];
+                block.appendChild(title);
+
+                // 星期头
+                const weekdays = document.createElement('div');
+                weekdays.className = 'heatmap-weekdays';
+                weekdayNames.forEach(w => {
+                    const wd = document.createElement('div');
+                    wd.className = 'heatmap-weekday';
+                    wd.textContent = w;
+                    weekdays.appendChild(wd);
+                });
+                block.appendChild(weekdays);
+
+                // 日期网格
+                const grid = document.createElement('div');
+                grid.className = 'heatmap-month-grid';
+
+                const totalCells = firstDay + totalDays;
+                const totalRows = Math.ceil(totalCells / 7);
+
+                for (let i = 0; i < totalRows * 7; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'heatmap-cell';
+
+                    if (i < firstDay || i >= firstDay + totalDays) {
+                        // 不在该月的日期（空白占位）
+                        cell.classList.add('placeholder');
+                    } else {
+                        const d = i - firstDay + 1;
+                        const cellDate = new Date(year, month, d);
+                        const dateStr = formatDate(cellDate);
+
+                        if (cellDate < rangeStart) {
+                            // 90天窗口之前的日期
+                            cell.classList.add('out-of-range');
+                        } else if (cellDate > today) {
+                            // 未来日期：显示空格子但不隐藏
+                            cell.classList.add('heatmap-level-0');
+                            cell.style.opacity = '0.5';
+                            cell.setAttribute('data-tooltip', `${dateStr}: 暂无数据`);
+                        } else {
+                            const count = dateMap[dateStr] || 0;
+                            const level = getColorLevel(count);
+                            cell.classList.add(`heatmap-level-${level}`);
+
+                            const stageLabel = count === 0 ? '0题' :
+                                count <= 10 ? `1-10题(${count}题)` :
+                                count <= 20 ? `10-20题(${count}题)` :
+                                count <= 30 ? `20-30题(${count}题)` :
+                                count <= 40 ? `30-40题(${count}题)` :
+                                `40+题(${count}题)`;
+                            cell.setAttribute('data-tooltip', `${dateStr}: ${stageLabel}`);
+                        }
+                    }
+
                     grid.appendChild(cell);
                 }
+
+                block.appendChild(grid);
+                container.appendChild(block);
+            });
+        }
+
+        /**
+         * 渲染空白热力图
+         */
+        function renderEmptyHeatmap() {
+            renderHeatmap({ daily_counts: {}, total_count: 0 });
+            document.getElementById('activeDays').textContent = '0';
+            document.getElementById('streakDays').textContent = '0';
+            document.getElementById('totalAnswers').textContent = '0';
+            document.getElementById('answeredCount').textContent = '0';
+            document.getElementById('completionRate').textContent = '完成度 0%';
+        }
+
+        /**
+         * 加载做题贡献数据
+         */
+        async function loadContributionData() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                renderEmptyHeatmap();
+                return;
+            }
+
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    renderEmptyHeatmap();
+                    return;
+                }
+
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/daily-answers?days=90`);
+                const data = await resp.json();
+
+                if (data.success) {
+                    renderHeatmap(data.data);
+                } else {
+                    renderEmptyHeatmap();
+                }
+            } catch (e) {
+                console.error('加载做题数据失败:', e);
+                renderEmptyHeatmap();
             }
         }
-        
-        generateHeatmap();
+
+        // ==================== 原有代码 ====================
+
         loadUserInfo();
+        loadContributionData();
         
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
