@@ -81,7 +81,7 @@ def grid_class(count: int, preferred: Any = None) -> str:
     return "cols-5"
 
 
-def render_header(slide: dict[str, Any], eyebrow_default: str = "Teaching Deck") -> str:
+def render_header(slide: dict[str, Any], eyebrow_default: str = "教学课件") -> str:
     eyebrow = text(slide.get("eyebrow"), eyebrow_default)
     title = text(slide.get("title"), "未命名页面")
     lead = text(slide.get("lead") or slide.get("subtitle"))
@@ -107,7 +107,7 @@ def render_cover(slide: dict[str, Any]) -> str:
     return f"""<section class="slide current" data-title="{attr(slide.get("title"), "封面")}">
       <div class="stage center">
         <div>
-          <div class="eyebrow fragment">{html(slide.get("eyebrow"), "Course Deck")}</div>
+          <div class="eyebrow fragment">{html(slide.get("eyebrow"), "高中生物")}</div>
           <h1 class="title fragment"><span class="grad">{render_rich_text(slide.get("title"))}</span></h1>
           <p class="subtitle fragment">{render_rich_text(slide.get("subtitle") or slide.get("lead"))}</p>{tag_html}
         </div>
@@ -195,7 +195,7 @@ def render_process(slide: dict[str, Any]) -> str:
     for index, step in enumerate(steps, start=1):
         step_html.append(
             f"""          <div class="step fragment">
-            <span>{index:02d}</span>
+            <b>{index:02d}</b>
             <h3>{html(step.get("title"), "步骤")}</h3>
             <p>{render_rich_text(step.get("text") or step.get("body"))}</p>
           </div>"""
@@ -332,11 +332,12 @@ def render_slides(deck: dict[str, Any]) -> str:
     return "\n\n".join(rendered)
 
 
-def build_theme_css(theme: str = "light", style: str = "clean") -> str:
-    """Generate CSS overrides based on theme (light/dark) and style (clean/edu/tech)."""
+def build_theme_css(theme: str = "light", style: str = "clean", hue: int = 215) -> str:
+    """Generate CSS overrides based on theme (light/dark), style (clean/edu/tech), and hue."""
+    h = hue % 360
     if theme == "light":
-        css = """<style>
-      :root {
+        css = f"""<style>
+      :root {{
         --bg0: #f0f4f8;
         --bg1: #e2e8f0;
         --bg2: #cbd5e1;
@@ -350,14 +351,29 @@ def build_theme_css(theme: str = "light", style: str = "clean") -> str:
         --glass-b: 0.4;
         --glass-blur: 20px;
         --shadow: 0 18px 50px rgba(0,0,0,0.08);
-      }
-      body {
+        --cyan: hsl({h}, 62%, 44%);
+        --violet: hsl({(h + 40) % 360}, 55%, 35%);
+        --green: hsl({(h + 80) % 360}, 55%, 50%);
+        --amber: hsl({h}, 62%, 44%);
+        --orange: hsl({(h + 80) % 360}, 55%, 50%);
+      }}
+      body {{
         background: linear-gradient(135deg, #f0f4f8 0%, #e8eef5 40%, #f5f7fa 100%) !important;
-      }
-      body::before, body::after { opacity: 0.3 !important; }
+        color: #1a202c;
+      }}
+      body::before, body::after {{ opacity: 0.15 !important; }}
+      .topline {{ color: hsl({h}, 30%, 30%) !important; }}
     </style>"""
     else:
-        css = ""
+        css = f"""<style>
+      :root {{
+        --cyan: hsl({h}, 62%, 44%);
+        --violet: hsl({(h + 40) % 360}, 55%, 35%);
+        --green: hsl({(h + 80) % 360}, 55%, 50%);
+        --amber: hsl({h}, 62%, 44%);
+        --orange: hsl({(h + 80) % 360}, 55%, 50%);
+      }}
+    </style>"""
 
     if style == "clean":
         css += """<style>
@@ -374,7 +390,7 @@ def build_theme_css(theme: str = "light", style: str = "clean") -> str:
 
 
 def render_deck(deck: dict[str, Any], template_path: Path | None = None,
-                theme: str = "dark", style: str = "clean") -> str:
+                theme: str = "light", style: str = "clean", hue: int = 215) -> str:
     slides_html = render_slides(deck)
     template = (template_path or TEMPLATE_PATH).read_text(encoding="utf-8")
     title = text(deck.get("title"), deck["slides"][0]["title"])
@@ -385,7 +401,7 @@ def render_deck(deck: dict[str, Any], template_path: Path | None = None,
         .replace("{{DOCUMENT_DESCRIPTION}}", html(description))
         .replace("{{TOPLINE_TEXT}}", html(topline))
         .replace("{{SLIDES_HTML}}", slides_html)
-        .replace("{{THEME_CSS}}", build_theme_css(theme, style))
+        .replace("{{THEME_CSS}}", build_theme_css(theme, style, hue))
     )
 
 
@@ -399,11 +415,11 @@ def slugify(value: str) -> str:
 
 
 def write_deck(deck: dict[str, Any], output: Path | None = None,
-               theme: str = "dark", style: str = "clean") -> Path:
+               theme: str = "light", style: str = "clean", hue: int = 215) -> Path:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     if output is None:
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         output = OUTPUT_DIR / f"{slugify(text(deck.get('title'), 'deck'))}-{stamp}.html"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(render_deck(deck, theme=theme, style=style), encoding="utf-8")
+    output.write_text(render_deck(deck, theme=theme, style=style, hue=hue), encoding="utf-8")
     return output

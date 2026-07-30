@@ -32,6 +32,7 @@ class GenerateRequest(BaseModel):
     slide_count: int = Field(default=8, ge=4, le=15, description="生成页数")
     style: str = Field(default="clean", description="风格：clean/edu/tech")
     theme: str = Field(default="light", description="主题：light/dark")
+    hue: int = Field(default=215, ge=0, le=360, description="主题色相值")
 
 
 def _quoted_path(path: str) -> str:
@@ -66,7 +67,7 @@ def generate(request: GenerateRequest):
             style=request.style,
         )
 
-        output = write_deck(deck, theme=request.theme, style=request.style)
+        output = write_deck(deck, theme=request.theme, style=request.style, hue=request.hue)
 
         deck_id = output.stem
         return {
@@ -104,14 +105,21 @@ def download_deck(deck_id: str):
 @router.get("/ppt/decks")
 def list_decks():
     """列出已生成的所有课件"""
+    import re
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     decks = []
     for f in sorted(OUTPUT_DIR.glob("*.html"), key=lambda x: x.stat().st_mtime, reverse=True):
+        # Extract title from filename: "走进细胞-20260729-201904.html" → title part
+        stem = f.stem
+        title_match = re.match(r"(.+?)-\d{8}-\d{6}", stem)
+        title = title_match.group(1) if title_match else stem
+        mtime = f.stat().st_mtime
         decks.append({
-            "deck_id": f.stem,
+            "deck_id": stem,
             "filename": f.name,
-            "html_url": f"/api/ppt/decks/{f.stem}/html",
-            "download_url": f"/api/ppt/decks/{f.stem}/download",
+            "title": title,
+            "html_url": f"/api/ppt/decks/{stem}/html",
+            "download_url": f"/api/ppt/decks/{stem}/download",
         })
     return {"decks": decks}
 
