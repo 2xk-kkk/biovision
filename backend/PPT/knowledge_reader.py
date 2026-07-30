@@ -20,9 +20,9 @@ def _chapter_key_to_path(key: str) -> Path:
 BOOK_NAMES = {
     "book1": "必修一：分子与细胞",
     "book2": "必修二：遗传与进化",
-    "book3": "选修一：稳态与调节",
-    "book4": "选修二：生物与环境",
-    "book5": "选修三：生物技术与工程",
+    "book3": "选择性必修一：稳态与调节",
+    "book4": "选择性必修二：生物与环境",
+    "book5": "选择性必修三：生物技术与工程",
 }
 
 CHAPTER_NAMES = {
@@ -125,7 +125,7 @@ def extract_text_from_html(html_content: str) -> str:
     # Remove navigation bar noise
     raw = _clean_navigation_noise(raw)
     # Truncate per file
-    max_len = 4000
+    max_len = 8000
     if len(raw) > max_len:
         raw = raw[:max_len] + "\n...(内容已截断)"
     return raw

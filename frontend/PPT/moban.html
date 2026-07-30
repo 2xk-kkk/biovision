@@ -5,124 +5,302 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>本地模板库</title>
   <style>
-    :root {
-      --bg: #f5f9ff;
-      --panel: rgba(255, 255, 255, 0.88);
-      --text: #17324d;
-      --muted: #6d8198;
-      --blue: #6ea8ff;
-      --blue-strong: #4c8dff;
-      --shadow: 0 18px 50px rgba(74, 116, 176, 0.12);
-    }
-
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
-      min-height: 100vh;
+      min-height: 100%;
       font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      color: var(--text);
       background:
-        radial-gradient(circle at 10% 10%, rgba(110, 168, 255, 0.18), transparent 24%),
-        radial-gradient(circle at 85% 20%, rgba(152, 201, 255, 0.24), transparent 20%),
+        radial-gradient(circle at 10% 10%, rgba(110,168,255,0.18), transparent 24%),
+        radial-gradient(circle at 85% 20%, rgba(152,201,255,0.24), transparent 20%),
+        radial-gradient(circle at 55% 100%, rgba(185,225,255,0.28), transparent 26%),
         linear-gradient(180deg, #fbfdff 0%, #f3f8ff 100%);
-      padding: 28px;
+      color: #17324d;
     }
 
-    .shell {
-      max-width: 980px;
-      margin: 0 auto;
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,0.82);
-      box-shadow: var(--shadow);
-      border-radius: 28px;
-      padding: 28px;
-      backdrop-filter: blur(18px);
+    /* ===== 顶部导航栏 ===== */
+    .top {
+      background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+      height: 60px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 999;
     }
 
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(28px, 4vw, 42px);
+    .logo1 {
+      width: 120px; height: 40px;
+      background-image: url(../images/logo.png);
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      flex-shrink: 0;
     }
 
-    p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.8;
+    .search { flex: 1; max-width: 600px; margin: 0 auto; }
+    .search-form { display: flex; border: 1px solid #ddd; border-radius: 20px; overflow: hidden; background: #f9fafb; }
+    .search-input { flex: 1; border: none; padding: 8px 16px; font-size: 14px; outline: none; background: transparent; }
+    .search-btn { background: #667eea; border: none; padding: 0 16px; cursor: pointer; font-size: 16px; color: white; }
+
+    .nav-area { display: flex; align-items: center; gap: 20px; }
+    .nav-links { display: flex; gap: 20px; align-items: center; }
+    .nav-link {
+      text-decoration: none; color: #374151; font-size: 14px; font-weight: 500;
+      transition: all 0.2s; padding: 4px 8px; border-radius: 4px; position: relative;
     }
+    .nav-link:hover { color: #667eea; background-color: #f3f4f6; }
+    .nav-link.active { color: #667eea; background-color: #f0f6fd; }
+
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-menu {
+      display: none; position: absolute; top: 100%; left: 0;
+      background: white; border: 1px solid #e5e7eb; border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000;
+      min-width: 200px; overflow: hidden; margin-top: 4px;
+    }
+    .dropdown-item {
+      display: block; padding: 10px 16px; color: #374151;
+      text-decoration: none; font-size: 14px; transition: background 0.2s;
+    }
+    .dropdown-item:hover { background-color: #f3f4f6; color: #667eea; }
+    .dropdown.show .dropdown-menu { display: block; }
+    .dropdown-toggle::after {
+      content: ''; display: inline-block; width: 0; height: 0;
+      margin-left: 6px; vertical-align: middle;
+      border-top: 4px solid; border-right: 4px solid transparent; border-left: 4px solid transparent;
+    }
+
+    .user-actions { display: flex; align-items: center; gap: 12px; }
+    .avatar-wrapper { position: relative; cursor: pointer; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: white; overflow: hidden; transition: transform 0.2s;
+      object-fit: cover;
+    }
+    .avatar:hover { transform: scale(1.05); }
+    .upload-overlay {
+      position: absolute; bottom: -2px; right: -2px;
+      background: #667eea; width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: white; border: 2px solid white;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .avatar-wrapper:hover .upload-overlay { opacity: 1; }
+
+    .user-dropdown { position: relative; }
+    .user-dropdown-menu {
+      position: absolute; right: 0; top: 100%; margin-top: 8px;
+      background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 160px; overflow: hidden; display: none; z-index: 1001;
+    }
+    .user-dropdown-menu.show { display: block; }
+    .user-dropdown-item {
+      padding: 10px 16px; color: #374151; text-decoration: none;
+      display: block; font-size: 14px; transition: background 0.2s;
+    }
+    .user-dropdown-item:hover { background-color: #f3f4f6; color: #667eea; }
+    .user-dropdown-item.danger { color: #ef4444; }
+    .user-dropdown-item.danger:hover { background-color: #fef2f2; }
+
+    /* ===== 主内容 ===== */
+    .app { padding: 80px 28px 40px; max-width: 980px; margin: 0 auto; }
+
+    .page-head { margin-bottom: 24px; }
+    .page-head h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 38px); }
+    .page-head p { margin: 0; color: #6d8198; line-height: 1.7; }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
-      margin-top: 22px;
     }
 
     .template {
       min-height: 140px;
-      padding: 18px;
+      padding: 20px;
       border-radius: 20px;
       border: 1px solid rgba(145, 181, 223, 0.24);
       background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,250,255,0.92));
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      cursor: pointer;
     }
-
+    .template:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(74,116,176,0.1);
+    }
     .template strong {
       display: block;
       font-size: 16px;
       margin-bottom: 10px;
+      color: #17324d;
     }
-
     .template span {
       display: block;
-      color: var(--muted);
+      color: #6d8198;
       line-height: 1.7;
-    }
-
-    .back {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 18px;
-      padding: 11px 16px;
-      border-radius: 999px;
-      color: white;
-      text-decoration: none;
-      background: linear-gradient(135deg, var(--blue), var(--blue-strong));
-      box-shadow: 0 12px 24px rgba(76, 141, 255, 0.2);
-      font-weight: 700;
+      font-size: 14px;
     }
 
     @media (max-width: 760px) {
-      body { padding: 14px; }
+      .app { padding: 72px 14px 24px; }
       .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <main class="shell">
-    <h1>本地模板库</h1>
-    <p>这里用于浏览本地模板卡片，后续可以继续扩展成分类、收藏和一键套用。</p>
+
+  <!-- 顶部导航栏 -->
+  <div class="top">
+    <div class="logo1"></div>
+    <div class="search">
+      <form class="search-form">
+        <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+        <button type="submit" class="search-btn">🔍</button>
+      </form>
+    </div>
+    <div class="nav-area">
+      <div class="nav-links">
+        <a href="../index.html" class="nav-link" target="_blank">首页</a>
+        <div class="dropdown">
+          <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+          <div class="dropdown-menu">
+            <a href="../knowledge/book1/1.1.html" class="dropdown-item" style="color:#90b2e6;">🔬 必修一：分子与细胞</a>
+            <a href="../knowledge/book2/2.1.html" class="dropdown-item" style="color:#a194e3;">🧬 必修二：遗传与进化</a>
+            <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color:#c576b4;">⚖️选择性必修一：稳态与调节</a>
+            <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color:burlywood;">🌿 选择性必修二：生物与环境</a>
+            <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color:#6bd3b1;">🧫 选择性必修三：生物技术与工程</a>
+          </div>
+        </div>
+        <a href="main.html" class="nav-link active">PPT快搭</a>
+        <a href="../practice/main.html" class="nav-link" target="_blank">每日训练</a>
+        <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
+        <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
+      </div>
+      <div class="user-actions">
+        <div class="avatar-wrapper" id="userAvatarBtn">
+          <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
+          <div class="upload-overlay">+</div>
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <a href="../user-center/main.html" class="user-dropdown-item" target="_blank">个人中心</a>
+            <a href="#" class="user-dropdown-item">设置</a>
+            <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="page-head">
+      <h1>本地模板库</h1>
+      <p>浏览本地模板卡片，快速挑选适合课堂的版式与结构。</p>
+    </div>
 
     <section class="grid">
-      <div class="template">
+      <div class="template" onclick="window.open('main.html','_self')">
         <strong>细胞结构模板</strong>
         <span>适合讲解细胞膜、细胞核、线粒体等基础知识。</span>
       </div>
-      <div class="template">
+      <div class="template" onclick="window.open('main.html','_self')">
         <strong>实验观察模板</strong>
         <span>适合显微镜观察、实验记录和课堂问答型内容。</span>
       </div>
-      <div class="template">
+      <div class="template" onclick="window.open('main.html','_self')">
         <strong>知识点归纳模板</strong>
         <span>适合课后复习、重点总结和结构化梳理。</span>
       </div>
-      <div class="template">
+      <div class="template" onclick="window.open('main.html','_self')">
         <strong>测验练习模板</strong>
         <span>适合加入选择题、判断题和课堂小测模块。</span>
       </div>
     </section>
+  </div>
 
-    <a class="back" href="./index.html">返回主页 →</a>
-  </main>
+  <script>
+    const API_BASE = 'http://127.0.0.1:8000/api';
+
+    // ===== 用户头像同步 =====
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) { return null; }
+    }
+
+    function getDefaultAvatarSVG(username, size) {
+      size = size || 40;
+      const colors = ['#4338ca','#be185d','#0369a1','#15803d','#c2410c','#7c3aed','#dc2626','#b45309'];
+      const avatarChar = (username || '用').trim()[0] || '用';
+      const avatarColor = colors[avatarChar.charCodeAt(0) % colors.length];
+      const cx = Math.floor(size / 2), cy = Math.floor(size / 2);
+      const r = Math.floor(size * 0.45), fs = Math.floor(size * 0.45), ty = Math.floor(size * 0.65);
+      return 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 ' + size + ' ' + size + '\'%3E%3Ccircle cx=\'' + cx + '\' cy=\'' + cy + '\' r=\'' + r + '\' fill=\'' + encodeURIComponent(avatarColor) + '\'/%3E%3Ctext x=\'' + cx + '\' y=\'' + ty + '\' text-anchor=\'middle\' font-size=\'' + fs + '\' fill=\'white\'%3E' + encodeURIComponent(avatarChar) + '%3C/text%3E%3C/svg%3E';
+    }
+
+    function getGuestAvatarSVG(size) {
+      size = size || 40;
+      const cx = Math.floor(size / 2), cy = Math.floor(size / 2);
+      const r = Math.floor(size * 0.45), hr = Math.floor(size * 0.12), hy = Math.floor(size * 0.35);
+      const bw = Math.floor(size * 0.1), by1 = Math.floor(size * 0.6), by2 = Math.floor(size * 0.85);
+      const x1 = Math.floor(size * 0.3), x2 = Math.floor(size * 0.7);
+      return 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 ' + size + ' ' + size + '\'%3E%3Ccircle cx=\'' + cx + '\' cy=\'' + cy + '\' r=\'' + r + '\' fill=\'%23d1d5db\'/%3E%3Ccircle cx=\'' + cx + '\' cy=\'' + hy + '\' r=\'' + hr + '\' fill=\'%239ca3af\'/%3E%3Cpath d=\'M' + x1 + ' ' + by1 + ' Q' + cx + ' ' + by2 + ' ' + x2 + ' ' + by1 + '\' fill=\'none\' stroke=\'%239ca3af\' stroke-width=\'' + bw + '\' stroke-linecap=\'round\'/%3E%3C/svg%3E';
+    }
+
+    async function loadUserAvatar() {
+      const token = localStorage.getItem('token');
+      const avatarImg = document.getElementById('userAvatarImg');
+      if (!avatarImg) return;
+      const guestAvatar = getGuestAvatarSVG(40);
+      if (!token) { avatarImg.src = guestAvatar; return; }
+      try {
+        const payload = parseJwt(token);
+        if (!payload || !payload.user_id) { avatarImg.src = guestAvatar; return; }
+        const resp = await fetch(API_BASE + '/user/' + payload.user_id + '/info');
+        const data = await resp.json();
+        if (data.success && data.data && data.data.avatar) {
+          avatarImg.src = data.data.avatar;
+        } else if (data.data && data.data.username) {
+          avatarImg.src = getDefaultAvatarSVG(data.data.username);
+        }
+      } catch (e) { avatarImg.src = guestAvatar; }
+    }
+
+    // 用户下拉菜单
+    (function() {
+      const btn = document.getElementById('userAvatarBtn');
+      const menu = document.getElementById('userDropdownMenu');
+      if (btn && menu) {
+        btn.addEventListener('click', function(e) { e.stopPropagation(); menu.classList.toggle('show'); });
+        document.addEventListener('click', function(e) {
+          if (!menu.contains(e.target) && e.target !== btn) menu.classList.remove('show');
+        });
+      }
+    })();
+
+    // 知识清单下拉
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        this.closest('.dropdown').classList.toggle('show');
+      });
+    });
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+    });
+
+    loadUserAvatar();
+  </script>
 </body>
 </html>

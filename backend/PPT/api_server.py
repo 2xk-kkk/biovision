@@ -29,6 +29,7 @@ class GenerateRequest(BaseModel):
     slide_count: int = Field(default=8, ge=4, le=15, description="生成页数")
     style: str = Field(default="clean", description="风格：clean/edu/tech")
     theme: str = Field(default="light", description="主题：light/dark")
+    hue: int = Field(default=215, ge=0, le=360, description="主题色相值")
 
 
 class GenerateResponse(BaseModel):
@@ -110,7 +111,7 @@ def generate(request: GenerateRequest) -> GenerateResponse:
         )
 
         # Step 3: Render and write HTML
-        output = write_deck(deck)
+        output = write_deck(deck, theme=request.theme, style=request.style, hue=request.hue)
 
         deck_id = output.stem
         html_url = quoted_api_path(f"/api/decks/{deck_id}/html")
@@ -141,6 +142,25 @@ def get_deck_html(deck_id: str) -> FileResponse:
 def download_deck(deck_id: str) -> FileResponse:
     path = deck_path_from_id(deck_id)
     return FileResponse(path, media_type="application/octet-stream", filename=path.name)
+
+
+@app.get("/api/decks")
+def list_decks() -> dict[str, Any]:
+    """列出已生成的所有课件"""
+    import re as _re
+    decks = []
+    for f in sorted(OUTPUT_DIR.glob("*.html"), key=lambda x: x.stat().st_mtime, reverse=True):
+        stem = f.stem
+        title_match = _re.match(r"(.+?)-\d{8}-\d{6}", stem)
+        title = title_match.group(1) if title_match else stem
+        decks.append({
+            "deck_id": stem,
+            "filename": f.name,
+            "title": title,
+            "html_url": quoted_api_path(f"/api/decks/{stem}/html"),
+            "download_url": quoted_api_path(f"/api/decks/{stem}/download"),
+        })
+    return {"decks": decks}
 
 
 @app.get("/api/knowledge/chapters")

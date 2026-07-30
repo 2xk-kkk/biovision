@@ -228,6 +228,7 @@
       color: white;
       overflow: hidden;
       transition: transform 0.2s;
+      object-fit: cover;
     }
 
     .avatar:hover {
@@ -1221,6 +1222,63 @@
       }
     }
 
+    .user-dropdown {
+      position: relative;
+    }
+
+    .user-dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 8px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 160px;
+      overflow: hidden;
+      display: none;
+      z-index: 1001;
+    }
+
+    .user-dropdown-menu.show {
+      display: block;
+    }
+
+    .user-dropdown-item {
+      padding: 10px 16px;
+      color: #374151;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .user-dropdown-item:hover {
+      background-color: #f3f4f6;
+      color: #667eea;
+    }
+
+    .user-dropdown-item.danger {
+      color: #ef4444;
+    }
+
+    .user-dropdown-item.danger:hover {
+      background-color: #fef2f2;
+    }
+
+    body[data-theme="dark"] .user-dropdown-menu {
+      background: #1a2332;
+      border-color: rgba(132, 160, 204, 0.2);
+    }
+
+    body[data-theme="dark"] .user-dropdown-item {
+      color: #edf4ff;
+    }
+
+    body[data-theme="dark"] .user-dropdown-item:hover {
+      background-color: #243044;
+    }
+
     @media (max-width: 1100px) {
       .shell {
         grid-template-columns: 1fr;
@@ -1318,22 +1376,33 @@
           <div class="dropdown-menu">
             <a href="../knowledge/book1/1.1.html" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
             <a href="../knowledge/book2/2.1.html" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
-            <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color: #c576b4;">⚖️选修一：稳态与调节</a>
-            <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color: burlywood;">🌿 选修二：生物与环境</a>
-            <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color: #6bd3b1;">🧫 选修三：生物技术与工程</a>
+            <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color: #c576b4;">⚖️选择性必修一：稳态与调节</a>
+            <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color: burlywood;">🌿 选择性必修二：生物与环境</a>
+            <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color: #6bd3b1;">🧫 选择性必修三：生物技术与工程</a>
           </div>
         </div>
 
-        <a href="#" class="nav-link" target="_blank">PPT快搭</a>
+        <a href="#" class="nav-link active" target="_blank">PPT快搭</a>
         <a href="../practice/main.html" class="nav-link" target="_blank">每日训练</a>
-        <a href="../3D model/main.html" class="nav-link active" target="_blank">可视学习</a>
+        <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
         <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
       </div>
 
       <div class="user-actions">
-        <div class="avatar-wrapper">
-          <div class="avatar">👤</div>
+        <div class="avatar-wrapper" id="userAvatarBtn">
+          <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
           <div class="upload-overlay">+</div>
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <a href="../user-center/main.html" class="user-dropdown-item" target="_blank">
+              个人中心
+            </a>
+            <a href="#" class="user-dropdown-item">
+              设置
+            </a>
+            <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+              退出登录
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -1598,6 +1667,7 @@
     let selectedKnowledge = [];
     let activeBookKey = 'book1';
     let uploadedTemplateFiles = [];
+    let isGenerating = false;
 
     const defaults = {
       model: 'GPT-4.1',
@@ -1650,7 +1720,7 @@
         chapters: [
           { key: 'book4-ch1', title: '第1章 种群及其动态', desc: '种群的特征（密度、出生率、死亡率等）、增长模型（J型与S型曲线）及影响种群数量变化的因素。' },
           { key: 'book4-ch2', title: '第2章 群落及其演替', desc: '群落的物种组成、种间关系（竞争、捕食、共生等）、空间结构及初生/次生演替过程。' },
-          { key: 'book4-ch3', title: '第3章 生态系统及其稳定性', desc: '群落的物种组成、种间关系（竞争、捕食、共生等）、空间结构及初生/次生演替过程。' },
+          { key: 'book4-ch3', title: '第3章 生态系统及其稳定性', desc: '生态系统的组成结构、能量流动、物质循环、信息传递及生态系统的自我调节与稳定性。' },
           { key: 'book4-ch4', title: '第4章 人与环境', desc: '人类活动对生态环境的影响、生物多样性保护、生态工程及可持续发展理念与实践' }
         ]
       },
@@ -1763,7 +1833,7 @@
       items.forEach((item) => {
         const chip = document.createElement('span');
         chip.className = 'mini-chip';
-        chip.textContent = item.label;
+        chip.textContent = item.title;
         knowledgeSummary.appendChild(chip);
         knowledgeSummaryModal.appendChild(chip.cloneNode(true));
       });
@@ -1885,7 +1955,8 @@
       renderTemplateSummary();
     });
 
-    const API_BASE = 'http://127.0.0.1:8000';
+    const API_BASE = 'http://127.0.0.1:8000/api';
+    const SITE_HOST = 'http://127.0.0.1:8000';
     const slideCountInput = document.getElementById('slideCountInput');
     const resultCard = document.getElementById('resultCard');
     const resultStatus = document.getElementById('resultStatus');
@@ -1901,9 +1972,9 @@
 
       if (success) {
         resultStatus.textContent = 'PPT 生成成功！点击下方按钮查看或下载。';
-        resultPreviewLink.href = API_BASE + data.html_url;
+        resultPreviewLink.href = SITE_HOST + data.html_url;
         resultPreviewLink.style.display = 'inline-flex';
-        resultDownloadLink.href = API_BASE + data.download_url;
+        resultDownloadLink.href = SITE_HOST + data.download_url;
         resultDownloadLink.style.display = 'inline-flex';
       } else {
         resultStatus.textContent = '生成失败：' + (data.message || '未知错误');
@@ -1916,6 +1987,7 @@
     });
 
     generateBtn.addEventListener('click', async () => {
+      if (isGenerating) return;
       const topic = titleInput.value.trim();
       const requirements = mainContent.value.trim();
 
@@ -1924,6 +1996,9 @@
         return;
       }
 
+      isGenerating = true;
+      generateBtn.disabled = true;
+      generateBtn.textContent = '生成中...';
       updateProgress(10, '正在提取知识点内容...');
       resultCard.style.display = 'none';
 
@@ -1934,12 +2009,13 @@
         model: modelSelect.value,
         slide_count: parseInt(slideCountInput.value) || 8,
         style: selectedStylePreset,
-        theme: selectedThemeMode
+        theme: selectedThemeMode,
+        hue: parseInt(accentRange.value) || 215
       };
 
       try {
         updateProgress(25, '正在调用 AI 模型生成课件...');
-        const res = await fetch(API_BASE + '/api/ppt/generate', {
+        const res = await fetch(API_BASE + '/ppt/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1960,6 +2036,10 @@
       } catch (err) {
         updateProgress(0, '请求失败');
         showResult(false, { message: '无法连接到后端服务，请确认 api_server.py 已启动。错误：' + err.message });
+      } finally {
+        isGenerating = false;
+        generateBtn.disabled = false;
+        generateBtn.textContent = '一键生成';
       }
     });
 
@@ -1980,6 +2060,88 @@
                 dropdown.classList.toggle('show');
             });
         });
+
+    // ===== 用户头像同步 =====
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function getDefaultAvatarSVG(username, size) {
+      size = size || 40;
+      const colors = ['#4338ca','#be185d','#0369a1','#15803d','#c2410c','#7c3aed','#dc2626','#b45309'];
+      const avatarChar = (username || '用').trim()[0] || '用';
+      const colorIndex = avatarChar.charCodeAt(0) % colors.length;
+      const avatarColor = colors[colorIndex];
+      const cx = Math.floor(size / 2), cy = Math.floor(size / 2);
+      const r = Math.floor(size * 0.45);
+      const fs = Math.floor(size * 0.45);
+      const ty = Math.floor(size * 0.65);
+      return 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 ' + size + ' ' + size + '\'%3E%3Ccircle cx=\'' + cx + '\' cy=\'' + cy + '\' r=\'' + r + '\' fill=\'' + encodeURIComponent(avatarColor) + '\'/%3E%3Ctext x=\'' + cx + '\' y=\'' + ty + '\' text-anchor=\'middle\' font-size=\'' + fs + '\' fill=\'white\'%3E' + encodeURIComponent(avatarChar) + '%3C/text%3E%3C/svg%3E';
+    }
+
+    function getGuestAvatarSVG(size) {
+      size = size || 40;
+      const cx = Math.floor(size / 2), cy = Math.floor(size / 2);
+      const r = Math.floor(size * 0.45);
+      const hr = Math.floor(size * 0.12), hy = Math.floor(size * 0.35);
+      const bw = Math.floor(size * 0.1);
+      const by1 = Math.floor(size * 0.6), by2 = Math.floor(size * 0.85);
+      const x1 = Math.floor(size * 0.3), x2 = Math.floor(size * 0.7);
+      return 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 ' + size + ' ' + size + '\'%3E%3Ccircle cx=\'' + cx + '\' cy=\'' + cy + '\' r=\'' + r + '\' fill=\'%23d1d5db\'/%3E%3Ccircle cx=\'' + cx + '\' cy=\'' + hy + '\' r=\'' + hr + '\' fill=\'%239ca3af\'/%3E%3Cpath d=\'M' + x1 + ' ' + by1 + ' Q' + cx + ' ' + by2 + ' ' + x2 + ' ' + by1 + '\' fill=\'none\' stroke=\'%239ca3af\' stroke-width=\'' + bw + '\' stroke-linecap=\'round\'/%3E%3C/svg%3E';
+    }
+
+    async function loadUserAvatar() {
+      const token = localStorage.getItem('token');
+      const avatarImg = document.getElementById('userAvatarImg');
+      if (!avatarImg) return;
+      const guestAvatar = getGuestAvatarSVG(40);
+      if (!token) {
+        avatarImg.src = guestAvatar;
+        return;
+      }
+      try {
+        const payload = parseJwt(token);
+        if (!payload || !payload.user_id) {
+          avatarImg.src = guestAvatar;
+          return;
+        }
+        const resp = await fetch(API_BASE + '/user/' + payload.user_id + '/info');
+        const data = await resp.json();
+        if (data.success && data.data && data.data.avatar) {
+          avatarImg.src = data.data.avatar;
+        } else if (data.data && data.data.username) {
+          avatarImg.src = getDefaultAvatarSVG(data.data.username);
+        }
+      } catch (e) {
+        avatarImg.src = guestAvatar;
+      }
+    }
+
+    // 用户下拉菜单
+    const userAvatarBtn = document.getElementById('userAvatarBtn');
+    const userDropdown = document.getElementById('userDropdownMenu');
+    if (userAvatarBtn && userDropdown) {
+      userAvatarBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        userDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', function(e) {
+        if (!userDropdown.contains(e.target) && e.target !== userAvatarBtn) {
+          userDropdown.classList.remove('show');
+        }
+      });
+    }
+
+    loadUserAvatar();
   </script>
 </body>
 

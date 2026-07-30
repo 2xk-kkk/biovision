@@ -29,11 +29,13 @@ MODEL_CONFIG: dict[str, dict[str, str]] = {
         "base_url": os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
         "api_key": os.getenv("DEEPSEEK_API_KEY", ""),
         "model": "deepseek-chat",
+        "extra_params": {},
     },
     "deepseek-v4-flash": {
         "base_url": os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
         "api_key": os.getenv("DEEPSEEK_API_KEY", ""),
         "model": "deepseek-chat",
+        "extra_params": {"temperature": 0.3, "max_tokens": 4000},
     },
     "通义千问": {
         "base_url": os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1"),
@@ -74,7 +76,7 @@ SYSTEM_PROMPT = """你是一个课件JSON生成器。严格按照下方"知识�
 标题 ≤15字，正文简洁。用**加粗**标记关键词。只输出JSON。"""
 
 
-def get_client(model_name: str) -> tuple[openai.OpenAI, str]:
+def get_client(model_name: str) -> tuple[openai.OpenAI, str, dict[str, Any]]:
     config = MODEL_CONFIG.get(model_name)
     if not config:
         config = MODEL_CONFIG["GPT-4.1"]
@@ -88,7 +90,8 @@ def get_client(model_name: str) -> tuple[openai.OpenAI, str]:
         base_url=config["base_url"],
         api_key=api_key,
     )
-    return client, config["model"]
+    extra = config.get("extra_params", {})
+    return client, config["model"], extra
 
 
 def extract_json(text: str) -> dict[str, Any]:
@@ -111,7 +114,7 @@ def generate_deck(
     slide_count: int = 8,
     style: str = "clean",
 ) -> dict[str, Any]:
-    client, model_id = get_client(model_name)
+    client, model_id, extra_params = get_client(model_name)
 
     prompt = SYSTEM_PROMPT.replace("{slide_count}", str(slide_count))
 
@@ -143,19 +146,26 @@ def generate_deck(
         print(f"[PPT AI] Knowledge preview: {knowledge_context[:200]}...", file=sys.stderr)
     print(f"{'='*60}\n", file=sys.stderr)
 
-    response = client.chat.completions.create(
-        model=model_id,
-        messages=[
+    call_params = {
+        "model": model_id,
+        "messages": [
             {"role": "system", "content": prompt},
             {"role": "user", "content": user_message},
         ],
-        temperature=0.7,
-        max_tokens=8000,
-    )
+        "temperature": extra_params.get("temperature", 0.7),
+        "max_tokens": extra_params.get("max_tokens", 8000),
+    }
+
+    response = client.chat.completions.create(**call_params)
 
     content = response.choices[0].message.content or ""
     usage = response.usage
     print(f"[PPT AI] Tokens used: prompt={usage.prompt_tokens}, completion={usage.completion_tokens}, total={usage.total_tokens}", file=sys.stderr)
     print(f"[PPT AI] Response preview: {content[:400]}...", file=sys.stderr)
 
-    return extract_json(content)
+    try:
+        return extract_json(content)
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(f"[PPT AI] JSON parse failed: {exc}", file=sys.stderr)
+        print(f"[PPT AI] Raw content: {content[:1200]}", file=sys.stderr)
+        raise RuntimeError(f"AI 返回内容格式异常，无法解析为课件 JSON：{exc}") from exc
