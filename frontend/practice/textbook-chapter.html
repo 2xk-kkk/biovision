@@ -942,9 +942,6 @@
                     <div class="content-subtitle" id="contentSubtitle">按照章节进行专项练习，巩固知识点</div>
                 </div>
                 <div class="content-actions">
-                    <button class="btn btn-secondary" onclick="toggleDifficulty()">
-                        ⚙️ 难度设置
-                    </button>
                     <button class="btn btn-primary" onclick="startQuickPractice()">
                         ⚡ 快速练习
                     </button>
@@ -1347,16 +1344,10 @@
             chapter.sections.forEach((section, index) => {
                 const card = document.createElement('div');
                 card.className = 'section-card';
-                
-                const difficultyTags = [];
-                if (section.easy > 0) difficultyTags.push('<span class="difficulty-tag easy">基础</span>');
-                if (section.medium > 0) difficultyTags.push('<span class="difficulty-tag medium">中等</span>');
-                if (section.hard > 0) difficultyTags.push('<span class="difficulty-tag hard">困难</span>');
 
                 card.innerHTML = `
                     <div class="section-card-header">
                         <div class="section-card-title">${section.title}</div>
-                        <div class="difficulty-tags">${difficultyTags.join('')}</div>
                     </div>
                     <div class="section-card-body">
                         <div style="color: #64748b; font-size: 14px; line-height: 1.6;">
@@ -1385,10 +1376,6 @@
                 
                 cardList.appendChild(card);
             });
-        }
-
-        function toggleDifficulty() {
-            alert('难度设置功能开发中...');
         }
 
         function selectQuestionType(type) {
