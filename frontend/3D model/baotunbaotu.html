@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>胞吞与胞吐 — 教学动画</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Microsoft YaHei", "PingFang SC", "黑体", sans-serif;
+      background: #eef1f5
+    }
+
+    #cv {
+      display: block;
+      position: fixed;
+      inset: 0
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .ctrl-btn {
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 1.5px solid #c0c8d0;
+      background: rgba(255, 255, 255, 0.85);
+      color: #555;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .2s;
+      backdrop-filter: blur(6px)
+    }
+
+    .ctrl-btn:hover {
+      background: #fff;
+      border-color: #5b9bd5;
+      color: #5b9bd5
+    }
+
+    .ctrl-btn.on {
+      background: #5b9bd5;
+      border-color: #5b9bd5;
+      color: #fff
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 20;
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: 1.5px solid #c0c8d0;
+      background: rgba(255, 255, 255, 0.85);
+      color: #555;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .2s;
+      backdrop-filter: blur(6px)
+    }
+
+    .back-btn:hover {
+      background: #fff;
+      border-color: #5b9bd5;
+      color: #5b9bd5
+    }
+
+    .switch-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: 1.5px solid #c0c8d0;
+      background: rgba(255, 255, 255, 0.85);
+      color: #555;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .2s;
+      backdrop-filter: blur(6px)
+    }
+
+    .switch-btn:hover {
+      background: #fff;
+      border-color: #5b9bd5;
+      color: #5b9bd5
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="cv"></canvas>
+  <button class="back-btn" onclick="location.href='main.html'" title="返回主页面">← 返回</button>
+  <button class="switch-btn" onclick="location.href='baotunbaotu2.html'" title="切换到分泌蛋白的合成与运输">分泌蛋白合成与运输 →</button>
+  <div class="controls">
+    <button class="ctrl-btn on" id="btnPlay" onclick="togglePlay()">⏯ 播放</button>
+    <button class="ctrl-btn" id="btnSpeed" onclick="toggleSpeed()">1×</button>
+    <button class="ctrl-btn" onclick="resetAnim()">↺ 重置</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('cv');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = innerWidth * devicePixelRatio;
+      canvas.height = innerHeight * devicePixelRatio;
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ===== 设计常量 =====
+    const LOOP_DURATION = 10; // 秒，4阶段各2.5s
+
+    // 配色
+    const C = {
+      bg: '#f5f6f8',
+      cyto: '#e8ecf1',
+      panelDiv: '#d5dbe3',
+      membrane: '#4a8dc7',
+      membraneL: '#7ab4de',
+      particle: '#e0554a',
+      particleL: '#f08070',
+      vesicleO: '#f0a040',
+      vesicleOL: '#f5c070',
+      secretion: '#4caf84',
+      secretionL: '#70c89a',
+      text: '#3a3a3a',
+      textLight: '#777',
+      arrow: '#888',
+      stageTag: '#5b9bd5',
+    };
+
+    // 工具
+    const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+    function easeOut(t) { return 1 - (1 - t) * (1 - t); }
+
+    // ===== 动画状态 =====
+    let progress = 0;
+    let playing = true;
+    let speed = 1;
+    let lastTs = 0;
+
+    // ===== 绘图辅助 =====
+    function drawDoubleLineMembrane(ctx, points, color1, color2, lw1, lw2) {
+      // points: [{x, y}] 数组，膜的中心线
+      if (points.length < 2) return;
+      const n = points.length;
+      const gap = 3.5; // 双线间距
+
+      // 上边缘 (细胞外侧)
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y - gap);
+      for (let i = 1; i < n; i++) ctx.lineTo(points[i].x, points[i].y - gap);
+      ctx.strokeStyle = color2; ctx.lineWidth = lw2 || 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+
+      // 下边缘 (细胞质侧)
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y + gap);
+      for (let i = 1; i < n; i++) ctx.lineTo(points[i].x, points[i].y + gap);
+      ctx.strokeStyle = color1; ctx.lineWidth = lw1 || 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+
+      // 中间填充（浅色）
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y - gap);
+      for (let i = 1; i < n; i++) ctx.lineTo(points[i].x, points[i].y - gap);
+      for (let i = n - 1; i >= 0; i--) ctx.lineTo(points[i].x, points[i].y + gap);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(74,141,199,0.08)';
+      ctx.fill();
+    }
+
+    function drawCircle(ctx, x, y, r, fill, stroke, sw) {
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw || 1.5; ctx.stroke(); }
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, color, width) {
+      const dx = x2 - x1, dy = y2 - y1;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 2) return;
+      const ux = dx / len, uy = dy / len;
+      const headLen = Math.min(10, len * 0.35);
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2 - ux * headLen, y2 - uy * headLen);
+      ctx.strokeStyle = color; ctx.lineWidth = width || 1.8; ctx.lineCap = 'round'; ctx.stroke();
+
+      // 箭头
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ux * headLen - uy * headLen * 0.5, y2 - uy * headLen + ux * headLen * 0.5);
+      ctx.lineTo(x2 - ux * headLen + uy * headLen * 0.5, y2 - uy * headLen - ux * headLen * 0.5);
+      ctx.closePath();
+      ctx.fillStyle = color; ctx.fill();
+    }
+
+    function drawLabel(ctx, x, y, text, color, size, align) {
+      ctx.font = `${size || 14}px "Microsoft YaHei","PingFang SC","黑体",sans-serif`;
+      ctx.textAlign = align || 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = color || C.text;
+      ctx.fillText(text, x, y);
+    }
+
+    // ===== 单个面板绘制 =====
+    // 画布区域: rect {x, y, w, h}
+    // stageProgress: 0→1 映射到4阶段
+
+    function drawEndocytosisPanel(ctx, rect, sp) {
+      const { x, y, w, h } = rect;
+      const cx = x + w / 2;
+      const memY = y + h * 0.38;
+      const memW = w * 0.78;
+      const memL = cx - memW / 2, memR = cx + memW / 2;
+
+      // 细胞质底色
+      ctx.fillStyle = C.cyto;
+      ctx.fillRect(x, memY, w, h - memY + y);
+
+      // 参考虚线(胞外侧)
+      ctx.beginPath(); ctx.setLineDash([4, 6]);
+      ctx.moveTo(memL, y + h * 0.18); ctx.lineTo(memR, y + h * 0.18);
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+
+      // 参考虚线(胞内侧)
+      ctx.beginPath(); ctx.setLineDash([4, 6]);
+      ctx.moveTo(memL, y + h * 0.72); ctx.lineTo(memR, y + h * 0.72);
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+
+      // 区域标注：膜上方为细胞外，膜下方为细胞质
+      drawLabel(ctx, x + 10, y + h * 0.16, '细胞外', C.textLight, 11, 'left');
+      drawLabel(ctx, x + 10, y + h * 0.74, '细胞质', C.textLight, 11, 'left');
+
+      // === 膜形状（四帧：平坦→凹陷→包裹→脱离）===
+      // 体现细胞膜的流动性：膜向细胞内凹陷，包围大分子形成囊泡
+      const N = 80;
+      const pts = [];
+      let pDepth = 0, sigmaWide = w * 0.4, sigmaNarrow = w * 0.25, neckMix = 0;
+
+      // 每阶段前70%保持关键姿态，后30%过渡到下一阶段
+      function stageHold(t) { return clamp(t / 0.7, 0, 1); }
+      function stageTrans(t) { return clamp((t - 0.7) / 0.3, 0, 1); }
+
+      if (sp < 0.25) {
+        // 帧① 起始：膜平坦，大分子位于膜外侧（细胞外）
+        pDepth = 0;
+      } else if (sp < 0.5) {
+        // 帧② 内凹：膜向细胞内凹陷成碗状，无颈口
+        const t = (sp - 0.25) / 0.25;
+        const hold = stageHold(t), tr = stageTrans(t);
+        pDepth = lerp(0, h * 0.22, easeOut(hold));
+        sigmaWide = lerp(w * 0.35, w * 0.13, hold);
+        sigmaNarrow = sigmaWide; // 无颈口：窄分量=宽分量
+        neckMix = 0;             // 纯碗状，不启动颈口
+      } else if (sp < 0.75) {
+        // 帧③ 包裹：膜壁向中间靠拢，颈口形成，大分子被包住
+        const t = (sp - 0.5) / 0.25;
+        const hold = stageHold(t), tr = stageTrans(t);
+        pDepth = lerp(h * 0.22, h * 0.25, hold);
+        sigmaWide = lerp(w * 0.13, w * 0.09, hold);
+        // 颈口从无到有，越来越紧
+        sigmaNarrow = lerp(w * 0.13, w * 0.022, hold);
+        neckMix = lerp(0, 0.88, hold); // 颈口分量从0升到88%
+      } else {
+        // 帧④ 脱离：颈口闭合，膜恢复平坦，囊泡脱离进入细胞质
+        const t = (sp - 0.75) / 0.25;
+        const tr = stageTrans(t);
+        pDepth = lerp(h * 0.25, 0, easeOut(tr));
+        sigmaWide = lerp(w * 0.09, w * 0.22, tr);
+        sigmaNarrow = lerp(w * 0.022, w * 0.10, tr);
+        neckMix = lerp(0.88, 0, tr);
+      }
+
+      for (let i = 0; i < N; i++) {
+        const px = memL + (memW / (N - 1)) * i;
+        const dx = px - cx;
+        let dy = 0;
+        if (pDepth > 0.01) {
+          const d2 = dx * dx;
+          const wide = Math.exp(-d2 / (2 * sigmaWide * sigmaWide));
+          const narrow = Math.exp(-d2 / (2 * sigmaNarrow * sigmaNarrow));
+          // 关键：膜向细胞内（下方）凹陷，dy为正，体现细胞膜流动性
+          dy = (pDepth) * ((1 - neckMix) * wide + neckMix * narrow);
+        }
+        pts.push({ x: px, y: memY + dy });
+      }
+      drawDoubleLineMembrane(ctx, pts, C.membrane, C.membraneL, 2.5, 2.2);
+
+      // === 红色颗粒 ===
+      const particleY0 = memY - 4; // 帧①：颗粒紧贴膜外侧
+      const particleSpread = w * 0.1;
+      const particleR = 5.5;
+      const particles = [
+        { ox: cx - particleSpread * 0.8, oy: particleY0, ang: -2.2 },
+        { ox: cx, oy: particleY0 - h * 0.02, ang: -0.6 },
+        { ox: cx + particleSpread * 0.7, oy: particleY0, ang: 0.3 },
+        { ox: cx + particleSpread * 1.3, oy: particleY0 + h * 0.01, ang: 1.4 },
+        { ox: cx - particleSpread * 1.1, oy: particleY0 + h * 0.02, ang: 2.8 },
+      ];
+
+      // 凹陷底部位置（膜内凹的最深处，位于细胞质一侧）
+      const pocketBotY = memY + (pDepth || 0) * 0.9;
+
+      // === 囊泡（阶段3末~阶段4，在颗粒之前绘制作为容器）===
+      let vesR = 0, vesY = memY;
+      if (sp >= 0.68) {
+        const vt = clamp((sp - 0.68) / 0.32, 0, 1);
+        vesR = lerp(4, 24, Math.pow(vt, 0.55));
+        // 囊泡从凹陷底部脱离，向细胞质深处移动
+        vesY = lerp(memY + h * 0.22, memY + h * 0.30, easeOut(vt));
+        if (vesR > 2) {
+          drawCircle(ctx, cx, vesY, vesR, 'rgba(220,235,248,0.75)', 'rgba(74,141,199,0.55)', 2.2);
+          drawCircle(ctx, cx - vesR * 0.25, vesY - vesR * 0.25, vesR * 0.35, 'rgba(255,255,255,0.3)', null, 0);
+        }
+      }
+
+      // === 绘制红色颗粒（大分子）===
+      for (const p of particles) {
+        let px = p.ox, py = p.oy;
+        if (sp < 0.25) {
+          // 帧①: 大分子在膜外侧（细胞外）靠近细胞膜
+          py = lerp(p.oy, memY - 4, easeInOut(sp / 0.25)); // 紧贴膜上缘 (gap=3.5px)
+        } else if (sp < 0.5) {
+          // 帧②: 大分子随膜内凹沉入凹陷底部（向细胞内方向）
+          const t = (sp - 0.25) / 0.25;
+          px = lerp(p.ox, cx + (p.ox - cx) * 0.25, easeInOut(t));
+          py = lerp(memY - 4, pocketBotY, easeInOut(t));
+        } else if (sp < 0.75) {
+          // 帧③: 大分子被膜包围在凹陷深处
+          const t = (sp - 0.5) / 0.25;
+          px = lerp(cx + (p.ox - cx) * 0.25, cx + (p.ox - cx) * 0.06, t);
+          py = lerp(pocketBotY, pocketBotY + particleR * 2, t);
+        } else {
+          // 帧④: 大分子随囊泡脱离，进入细胞质
+          const t = (sp - 0.75) / 0.25;
+          const inVesicle = clamp((t - 0.12) / 0.7, 0, 1);
+          const innerR = Math.max(vesR - particleR - 1, 4) * 0.78;
+          px = lerp(cx + (p.ox - cx) * 0.08, cx + Math.cos(p.ang) * innerR, inVesicle);
+          py = lerp(pocketBotY + particleR * 2, vesY + Math.sin(p.ang) * innerR, inVesicle);
+        }
+        drawCircle(ctx, px, py, particleR, C.particle, C.particleL, 1.2);
+      }
+
+      // === 箭头 ===
+      if (sp >= 0.1 && sp < 0.5) {
+        // 膜内凹方向箭头（向细胞内）
+        const ay0 = memY - h * 0.02;
+        drawArrow(ctx, cx + 8, ay0, cx + 8, memY + h * 0.08, C.arrow, 1.6);
+      }
+      if (sp >= 0.65) {
+        // 囊泡向细胞质深处移动的箭头
+        drawArrow(ctx, cx + 28, memY + h * 0.08, cx + 28, memY + h * 0.26, C.arrow, 1.6);
+      }
+
+      // === 标注 ===
+      // 面板标题
+      drawLabel(ctx, cx, y + h * 0.07, '胞 吞', '#3a3a3a', 22, 'center');
+      // 阶段指示
+      const stageNames = ['① 起始：大分子位于膜外侧', '② 内凹：膜向细胞内凹陷成碗状', '③ 包裹：膜包围大分子形成囊泡', '④ 脱离：囊泡进入细胞质'];
+      const stageIdx = clamp(Math.floor(sp * 4), 0, 3);
+      drawLabel(ctx, cx, y + h * 0.13, stageNames[stageIdx], C.stageTag, 12, 'center');
+
+      // 固定标注
+      ctx.textAlign = 'left';
+      drawLabel(ctx, memR + 16, memY - h * 0.04, '细胞膜', C.membrane, 13, 'left');
+      drawLabel(ctx, memR + 16, memY - h * 0.13, '大分子', C.particle, 12, 'left');
+      if (sp > 0.5) drawLabel(ctx, memR + 16, memY + h * 0.14, '囊泡', C.membrane, 12, 'left');
+      drawLabel(ctx, memR + 16, memY + h * 0.20, '（消耗能量）', C.textLight, 10, 'left');
+
+      // 指示线 (膜)
+      ctx.beginPath(); ctx.setLineDash([2, 3]);
+      ctx.moveTo(memR + 4, memY); ctx.lineTo(memR + 11, memY);
+      ctx.strokeStyle = C.membrane; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+      drawCircle(ctx, memR + 2, memY, 2, C.membrane, null, 0);
+    }
+
+    function drawExocytosisPanel(ctx, rect, sp) {
+      const { x, y, w, h } = rect;
+      const cx = x + w / 2;
+      const memY = y + h * 0.38;
+      const memW = w * 0.78;
+      const memL = cx - memW / 2, memR = cx + memW / 2;
+
+      // 细胞质底色
+      ctx.fillStyle = C.cyto;
+      ctx.fillRect(x, memY, w, h - memY + y);
+
+      // 参考虚线
+      ctx.beginPath(); ctx.setLineDash([4, 6]);
+      ctx.moveTo(memL, y + h * 0.18); ctx.lineTo(memR, y + h * 0.18);
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.setLineDash([4, 6]);
+      ctx.moveTo(memL, y + h * 0.72); ctx.lineTo(memR, y + h * 0.72);
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+
+      // === 膜形状 ===
+      const N = 60;
+      const pts = [];
+      let bulgeH = 0, bulgeSigma = 0;
+
+      if (sp < 0.5) {
+        // 阶段1-2: 膜平坦 或 微隆
+        bulgeH = 0;
+      } else if (sp < 0.75) {
+        // 阶段3: 膜开口隆起
+        const t = (sp - 0.5) / 0.25;
+        bulgeH = lerp(0, h * 0.08, easeInOut(t));
+        bulgeSigma = w * 0.25;
+      } else {
+        // 阶段4: 膜恢复平坦
+        const t = (sp - 0.75) / 0.25;
+        bulgeH = lerp(h * 0.08, 0, easeOut(t));
+        bulgeSigma = lerp(w * 0.25, w * 0.4, t);
+      }
+
+      for (let i = 0; i < N; i++) {
+        const px = memL + (memW / (N - 1)) * i;
+        const dx = px - cx;
+        let dy = 0;
+        if (bulgeH > 0) {
+          // 隆起 + 阶段4开口（环状）
+          if (sp >= 0.75) {
+            const t = (sp - 0.75) / 0.25;
+            const b = bulgeH * Math.exp(-dx * dx / (2 * bulgeSigma * bulgeSigma));
+            const ring = 1 - Math.exp(-dx * dx / (2 * Math.pow(w * 0.04, 2)));
+            dy = -b * lerp(1, ring, t);
+          } else {
+            dy = -bulgeH * Math.exp(-dx * dx / (2 * bulgeSigma * bulgeSigma));
+          }
+        }
+        pts.push({ x: px, y: memY + dy });
+      }
+      drawDoubleLineMembrane(ctx, pts, C.membrane, C.membraneL, 2.5, 2.2);
+
+      // === 囊泡 ===
+      const vesR = 18;
+      let vesY, vesAlpha;
+      if (sp < 0.25) {
+        // 阶段1: 囊泡在深处
+        vesY = lerp(memY + h * 0.35, memY + h * 0.15, easeInOut(sp / 0.25));
+        vesAlpha = 1;
+      } else if (sp < 0.5) {
+        // 阶段2: 囊泡靠近膜并接触
+        const t = (sp - 0.25) / 0.25;
+        vesY = lerp(memY + h * 0.15, memY + vesR * 0.5, easeInOut(t));
+        vesAlpha = 1;
+      } else if (sp < 0.75) {
+        // 阶段3: 囊泡融入膜
+        const t = (sp - 0.5) / 0.25;
+        vesY = memY;
+        vesAlpha = lerp(1, 0, easeOut(t));
+      } else {
+        // 阶段4: 囊泡消失
+        vesAlpha = 0;
+      }
+
+      if (vesAlpha > 0.01) {
+        ctx.globalAlpha = vesAlpha;
+        drawCircle(ctx, cx, vesY, vesR, null, 'rgba(240,160,64,0.7)', 2.5);
+        drawCircle(ctx, cx, vesY, vesR, 'rgba(240,160,64,0.1)', null, 0);
+        // 囊泡内的绿色颗粒
+        for (let i = 0; i < 5; i++) {
+          const a = i / 5 * Math.PI * 2;
+          const r = vesR * 0.45;
+          drawCircle(ctx, cx + Math.cos(a) * r, vesY + Math.sin(a) * r, 3.5, C.secretion, C.secretionL, 1);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // === 释放的绿色颗粒 ===
+      if (sp >= 0.55) {
+        const releaseT = clamp((sp - 0.55) / 0.45, 0, 1);
+        const dots = [
+          { ox: cx - 12, oy: memY - 10 },
+          { ox: cx + 8, oy: memY - 18 },
+          { ox: cx - 5, oy: memY - 25 },
+          { ox: cx + 14, oy: memY - 8 },
+          { ox: cx - 18, oy: memY - 15 },
+        ];
+        for (const d of dots) {
+          const dy = -releaseT * h * 0.25;
+          const alpha = clamp(releaseT * 2.5, 0, 1) * clamp((1 - releaseT) * 3, 0, 1);
+          if (alpha > 0.02) {
+            ctx.globalAlpha = alpha;
+            drawCircle(ctx, d.ox, d.oy + dy, 3.8, C.secretion, C.secretionL, 1);
+            ctx.globalAlpha = 1;
+          }
+        }
+      }
+
+      // === 箭头 ===
+      if (sp < 0.45) {
+        // 囊泡向上箭头
+        drawArrow(ctx, cx + 28, memY + h * 0.28, cx + 28, memY + h * 0.04, C.arrow, 1.6);
+      }
+      if (sp >= 0.6) {
+        // 释放向上箭头
+        drawArrow(ctx, cx - 22, memY - h * 0.02, cx - 22, memY - h * 0.22, C.arrow, 1.6);
+      }
+
+      // === 标注 ===
+      drawLabel(ctx, cx, y + h * 0.07, '胞 吐', '#3a3a3a', 22, 'center');
+      const stageNamesEx = ['① 囊泡靠近膜', '② 囊泡与膜融合', '③ 膜开口', '④ 内容物释放到细胞外'];
+      const stageIdx = clamp(Math.floor(sp * 4), 0, 3);
+      drawLabel(ctx, cx, y + h * 0.13, stageNamesEx[stageIdx], C.stageTag, 12, 'center');
+
+      // 固定标注
+      ctx.textAlign = 'left';
+      drawLabel(ctx, memR + 16, memY - h * 0.04, '细胞膜', C.membrane, 13, 'left');
+      drawLabel(ctx, memR + 16, memY + h * 0.10, '囊泡', C.vesicleO, 12, 'left');
+      if (sp > 0.4) drawLabel(ctx, memR + 16, memY - h * 0.13, '分泌物', C.secretion, 12, 'left');
+
+      // 指示线
+      ctx.beginPath(); ctx.setLineDash([2, 3]);
+      ctx.moveTo(memR + 4, memY); ctx.lineTo(memR + 11, memY);
+      ctx.strokeStyle = C.membrane; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+      drawCircle(ctx, memR + 2, memY, 2, C.membrane, null, 0);
+    }
+
+    // ===== 主渲染 =====
+    function render(p) {
+      const W = innerWidth, H = innerHeight;
+      const halfW = W / 2;
+      const margin = 32;
+      const panelTop = margin + 10;
+      const panelH = H - margin * 2 - 55;
+      const leftRect = { x: margin, y: panelTop, w: halfW - margin * 1.5, h: panelH };
+      const rightRect = { x: halfW + margin * 0.5, y: panelTop, w: halfW - margin * 1.5, h: panelH };
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+
+      // 两面板
+      drawEndocytosisPanel(ctx, leftRect, p);
+      drawExocytosisPanel(ctx, rightRect, p);
+
+      // 分隔线
+      ctx.beginPath();
+      ctx.moveTo(halfW, panelTop + 20); ctx.lineTo(halfW, panelTop + panelH - 20);
+      ctx.strokeStyle = C.panelDiv; ctx.lineWidth = 2; ctx.stroke();
+
+      // 底部总结
+      const botY = H - margin - 10;
+      // 左侧总结
+      ctx.fillStyle = 'rgba(224,85,74,0.1)';
+      ctx.beginPath(); roundRect(ctx, margin, botY - 18, halfW - margin * 2, 36, 8); ctx.fill();
+      drawLabel(ctx, W * 0.25, botY, '胞吞：物质进入细胞', C.particle, 15, 'center');
+
+      // 右侧总结
+      ctx.fillStyle = 'rgba(76,175,132,0.1)';
+      ctx.beginPath(); roundRect(ctx, halfW + margin * 0.5, botY - 18, halfW - margin * 2, 36, 8); ctx.fill();
+      drawLabel(ctx, W * 0.75, botY, '胞吐：物质排出细胞', C.secretion, 15, 'center');
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+    }
+
+    // ===== 循环 =====
+    function tick(ts) {
+      requestAnimationFrame(tick);
+      if (lastTs === 0) { lastTs = ts; render(0); return; }
+      const delta = Math.min((ts - lastTs) / 1000, 0.06);
+      lastTs = ts;
+      if (playing) {
+        progress = (progress + delta / LOOP_DURATION * speed) % 1;
+      }
+      render(progress);
+    }
+
+    // ===== 按钮 =====
+    window.togglePlay = () => { playing = !playing; document.getElementById('btnPlay').classList.toggle('on', playing); };
+    window.toggleSpeed = () => {
+      const speeds = [0.5, 1, 2], labels = ['0.5×', '1×', '2×'];
+      let i = speeds.indexOf(speed); i = (i + 1) % 3; speed = speeds[i];
+      document.getElementById('btnSpeed').textContent = labels[i];
+    };
+    window.resetAnim = () => { progress = 0; };
+
+    window.addEventListener('keydown', e => {
+      if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+      if (e.key === 'r' || e.key === 'R') resetAnim();
+      if (e.key === 'ArrowRight') progress = clamp(progress + 0.02, 0, 0.999);
+      if (e.key === 'ArrowLeft') progress = clamp(progress - 0.02, 0, 0.999);
+    });
+
+    // 点击面板可拖动进度
+    canvas.addEventListener('pointerdown', e => { progress = clamp(e.clientX / innerWidth, 0, 0.999); });
+    canvas.addEventListener('pointermove', e => { if (e.buttons) progress = clamp(e.clientX / innerWidth, 0, 0.999); });
+
+    requestAnimationFrame(tick);
+  </script>
+</body>
+
+</html>
