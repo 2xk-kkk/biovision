@@ -62,11 +62,59 @@
       border-color: #5b9bd5;
       color: #fff
     }
+
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 20;
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: 1.5px solid #c0c8d0;
+      background: rgba(255, 255, 255, 0.85);
+      color: #555;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .2s;
+      backdrop-filter: blur(6px)
+    }
+
+    .back-btn:hover {
+      background: #fff;
+      border-color: #5b9bd5;
+      color: #5b9bd5
+    }
+
+    .switch-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: 1.5px solid #c0c8d0;
+      background: rgba(255, 255, 255, 0.85);
+      color: #555;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .2s;
+      backdrop-filter: blur(6px)
+    }
+
+    .switch-btn:hover {
+      background: #fff;
+      border-color: #5b9bd5;
+      color: #5b9bd5
+    }
   </style>
 </head>
 
 <body>
   <canvas id="cv"></canvas>
+  <button class="back-btn" onclick="location.href='main.html'" title="返回主页面">← 返回</button>
+  <button class="switch-btn" onclick="location.href='baotunbaotu2.html'" title="切换到分泌蛋白的合成与运输">分泌蛋白合成与运输 →</button>
   <div class="controls">
     <button class="ctrl-btn on" id="btnPlay" onclick="togglePlay()">⏯ 播放</button>
     <button class="ctrl-btn" id="btnSpeed" onclick="toggleSpeed()">1×</button>
