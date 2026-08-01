@@ -586,6 +586,7 @@
         /* 左列 - 做题贡献 */
         .contribution-card {
             padding: 20px;
+            overflow: visible;
         }
 
         .contribution-stats {
@@ -611,7 +612,7 @@
             color: #1ab9c4;
         }
 
-        /* 日历热力图 - 三月并排，每月独立网格 */
+        /* 日历热力图 - 三月并排，每月独立网格，支持滑动 */
         .heatmap-container {
             display: flex;
             gap: 10px;
@@ -672,17 +673,17 @@
         .heatmap-cell[data-tooltip]:hover::after {
             content: attr(data-tooltip);
             position: absolute;
-            bottom: calc(100% + 4px);
+            bottom: calc(100% + 6px);
             left: 50%;
             transform: translateX(-50%);
             background: #333;
             color: #fff;
-            padding: 3px 7px;
+            padding: 4px 9px;
             border-radius: 4px;
-            font-size: 10px;
+            font-size: 11px;
             white-space: nowrap;
             pointer-events: none;
-            z-index: 10;
+            z-index: 9999;
         }
 
         .heatmap-cell.placeholder {
@@ -1275,140 +1276,12 @@
                 <h3 class="progress-title">五本教材掌握进度</h3>
                 <div class="progress-summary">
                     <span class="progress-summary-label">五本教材平均掌握率</span>
-                    <span class="progress-summary-value">0%</span>
+                    <span class="progress-summary-value" id="avgMasteryRate">0%</span>
                 </div>
             </div>
-            
-            <div class="progress-grid">
-                <!-- 必修一：分子与细胞 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('必修一：分子与细胞')">
-                    <div class="subject-icon">🔬</div>
-                    <div class="subject-ring">
-                        <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
-                        </svg>
-                        <div class="subject-ring-text">
-                            <div class="subject-ring-percent">0%</div>
-                            <div class="subject-ring-label">掌握率</div>
-                        </div>
-                    </div>
-                    <div class="subject-name">必修一：分子与细胞</div>
-                    <div class="subject-stats">
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">186</div>
-                            <div class="subject-stat-label">共X题</div>
-                        </div>
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">0%</div>
-                            <div class="subject-stat-label">做题进度</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 必修二：遗传与进化 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('必修二：遗传与进化')">
-                    <div class="subject-icon">🧬</div>
-                    <div class="subject-ring">
-                        <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
-                        </svg>
-                        <div class="subject-ring-text">
-                            <div class="subject-ring-percent">0%</div>
-                            <div class="subject-ring-label">掌握率</div>
-                        </div>
-                    </div>
-                    <div class="subject-name">必修二：遗传与进化</div>
-                    <div class="subject-stats">
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">198</div>
-                            <div class="subject-stat-label">共X题</div>
-                        </div>
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">0%</div>
-                            <div class="subject-stat-label">做题进度</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 选修一：稳态与调节 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('选修一：稳态与调节')">
-                    <div class="subject-icon">⚖️</div>
-                    <div class="subject-ring">
-                        <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
-                        </svg>
-                        <div class="subject-ring-text">
-                            <div class="subject-ring-percent">0%</div>
-                            <div class="subject-ring-label">掌握率</div>
-                        </div>
-                    </div>
-                    <div class="subject-name">选修一：稳态与调节</div>
-                    <div class="subject-stats">
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">175</div>
-                            <div class="subject-stat-label">共X题</div>
-                        </div>
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">0%</div>
-                            <div class="subject-stat-label">做题进度</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 选修二：生物与环境 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('选修二：生物与环境')">
-                    <div class="subject-icon">🌿</div>
-                    <div class="subject-ring">
-                        <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
-                        </svg>
-                        <div class="subject-ring-text">
-                            <div class="subject-ring-percent">0%</div>
-                            <div class="subject-ring-label">掌握率</div>
-                        </div>
-                    </div>
-                    <div class="subject-name">选修二：生物与环境</div>
-                    <div class="subject-stats">
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">162</div>
-                            <div class="subject-stat-label">共X题</div>
-                        </div>
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">0%</div>
-                            <div class="subject-stat-label">做题进度</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 选修三：生物技术与工程 -->
-                <div class="subject-card" onclick="window.location.href='textbook-chapter.html?textbook=' + encodeURIComponent('选修三：生物技术与工程')">
-                    <div class="subject-icon">🧫</div>
-                    <div class="subject-ring">
-                        <svg viewBox="0 0 100 100">
-                            <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
-                            <circle class="subject-ring-progress" cx="50" cy="50" r="45" data-percent="0"/>
-                        </svg>
-                        <div class="subject-ring-text">
-                            <div class="subject-ring-percent">0%</div>
-                            <div class="subject-ring-label">掌握率</div>
-                        </div>
-                    </div>
-                    <div class="subject-name">选修三：生物技术与工程</div>
-                    <div class="subject-stats">
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">156</div>
-                            <div class="subject-stat-label">共X题</div>
-                        </div>
-                        <div class="subject-stat">
-                            <div class="subject-stat-value">0%</div>
-                            <div class="subject-stat-label">做题进度</div>
-                        </div>
-                    </div>
-                </div>
+
+            <div class="progress-grid" id="progressGrid">
+                <!-- 由JS动态生成 -->
             </div>
         </div>
     </div>
@@ -1695,8 +1568,9 @@
                 cursor.setMonth(cursor.getMonth() + 1);
             }
 
-            // 为每个月渲染一个日历块
-            months.forEach(({ year, month }) => {
+            // 只渲染最近3个月，从左到右从小到大（时间顺序）
+            const displayMonths = months.slice(-3);
+            displayMonths.forEach(({ year, month }) => {
                 const totalDays = new Date(year, month + 1, 0).getDate();
                 const firstDay = new Date(year, month, 1).getDay(); // 1号的星期几
 
@@ -1826,6 +1700,86 @@
 
         loadUserInfo();
         loadContributionData();
+        loadTextbookProgress();
+
+        // ==================== 五本教材掌握进度 ====================
+
+        const textbookMeta = [
+            { apiName: '必修一：分子与细胞', shortName: '必修一：分子与细胞', icon: '🔬', link: '必修一：分子与细胞' },
+            { apiName: '必修二：遗传与进化', shortName: '必修二：遗传与进化', icon: '🧬', link: '必修二：遗传与进化' },
+            { apiName: '选择性必修一：稳态与调节', shortName: '选修一：稳态与调节', icon: '⚖️', link: '选修一：稳态与调节' },
+            { apiName: '选择性必修二：生物与环境', shortName: '选修二：生物与环境', icon: '🌿', link: '选修二：生物与环境' },
+            { apiName: '选择性必修三：生物技术与工程', shortName: '选修三：生物技术与工程', icon: '🧫', link: '选修三：生物技术与工程' },
+        ];
+
+        async function loadTextbookProgress() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) return;
+
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/textbook-progress`);
+                const data = await resp.json();
+                if (!data.success) return;
+
+                const textbooks = data.data.textbooks;
+                const avgRate = data.data.average_rate;
+                document.getElementById('avgMasteryRate').textContent = avgRate + '%';
+
+                const grid = document.getElementById('progressGrid');
+                grid.innerHTML = '';
+
+                textbooks.forEach((tb, i) => {
+                    const meta = textbookMeta.find(m => m.apiName === tb.name) || {};
+                    const shortName = meta.shortName || tb.name;
+                    const icon = meta.icon || '📖';
+                    const link = meta.link || tb.name;
+                    const rate = tb.rate || 0;
+                    const total = tb.total || 0;
+
+                    // SVG ring: circumference = 2*PI*45 ≈ 283
+                    const circumference = 283;
+                    const offset = circumference * (1 - rate / 100);
+
+                    const card = document.createElement('div');
+                    card.className = 'subject-card';
+                    card.onclick = () => {
+                        window.location.href = 'textbook-chapter.html?textbook=' + encodeURIComponent(link);
+                    };
+                    card.innerHTML = `
+                        <div class="subject-icon">${icon}</div>
+                        <div class="subject-ring">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="subject-ring-bg" cx="50" cy="50" r="45"/>
+                                <circle class="subject-ring-progress" cx="50" cy="50" r="45"
+                                    style="stroke-dashoffset: ${offset};"
+                                    data-percent="${rate}"/>
+                            </svg>
+                            <div class="subject-ring-text">
+                                <div class="subject-ring-percent">${rate}%</div>
+                                <div class="subject-ring-label">掌握率</div>
+                            </div>
+                        </div>
+                        <div class="subject-name">${shortName}</div>
+                        <div class="subject-stats">
+                            <div class="subject-stat">
+                                <div class="subject-stat-value">${total}</div>
+                                <div class="subject-stat-label">共${total}题</div>
+                            </div>
+                            <div class="subject-stat">
+                                <div class="subject-stat-value">${rate}%</div>
+                                <div class="subject-stat-label">做题进度</div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                console.error('加载教材进度失败:', e);
+            }
+        }
         
         // 下拉菜单交互
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {

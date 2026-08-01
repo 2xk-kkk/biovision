@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, Query
-from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service
+from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service, get_textbook_progress_service, get_textbook_chapter_progress_service
 from utils.jwt_utils import verify_jwt
 from utils.response import ApiResponse
 
@@ -111,3 +111,15 @@ def user_daily_answers(user_id: int, days: int = Query(90)):
 def question_bank_structure():
     """获取题库的层级结构：教材→章→节，含各节点题目数量"""
     return get_question_bank_structure_service()
+
+
+@router.get("/user/{user_id}/textbook-progress")
+def textbook_progress(user_id: int):
+    """获取用户每本教材的做题进度"""
+    return get_textbook_progress_service(user_id)
+
+
+@router.get("/textbook/chapters")
+def textbook_chapters(textbook: str = Query(...), user_id: int = Query(...)):
+    """获取某本教材各章节的做题进度（含用户数据）"""
+    return get_textbook_chapter_progress_service(textbook, user_id)

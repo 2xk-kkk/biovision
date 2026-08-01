@@ -1,5 +1,5 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure, get_textbook_progress, get_textbook_chapter_progress
 from utils.response import ApiResponse
 import json
 import os
@@ -185,6 +185,45 @@ def get_user_daily_answers(user_id, days=90):
         })
     except Exception as e:
         return ApiResponse.error(msg=f"获取每日做题数据失败: {str(e)}")
+    finally:
+        db.close()
+
+
+def get_textbook_chapter_progress_service(textbook, user_id):
+    """获取某本教材各章节的做题进度"""
+    db = get_db_connection()
+    try:
+        chapters = get_textbook_chapter_progress(db, textbook, user_id)
+        total = sum(c['total'] for c in chapters)
+        answered = sum(c['answered'] for c in chapters)
+        correct = sum(c['correct'] for c in chapters)
+        accuracy = round((correct / total) * 100) if total > 0 else 0
+        return ApiResponse.success(data={
+            'textbook': textbook,
+            'chapters': chapters,
+            'total': total,
+            'answered': answered,
+            'correct': correct,
+            'accuracy': accuracy
+        })
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取章节进度失败: {str(e)}")
+    finally:
+        db.close()
+
+
+def get_textbook_progress_service(user_id):
+    """获取用户每本教材的做题进度"""
+    db = get_db_connection()
+    try:
+        progress = get_textbook_progress(db, user_id)
+        avg_rate = round(sum(p['rate'] for p in progress) / len(progress)) if progress else 0
+        return ApiResponse.success(data={
+            'textbooks': progress,
+            'average_rate': avg_rate
+        })
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取教材进度失败: {str(e)}")
     finally:
         db.close()
 

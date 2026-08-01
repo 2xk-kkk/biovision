@@ -361,6 +361,149 @@ def get_total_answer_count(db, user_id):
     return row[0] if row else 0
 
 
+def get_textbook_chapter_progress(db, textbook, user_id):
+    """获取某本教材的章节做题进度。
+    返回 [{title, sections: [{title, total, answered, correct, accuracy}], total, answered, correct, accuracy}]"""
+    textbook = normalize_textbook_name(textbook)
+    cursor = db.cursor()
+
+    # 获取该教材所有章节和节
+    cursor.execute('''
+        SELECT chapter, section, COUNT(*)
+        FROM questions
+        WHERE textbook IS NOT NULL AND textbook != ''
+        AND (textbook = ? OR textbook LIKE ?)
+        GROUP BY chapter, section
+        ORDER BY chapter, section
+    ''', (textbook, f'%{textbook.split("：")[-1] if "：" in textbook else textbook}%'))
+
+    # Build structure from raw data
+    chapters_map = {}
+    for row in cursor.fetchall():
+        ch, sec, cnt = row
+        ch = ch if ch else '综合'
+        sec = sec if sec else '综合'
+        if ch not in chapters_map:
+            chapters_map[ch] = {'sections': {}, 'total': 0}
+        chapters_map[ch]['sections'][sec] = {'total': cnt, 'answered': 0, 'correct': 0}
+        chapters_map[ch]['total'] += cnt
+
+    # 获取用户已做题数
+    cursor.execute('''
+        SELECT q.chapter, q.section, COUNT(*), SUM(ua.is_correct)
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ? AND (q.textbook = ? OR q.textbook LIKE ?)
+        GROUP BY q.chapter, q.section
+    ''', (user_id, textbook, f'%{textbook.split("：")[-1] if "：" in textbook else textbook}%'))
+
+    for row in cursor.fetchall():
+        ch, sec, answered, correct = row
+        ch = ch if ch else '综合'
+        sec = sec if sec else '综合'
+        if ch in chapters_map and sec in chapters_map[ch]['sections']:
+            chapters_map[ch]['sections'][sec]['answered'] = answered or 0
+            chapters_map[ch]['sections'][sec]['correct'] = correct or 0
+
+    # Convert to ordered list
+    result = []
+    for ch_title in chapters_map:
+        ch_data = chapters_map[ch_title]
+        sections = []
+        ch_answered = 0
+        ch_correct = 0
+        for sec_title, sec_data in ch_data['sections'].items():
+            acc = round((sec_data['correct'] / sec_data['total']) * 100) if sec_data['total'] > 0 else 0
+            sections.append({
+                'title': sec_title,
+                'total': sec_data['total'],
+                'answered': sec_data['answered'],
+                'correct': sec_data['correct'],
+                'accuracy': acc
+            })
+            ch_answered += sec_data['answered']
+            ch_correct += sec_data['correct']
+
+        ch_total = ch_data['total']
+        ch_acc = round((ch_correct / ch_total) * 100) if ch_total > 0 else 0
+        result.append({
+            'title': ch_title,
+            'sections': sections,
+            'total': ch_total,
+            'answered': ch_answered,
+            'correct': ch_correct,
+            'accuracy': ch_acc
+        })
+
+    return result
+
+
+def get_textbook_progress(db, user_id):
+    """获取用户每本教材的做题进度，返回列表 [{name, total, answered, correct, rate}]"""
+    # 先拿所有教材题目数
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT textbook, COUNT(*) FROM questions
+        WHERE textbook IS NOT NULL AND textbook != ''
+        GROUP BY textbook
+    ''')
+    raw_counts = {}
+    for row in cursor.fetchall():
+        name = normalize_textbook_name(row[0])
+        raw_counts[name] = raw_counts.get(name, 0) + row[1]
+
+    # 拿用户已做题数
+    cursor.execute('''
+        SELECT q.textbook, COUNT(*)
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ? AND q.textbook IS NOT NULL AND q.textbook != ''
+        GROUP BY q.textbook
+    ''', (user_id,))
+    raw_answered = {}
+    for row in cursor.fetchall():
+        name = normalize_textbook_name(row[0])
+        raw_answered[name] = raw_answered.get(name, 0) + row[1]
+
+    # 拿用户做对的题数
+    cursor.execute('''
+        SELECT q.textbook, COUNT(*)
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ? AND ua.is_correct = 1 AND q.textbook IS NOT NULL AND q.textbook != ''
+        GROUP BY q.textbook
+    ''', (user_id,))
+    raw_correct = {}
+    for row in cursor.fetchall():
+        name = normalize_textbook_name(row[0])
+        raw_correct[name] = raw_correct.get(name, 0) + row[1]
+
+    # 按固定顺序排列
+    textbook_order = [
+        '必修一：分子与细胞',
+        '必修二：遗传与进化',
+        '选择性必修一：稳态与调节',
+        '选择性必修二：生物与环境',
+        '选择性必修三：生物技术与工程',
+    ]
+
+    result = []
+    for name in textbook_order:
+        total = raw_counts.get(name, 0)
+        answered = raw_answered.get(name, 0)
+        correct = raw_correct.get(name, 0)
+        rate = round((answered / total) * 100) if total > 0 else 0
+        result.append({
+            'name': name,
+            'total': total,
+            'answered': answered,
+            'correct': correct,
+            'rate': rate
+        })
+
+    return result
+
+
 def get_question_bank_structure(db):
     """获取题库结构：教材→章→节，含每题数量"""
     cursor = db.cursor()

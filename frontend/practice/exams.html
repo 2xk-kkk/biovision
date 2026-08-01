@@ -1199,6 +1199,7 @@
         let currentRegion = '全部';
         let years = [];
         let regions = [];
+        let allRegions = [];
 
         async function loadExams(year = null, region = null) {
             const container = document.getElementById('examContainer');
@@ -1208,10 +1209,10 @@
                 if (year && year !== '全部') params.push(`year=${year}`);
                 if (region && region !== '全部') params.push(`region=${encodeURIComponent(region)}`);
                 if (params.length > 0) url += '?' + params.join('&');
-                
+
                 const response = await fetch(url);
                 const result = await response.json();
-                
+
                 if (!result.success) {
                     container.innerHTML = `
                         <div class="empty-state">
@@ -1229,9 +1230,14 @@
                 years = data.years || [];
                 regions = data.regions || [];
 
+                // 只在全部加载时更新地区列表，筛选时保持完整列表不变
+                if (!region || region === '全部') {
+                    allRegions = [...regions];
+                }
+
                 updateStats(stats);
                 updateYearSelect(years);
-                updateRegionTags(regions);
+                updateRegionTags(allRegions.length > 0 ? allRegions : regions);
 
                 if (exams.length === 0) {
                     container.innerHTML = `

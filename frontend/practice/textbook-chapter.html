@@ -973,398 +973,136 @@
     </div>
 
     <script>
-        const textbooks = {
-            '必修一：分子与细胞': {
-                name: '分子与细胞',
-                chapters: [
-                    {
-                        id: 'c1',
-                        title: '第1章 走近细胞',
-                        icon: '🔬',
-                        sections: [
-                            { id: 's1-1', title: '第1节 细胞是生命活动的基本单位', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's1-2', title: '第2节 细胞的多样性和统一性', questions: 30, easy: 12, medium: 12, hard: 6 }
-                        ]
-                    },
-                    {
-                        id: 'c2',
-                        title: '第2章 组成细胞的分子',
-                        icon: '🧪',
-                        sections: [
-                            { id: 's2-1', title: '第1节 细胞中的元素和化合物', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's2-2', title: '第2节 细胞中的无机物', questions: 18, easy: 7, medium: 7, hard: 4 },
-                            { id: 's2-3', title: '第3节 细胞中的糖类和脂质', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's2-4', title: '第4节 蛋白质是生命活动的主要承担者', questions: 28, easy: 11, medium: 12, hard: 5 },
-                            { id: 's2-5', title: '第5节 核酸是遗传信息的携带者', questions: 25, easy: 10, medium: 10, hard: 5 }
-                        ]
-                    },
-                    {
-                        id: 'c3',
-                        title: '第3章 细胞的基本结构',
-                        icon: '🏠',
-                        sections: [
-                            { id: 's3-1', title: '第1节 细胞膜的结构和功能', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's3-2', title: '第2节 细胞器之间的分工合作', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's3-3', title: '第3节 细胞核的结构和功能', questions: 20, easy: 8, medium: 8, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c4',
-                        title: '第4章 细胞的物质输入和输出',
-                        icon: '🔄',
-                        sections: [
-                            { id: 's4-1', title: '第1节 被动运输', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's4-2', title: '第2节 主动运输与胞吞、胞吐', questions: 22, easy: 9, medium: 9, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c5',
-                        title: '第5章 细胞的能量供应和利用',
-                        icon: '⚡',
-                        sections: [
-                            { id: 's5-1', title: '第1节 降低化学反应活化能的酶', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's5-2', title: '第2节 细胞的能量“货币”ATP', questions: 18, easy: 7, medium: 7, hard: 4 },
-                            { id: 's5-3', title: '第3节 细胞呼吸的原理和应用', questions: 28, easy: 11, medium: 12, hard: 5 },
-                            { id: 's5-4', title: '第4节 光合作用与能量转化', questions: 32, easy: 13, medium: 13, hard: 6 }
-                        ]
-                    },
-                    {
-                        id: 'c6',
-                        title: '第6章 细胞的生命历程',
-                        icon: '⏳',
-                        sections: [
-                            { id: 's6-1', title: '第1节 细胞的增殖', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's6-2', title: '第2节 细胞的分化', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's6-3', title: '第3节 细胞的衰老和死亡', questions: 18, easy: 7, medium: 7, hard: 4 }
-                        ]
-                    }
-                ]
-            },
-            '必修二：遗传与进化': {
-                name: '遗传与进化',
-                chapters: [
-                    {
-                        id: 'c1',
-                        title: '第1章 遗传因子的发现',
-                        icon: '🧬',
-                        sections: [
-                            { id: 's1-1', title: '第1节 孟德尔的豌豆杂交实验（一）', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's1-2', title: '第2节 孟德尔的豌豆杂交实验（二）', questions: 35, easy: 14, medium: 14, hard: 7 }
-                        ]
-                    },
-                    {
-                        id: 'c2',
-                        title: '第2章 基因和染色体的关系',
-                        icon: '🧫',
-                        sections: [
-                            { id: 's2-1', title: '第1节 减数分裂和受精作用', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's2-2', title: '第2节 基因在染色体上', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's2-3', title: '第3节 伴性遗传', questions: 28, easy: 11, medium: 12, hard: 5 }
-                        ]
-                    },
-                    {
-                        id: 'c3',
-                        title: '第3章 基因的本质',
-                        icon: '📊',
-                        sections: [
-                            { id: 's3-1', title: '第1节 DNA是主要的遗传物质', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's3-2', title: '第2节 DNA的结构', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's3-3', title: '第3节 DNA的复制', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's3-4', title: '第4节 基因通常是有遗传效应的DNA片段', questions: 18, easy: 7, medium: 7, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c4',
-                        title: '第4章 基因的表达',
-                        icon: '📝',
-                        sections: [
-                            { id: 's4-1', title: '第1节 基因指导蛋白质的合成', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's4-2', title: '第2节 基因表达与性状的关系', questions: 25, easy: 10, medium: 10, hard: 5 }
-                        ]
-                    },
-                    {
-                        id: 'c5',
-                        title: '第5章 基因突变及其他变异',
-                        icon: '🔀',
-                        sections: [
-                            { id: 's5-1', title: '第1节 基因突变和基因重组', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's5-2', title: '第2节 染色体变异', questions: 28, easy: 11, medium: 12, hard: 5 },
-                            { id: 's5-3', title: '第3节 人类遗传病', questions: 20, easy: 8, medium: 8, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c6',
-                        title: '第6章 生物的进化',
-                        icon: '🦖',
-                        sections: [
-                            { id: 's6-1', title: '第1节 生物有共同祖先的证据', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's6-2', title: '第2节 自然选择与适应的形成', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's6-3', title: '第3节 种群基因组成的变化与物种的形成', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's6-4', title: '第4节 协同进化与生物多样性的形成', questions: 22, easy: 9, medium: 9, hard: 4 }
-                        ]
-                    }
-                ]
-            },
-            '选修一：稳态与调节': {
-                name: '稳态与调节',
-                chapters: [
-                    {
-                        id: 'c1',
-                        title: '第1章 人体的内环境与稳态',
-                        icon: '🧠',
-                        sections: [
-                            { id: 's1-1', title: '第1节 细胞生活的环境', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's1-2', title: '第2节 内环境的稳态', questions: 25, easy: 10, medium: 10, hard: 5 }
-                        ]
-                    },
-                    {
-                        id: 'c2',
-                        title: '第2章 神经调节',
-                        icon: '⚡',
-                        sections: [
-                            { id: 's2-1', title: '第1节 神经调节的结构基础', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's2-2', title: '第2节 神经调节的基本方式', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's2-3', title: '第3节 神经冲动的产生和传导', questions: 28, easy: 11, medium: 12, hard: 5 },
-                            { id: 's2-4', title: '第4节 神经系统的分级调节', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's2-5', title: '第5节 人脑的高级功能', questions: 20, easy: 8, medium: 8, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c3',
-                        title: '第3章 体液调节',
-                        icon: '🧪',
-                        sections: [
-                            { id: 's3-1', title: '第1节 激素与内分泌系统', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's3-2', title: '第2节 激素调节的过程', questions: 28, easy: 11, medium: 12, hard: 5 },
-                            { id: 's3-3', title: '第3节 神经调节与体液调节的关系', questions: 22, easy: 9, medium: 9, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c4',
-                        title: '第4章 免疫调节',
-                        icon: '🛡️',
-                        sections: [
-                            { id: 's4-1', title: '第1节 免疫系统的组成和功能', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's4-2', title: '第2节 特异性免疫', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's4-3', title: '第3节 免疫失调', questions: 25, easy: 10, medium: 10, hard: 5 }
-                        ]
-                    },
-                    {
-                        id: 'c5',
-                        title: '第5章 植物生命活动的调节',
-                        icon: '🌱',
-                        sections: [
-                            { id: 's5-1', title: '第1节 植物生长素', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's5-2', title: '第2节 其他植物激素', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's5-3', title: '第3节 植物生长调节剂的应用', questions: 18, easy: 7, medium: 7, hard: 4 }
-                        ]
-                    }
-                ]
-            },
-            '选修二：生物与环境': {
-                name: '生物与环境',
-                chapters: [
-                    {
-                        id: 'c1',
-                        title: '第1章 种群及其动态',
-                        icon: '🐦',
-                        sections: [
-                            { id: 's1-1', title: '第1节 种群的数量特征', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's1-2', title: '第2节 种群数量的变化', questions: 28, easy: 11, medium: 12, hard: 5 },
-                            { id: 's1-3', title: '第3节 影响种群数量变化的因素', questions: 20, easy: 8, medium: 8, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c2',
-                        title: '第2章 群落及其演替',
-                        icon: '🌳',
-                        sections: [
-                            { id: 's2-1', title: '第1节 群落的结构', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's2-2', title: '第2节 群落的主要类型', questions: 20, easy: 8, medium: 8, hard: 4 },
-                            { id: 's2-3', title: '第3节 群落的演替', questions: 22, easy: 9, medium: 9, hard: 4 }
-                        ]
-                    },
-                    {
-                        id: 'c3',
-                        title: '第3章 生态系统及其稳定性',
-                        icon: '🌍',
-                        sections: [
-                            { id: 's3-1', title: '第1节 生态系统的结构', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's3-2', title: '第2节 生态系统的能量流动', questions: 28, easy: 11, medium: 12, hard: 5 },
-                            { id: 's3-3', title: '第3节 生态系统的物质循环', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's3-4', title: '第4节 生态系统的信息传递', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's3-5', title: '第5节 生态系统的稳定性', questions: 25, easy: 10, medium: 10, hard: 5 }
-                        ]
-                    },
-                    {
-                        id: 'c4',
-                        title: '第4章 人与环境',
-                        icon: '👥',
-                        sections: [
-                            { id: 's4-1', title: '第1节 人类活动对生态环境的影响', questions: 22, easy: 9, medium: 9, hard: 4 },
-                            { id: 's4-2', title: '第2节 生物多样性及其保护', questions: 25, easy: 10, medium: 10, hard: 5 },
-                            { id: 's4-3', title: '第3节 生态工程', questions: 20, easy: 8, medium: 8, hard: 4 }
-                        ]
-                    }
-                ]
-            },
-            '选修三：生物技术与工程': {
-                name: '生物技术与工程',
-                chapters: [
-                    {
-                        id: 'c1',
-                        title: '第1章 基因工程',
-                        icon: '🔬',
-                        sections: [
-                            { id: 's1-1', title: '第1节 重组DNA技术的基本工具', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's1-2', title: '第2节 基因工程的基本操作程序', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's1-3', title: '第3节 基因工程的应用', questions: 30, easy: 12, medium: 12, hard: 6 }
-                        ]
-                    },
-                    {
-                        id: 'c2',
-                        title: '第2章 细胞工程',
-                        icon: '🧫',
-                        sections: [
-                            { id: 's2-1', title: '第1节 植物细胞工程', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's2-2', title: '第2节 动物细胞工程', questions: 30, easy: 12, medium: 12, hard: 6 }
-                        ]
-                    },
-                    {
-                        id: 'c3',
-                        title: '第3章 发酵工程',
-                        icon: '🍺',
-                        sections: [
-                            { id: 's3-1', title: '第1节 传统发酵技术的应用', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's3-2', title: '第2节 微生物的培养技术及应用', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's3-3', title: '第3节 发酵工程及其应用', questions: 30, easy: 12, medium: 12, hard: 6 }
-                        ]
-                    },
-                    {
-                        id: 'c4',
-                        title: '第4章 生物技术的安全性与伦理问题',
-                        icon: '⚖️',
-                        sections: [
-                            { id: 's4-1', title: '第1节 转基因产品的安全性', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's4-2', title: '第2节 关注生殖性克隆人', questions: 30, easy: 12, medium: 12, hard: 6 },
-                            { id: 's4-3', title: '第3节 禁止生物武器', questions: 30, easy: 12, medium: 12, hard: 6 }
-                        ]
-                    }
-                ]
-            }
+        // 教材图标映射
+        const textbookIcons = {
+            '必修一：分子与细胞': '🔬', '必修二：遗传与进化': '🧬',
+            '选修一：稳态与调节': '⚖️', '选修二：生物与环境': '🌿', '选修三：生物技术与工程': '🧫',
+            '选择性必修一：稳态与调节': '⚖️', '选择性必修二：生物与环境': '🌿', '选择性必修三：生物技术与工程': '🧫'
         };
 
+        // 前端教材名 → API教材名
+        const textbookNameMap = {
+            '必修一：分子与细胞': '必修一：分子与细胞',
+            '必修二：遗传与进化': '必修二：遗传与进化',
+            '选修一：稳态与调节': '选择性必修一：稳态与调节',
+            '选修二：生物与环境': '选择性必修二：生物与环境',
+            '选修三：生物技术与工程': '选择性必修三：生物技术与工程',
+        };
+
+        let chapterData = [];
         let currentChapterIndex = 0;
         let currentQuestionType = 'all';
-
-        const questionTypeNames = {
-            'all': '全部',
-            'choice': '选择题',
-            'fill': '填空题',
-            'essay': '大题',
-            'comprehensive': '综合题'
-        };
+        let textbookTotal = 0;
+        let textbookAnswered = 0;
+        let textbookAccuracy = 0;
 
         function getUrlParam(name) {
             const params = new URLSearchParams(window.location.search);
             return params.get(name);
         }
 
-        function renderChapterNav() {
+        async function loadChapterData() {
             const textbookId = getUrlParam('textbook') || '必修一：分子与细胞';
-            const textbook = textbooks[textbookId];
-            
-            if (!textbook) {
-                document.getElementById('chapterNavList').innerHTML = '<div style="padding: 40px; text-align: center; color: #999;">未找到该教材</div>';
-                return;
+            const apiName = textbookNameMap[textbookId] || textbookId;
+            const token = localStorage.getItem('token');
+            let userId = 0;
+            if (token) {
+                try {
+                    const payload = parseJwt(token);
+                    if (payload && payload.user_id) userId = payload.user_id;
+                } catch(e) {}
             }
 
+            try {
+                const resp = await fetch(`http://localhost:8000/api/textbook/chapters?textbook=${encodeURIComponent(apiName)}&user_id=${userId}`);
+                const data = await resp.json();
+                if (data.success) {
+                    chapterData = data.data.chapters || [];
+                    textbookTotal = data.data.total;
+                    textbookAnswered = data.data.answered;
+                    textbookAccuracy = data.data.accuracy;
+                    renderChapterNav();
+                } else {
+                    document.getElementById('chapterNavList').innerHTML = '<div style="padding:40px;text-align:center;color:#999;">加载失败</div>';
+                }
+            } catch(e) {
+                document.getElementById('chapterNavList').innerHTML = '<div style="padding:40px;text-align:center;color:#999;">加载失败</div>';
+            }
+        }
+
+        function renderChapterNav() {
+            const textbookId = getUrlParam('textbook') || '必修一：分子与细胞';
             document.getElementById('sidebarTitle').textContent = `📖 ${textbookId}`;
-            
+            document.getElementById('statTotal').textContent = textbookTotal;
+            document.getElementById('statCompleted').textContent = textbookAnswered;
+            document.getElementById('statAccuracy').textContent = textbookAccuracy + '%';
+
             const navList = document.getElementById('chapterNavList');
             navList.innerHTML = '';
 
-            textbook.chapters.forEach((chapter, index) => {
-                const totalQuestions = chapter.sections.reduce((sum, s) => sum + s.questions, 0);
-                
+            chapterData.forEach((chapter, index) => {
+                const realSections = chapter.sections.filter(s => s.title !== '专项训练');
                 const navItem = document.createElement('div');
                 navItem.className = `chapter-nav-item ${index === 0 ? 'active' : ''}`;
                 navItem.onclick = () => selectChapter(index);
-                
                 navItem.innerHTML = `
-                    <div class="chapter-nav-item-title">${chapter.icon} ${chapter.title}</div>
-                    <div class="chapter-nav-item-count">${chapter.sections.length}节 · ${totalQuestions}题</div>
+                    <div class="chapter-nav-item-title">${chapter.title}</div>
+                    <div class="chapter-nav-item-count">${realSections.length}节 · ${chapter.total}题 · 正确率${chapter.accuracy}%</div>
                 `;
-                
                 navList.appendChild(navItem);
             });
 
-            if (textbook.chapters.length > 0) {
-                renderSectionCards(0);
+            if (chapterData.length > 0) {
+                selectChapter(0);
             }
         }
 
         function selectChapter(index) {
             currentChapterIndex = index;
-            
-            const navItems = document.querySelectorAll('.chapter-nav-item');
-            navItems.forEach((item, i) => {
-                item.classList.remove('active');
-                if (i === index) {
-                    item.classList.add('active');
-                }
+            document.querySelectorAll('.chapter-nav-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
             });
+
+            // 更新顶部统计为该章的数据
+            const chapter = chapterData[index];
+            if (chapter) {
+                document.getElementById('statTotal').textContent = chapter.total;
+                document.getElementById('statCompleted').textContent = chapter.answered;
+                document.getElementById('statAccuracy').textContent = chapter.accuracy + '%';
+            }
 
             renderSectionCards(index);
         }
 
         function renderSectionCards(chapterIndex) {
             const textbookId = getUrlParam('textbook') || '必修一：分子与细胞';
-            const textbook = textbooks[textbookId];
-            
-            if (!textbook || !textbook.chapters[chapterIndex]) {
-                return;
-            }
+            if (!chapterData[chapterIndex]) return;
 
-            const chapter = textbook.chapters[chapterIndex];
-            
+            const chapter = chapterData[chapterIndex];
             document.getElementById('contentTitle').textContent = chapter.title;
-            
-            const totalQuestions = chapter.sections.reduce((sum, s) => sum + s.questions, 0);
-            const typeName = questionTypeNames[currentQuestionType];
-            
-            document.getElementById('contentSubtitle').textContent = `共 ${chapter.sections.length} 节 · ${totalQuestions} 题 · 当前筛选：${typeName}`;
-            document.getElementById('statTotal').textContent = totalQuestions;
-            document.getElementById('statCompleted').textContent = 0;
-            document.getElementById('statAccuracy').textContent = '0%';
+            document.getElementById('contentSubtitle').textContent = `${chapter.sections.length}节 · ${chapter.total}题 · 已做${chapter.answered}题 · 正确率${chapter.accuracy}%`;
 
             const cardList = document.getElementById('sectionCardList');
             cardList.innerHTML = '';
 
-            chapter.sections.forEach((section, index) => {
+            chapter.sections.forEach((section) => {
+                const isSpecial = section.title === '专项训练';
                 const card = document.createElement('div');
                 card.className = 'section-card';
-
                 card.innerHTML = `
                     <div class="section-card-header">
-                        <div class="section-card-title">${section.title}</div>
+                        <div class="section-card-title">${isSpecial ? '📋 ' : ''}${section.title}</div>
                     </div>
                     <div class="section-card-body">
-                        <div style="color: #64748b; font-size: 14px; line-height: 1.6;">
-                            本节主要练习${section.title}相关知识点，包括核心概念理解、原理应用和拓展延伸。
+                        <div style="color:#64748b;font-size:14px;line-height:1.6;">
+                            ${isSpecial ? '综合专项训练，涵盖本章所有知识点。' : `练习${section.title}相关知识点，包括核心概念理解、原理应用和拓展延伸。`}
                         </div>
                     </div>
                     <div class="section-card-footer">
                         <div class="section-card-info">
-                            <div class="section-card-info-item">
-                                <span>📝</span> ${section.questions}题
-                            </div>
-                            <div class="section-card-info-item">
-                                <span>✅</span> 正确率 0%
-                            </div>
-                            <div class="section-card-info-item">
-                                <span>📊</span> 练习次数 0
-                            </div>
+                            <div class="section-card-info-item"><span>📝</span> ${section.total}题</div>
+                            <div class="section-card-info-item"><span>✅</span> 正确率 ${section.accuracy}%</div>
+                            <div class="section-card-info-item"><span>📊</span> 已做 ${section.answered}题</div>
                         </div>
                         <div class="section-card-actions">
                             <button class="btn-practice" onclick="openTypeSelectModal('${textbookId}', '${chapter.title}', '${section.title}')">
@@ -1373,37 +1111,23 @@
                         </div>
                     </div>
                 `;
-                
                 cardList.appendChild(card);
             });
         }
 
-        function selectQuestionType(type) {
-            currentQuestionType = type;
-            
-            document.querySelectorAll('.type-filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.type === type) {
-                    btn.classList.add('active');
-                }
-            });
-
-            renderSectionCards(currentChapterIndex);
-        }
-
         function startQuickPractice() {
             const textbookId = getUrlParam('textbook') || '必修一：分子与细胞';
-            const textbook = textbooks[textbookId];
-            if (textbook && textbook.chapters.length > 0) {
-                const chapter = textbook.chapters[currentChapterIndex];
-                if (chapter && chapter.sections.length > 0) {
-                    const section = chapter.sections[0];
+            if (chapterData.length > 0 && chapterData[currentChapterIndex]) {
+                const chapter = chapterData[currentChapterIndex];
+                const realSections = chapter.sections.filter(s => s.title !== '专项训练');
+                if (realSections.length > 0) {
+                    const section = realSections[0];
                     window.location.href = `quiz.html?textbook=${encodeURIComponent(textbookId)}&chapter=${encodeURIComponent(chapter.title)}&section=${encodeURIComponent(section.title)}&type=${currentQuestionType}`;
                 }
             }
         }
 
-        renderChapterNav();
+        loadChapterData();
 
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
             toggle.addEventListener('click', (e) => {
