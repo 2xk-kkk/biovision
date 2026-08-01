@@ -1,1356 +1,876 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>高中生物必修一 - 有丝分裂演示</title>
-    <style>
-      :root {
-        --bg0: #06101c;
-        --bg1: #0b1830;
-        --panel: rgba(13, 22, 39, 0.82);
-        --panel-strong: rgba(18, 30, 55, 0.92);
-        --text: #edf4ff;
-        --muted: #98aacb;
-        --grid: rgba(255, 255, 255, 0.08);
-        --cyan: #6ee7ff;
-        --violet: #b39bff;
-        --yellow: #ffd166;
-        --green: #63f3b4;
-        --danger: #ff7aa2;
-        --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>有丝分裂 — 染色体行为 3D 演示</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: rgba(13,17,23,0.9); --text: #e6edf3; --muted: #8b949e;
+    --cyan: #79c0ff; --violet: #b39bff; --yellow: #ffd166; --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; font-family: "Microsoft YaHei","PingFang SC",sans-serif; color: var(--text); background: var(--bg); }
+  #cv { position: fixed; inset: 0; display: block; }
 
-      * {
-        box-sizing: border-box;
-      }
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 48px; display: flex; align-items: center; gap: 14px; padding: 0 18px;
+    background: rgba(13,17,23,0.92); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .back-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.05); color: #c9d1d9; font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.25s; flex-shrink: 0;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.12); border-color: #fff; box-shadow: 0 0 14px rgba(121,192,255,0.2); }
+  .topbar h1 {
+    font-size: 15px; font-weight: 600; letter-spacing: 0.5px;
+    background: linear-gradient(90deg, var(--cyan), #f0a040);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .topbar-actions { margin-left: auto; display: flex; gap: 6px; }
+  .tb-btn {
+    padding: 5px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04); color: #b0b8c0; font-size: 12px; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .tb-btn:hover { background: rgba(255,255,255,0.1); color: #e6edf3; }
+  .tb-btn.on { background: rgba(121,192,255,0.15); border-color: rgba(121,192,255,0.4); color: var(--cyan); }
 
-      html,
-      body {
-        margin: 0;
-        min-height: 100%;
-        color: var(--text);
-        background:
-          radial-gradient(circle at 10% 0%, rgba(110, 231, 255, 0.14), transparent 30%),
-          radial-gradient(circle at 90% 12%, rgba(179, 155, 255, 0.12), transparent 28%),
-          linear-gradient(145deg, var(--bg0), var(--bg1));
-        font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
-      }
+  .legend {
+    position: fixed; right: 14px; top: 50%; transform: translateY(-50%); z-index: 50;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+    padding: 14px 16px; min-width: 160px; backdrop-filter: blur(10px); box-shadow: var(--shadow);
+  }
+  .legend h3 { font-size: 11px; color: var(--muted); margin-bottom: 10px; letter-spacing: 1px; }
+  .lg-item { display: flex; align-items: center; gap: 9px; padding: 5px 6px; margin: 1px -6px; border-radius: 5px; font-size: 11px; color: #b0b8c0; cursor: pointer; transition: background 0.15s; }
+  .lg-item:hover { background: rgba(255,255,255,0.04); }
+  .lg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .lg-dot.chromatin { background: #b0a0d0; }
+  .lg-dot.dup-chrom { background: #8d77ff; }
+  .lg-dot.single-chrom { background: #60d8ff; }
+  .lg-dot.spindle { background: #79c0ff; }
+  .lg-dot.centrosome { background: #f0a040; }
+  .lg-dot.equator { background: rgba(121,192,255,0.6); border: 1px dashed rgba(121,192,255,0.8); border-radius: 2px; }
 
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background-image:
-          linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-        background-size: 38px 38px;
-        mask-image: radial-gradient(circle at center, black 35%, transparent 85%);
-      }
+  .controls {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-radius: 999px;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); box-shadow: var(--shadow);
+  }
+  .ctrl-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06); color: #c9d1d9; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  .ctrl-btn.play-btn { width: 44px; height: 44px; font-size: 20px; background: rgba(121,192,255,0.2); border-color: rgba(121,192,255,0.4); }
+  .scrub { width: 260px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.08); cursor: pointer; position: relative; overflow: visible; }
+  .scrub-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, rgba(121,192,255,0.8), rgba(179,155,255,0.8)); }
+  .scrub-thumb { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid var(--cyan); box-shadow: 0 0 10px rgba(121,192,255,0.5); pointer-events: none; }
 
-      .app {
-        max-width: 1520px;
-        margin: 0 auto;
-        padding: 56px 24px 24px;
-      }
+  .phase-indicator {
+    position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 90;
+    padding: 8px 18px; border-radius: 999px; background: rgba(13,17,23,0.85);
+    border: 1px solid rgba(121,192,255,0.2); backdrop-filter: blur(8px);
+    font-size: 14px; font-weight: 600; letter-spacing: 1px; color: var(--cyan); transition: all 0.3s;
+  }
+  .phase-desc { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; letter-spacing: 0; max-width: 500px; }
 
-      .back-link {
-        position: fixed;
-        top: 16px;
-        left: 0;
-        z-index: 20;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px 10px 14px;
-        border-radius: 0 999px 999px 0;
-        border: 1px solid rgba(170, 205, 255, 0.18);
-        border-left: 0;
-        background: rgba(9, 15, 28, 0.88);
-        backdrop-filter: blur(12px);
-        color: #d9e7ff;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 700;
-        box-shadow: var(--shadow);
-      }
+  .data-panel {
+    position: fixed; left: 18px; top: 50%; transform: translateY(-50%); z-index: 50;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .data-card {
+    padding: 14px 16px; border-radius: 12px; background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(8px);
+    min-width: 130px; text-align: center;
+  }
+  .data-card .label { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; display: block; }
+  .data-card .value { font-size: 26px; font-weight: 800; margin-top: 4px; display: block; }
+  .data-card .value.dna { color: #6ee7ff; }
+  .data-card .value.chr { color: #c29cff; }
+  .data-card .value.sis { color: #ffd166; }
+  .data-card .change { font-size: 11px; margin-top: 3px; display: block; }
+  .data-card .change.up { color: #63f3b4; }
+  .data-card .change.down { color: #ff7aa2; }
+  .data-card .change.flat { color: var(--muted); }
 
-      .back-link:hover {
-        background: rgba(20, 33, 59, 0.95);
-        transform: translateX(2px);
-      }
+  .info-popup {
+    position: fixed; z-index: 200; pointer-events: none; opacity: 0;
+    transform: translate(-50%,-115%); transition: opacity 0.25s, transform 0.25s;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+    padding: 13px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-width: 260px; backdrop-filter: blur(12px);
+  }
+  .info-popup.show { opacity: 1; transform: translate(-50%,-130%); }
+  .info-popup h4 { font-size: 13px; margin-bottom: 5px; }
+  .info-popup p { font-size: 11px; color: var(--muted); line-height: 1.55; }
+  .info-popup::after { content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 7px solid rgba(13,17,23,0.95); }
 
-      .hero {
-        display: flex;
-        justify-content: space-between;
-        align-items: end;
-        gap: 16px;
-        margin-bottom: 18px;
-      }
+  .hint { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 50; padding: 6px 16px; border-radius: 999px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); font-size: 11px; color: var(--muted); letter-spacing: 0.5px; backdrop-filter: blur(8px); pointer-events: none; }
+  .hint em { color: var(--cyan); font-style: normal; }
 
-      .hero h1 {
-        margin: 0;
-        font-size: clamp(28px, 3vw, 44px);
-        letter-spacing: 0.02em;
-      }
+  .speed-badge { position: fixed; bottom: 28px; right: 24px; z-index: 100; font-size: 10px; color: var(--muted); display: flex; gap: 4px; }
+  .speed-badge span { padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: all 0.2s; }
+  .speed-badge span:hover, .speed-badge span.on { background: rgba(121,192,255,0.15); border-color: rgba(121,192,255,0.3); color: var(--cyan); }
 
-      .hero p {
-        margin: 10px 0 0;
-        max-width: 860px;
-        color: var(--muted);
-        line-height: 1.65;
-      }
+  @media (max-width: 768px) {
+    .legend { display: none; }
+    .data-panel { left: 4px; gap: 6px; }
+    .data-card { padding: 8px 10px; min-width: 90px; }
+    .data-card .value { font-size: 20px; }
+    .scrub { width: 120px; }
+    .phase-indicator { top: 56px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
 
-      .badges {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 8px;
-      }
+<canvas id="cv"></canvas>
 
-      .badge {
-        padding: 10px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(170, 205, 255, 0.16);
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        color: #d9e7ff;
-        font-size: 13px;
-        box-shadow: var(--shadow);
-      }
+<div class="topbar">
+  <a href="main.html" class="back-btn">←</a>
+  <h1>有丝分裂 · 染色体行为 3D 演示</h1>
+  <div class="topbar-actions">
+    <button class="tb-btn on" id="btnAuto" onclick="toggleAuto()">⟳ 自动旋转</button>
+    <button class="tb-btn on" id="btnLabel" onclick="toggleLabels()">🏷 标注</button>
+    <button class="tb-btn" onclick="resetView()">↺ 重置</button>
+  </div>
+</div>
 
-      .layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
-        gap: 18px;
-        align-items: stretch;
-      }
+<div class="legend">
+  <h3>图例</h3>
+  <div class="lg-item" data-p="chromatin"><div class="lg-dot chromatin"></div> 染色质（间期）</div>
+  <div class="lg-item" data-p="dup-chrom"><div class="lg-dot dup-chrom"></div> 复制后染色体</div>
+  <div class="lg-item" data-p="single-chrom"><div class="lg-dot single-chrom"></div> 子染色体</div>
+  <div class="lg-item" data-p="spindle"><div class="lg-dot spindle"></div> 纺锤丝</div>
+  <div class="lg-item" data-p="centrosome"><div class="lg-dot centrosome"></div> 中心体</div>
+  <div class="lg-item" data-p="equator"><div class="lg-dot equator"></div> 赤道板</div>
+</div>
 
-      .panel {
-        border-radius: 24px;
-        border: 1px solid rgba(170, 205, 255, 0.14);
-        background: linear-gradient(180deg, rgba(20, 33, 59, 0.82), rgba(9, 15, 28, 0.9));
-        backdrop-filter: blur(16px);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-      }
+<div class="phase-indicator" id="phaseIndicator">
+  间期
+  <span class="phase-desc" id="phaseDesc"></span>
+</div>
 
-      .panel-header {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: center;
-        padding: 16px 18px 0;
-      }
+<div class="data-panel">
+  <div class="data-card">
+    <span class="label">DNA 含量</span>
+    <span class="value dna" id="dnaValue">1n</span>
+    <span class="change flat" id="dnaChange">→ 2n</span>
+  </div>
+  <div class="data-card">
+    <span class="label">染色体数</span>
+    <span class="value chr" id="chrValue">1n</span>
+    <span class="change flat" id="chrChange">→ 2n</span>
+  </div>
+  <div class="data-card">
+    <span class="label">姐妹染色单体</span>
+    <span class="value sis" id="sisValue">0</span>
+    <span class="change flat" id="sisChange">→ 2n</span>
+  </div>
+</div>
 
-      .panel-title {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
+<div class="info-popup" id="popup"><h4 id="popTitle"></h4><p id="popDesc"></p></div>
 
-      .panel-title strong {
-        font-size: 18px;
-      }
+<div class="controls">
+  <button class="ctrl-btn" onclick="stepBack()" title="后退">⏮</button>
+  <button class="ctrl-btn play-btn" id="playBtn" onclick="togglePlay()" title="播放/暂停">▶</button>
+  <button class="ctrl-btn" onclick="stepForward()" title="前进">⏭</button>
+  <div class="scrub" id="scrubBar">
+    <div class="scrub-fill" id="scrubFill"></div>
+    <div class="scrub-thumb" id="scrubThumb"></div>
+  </div>
+  <button class="ctrl-btn" onclick="resetAnim()" title="重置">↺</button>
+</div>
 
-      .panel-title span {
-        color: var(--muted);
-        font-size: 13px;
-      }
+<div class="speed-badge">
+  速度
+  <span onclick="setSpeed(0.5)">0.5×</span>
+  <span class="on" onclick="setSpeed(1)">1×</span>
+  <span onclick="setSpeed(2)">2×</span>
+</div>
 
-      .phase-pill {
-        padding: 9px 14px;
-        border-radius: 999px;
-        background: rgba(110, 231, 255, 0.12);
-        border: 1px solid rgba(110, 231, 255, 0.2);
-        color: #d9fdff;
-        font-size: 13px;
-        white-space: nowrap;
-      }
+<div class="hint">🖱 <em>拖拽</em>旋转 | 🔍 <em>滚轮</em>缩放 | <em>空格</em>播放</div>
 
-      .stage,
-      .chart {
-        padding: 14px 16px 16px;
-      }
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
 
-      .stage-frame,
-      .chart-shell {
-        position: relative;
-        width: 100%;
-        border-radius: 22px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        overflow: hidden;
-      }
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-      .stage-frame {
-        aspect-ratio: 1.48 / 1;
-        background:
-          radial-gradient(circle at 50% 50%, rgba(110, 231, 255, 0.08), transparent 35%),
-          radial-gradient(circle at 50% 50%, rgba(179, 155, 255, 0.08), transparent 56%),
-          linear-gradient(180deg, rgba(12, 22, 40, 0.98), rgba(7, 13, 22, 0.98));
-      }
+// ========== STATE ==========
+const state = {
+  progress: 0, playing: false, speed: 1, lastTs: 0, showLabels: true
+};
 
-      .chart-stack {
-        display: grid;
-        gap: 14px;
-      }
+// ========== SCENE ==========
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('cv'), antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
 
-      .mini-chart {
-        padding: 12px;
-        border-radius: 20px;
-        border: 1px solid rgba(220, 225, 235, 0.9);
-        background: #ffffff;
-        color: #111827;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      }
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1117);
+scene.fog = new THREE.Fog(0x0d1117, 14, 45);
 
-      .mini-chart-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.5, 60);
+camera.position.set(0, 0.5, 9);
+camera.lookAt(0, 0, 0);
 
-      .mini-chart-head-left {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
+scene.add(new THREE.AmbientLight(0x556677, 3.5));
+const key = new THREE.DirectionalLight(0xfff8ee, 6);
+key.position.set(6, 5, 6);
+scene.add(key);
+scene.add(new THREE.DirectionalLight(0x8899cc, 2).position.set(-4, 0, -3));
+scene.add(new THREE.DirectionalLight(0xb0c8ff, 2.5).position.set(0, -2, 5));
 
-      .mini-chart-head-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
+const ctrl = new OrbitControls(camera, renderer.domElement);
+ctrl.target.set(0, 0, 0);
+ctrl.enableDamping = true; ctrl.dampingFactor = 0.08;
+ctrl.minDistance = 3; ctrl.maxDistance = 18;
+ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.5;
+ctrl.update();
 
-      .mini-chart-head strong {
-        font-size: 14px;
-        letter-spacing: 0.02em;
-        color: #111827;
-      }
+// ========== HELPERS ==========
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const lerp = (a, b, t) => a + (b - a) * t;
 
-      .mini-chart-head span {
-        font-size: 12px;
-        color: #667085;
-      }
+const clickTargets = [];
+function clk(g, d) { g.userData = d; clickTargets.push(g); }
 
-      .axis-tag {
-        color: #4b5563;
-        font-size: 12px;
-        font-weight: 700;
-        white-space: nowrap;
-      }
+// ========== MATERIALS ==========
+const matChromosome = new THREE.MeshStandardMaterial({
+  color: 0x8d77ff, roughness: 0.22, metalness: 0.08,
+  emissive: 0x2a1a5e, emissiveIntensity: 0.35,
+});
+const matSingleChrom = new THREE.MeshStandardMaterial({
+  color: 0x60d8ff, roughness: 0.22, metalness: 0.08,
+  emissive: 0x1a3a5e, emissiveIntensity: 0.35,
+});
+const matCentromere = new THREE.MeshStandardMaterial({
+  color: 0xffd166, roughness: 0.12, metalness: 0.15,
+  emissive: 0x402000, emissiveIntensity: 0.5,
+});
+const matKinetochore = new THREE.MeshStandardMaterial({
+  color: 0xff7aa2, roughness: 0.15, metalness: 0.1,
+  emissive: 0x400010, emissiveIntensity: 0.3,
+});
+const matChromatin = new THREE.MeshBasicMaterial({
+  color: 0xb0a0d0, transparent: true, opacity: 0.45, depthWrite: false,
+});
+const matSpindle = new THREE.MeshBasicMaterial({
+  color: 0x79c0ff, transparent: true, opacity: 0.28, depthWrite: false,
+});
+const matCentrosomeOuter = new THREE.MeshStandardMaterial({
+  color: 0xf0a040, roughness: 0.2, metalness: 0.1, transparent: true, opacity: 0.5,
+});
+const matCentrosomeInner = new THREE.MeshStandardMaterial({
+  color: 0xffc060, roughness: 0.15, metalness: 0.05, emissive: 0x402000, emissiveIntensity: 0.5,
+});
+const matAstral = new THREE.MeshBasicMaterial({
+  color: 0xf0a040, transparent: true, opacity: 0.18, depthWrite: false,
+});
 
-      .metric-inline {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 2px;
-        min-width: 110px;
-      }
+// ========== GRID FLOOR (orientation reference) ==========
+const gridHelper = new THREE.PolarGridHelper(4.5, 32, 24, 64, 0x222233, 0x1a1a2e);
+scene.add(gridHelper);
 
-      .metric-inline .label {
-        display: block;
-        color: #6b7280;
-        font-size: 12px;
-        line-height: 1.1;
-      }
+// ========== EQUATOR REFERENCE LINE ==========
+const equatorGroup = new THREE.Group();
+scene.add(equatorGroup);
+// Vertical dashed-line ring at equator
+const equatorRing = new THREE.Mesh(
+  new THREE.TorusGeometry(2.6, 0.04, 16, 100),
+  new THREE.MeshBasicMaterial({ color: 0x79c0ff, transparent: true, opacity: 0.3, depthWrite: false })
+);
+equatorRing.rotation.y = Math.PI / 2;
+equatorGroup.add(equatorRing);
+// A faint ring in the XZ plane
+const equatorDisc = new THREE.Mesh(
+  new THREE.RingGeometry(0.15, 2.55, 80),
+  new THREE.MeshBasicMaterial({ color: 0x79c0ff, transparent: true, opacity: 0.06, side: THREE.DoubleSide, depthWrite: false })
+);
+equatorDisc.rotation.x = -Math.PI / 2;
+equatorGroup.add(equatorDisc);
 
-      .metric-inline .value {
-        display: block;
-        color: #111827;
-        font-size: 18px;
-        font-weight: 800;
-        line-height: 1.1;
-      }
+// ========== BUILD CHROMOSOME GEOMETRIES ==========
+// X-shaped duplicated chromosome: 4 Bezier arms + glowing centromere
+function buildDupChromosome(armLen, thickness) {
+  const g = new THREE.Group();
+  const L = armLen || 1.3;
+  const T = thickness || 0.07;
 
-      .chart-key {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border-radius: 14px;
-        border: 1px solid rgba(209, 213, 219, 1);
-        background: #ffffff;
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
-        color: #111827;
-        font-size: 14px;
-        white-space: nowrap;
-      }
+  function makeArm(cx, cy, cx1, cy1, cx2, cy2, endX, endY) {
+    const curve = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(cx, cy, 0),
+      new THREE.Vector3(cx1, cy1, 0),
+      new THREE.Vector3(cx2, cy2, 0),
+      new THREE.Vector3(endX, endY, 0)
+    );
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, T, 10, false), matChromosome);
+    mesh.castShadow = true;
+    return mesh;
+  }
 
-      .chart-key-line {
-        width: 34px;
-        height: 4px;
-        border-radius: 999px;
-        position: relative;
-        flex: 0 0 auto;
-      }
+  const hT = T * 2.5;
+  // Left chromatid
+  g.add(makeArm(-hT, 0, -hT - 0.45, -L * 0.4,  -hT - 0.5, -L * 0.75, -0.12, -L));
+  g.add(makeArm(-hT, 0, -hT - 0.45,  L * 0.4,  -hT - 0.5,  L * 0.75, -0.12,  L));
+  // Right chromatid
+  g.add(makeArm( hT, 0,  hT + 0.45, -L * 0.4,   hT + 0.5, -L * 0.75,  0.12, -L));
+  g.add(makeArm( hT, 0,  hT + 0.45,  L * 0.4,   hT + 0.5,  L * 0.75,  0.12,  L));
 
-      .chart-key-line::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        background: currentColor;
-      }
+  // Centromere (glowing sphere)
+  const centro = new THREE.Mesh(new THREE.SphereGeometry(T * 4.5, 16, 10), matCentromere);
+  centro.scale.set(1, 0.65, 1);
+  g.add(centro);
 
-      .chart-shell {
-        aspect-ratio: 3.1 / 1;
-        background: #ffffff;
-        border: 1px solid #2a2a2a;
-        user-select: none;
-        touch-action: none;
-        cursor: crosshair;
-      }
+  return g;
+}
 
-      svg {
-        display: block;
-        width: 100%;
-        height: auto;
-      }
+// Single chromatid (post-separation): rod shape
+function buildSingleChromatid(armLen, thickness) {
+  const g = new THREE.Group();
+  const L = armLen || 1.3;
+  const T = thickness || 0.06;
 
-      .timeline {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        padding: 0 16px 16px;
-      }
+  const upperCurve = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(-0.12, -L * 0.25, 0),
+    new THREE.Vector3(-0.06, -L * 0.7, 0),
+    new THREE.Vector3(0, -L, 0)
+  );
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(upperCurve, 18, T, 10, false), matSingleChrom));
 
-      .btn {
-        appearance: none;
-        border: 0;
-        border-radius: 14px;
-        padding: 12px 14px;
-        color: white;
-        background: linear-gradient(180deg, rgba(110, 231, 255, 0.22), rgba(110, 231, 255, 0.12));
-        border: 1px solid rgba(110, 231, 255, 0.24);
-        cursor: pointer;
-        font-weight: 700;
-      }
+  const lowerCurve = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(-0.12, L * 0.25, 0),
+    new THREE.Vector3(-0.06, L * 0.7, 0),
+    new THREE.Vector3(0, L, 0)
+  );
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(lowerCurve, 18, T, 10, false), matSingleChrom));
 
-      .btn.secondary {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #dfe8fa;
-      }
+  // Kinetochore dot
+  const kc = new THREE.Mesh(new THREE.SphereGeometry(T * 3, 8, 6), matKinetochore);
+  g.add(kc);
 
-      .scrub {
-        flex: 1;
-        height: 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        overflow: hidden;
-      }
+  return g;
+}
 
-      .scrub-fill {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(90deg, rgba(110, 231, 255, 0.75), rgba(179, 155, 255, 0.75));
-      }
+// ========== CHROMOSOME GROUPS ==========
+const CHROM_COUNT = 4; // 4 pairs = 8 chromatids total
+const dupChromGroup = new THREE.Group();
+const singleChromGroup = new THREE.Group();
+scene.add(dupChromGroup);
+scene.add(singleChromGroup);
 
-      .hint {
-        padding: 0 16px 16px;
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.6;
-      }
+const dupChroms = [];
+const singleChroms = [];
+for (let i = 0; i < CHROM_COUNT; i++) {
+  const dc = buildDupChromosome(1.2, 0.065);
+  dc.visible = false;
+  dupChromGroup.add(dc);
+  dupChroms.push(dc);
 
-      .chart-footer {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 12px;
-      }
+  for (let j = 0; j < 2; j++) {
+    const sc = buildSingleChromatid(1.15, 0.055);
+    sc.visible = false;
+    singleChromGroup.add(sc);
+    singleChroms.push(sc);
+  }
+}
+clk(dupChromGroup, { name: 'dup-chrom', title: '复制后染色体（含2条染色单体）', desc: '每条染色体由着丝粒连接两条姐妹染色单体。DNA已完成复制，含量为2n。染色体数仍为n（按着丝粒计数）。', color: '#8d77ff' });
+clk(singleChromGroup, { name: 'single-chrom', title: '子染色体（染色单体分开后）', desc: '后期着丝粒分裂，每条姐妹染色单体成为独立子染色体。此时染色体数暂时加倍为2n，DNA含量仍为2n。', color: '#60d8ff' });
 
-      .metric {
-        padding: 10px 12px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
+// ========== CHROMATIN THREADS (interphase) ==========
+const chromatinGroup = new THREE.Group();
+scene.add(chromatinGroup);
+const chromatinThreads = [];
+const chromatinBase = [];
+const THREAD_COUNT = 8;
+for (let i = 0; i < THREAD_COUNT; i++) {
+  const r = 0.08 + Math.random() * 0.1;
+  // Torus as irregular chromatin blob
+  const geo = new THREE.TorusGeometry(r, r * 0.25, 8, 8);
+  const t = new THREE.Mesh(geo, matChromatin);
+  t.visible = false;
+  chromatinGroup.add(t);
+  chromatinThreads.push(t);
 
-      .metric .label {
-        display: block;
-        color: var(--muted);
-        font-size: 12px;
-      }
+  const phi = Math.acos(2 * Math.random() - 1);
+  const theta = Math.random() * Math.PI * 2;
+  chromatinBase.push({
+    phi, theta,
+    dist: 0.25 + Math.random() * 0.9,
+    speed: 0.5 + Math.random() * 1.0,
+    seed: Math.random() * 100,
+  });
+}
+clk(chromatinGroup, { name: 'chromatin', title: '染色质（间期）', desc: '间期染色质呈细丝状松散分布于细胞核区域。S期DNA复制后，每条染色质含两份DNA拷贝（但尚未浓缩成可见染色体）。', color: '#b0a0d0' });
 
-      .metric .value {
-        display: block;
-        margin-top: 4px;
-        font-size: 17px;
-        font-weight: 700;
-      }
+// ========== SPINDLE APPARATUS ==========
+const spindleGroup = new THREE.Group();
+spindleGroup.visible = false;
+scene.add(spindleGroup);
 
-      .axis-label {
-        fill: #222222;
-        font-size: 12px;
-      }
+// Centrosomes
+const centrosomeL = new THREE.Group();
+const centrosomeR = new THREE.Group();
+spindleGroup.add(centrosomeL); spindleGroup.add(centrosomeR);
 
-      .series-label {
-        font-size: 12px;
-        font-weight: 700;
-        fill: #111827;
-      }
+function makeCentrosome() {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 12), matCentrosomeOuter));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 8), matCentrosomeInner));
+  for (let i = 0; i < 10; i++) {
+    const phi = Math.random() * Math.PI * 0.55;
+    const theta = Math.random() * Math.PI * 2;
+    const len = 0.3 + Math.random() * 0.5;
+    const ray = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, len, 5), matAstral);
+    ray.position.set(
+      Math.sin(phi) * Math.cos(theta) * len * 0.5,
+      Math.sin(phi) * Math.sin(theta) * len * 0.5,
+      Math.cos(phi) * len * 0.5
+    );
+    ray.lookAt(new THREE.Vector3(Math.sin(phi)*Math.cos(theta)*5, Math.sin(phi)*Math.sin(theta)*5, Math.cos(phi)*5));
+    g.add(ray);
+  }
+  return g;
+}
+centrosomeL.add(makeCentrosome());
+centrosomeR.add(makeCentrosome());
+clk(centrosomeL, { name: 'centrosome', title: '中心体（细胞两极）', desc: '微管组织中心，发出星射线并组装纺锤体。前期移向细胞两极，为染色体分离做准备。', color: '#f0a040' });
 
-      @media (max-width: 1120px) {
-        .layout {
-          grid-template-columns: 1fr;
+// Spindle fibers
+const spindleFibersGroup = new THREE.Group();
+spindleGroup.add(spindleFibersGroup);
+const kinetochoreFibers = [];
+const polarFibers = [];
+for (let i = 0; i < CHROM_COUNT * 2; i++) {
+  const fiber = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1, 6), matSpindle);
+  fiber.visible = false;
+  spindleFibersGroup.add(fiber);
+  kinetochoreFibers.push(fiber);
+}
+for (let i = 0; i < 5; i++) {
+  const fiber = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 1, 6), matSpindle.clone());
+  fiber.material.opacity = 0.1;
+  fiber.visible = false;
+  spindleFibersGroup.add(fiber);
+  polarFibers.push(fiber);
+}
+clk(spindleGroup, { name: 'spindle', title: '纺锤体', desc: '由中心体和纺锤丝组成。着丝粒微管连接染色体着丝粒与中心体，牵引染色体运动。后期牵引子染色体移向两极。', color: '#79c0ff' });
+
+// ========== LABELS ==========
+const labelDefs = [
+  { text: '染色体', pos: new THREE.Vector3(0, -0.8, 2.0), color: '#8d77ff' },
+  { text: '着丝粒', pos: new THREE.Vector3(1.2, 0, 2.0), color: '#ffd166' },
+  { text: '中心体', pos: new THREE.Vector3(-3.0, 0, 0.6), color: '#f0a040' },
+  { text: '纺锤丝', pos: new THREE.Vector3(1.8, 0.8, 1.5), color: '#79c0ff' },
+  { text: '赤道板', pos: new THREE.Vector3(2.0, 1.6, 0.5), color: '#79c0ff' },
+];
+const labelEls = [];
+labelDefs.forEach(d => {
+  const el = document.createElement('div');
+  el.textContent = d.text;
+  el.style.cssText = `position:fixed;z-index:55;pointer-events:none;font-size:11px;font-weight:600;color:${d.color};text-shadow:0 0 8px rgba(0,0,0,0.9);letter-spacing:1px;white-space:nowrap;transition:opacity 0.35s;`;
+  document.body.appendChild(el);
+  labelEls.push({ el, pos: d.pos });
+});
+
+function updateLabels() {
+  labelEls.forEach(({ el, pos }) => {
+    const v = pos.clone().project(camera);
+    el.style.left = ((v.x * 0.5 + 0.5) * innerWidth) + 'px';
+    el.style.top = ((-v.y * 0.5 + 0.5) * innerHeight) + 'px';
+    el.style.transform = 'translate(-50%,-50%)';
+    el.style.opacity = (state.showLabels && v.z < 1) ? '1' : '0';
+  });
+}
+
+// ========== DATA CURVES ==========
+const dnaPoints   = [[0,1],[0.1,1],[0.16,2],[0.82,2],[0.82,1],[1,1]];
+const chrPoints   = [[0,1],[0.36,1],[0.58,1],[0.58,2],[0.82,2],[0.82,1],[1,1]];
+const sisPoints   = [[0,0],[0.1,0],[0.16,2],[0.58,2],[0.58,0],[1,0]];
+
+function sampleCurve(pts, p) {
+  if (p <= pts[0][0]) return pts[0][1];
+  for (let i = 0; i < pts.length - 1; i++) {
+    if (p <= pts[i + 1][0]) {
+      const span = pts[i + 1][0] - pts[i][0] || 1;
+      return lerp(pts[i][1], pts[i + 1][1], clamp((p - pts[i][0]) / span, 0, 1));
+    }
+  }
+  return pts[pts.length - 1][1];
+}
+
+// Track previous values for change indicators
+let prevDna = 1, prevChr = 1, prevSis = 0;
+
+function getChangeTag(cur, prev) {
+  if (cur > prev + 0.05) return 'up';
+  if (cur < prev - 0.05) return 'down';
+  return 'flat';
+}
+
+function getPhaseInfo(p) {
+  if (p < 0.2) return ['间期', '染色质细丝状散布，S期DNA复制→每条染色质含两份DNA拷贝'];
+  if (p < 0.36) return ['前期', '染色质螺旋化→浓缩为X形染色体（着丝粒+两条姐妹染色单体），纺锤体形成'];
+  if (p < 0.58) return ['中期', '染色体着丝粒整齐排列在赤道板上，纺锤丝连接着丝粒，形态数目最清晰'];
+  if (p < 0.82) return ['后期', '着丝粒分裂！姐妹染色单体分开→子染色体，纺锤丝牵引移向两极'];
+  return ['末期', '子染色体解螺旋→染色质，纺锤体消失，胞质分裂→两个子细胞'];
+}
+
+// Initial scatter positions for chromosomes (random within ~nucleus area, radius ~1.0)
+const initPositions = [
+  { x: -0.5, y: 0.3,  z: 0.15 },
+  { x: 0.55, y: -0.25, z: -0.1 },
+  { x: -0.35, y: -0.5, z: 0.35 },
+  { x: 0.45, y: 0.45,  z: -0.25 },
+];
+// Where each chromosome ends up on the equator line
+const equatorPositions = [0.65, 0.2, -0.25, -0.65];
+
+// ========== ORIENT FIBER HELPER ==========
+function orientFiber(mesh, x1, y1, z1, x2, y2, z2) {
+  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, mz = (z1 + z2) / 2;
+  const dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
+  const len = Math.sqrt(dx*dx + dy*dy + dz*dz) || 0.001;
+  mesh.position.set(mx, my, mz);
+  mesh.scale.y = len;
+  mesh.setRotationFromQuaternion(
+    new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx/len, dy/len, dz/len))
+  );
+}
+
+// ========== RENDER ==========
+function render(ts) {
+  const p = clamp(state.progress, 0, 1);
+
+  const proPh   = clamp((p - 0.2) / 0.16, 0, 1);
+  const metaPh  = clamp((p - 0.36) / 0.22, 0, 1);
+  const anaPh   = clamp((p - 0.58) / 0.24, 0, 1);
+  const teloPh  = clamp((p - 0.82) / 0.18, 0, 1);
+  const sPhaseP = clamp((p - 0.06) / 0.12, 0, 1);
+
+  const chromatinVis = clamp(1 - proPh * 3, 0, 1);
+  const spindleVis   = clamp((p - 0.24) / 0.12, 0, 1) * clamp(1 - (p - 0.78) / 0.06, 0, 1);
+  const equatorVis   = clamp((p - 0.30) / 0.06, 0, 1) * clamp(1 - (p - 0.60) / 0.04, 0, 1);
+
+  // ===== CHROMATIN (interphase) =====
+  const liveThreads = 4 + Math.floor(sPhaseP * 4);
+  for (let i = 0; i < THREAD_COUNT; i++) {
+    const t = chromatinThreads[i];
+    if (i < liveThreads && chromatinVis > 0.02) {
+      t.visible = true;
+      const b = chromatinBase[i];
+      const phi = b.phi + ts * 0.0006 * b.speed;
+      const theta = b.theta + ts * 0.0008 * b.speed;
+      const r = b.dist * (1 - proPh * 0.7);
+      t.position.set(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi)
+      );
+      t.material.opacity = chromatinVis * 0.4;
+      const scl = 1 - proPh * 0.6;
+      t.scale.setScalar(scl);
+      t.rotation.set(ts * 0.0005 + b.seed, ts * 0.0007 + b.seed, ts * 0.0003 + b.seed);
+    } else {
+      t.visible = false;
+    }
+  }
+
+  // ===== EQUATOR =====
+  equatorGroup.visible = equatorVis > 0.03;
+  if (equatorGroup.visible) {
+    equatorRing.material.opacity = equatorVis * 0.3;
+    equatorDisc.material.opacity = equatorVis * 0.06;
+  }
+
+  // ===== CHROMOSOMES =====
+  const condense = clamp(proPh * 1.05, 0, 1);
+
+  if (p < 0.58) {
+    // --- Duplicated chromosomes (prophase + metaphase) ---
+    dupChromGroup.visible = true;
+    singleChromGroup.visible = false;
+
+    for (let i = 0; i < CHROM_COUNT; i++) {
+      const dc = dupChroms[i];
+      if (condense < 0.03) { dc.visible = false; continue; }
+      dc.visible = true;
+
+      const init = initPositions[i];
+      const eqY = equatorPositions[i];
+
+      // Interpolate from scattered → equator
+      const tx = lerp(init.x * (1 - condense), 0, metaPh);
+      const ty = lerp(init.y * (1 - condense), eqY, metaPh);
+      const tz = lerp(init.z * (1 - condense), 0, metaPh);
+
+      dc.position.set(tx, ty, tz);
+      // Orient towards equator plane during metaphase
+      dc.rotation.set(metaPh * 0.3, metaPh * Math.PI * 0.5, metaPh * 0.3 + i * 0.7);
+      dc.scale.setScalar(0.06 + condense * 0.94);
+
+      dc.children.forEach(c => {
+        if (c.material && c.material.opacity !== undefined) {
+          c.material.opacity = condense;
         }
-      }
-
-      @media (max-width: 720px) {
-        .app {
-          padding: 16px;
-        }
-
-        .hero {
-          flex-direction: column;
-          align-items: start;
-        }
-
-        .badges {
-          justify-content: flex-start;
-        }
-
-        .timeline {
-          flex-wrap: wrap;
-        }
-
-        .scrub {
-          order: 3;
-          flex-basis: 100%;
-        }
-
-        .chart-footer {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <a class="back-link" href="main.html" aria-label="返回上一页">← 返回</a>
-    <div class="app">
-      <header class="hero">
-        <div>
-          <h1>高中生物必修一 · 有丝分裂演示</h1>
-          <p>
-            左边是有丝分裂的简化动画，右边是与动画进度同步的三条折线图。你可以直接拖动右侧图表中的光标来控制进度，观察
-            DNA、染色体和姐妹染色单体在各阶段的变化。
-          </p>
-        </div>
-        <div class="badges">
-          <div class="badge">拖动光标控制进度</div>
-          <div class="badge">动画与折线图同步</div>
-          <div class="badge">适合课堂讲解</div>
-        </div>
-      </header>
-
-      <main class="layout">
-        <section class="panel">
-          <div class="panel-header">
-            <div class="panel-title">
-              <strong>有丝分裂动画</strong>
-              <span>展示间期、前期、中期、后期和末期的结构变化</span>
-            </div>
-            <div class="phase-pill" id="phaseText">间期</div>
-          </div>
-
-          <div class="stage">
-            <div class="stage-frame">
-              <svg id="stageSvg" viewBox="0 0 800 540" aria-label="有丝分裂动画">
-                <defs>
-                  <linearGradient id="cellStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#67f0e5" stop-opacity="0.5" />
-                    <stop offset="100%" stop-color="#b28cff" stop-opacity="0.25" />
-                  </linearGradient>
-                  <linearGradient id="chromosomeFill" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#8d77ff" />
-                    <stop offset="100%" stop-color="#60d8ff" />
-                  </linearGradient>
-                  <linearGradient id="spindle" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#67f0e5" stop-opacity="0.1" />
-                    <stop offset="50%" stop-color="#67f0e5" stop-opacity="0.75" />
-                    <stop offset="100%" stop-color="#67f0e5" stop-opacity="0.1" />
-                  </linearGradient>
-                  <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
-                    <feGaussianBlur stdDeviation="4" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-                <g id="stageRoot"></g>
-              </svg>
-            </div>
-          </div>
-
-          <div class="timeline">
-            <button class="btn" id="playBtn" type="button">播放</button>
-            <button class="btn secondary" id="resetBtn" type="button">重置</button>
-            <div class="scrub" aria-hidden="true">
-              <div class="scrub-fill" id="scrubFill"></div>
-            </div>
-          </div>
-
-          <div class="hint">
-            说明：这里使用教学化的 n / 2n 表示法，方便演示 DNA 含量、染色体数和姐妹染色单体的变化趋势。
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <div class="panel-title">
-              <strong>进度折线图</strong>
-              <span>拖动图表区域即可控制左侧动画进度</span>
-            </div>
-            <div class="phase-pill" id="progressText">0%</div>
-          </div>
-
-          <div class="chart">
-            <div class="chart-stack">
-              <div class="mini-chart">
-                <div class="mini-chart-head">
-                  <div class="mini-chart-head-left">
-                    <strong>DNA</strong>
-                    <span>DNA 含量变化</span>
-                  </div>
-                  <div class="mini-chart-head-right">
-                    <div class="chart-key">
-                      <span class="chart-key-line" style="background: linear-gradient(90deg, #67f0e5, #50c6ff); color: #1f77b4;"></span>
-                      <span>DNA 含量</span>
-                    </div>
-                    <div class="metric-inline">
-                      <span class="label">当前值</span>
-                      <span class="value" id="dnaValue">1.0n</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="chart-shell" id="dnaChartShell">
-                  <svg viewBox="0 0 700 240" aria-label="DNA折线图">
-                    <defs>
-                      <linearGradient id="dnaLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#67f0e5" />
-                        <stop offset="100%" stop-color="#50c6ff" />
-                      </linearGradient>
-                    </defs>
-                    <g id="dnaChartRoot"></g>
-                    <g id="dnaCursorRoot"></g>
-                  </svg>
-                </div>
-              </div>
-
-              <div class="mini-chart">
-                <div class="mini-chart-head">
-                  <div class="mini-chart-head-left">
-                    <strong>染色体</strong>
-                    <span>染色体数变化</span>
-                  </div>
-                  <div class="mini-chart-head-right">
-                    <div class="chart-key">
-                      <span class="chart-key-line" style="background: linear-gradient(90deg, #9f8cff, #d06bff); color: #ff7f0e;"></span>
-                      <span>染色体数</span>
-                    </div>
-                    <div class="metric-inline">
-                      <span class="label">当前值</span>
-                      <span class="value" id="chrValue">1.0n</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="chart-shell" id="chrChartShell">
-                  <svg viewBox="0 0 700 240" aria-label="染色体折线图">
-                    <defs>
-                      <linearGradient id="chrLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#9f8cff" />
-                        <stop offset="100%" stop-color="#d06bff" />
-                      </linearGradient>
-                    </defs>
-                    <g id="chrChartRoot"></g>
-                    <g id="chrCursorRoot"></g>
-                  </svg>
-                </div>
-              </div>
-
-              <div class="mini-chart">
-                <div class="mini-chart-head">
-                  <div class="mini-chart-head-left">
-                    <strong>姐妹染色单体</strong>
-                    <span>姐妹染色单体变化</span>
-                  </div>
-                  <div class="mini-chart-head-right">
-                    <div class="chart-key">
-                      <span class="chart-key-line" style="background: linear-gradient(90deg, #ffd166, #ff7aa2); color: #2ca02c;"></span>
-                      <span>姐妹染色单体</span>
-                    </div>
-                    <div class="metric-inline">
-                      <span class="label">当前值</span>
-                      <span class="value" id="sisValue">0.0n</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="chart-shell" id="sisChartShell">
-                  <svg viewBox="0 0 700 240" aria-label="姐妹染色单体折线图">
-                    <defs>
-                      <linearGradient id="sisLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#ffd166" />
-                        <stop offset="100%" stop-color="#ff7aa2" />
-                      </linearGradient>
-                    </defs>
-                    <g id="sisChartRoot"></g>
-                    <g id="sisCursorRoot"></g>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <script>
-      (() => {
-        const state = {
-          progress: 0,
-          playing: false,
-          dragging: false,
-          dragShell: null,
-          lastTs: 0,
-        };
-
-        const els = {
-          phaseText: document.getElementById("phaseText"),
-          progressText: document.getElementById("progressText"),
-          playBtn: document.getElementById("playBtn"),
-          resetBtn: document.getElementById("resetBtn"),
-          stageRoot: document.getElementById("stageRoot"),
-          dnaChartRoot: document.getElementById("dnaChartRoot"),
-          chrChartRoot: document.getElementById("chrChartRoot"),
-          sisChartRoot: document.getElementById("sisChartRoot"),
-          dnaCursorRoot: document.getElementById("dnaCursorRoot"),
-          chrCursorRoot: document.getElementById("chrCursorRoot"),
-          sisCursorRoot: document.getElementById("sisCursorRoot"),
-          dnaChartShell: document.getElementById("dnaChartShell"),
-          chrChartShell: document.getElementById("chrChartShell"),
-          sisChartShell: document.getElementById("sisChartShell"),
-          scrubFill: document.getElementById("scrubFill"),
-          dnaValue: document.getElementById("dnaValue"),
-          chrValue: document.getElementById("chrValue"),
-          sisValue: document.getElementById("sisValue"),
-        };
-
-        const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-        const lerp = (a, b, t) => a + (b - a) * t;
-
-        const phaseBands = [
-          { start: 0, end: 0.2, label: "间期" },
-          { start: 0.2, end: 0.36, label: "前期" },
-          { start: 0.36, end: 0.58, label: "中期" },
-          { start: 0.58, end: 0.82, label: "后期" },
-          { start: 0.82, end: 1, label: "末期" },
-        ];
-
-        const chartConfigs = {
-          dna: {
-            label: "DNA 含量",
-            color: "#1f77b4",
-            markerType: "circle",
-            points: [
-              [0, 1],
-              [0.1, 1],
-              [0.16, 2],
-              [0.82, 2],
-              [0.82, 1],
-              [1, 1],
-            ],
-          },
-          chr: {
-            label: "染色体数",
-            color: "#ff7f0e",
-            markerType: "square",
-            points: [
-              [0, 1],
-              [0.36, 1],
-              [0.58, 1],
-              [0.58, 2],
-              [0.82, 2],
-              [0.82, 1],
-              [1, 1],
-            ],
-          },
-          sister: {
-            label: "姐妹染色单体",
-            color: "#2ca02c",
-            markerType: "triangle",
-            points: [
-              [0, 0],
-              [0.1, 0],
-              [0.16, 2],
-              [0.58, 2],
-              [0.58, 0],
-              [1, 0],
-            ],
-          },
-        };
-
-        function samplePointSeries(points, p) {
-          if (p <= points[0][0]) return points[0][1];
-          for (let i = 0; i < points.length - 1; i++) {
-            const [x1, y1] = points[i];
-            const [x2, y2] = points[i + 1];
-            if (p <= x2) {
-              const span = x2 - x1 || 1;
-              const t = clamp((p - x1) / span, 0, 1);
-              return lerp(y1, y2, t);
-            }
-          }
-          return points[points.length - 1][1];
-        }
-
-        function getSeries(p) {
-          return {
-            dna: samplePointSeries(chartConfigs.dna.points, p),
-            chr: samplePointSeries(chartConfigs.chr.points, p),
-            sister: samplePointSeries(chartConfigs.sister.points, p),
-          };
-        }
-
-        function phaseName(p) {
-          if (p < 0.2) return "间期";
-          if (p < 0.36) return "前期";
-          if (p < 0.58) return "中期";
-          if (p < 0.82) return "后期";
-          return "末期 / 细胞质分裂";
-        }
-
-        function phaseDescription(p) {
-          if (p < 0.2) return "染色质呈细丝状散布于细胞核中，DNA复制完成（S期），为细胞分裂做准备";
-          if (p < 0.36) return "染色质螺旋化缩短变粗→可见染色体（每条含两条姐妹染色单体），核膜核仁逐渐消失，纺锤体形成";
-          if (p < 0.58) return "所有染色体的着丝粒排列在细胞中央的赤道板上，纺锤丝与着丝粒相连，染色体形态最清晰、数目最易观察";
-          if (p < 0.82) return "着丝粒分裂，姐妹染色单体分开成为子染色体，纺锤丝牵引子染色体移向两极；后期末细胞膜从上下两侧向内凹陷（分裂沟）";
-          return "染色体解螺旋→染色质，核膜核仁重新出现，纺锤体消失，两个子细胞已分离并逐渐拉开距离";
-        }
-
-        function makePolylinePath(points, xFor, yFor) {
-          if (!points.length) return "";
-          return points
-            .map(([p, v], index) => `${index === 0 ? "M" : "L"} ${xFor(p).toFixed(1)} ${yFor(v).toFixed(1)}`)
-            .join(" ");
-        }
-
-        function buildChartPanel(rootEl, points, lineColor, shellTitle, markerType) {
-          const w = 700;
-          const h = 240;
-          const pad = { l: 70, r: 24, t: 20, b: 56 };
-          const innerW = w - pad.l - pad.r;
-          const innerH = h - pad.t - pad.b;
-          const xFor = (p) => pad.l + innerW * p;
-          const yFor = (v) => pad.t + innerH * (1 - v / 2);
-          const cornerPoints = [];
-          points.forEach(([p, v]) => cornerPoints.push([xFor(p), yFor(v)]));
-
-          const grid = [];
-          const yTicks = [0, 1, 2];
-          for (const tick of yTicks) {
-            const y = yFor(tick);
-            grid.push(`<line x1="${pad.l}" y1="${y}" x2="${w - pad.r}" y2="${y}" stroke="#d9d9d9" stroke-width="1" stroke-dasharray="6 4" />`);
-          }
-          for (let i = 0; i < phaseBands.length; i++) {
-            const x = xFor(phaseBands[i].start);
-            grid.push(`<line x1="${x}" y1="${pad.t}" x2="${x}" y2="${h - pad.b}" stroke="#e1e1e1" stroke-width="1" stroke-dasharray="6 4" />`);
-          }
-          grid.push(`<line x1="${xFor(1)}" y1="${pad.t}" x2="${xFor(1)}" y2="${h - pad.b}" stroke="#e1e1e1" stroke-width="1" stroke-dasharray="6 4" />`);
-
-          const markers = cornerPoints
-            .map(([x, y]) => {
-              if (markerType === "square") {
-                return `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" fill="${lineColor}" stroke="${lineColor}" />`;
-              }
-              if (markerType === "triangle") {
-                return `<polygon points="${x},${y - 6} ${x - 6},${y + 5} ${x + 6},${y + 5}" fill="${lineColor}" stroke="${lineColor}" />`;
-              }
-              return `<circle cx="${x}" cy="${y}" r="5.5" fill="${lineColor}" stroke="${lineColor}" />`;
-            })
-            .join("");
-
-          const xLabels = phaseBands
-            .map(({ start, end, label }) => {
-              const center = xFor((start + end) / 2);
-              return `<text x="${center}" y="${h - 18}" text-anchor="middle" fill="#222222" font-size="13" font-weight="700">${label}</text>`;
-            })
-            .join("");
-
-          const axisY = h - pad.b;
-          const boundaryLabels = phaseBands
-            .slice(0, -1)
-            .map((band) => {
-              const x = xFor(band.end);
-              const text = `${band.label}结束`;
-              return `
-                <g>
-                  <line x1="${x}" y1="${axisY}" x2="${x}" y2="${axisY - 11}" stroke="#1f2937" stroke-width="1.2" />
-                  <rect x="${x - 34}" y="${axisY - 34}" width="68" height="20" rx="8" fill="#f4f7fb" stroke="#9aa4b2" />
-                  <text x="${x}" y="${axisY - 20}" text-anchor="middle" fill="#111827" font-size="11" font-weight="700">${text}</text>
-                </g>
-              `;
-            })
-            .join("");
-          const axisPath = `M ${xFor(0).toFixed(1)} ${axisY.toFixed(1)} H ${xFor(1).toFixed(1)}`;
-
-          const yLabels = `
-            <text x="18" y="${yFor(2) + 4}" fill="#222222" font-size="12">2n</text>
-            <text x="24" y="${yFor(1) + 4}" fill="#222222" font-size="12">n</text>
-            <text x="24" y="${yFor(0) + 4}" fill="#222222" font-size="12">0</text>
-          `;
-
-          rootEl.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="${h}" rx="16" fill="#ffffff" />
-            <g opacity="0.95">${grid.join("")}</g>
-            <path d="${makePolylinePath(points, xFor, yFor)}" fill="none" stroke="${lineColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-            ${markers}
-            <line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${h - pad.b}" stroke="#1f2937" stroke-width="1.2" />
-            <path d="${axisPath}" fill="none" stroke="#1f2937" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
-            ${boundaryLabels}
-            <g>
-              ${yLabels}
-              ${xLabels}
-              <text x="${pad.l + innerW / 2}" y="${h - 2}" text-anchor="middle" fill="#222222" font-size="12">分裂阶段</text>
-            </g>
-          `;
-        }
-
-        // Draw a duplicated chromosome (X-shaped, two sister chromatids joined at centromere)
-        // Centered at (0,0) in local coords, arms extend ~40px vertically
-        function dupChromosome(armLen, strokeW) {
-          const L = armLen || 38;
-          const sw = strokeW || 8;
-          return `
-            <g filter="url(#softGlow)">
-              <!-- Left chromatid: upper + lower arms -->
-              <path d="M -5,0 C -14,-10, -16,-24, -12,-${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
-              <path d="M -5,0 C -14,10, -16,24, -12,${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
-              <!-- Right chromatid: upper + lower arms -->
-              <path d="M 5,0 C 14,-10, 16,-24, 12,-${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
-              <path d="M 5,0 C 14,10, 16,24, 12,${L}" fill="none" stroke="url(#chromosomeFill)" stroke-width="${sw}" stroke-linecap="round"/>
-              <!-- Centromere -->
-              <circle cx="0" cy="0" r="6.5" fill="rgba(20,20,40,0.5)" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"/>
-              <circle cx="0" cy="0" r="2.5" fill="rgba(255,255,255,0.7)"/>
-            </g>
-          `;
-        }
-
-        // Draw a single chromatid (after separation), rod-shaped
-        function singleChromatid(armLen, strokeW) {
-          const L = armLen || 38;
-          const sw = strokeW || 8;
-          return `
-            <g filter="url(#softGlow)">
-              <path d="M 0,-${L} C -4,-20, -5,-8, 0,0 C 5,-8, 4,-20, 0,-${L}" fill="url(#chromosomeFill)" stroke="none"/>
-              <ellipse cx="0" cy="0" rx="3.5" ry="5" fill="rgba(20,20,40,0.55)" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>
-            </g>
-          `;
-        }
-
-        // ---- Persistent DOM references (created once, updated each frame) ----
-        let stageDom = null;
-
-        function buildStageDOM() {
-          // Build the full SVG structure once; each element gets an id for fast updates
-          let html = '<text id="phaseLabel" x="40" y="48" fill="rgba(220,233,255,0.82)" font-size="16"></text>';
-
-          // Membrane: ellipse (pre-cleavage)
-          html += '<ellipse id="membraneOval" cx="400" cy="270" rx="195" ry="178" fill="none" stroke="url(#cellStroke)" stroke-width="7" style="display:block"/>';
-          // Membrane: peanut path (cleavage)
-          html += '<path id="membranePeanut" fill="none" stroke="url(#cellStroke)" stroke-width="7" stroke-linejoin="round" style="display:none"/>';
-          // Membrane: two daughter ellipses
-          html += '<ellipse id="membraneD1" cx="308" cy="270" rx="110" ry="150" stroke="url(#cellStroke)" stroke-width="6" style="display:none"/>';
-          html += '<ellipse id="membraneD2" cx="492" cy="270" rx="110" ry="150" stroke="url(#cellStroke)" stroke-width="6" style="display:none"/>';
-
-          // Spindle poles
-          html += '<g id="poleGroup" style="display:none">';
-          html += '<circle id="poleLOuter" cx="210" cy="270" r="18" fill="rgba(110,231,255,0.2)" stroke="rgba(110,231,255,0.4)" stroke-width="1.8"/>';
-          html += '<circle id="poleLInner" cx="210" cy="270" r="6" fill="rgba(110,231,255,0.5)"/>';
-          html += '<circle id="poleROuter" cx="590" cy="270" r="18" fill="rgba(110,231,255,0.2)" stroke="rgba(110,231,255,0.4)" stroke-width="1.8"/>';
-          html += '<circle id="poleRInner" cx="590" cy="270" r="6" fill="rgba(110,231,255,0.5)"/>';
-          // Astral rays (5 per pole)
-          for (let a = 0; a < 5; a++) {
-            html += `<line id="astralL${a}" stroke="rgba(110,231,255,0.3)" stroke-width="1" stroke-linecap="round"/>`;
-            html += `<line id="astralR${a}" stroke="rgba(110,231,255,0.3)" stroke-width="1" stroke-linecap="round"/>`;
-          }
-          html += '</g>';
-
-          // Spindle fibers: 4 chr × 2 poles = 8 kinetochore fibers + 5 polar fibers
-          html += '<g id="spindleGroup" style="display:none">';
-          for (let i = 0; i < 8; i++) html += `<line id="spinK${i}" stroke="rgba(110,231,255,0.22)" stroke-width="1.6"/>`;
-          for (let i = 0; i < 5; i++) html += `<line id="spinP${i}" stroke="rgba(160,210,255,0.06)" stroke-width="1.2"/>`;
-          html += '</g>';
-
-          // Main nucleus (interphase/prophase): envelope + nucleolus
-          html += '<g id="nucleusMain" style="display:block">';
-          html += '<circle id="nucEnv" cx="400" cy="270" r="105" fill="rgba(145,178,255,0.06)" stroke="rgba(180,213,255,0.45)" stroke-width="2.5"/>';
-          html += '<circle id="nucNucleolus" cx="400" cy="270" r="28" fill="rgba(110,231,255,0.12)" stroke="rgba(110,231,255,0.35)" stroke-width="1.6"/>';
-          html += '</g>';
-
-          // Daughter nuclei (telophase)
-          html += '<g id="nucleusDaughters" style="display:none">';
-          html += '<circle id="nucD1" cx="308" cy="270" r="45" fill="rgba(145,178,255,0.06)" stroke="rgba(180,213,255,0.4)" stroke-width="2.2"/>';
-          html += '<circle id="nucD2" cx="492" cy="270" r="45" fill="rgba(145,178,255,0.06)" stroke="rgba(180,213,255,0.4)" stroke-width="2.2"/>';
-          html += '</g>';
-
-          // Chromatin threads (8 max)
-          html += '<g id="chromatinGroup">';
-          for (let i = 0; i < 8; i++) html += `<path id="chromatin${i}" fill="none" stroke-linecap="round"/>`;
-          html += '</g>';
-
-          // 4 duplicated chromosomes (prophase/metaphase)
-          html += '<g id="dupChromGroup">';
-          for (let i = 0; i < 4; i++) html += `<g id="dupChrom${i}" style="display:none">${dupChromosome(38, 7.5)}</g>`;
-          html += '</g>';
-
-          // 8 single chromatids (anaphase/telophase) — 2 per original chromosome
-          html += '<g id="singleChromGroup">';
-          for (let i = 0; i < 8; i++) html += `<g id="singleChrom${i}" style="display:none">${singleChromatid(36, 7)}</g>`;
-          html += '</g>';
-
-          // Equator line
-          html += '<g id="equatorGroup" style="display:none">';
-          html += '<line id="equatorLine" stroke="rgba(110,231,255,0.35)" stroke-width="2" stroke-dasharray="9 7"/>';
-          html += '<text id="equatorText" x="414" y="234" fill="rgba(200,225,255,0.7)" font-size="12">赤道板</text>';
-          html += '</g>';
-
-          // Cleavage arrows
-          html += '<g id="cleavageGroup" style="display:none">';
-          html += '<path id="cleavArrow1" fill="none" stroke="rgba(255,150,180,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
-          html += '<path id="cleavArrow2" fill="none" stroke="rgba(255,150,180,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
-          html += '<text id="cleavText" x="434" y="258" fill="rgba(255,180,200,0.75)" font-size="12">分裂沟</text>';
-          html += '</g>';
-
-          // Daughter labels
-          html += '<g id="daughterLabels" style="display:none">';
-          html += '<text id="labelD1" text-anchor="middle" fill="rgba(200,225,255,0.65)" font-size="13">子细胞</text>';
-          html += '<text id="labelD2" text-anchor="middle" fill="rgba(200,225,255,0.65)" font-size="13">子细胞</text>';
-          html += '</g>';
-
-          els.stageRoot.innerHTML = html;
-          stageDom = true;
-        }
-
-        function renderStage(p) {
-          if (!stageDom) buildStageDOM();
-
-          const cellX = 400, cellY = 270, baseRX = 195, baseRY = 178;
-          const proPh  = clamp((p - 0.2) / 0.16, 0, 1);
-          const metaPh = clamp((p - 0.36) / 0.22, 0, 1);
-          const anaPh  = clamp((p - 0.58) / 0.24, 0, 1);
-          const teloPh = clamp((p - 0.82) / 0.18, 0, 1);
-          const sPhase = clamp((p - 0.06) / 0.12, 0, 1);
-
-          const envOut  = clamp(1 - proPh * 1.6, 0, 1);
-          const envBack = clamp((teloPh - 0.1) / 0.7, 0, 1);
-          const spinVis = clamp((p - 0.26) / 0.1, 0, 1) * clamp(1 - (p - 0.78) / 0.06, 0, 1);
-
-          const cellRX = baseRX + anaPh * 45;
-          const cellRY = baseRY - anaPh * 12;
-          const poleLX = cellX - cellRX + 4;
-          const poleRX = cellX + cellRX - 4;
-          const poleY = cellY;
-
-          // ---- Phase label ----
-          document.getElementById('phaseLabel').textContent = `${phaseName(p)}：${phaseDescription(p)}`;
-
-          // ---- Membrane ----
-          const memOval = document.getElementById('membraneOval');
-          const memPeanut = document.getElementById('membranePeanut');
-          const memD1 = document.getElementById('membraneD1');
-          const memD2 = document.getElementById('membraneD2');
-          let sepShift = 0;
-
-          // Cleavage: two overlapping ellipses progressively separate (p 0.64→0.82), creates natural furrow
-          const cleavePinch = clamp((p - 0.64) / 0.18, 0, 1);
-
-          if (p < 0.64) {
-            // Pre-cleavage: normal oval / elongating cell
-            memOval.style.display = 'block'; memPeanut.style.display = 'none';
-            memD1.style.display = 'none'; memD2.style.display = 'none';
-            memOval.setAttribute('cx', cellX); memOval.setAttribute('cy', cellY);
-            memOval.setAttribute('rx', cellRX); memOval.setAttribute('ry', cellRY);
-          } else if (p < 0.82) {
-            // Cleavage: two overlapping ellipses with fill to create natural furrow
-            memOval.style.display = 'none'; memPeanut.style.display = 'none';
-            memD1.style.display = 'block'; memD2.style.display = 'block';
-            const sep = cleavePinch * 92;
-            const lobeRX = cellRX * (1 - cleavePinch * 0.15);
-            const lobeRY = cellRY * (1 - cleavePinch * 0.08);
-            // Dark fill to mask overlapping strokes inside each lobe
-            const darkFill = 'rgba(7,14,24,0.92)';
-            [memD1, memD2].forEach(m => m.setAttribute('fill', darkFill));
-            memD1.setAttribute('cx', cellX - sep); memD1.setAttribute('cy', cellY);
-            memD1.setAttribute('rx', lobeRX); memD1.setAttribute('ry', lobeRY);
-            memD2.setAttribute('cx', cellX + sep); memD2.setAttribute('cy', cellY);
-            memD2.setAttribute('rx', lobeRX); memD2.setAttribute('ry', lobeRY);
-          } else {
-            // Two separate daughter cells from p=0.82 (end of anaphase) onwards
-            memOval.style.display = 'none'; memPeanut.style.display = 'none';
-            memD1.style.display = 'block'; memD2.style.display = 'block';
-            const drift = clamp(teloPh * 1.2, 0, 1);
-            sepShift = drift * 28;
-            const dRX = cellRX * 0.55, dRY = cellRY * 0.85;
-            [memD1, memD2].forEach(m => m.setAttribute('fill', 'none'));
-            memD1.setAttribute('cx', cellX - 92 - sepShift); memD1.setAttribute('cy', cellY);
-            memD1.setAttribute('rx', dRX); memD1.setAttribute('ry', dRY);
-            memD2.setAttribute('cx', cellX + 92 + sepShift); memD2.setAttribute('cy', cellY);
-            memD2.setAttribute('rx', dRX); memD2.setAttribute('ry', dRY);
-          }
-
-          // ---- Spindle poles ----
-          const poleG = document.getElementById('poleGroup');
-          if (spinVis > 0.01) {
-            poleG.style.display = 'block';
-            poleG.setAttribute('opacity', (spinVis * 0.9).toFixed(2));
-            document.getElementById('poleLOuter').setAttribute('cx', poleLX);
-            document.getElementById('poleLInner').setAttribute('cx', poleLX);
-            document.getElementById('poleROuter').setAttribute('cx', poleRX);
-            document.getElementById('poleRInner').setAttribute('cx', poleRX);
-            const angles = [-60, -30, 0, 30, 60];
-            for (let a = 0; a < 5; a++) {
-              const rad = angles[a] * Math.PI / 180;
-              const dx = Math.cos(rad) * 28, dy = Math.sin(rad) * 28;
-              document.getElementById(`astralL${a}`).setAttribute('x1', poleLX);
-              document.getElementById(`astralL${a}`).setAttribute('y1', poleY);
-              document.getElementById(`astralL${a}`).setAttribute('x2', poleLX + dx);
-              document.getElementById(`astralL${a}`).setAttribute('y2', poleY + dy);
-              document.getElementById(`astralR${a}`).setAttribute('x1', poleRX);
-              document.getElementById(`astralR${a}`).setAttribute('y1', poleY);
-              document.getElementById(`astralR${a}`).setAttribute('x2', poleRX - dx);
-              document.getElementById(`astralR${a}`).setAttribute('y2', poleY + dy);
-            }
-          } else {
-            poleG.style.display = 'none';
-          }
-
-          // ---- Nuclear envelope ----
-          const nucMain = document.getElementById('nucleusMain');
-          if (envOut > 0.01) {
-            nucMain.style.display = 'block';
-            nucMain.setAttribute('opacity', envOut.toFixed(2));
-            const nr = 105 - proPh * 50;
-            document.getElementById('nucEnv').setAttribute('r', nr);
-            document.getElementById('nucEnv').setAttribute('stroke-dasharray', proPh > 0.6 ? '8 4' : 'none');
-            document.getElementById('nucNucleolus').setAttribute('r', 28 - proPh * 20);
-          } else {
-            nucMain.style.display = 'none';
-          }
-
-          const nucDau = document.getElementById('nucleusDaughters');
-          if (envBack > 0.01) {
-            nucDau.style.display = 'block';
-            nucDau.setAttribute('opacity', envBack.toFixed(2));
-            const dr = 45 + envBack * 30;
-            document.getElementById('nucD1').setAttribute('cx', cellX - 92 - sepShift);
-            document.getElementById('nucD1').setAttribute('r', dr);
-            document.getElementById('nucD2').setAttribute('cx', cellX + 92 + sepShift);
-            document.getElementById('nucD2').setAttribute('r', dr);
-          } else {
-            nucDau.style.display = 'none';
-          }
-
-          // ---- Chromatin ----
-          const chromaVis = clamp(1 - proPh * 2.5, 0, 1);
-          const threadCount = 5 + Math.floor(sPhase * 3);
-          for (let i = 0; i < 8; i++) {
-            const el = document.getElementById(`chromatin${i}`);
-            if (i < threadCount && chromaVis > 0.01) {
-              el.style.display = 'block';
-              const seed = i * 1.7;
-              const ampX = 55 + i * 3, ampY = 38 + i * 2;
-              const cx = cellX + Math.cos(seed) * 12, cy = cellY + Math.sin(seed * 1.3) * 8;
-              const a1 = seed + p * 2, a2 = seed + 1.8 + p * 1.5;
-              const d = `M ${cx + Math.cos(a1) * ampX} ${cy + Math.sin(a2) * ampY} ` +
-                `Q ${cx + Math.cos(a1 + 1.5) * ampX * 0.5} ${cy + Math.sin(a2 + 0.8) * ampY * 0.5},` +
-                  `${cx + Math.cos(a1 + 3) * ampX * 0.3} ${cy + Math.sin(a2 + 2.2) * ampY * 0.3} ` +
-                `T ${cx + Math.cos(a1 + 5.5) * ampX * 0.6} ${cy + Math.sin(a2 + 3.5) * ampY * 0.6}`;
-              el.setAttribute('d', d);
-              el.setAttribute('stroke', `rgba(160,210,255,${0.65 + i * 0.04})`);
-              el.setAttribute('stroke-width', 1.0 + i * 0.15);
-              el.setAttribute('opacity', chromaVis.toFixed(2));
-            } else {
-              el.style.display = 'none';
-            }
-          }
-
-          // ---- Chromosomes ----
-          const equY = [208, 244, 280, 316];
-          const initPos = [[-68, -48], [72, -52], [-58, 44], [66, 50]];
-          const condScaleArr = [], condOpArr = [], congXArr = [], congYArr = [];
-          const leftXArr = [], rightXArr = [], teloDecondArr = [];
-
-          for (let i = 0; i < 4; i++) {
-            const [ix, iy] = initPos[i];
-            condScaleArr[i] = lerp(0.22, 1.0, clamp(proPh * 1.1, 0, 1));
-            condOpArr[i] = lerp(0, 1, clamp(proPh * 1.1, 0, 1));
-            congXArr[i] = lerp(ix * (1 - proPh), 0, metaPh);
-            congYArr[i] = lerp(iy * (1 - proPh), equY[i] - cellY, metaPh);
-            const sepDist = anaPh * 92;
-            leftXArr[i] = congXArr[i] - sepDist;
-            rightXArr[i] = congXArr[i] + sepDist;
-            teloDecondArr[i] = clamp((teloPh - 0.5) / 0.5, 0, 1);
-          }
-
-          // Duplicated chromosomes (prophase/metaphase) — split at p=0.58 (anaphase start)
-          if (p < 0.58) {
-            document.getElementById('dupChromGroup').style.display = 'block';
-            document.getElementById('singleChromGroup').style.display = 'none';
-            for (let i = 0; i < 4; i++) {
-              const el = document.getElementById(`dupChrom${i}`);
-              const cx = cellX + congXArr[i], cy = cellY + congYArr[i];
-              const sc = condScaleArr[i] * (1 - teloDecondArr[i] * 0.7);
-              const op = condOpArr[i] * (1 - teloDecondArr[i]);
-              if (op > 0.02) {
-                el.style.display = 'block';
-                el.setAttribute('transform', `translate(${cx.toFixed(1)},${cy.toFixed(1)}) scale(${sc.toFixed(3)})`);
-                el.setAttribute('opacity', op.toFixed(2));
-              } else {
-                el.style.display = 'none';
-              }
-            }
-          } else {
-            // Single chromatids (anaphase/telophase)
-            document.getElementById('dupChromGroup').style.display = 'none';
-            document.getElementById('singleChromGroup').style.display = 'block';
-            for (let i = 0; i < 4; i++) {
-              const lx = cellX + leftXArr[i] - sepShift;
-              const rx = cellX + rightXArr[i] + sepShift;
-              const sc = condScaleArr[i] * (1 - teloDecondArr[i] * 0.65) * 0.85;
-              const op = 1 - teloDecondArr[i] * 0.6;
-              const elL = document.getElementById(`singleChrom${i * 2}`);
-              const elR = document.getElementById(`singleChrom${i * 2 + 1}`);
-              if (op > 0.02) {
-                elL.style.display = 'block'; elR.style.display = 'block';
-                elL.setAttribute('transform', `translate(${lx.toFixed(1)},${(cellY + congYArr[i]).toFixed(1)}) scale(${sc.toFixed(3)})`);
-                elR.setAttribute('transform', `translate(${rx.toFixed(1)},${(cellY + congYArr[i]).toFixed(1)}) scale(${sc.toFixed(3)})`);
-                elL.setAttribute('opacity', op.toFixed(2));
-                elR.setAttribute('opacity', op.toFixed(2));
-              } else {
-                elL.style.display = 'none'; elR.style.display = 'none';
-              }
-            }
-          }
-
-          // ---- Spindle fibers ----
-          const spinG = document.getElementById('spindleGroup');
-          if (spinVis > 0.01) {
-            spinG.style.display = 'block';
-            let fi = 0;
-            for (let i = 0; i < 4; i++) {
-              const cx = cellX + congXArr[i], cy = cellY + congYArr[i];
-              if (p >= 0.58) {
-                const lx = cellX + leftXArr[i] - sepShift;
-                const rx = cellX + rightXArr[i] + sepShift;
-                document.getElementById(`spinK${fi}`).setAttribute('x1', lx);
-                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
-                document.getElementById(`spinK${fi}`).setAttribute('x2', poleLX);
-                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
-                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.25 * spinVis).toFixed(2)})`);
-                document.getElementById(`spinK${fi}`).setAttribute('x1', rx);
-                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
-                document.getElementById(`spinK${fi}`).setAttribute('x2', poleRX);
-                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
-                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.25 * spinVis).toFixed(2)})`);
-              } else {
-                document.getElementById(`spinK${fi}`).setAttribute('x1', cx);
-                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
-                document.getElementById(`spinK${fi}`).setAttribute('x2', poleLX);
-                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
-                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.15 * spinVis).toFixed(2)})`);
-                document.getElementById(`spinK${fi}`).setAttribute('x1', cx);
-                document.getElementById(`spinK${fi}`).setAttribute('y1', cy);
-                document.getElementById(`spinK${fi}`).setAttribute('x2', poleRX);
-                document.getElementById(`spinK${fi}`).setAttribute('y2', poleY);
-                document.getElementById(`spinK${fi++}`).setAttribute('stroke', `rgba(110,231,255,${(0.15 * spinVis).toFixed(2)})`);
-              }
-            }
-            for (let k = 0; k < 5; k++) {
-              const dy = (k - 2) * 32;
-              const el = document.getElementById(`spinP${k}`);
-              el.setAttribute('x1', poleLX);
-              el.setAttribute('y1', poleY + dy);
-              el.setAttribute('x2', poleRX);
-              el.setAttribute('y2', poleY + dy);
-              el.setAttribute('stroke', `rgba(160,210,255,${(0.06 * spinVis).toFixed(3)})`);
-            }
-          } else {
-            spinG.style.display = 'none';
-          }
-
-          // ---- Equator ----
-          const eqG = document.getElementById('equatorGroup');
-          if (metaPh > 0.1 && anaPh < 0.3) {
-            eqG.style.display = 'block';
-            eqG.setAttribute('opacity', Math.min(metaPh * 1.2, (1 - anaPh) * 3).toFixed(2));
-            document.getElementById('equatorLine').setAttribute('x1', cellX);
-            document.getElementById('equatorLine').setAttribute('y1', cellY - cellRY + 20);
-            document.getElementById('equatorLine').setAttribute('x2', cellX);
-            document.getElementById('equatorLine').setAttribute('y2', cellY + cellRY - 20);
-            document.getElementById('equatorText').setAttribute('x', cellX + 14);
-            document.getElementById('equatorText').setAttribute('y', cellY - cellRY + 36);
-          } else {
-            eqG.style.display = 'none';
-          }
-
-          // ---- Cleavage arrows (during anaphase pinching, p 0.67→0.82) ----
-          const cleavG = document.getElementById('cleavageGroup');
-          if (p > 0.67 && p < 0.82) {
-            cleavG.style.display = 'block';
-            cleavG.setAttribute('opacity', (clamp((p - 0.67) / 0.05, 0, 1) * clamp(1 - (p - 0.79) / 0.03, 0, 1)).toFixed(2));
-            const cy1 = cellY - cellRY, cy2 = cellY + cellRY;
-            document.getElementById('cleavArrow1').setAttribute('d', `M ${cellX + 26} ${cy1 + 38} L ${cellX + 10} ${cy1 + 64} L ${cellX + 26} ${cy1 + 50}`);
-            document.getElementById('cleavArrow2').setAttribute('d', `M ${cellX + 26} ${cy2 - 38} L ${cellX + 10} ${cy2 - 64} L ${cellX + 26} ${cy2 - 50}`);
-            document.getElementById('cleavText').setAttribute('x', cellX + 34);
-            document.getElementById('cleavText').setAttribute('y', cellY - 12);
-          } else {
-            cleavG.style.display = 'none';
-          }
-
-          // ---- Daughter labels (appear near end of anaphase, p ≥ 0.80) ----
-          const dlG = document.getElementById('daughterLabels');
-          if (p >= 0.8) {
-            dlG.style.display = 'block';
-            dlG.setAttribute('opacity', clamp((p - 0.8) / 0.1, 0, 1).toFixed(2));
-            document.getElementById('labelD1').setAttribute('x', cellX - 92 - sepShift);
-            document.getElementById('labelD1').setAttribute('y', cellY + cellRY - 26);
-            document.getElementById('labelD2').setAttribute('x', cellX + 92 + sepShift);
-            document.getElementById('labelD2').setAttribute('y', cellY + cellRY - 26);
-          } else {
-            dlG.style.display = 'none';
-          }
-        }
-
-        function buildChartsOnce() {
-          if (buildChartsOnce.done) return;
-          buildChartsOnce.done = true;
-          buildChartPanel(els.dnaChartRoot, chartConfigs.dna.points, chartConfigs.dna.color, chartConfigs.dna.label, chartConfigs.dna.markerType);
-          buildChartPanel(els.chrChartRoot, chartConfigs.chr.points, chartConfigs.chr.color, chartConfigs.chr.label, chartConfigs.chr.markerType);
-          buildChartPanel(els.sisChartRoot, chartConfigs.sister.points, chartConfigs.sister.color, chartConfigs.sister.label, chartConfigs.sister.markerType);
-        }
-
-        function renderChartCursor(rootEl, p, value, color, label) {
-          const w = 700;
-          const h = 240;
-          const pad = { l: 70, r: 24, t: 20, b: 56 };
-          const innerW = w - pad.l - pad.r;
-          const innerH = h - pad.t - pad.b;
-          const x = pad.l + innerW * p;
-          const y = pad.t + innerH * (1 - value / 2);
-          const textY = Math.max(18, y - 12);
-
-          rootEl.innerHTML = `
-            <line x1="${x}" y1="${pad.t}" x2="${x}" y2="${h - pad.b}" stroke="rgba(60,60,60,0.7)" stroke-width="1.5" stroke-dasharray="6 6" />
-            <circle cx="${x}" cy="${y}" r="6.5" fill="${color}" stroke="#ffffff" stroke-width="2" />
-            <rect x="${Math.min(x + 8, w - 150)}" y="${Math.max(8, textY - 14)}" width="140" height="22" rx="6" fill="rgba(255,255,255,0.95)" stroke="rgba(0,0,0,0.12)" />
-            <text x="${Math.min(x + 14, w - 136)}" y="${textY}" fill="#111827" font-size="12" font-weight="700">${label}: ${value.toFixed(1)}n</text>
-          `;
-        }
-
-        function renderChartCursors(p) {
-          const s = getSeries(p);
-          renderChartCursor(els.dnaCursorRoot, p, s.dna, "#6ee7ff", "DNA");
-          renderChartCursor(els.chrCursorRoot, p, s.chr, "#c29cff", "染色体");
-          renderChartCursor(els.sisCursorRoot, p, s.sister, "#ffd166", "姐妹染色单体");
-        }
-
-        function render() {
-          const p = clamp(state.progress, 0, 1);
-          const series = getSeries(p);
-          els.phaseText.textContent = phaseName(p);
-          els.progressText.textContent = `${Math.round(p * 100)}%`;
-          els.dnaValue.textContent = `${series.dna.toFixed(1)}n`;
-          els.chrValue.textContent = `${series.chr.toFixed(1)}n`;
-          els.sisValue.textContent = `${series.sister.toFixed(1)}n`;
-          els.scrubFill.style.width = `${p * 100}%`;
-          renderStage(p);
-          buildChartsOnce();
-          renderChartCursors(p);
-        }
-
-        function setProgress(next) {
-          state.progress = clamp(next, 0, 1);
-          render();
-        }
-
-        function progressFromClientX(shell, clientX) {
-          const rect = shell.getBoundingClientRect();
-          return clamp((clientX - rect.left) / rect.width, 0, 1);
-        }
-
-        function beginDrag(shell, clientX) {
-          state.dragging = true;
-          state.dragShell = shell;
-          state.playing = false;
-          els.playBtn.textContent = "播放";
-          setProgress(progressFromClientX(shell, clientX));
-        }
-
-        function moveDrag(clientX) {
-          if (!state.dragging || !state.dragShell) return;
-          setProgress(progressFromClientX(state.dragShell, clientX));
-        }
-
-        function endDrag() {
-          state.dragging = false;
-          state.dragShell = null;
-        }
-
-        [els.dnaChartShell, els.chrChartShell, els.sisChartShell].forEach((shell) => {
-          shell.addEventListener("pointerdown", (e) => {
-            shell.setPointerCapture?.(e.pointerId);
-            beginDrag(shell, e.clientX);
-          });
-        });
-        window.addEventListener("pointermove", (e) => moveDrag(e.clientX));
-        window.addEventListener("pointerup", endDrag);
-        window.addEventListener("pointercancel", endDrag);
-
-        els.playBtn.addEventListener("click", () => {
-          state.playing = !state.playing;
-          els.playBtn.textContent = state.playing ? "暂停" : "播放";
-          if (state.playing) {
-            state.lastTs = performance.now();
-            requestAnimationFrame(tick);
+      });
+    }
+  } else {
+    // --- Single chromatids (anaphase + telophase) ---
+    dupChromGroup.visible = false;
+    singleChromGroup.visible = true;
+
+    const drift = clamp(teloPh * 1.2, 0, 1);
+    const finalSep = 1.8 + drift * 0.7;
+    const decond = clamp((teloPh - 0.25) / 0.75, 0, 1);
+
+    for (let i = 0; i < CHROM_COUNT; i++) {
+      const eqY = equatorPositions[i];
+      const sepDist = anaPh * 3.0;
+
+      for (let j = 0; j < 2; j++) {
+        const sc = singleChroms[i * 2 + j];
+        const side = j === 0 ? -1 : 1;
+
+        sc.visible = decond < 0.95;
+        if (!sc.visible) continue;
+
+        const x = lerp(side * sepDist, side * finalSep, drift);
+        sc.position.set(x, eqY * (1 - decond * 0.5), decond * (j === 0 ? -0.15 : 0.15));
+        sc.scale.setScalar(0.82 - decond * 0.55);
+        sc.rotation.set(decond * 0.8, j * Math.PI, decond * 1.0);
+
+        sc.children.forEach(c => {
+          if (c.material && c.material.opacity !== undefined) {
+            c.material.opacity = (1 - decond) * 0.85;
           }
         });
+      }
+    }
+  }
 
-        els.resetBtn.addEventListener("click", () => {
-          state.playing = false;
-          els.playBtn.textContent = "播放";
-          setProgress(0);
-        });
+  // ===== SPINDLE =====
+  if (spindleVis > 0.02) {
+    spindleGroup.visible = true;
+    const poleDist = anaPh * 0.25;
+    const lx = -3.0 - poleDist, rx = 3.0 + poleDist;
 
-        function tick(ts) {
-          if (!state.playing) return;
-          const delta = Math.min(0.03, (ts - state.lastTs) / 1000);
-          state.lastTs = ts;
-          setProgress(state.progress + delta * 0.16);
-          if (state.progress >= 1) {
-            state.playing = false;
-            els.playBtn.textContent = "播放";
-            return;
-          }
-          requestAnimationFrame(tick);
-        }
+    centrosomeL.position.set(lx, 0, 0);
+    centrosomeR.position.set(rx, 0, 0);
+    const csScl = 0.7 + spindleVis * 0.3;
+    centrosomeL.scale.setScalar(csScl);
+    centrosomeR.scale.setScalar(csScl);
 
-        buildChartsOnce();
-        setProgress(0);
-        window.addEventListener("resize", () => render());
-      })();
-    </script>
-  </body>
+    // Kinetochore fibers: connect centrosome to chromosome centromere
+    for (let i = 0; i < CHROM_COUNT; i++) {
+      const eqY = equatorPositions[i];
+      let cx1, cy1, cx2, cy2;
+
+      if (p < 0.58) {
+        const init = initPositions[i];
+        const tx = lerp(init.x * (1 - condense), 0, metaPh);
+        const ty = lerp(init.y * (1 - condense), eqY, metaPh);
+        cx1 = cx2 = tx; cy1 = cy2 = ty;
+      } else {
+        const sepDist = anaPh * 3.0;
+        const drift = clamp(teloPh * 1.2, 0, 1);
+        const fs = 1.8 + drift * 0.7;
+        cx1 = -sepDist; cy1 = eqY;
+        cx2 = sepDist;  cy2 = eqY;
+      }
+
+      const f1 = kinetochoreFibers[i * 2];
+      const f2 = kinetochoreFibers[i * 2 + 1];
+      f1.visible = spindleVis > 0.04;
+      f2.visible = spindleVis > 0.04;
+      if (f1.visible) { orientFiber(f1, cx1, cy1, 0, lx, 0, 0); f1.material.opacity = 0.22 * spindleVis; }
+      if (f2.visible) { orientFiber(f2, cx2, cy2, 0, rx, 0, 0); f2.material.opacity = 0.22 * spindleVis; }
+    }
+
+    // Polar fibers
+    for (let i = 0; i < 5; i++) {
+      const pf = polarFibers[i];
+      pf.visible = spindleVis > 0.04;
+      if (pf.visible) {
+        orientFiber(pf, lx, (i - 2) * 0.4, 0, rx, (i - 2) * 0.4, 0);
+        pf.material.opacity = 0.06 * spindleVis;
+      }
+    }
+  } else {
+    spindleGroup.visible = false;
+    kinetochoreFibers.forEach(f => f.visible = false);
+    polarFibers.forEach(f => f.visible = false);
+  }
+
+  // ===== UPDATE UI =====
+  const [phaseName, phaseDesc] = getPhaseInfo(p);
+  document.getElementById('phaseIndicator').childNodes[0].textContent = phaseName;
+  document.getElementById('phaseDesc').textContent = phaseDesc;
+
+  const dnaVal = sampleCurve(dnaPoints, p);
+  const chrVal = sampleCurve(chrPoints, p);
+  const sisVal = sampleCurve(sisPoints, p);
+
+  document.getElementById('dnaValue').textContent = dnaVal.toFixed(1) + 'n';
+  document.getElementById('chrValue').textContent = chrVal.toFixed(1) + 'n';
+  document.getElementById('sisValue').textContent = sisVal.toFixed(1) + 'n';
+
+  // Change indicators
+  document.getElementById('dnaChange').textContent = '→ ' + sampleCurve(dnaPoints, Math.min(1, p + 0.1)).toFixed(1) + 'n';
+  document.getElementById('chrChange').textContent = '→ ' + sampleCurve(chrPoints, Math.min(1, p + 0.1)).toFixed(1) + 'n';
+  document.getElementById('sisChange').textContent = '→ ' + sampleCurve(sisPoints, Math.min(1, p + 0.1)).toFixed(1) + 'n';
+
+  document.getElementById('dnaChange').className = 'change ' + getChangeTag(dnaVal, prevDna);
+  document.getElementById('chrChange').className = 'change ' + getChangeTag(chrVal, prevChr);
+  document.getElementById('sisChange').className = 'change ' + getChangeTag(sisVal, prevSis);
+  prevDna = dnaVal; prevChr = chrVal; prevSis = sisVal;
+
+  const pct = Math.round(p * 100);
+  document.getElementById('scrubFill').style.width = pct + '%';
+  document.getElementById('scrubThumb').style.left = pct + '%';
+
+  updateLabels();
+}
+
+// ========== ANIMATION LOOP ==========
+function animate(ts) {
+  requestAnimationFrame(animate);
+  if (state.playing) {
+    const delta = Math.min(0.05, (ts - state.lastTs) / 1000);
+    state.lastTs = ts;
+    const np = state.progress + delta * 0.12 * state.speed;
+    if (np >= 1) { state.progress = 1; state.playing = false; document.getElementById('playBtn').textContent = '▶'; }
+    else state.progress = np;
+  }
+  render(ts);
+  ctrl.update();
+  renderer.render(scene, camera);
+}
+
+// ========== EVENT HANDLERS ==========
+window.togglePlay = () => {
+  state.playing = !state.playing;
+  document.getElementById('playBtn').textContent = state.playing ? '⏸' : '▶';
+  if (state.playing) state.lastTs = performance.now();
+};
+window.resetAnim = () => {
+  state.playing = false;
+  document.getElementById('playBtn').textContent = '▶';
+  state.progress = 0;
+  prevDna = 1; prevChr = 1; prevSis = 0;
+};
+window.stepForward = () => {
+  state.playing = false;
+  document.getElementById('playBtn').textContent = '▶';
+  state.progress = clamp(state.progress + 0.02, 0, 1);
+};
+window.stepBack = () => {
+  state.playing = false;
+  document.getElementById('playBtn').textContent = '▶';
+  state.progress = clamp(state.progress - 0.02, 0, 1);
+};
+window.setSpeed = (s) => {
+  state.speed = s;
+  document.querySelectorAll('.speed-badge span').forEach(el => {
+    el.classList.toggle('on', parseFloat(el.textContent) === s);
+  });
+};
+window.toggleAuto = () => {
+  ctrl.autoRotate = !ctrl.autoRotate;
+  document.getElementById('btnAuto').classList.toggle('on', ctrl.autoRotate);
+};
+window.toggleLabels = () => {
+  state.showLabels = !state.showLabels;
+  document.getElementById('btnLabel').classList.toggle('on', state.showLabels);
+};
+window.resetView = () => {
+  const st = ctrl.target.clone(), et = new THREE.Vector3(0, 0, 0);
+  const sc = camera.position.clone(), ec = new THREE.Vector3(0, 0.5, 9);
+  const t0 = performance.now();
+  (function anim(n) {
+    const t = Math.min((n - t0) / 700, 1);
+    const e = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+    ctrl.target.lerpVectors(st, et, e);
+    camera.position.lerpVectors(sc, ec, e);
+    ctrl.update();
+    if (t < 1) requestAnimationFrame(anim);
+  })();
+  hidePopup();
+};
+
+// Scrub bar
+const scrubBar = document.getElementById('scrubBar');
+let scrubbing = false;
+scrubBar.addEventListener('pointerdown', (e) => {
+  scrubbing = true; state.playing = false;
+  document.getElementById('playBtn').textContent = '▶';
+  scrubBar.setPointerCapture(e.pointerId);
+  updateScrub(e.clientX);
+});
+scrubBar.addEventListener('pointermove', (e) => { if (scrubbing) updateScrub(e.clientX); });
+window.addEventListener('pointerup', () => { scrubbing = false; });
+function updateScrub(cx) {
+  state.progress = clamp((cx - scrubBar.getBoundingClientRect().left) / scrubBar.getBoundingClientRect().width, 0, 1);
+}
+
+// Click to identify
+const raycaster = new THREE.Raycaster();
+const popup = document.getElementById('popup'), popTitle = document.getElementById('popTitle'), popDesc = document.getElementById('popDesc');
+document.getElementById('cv').addEventListener('click', (ev) => {
+  const m = new THREE.Vector2((ev.clientX/innerWidth)*2-1, -(ev.clientY/innerHeight)*2+1);
+  raycaster.setFromCamera(m, camera);
+  const meshes = [];
+  clickTargets.forEach(g => g.traverse(c => { if (c.isMesh && c.visible) meshes.push({ mesh: c, group: g }); }));
+  const hits = raycaster.intersectObjects(meshes.map(o => o.mesh), false);
+  if (hits.length) {
+    const found = meshes.find(o => o.mesh === hits[0].object);
+    if (found) { showPopup(ev.clientX, ev.clientY, found.group.userData); return; }
+  }
+  hidePopup();
+});
+function showPopup(x, y, d) {
+  popTitle.textContent = d.title; popTitle.style.color = d.color;
+  popDesc.textContent = d.desc;
+  popup.style.left = x+'px'; popup.style.top = y+'px';
+  popup.classList.add('show');
+}
+function hidePopup() { popup.classList.remove('show'); }
+
+// Keyboard
+window.addEventListener('keydown', (e) => {
+  switch (e.key.toLowerCase()) {
+    case ' ': e.preventDefault(); togglePlay(); break;
+    case 'r': resetView(); break;
+    case 'a': toggleAuto(); break;
+    case 'l': toggleLabels(); break;
+    case 'arrowright': stepForward(); break;
+    case 'arrowleft': stepBack(); break;
+    case 'escape': hidePopup(); break;
+  }
+});
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// Init
+state.lastTs = performance.now();
+render(state.lastTs);
+animate(state.lastTs);
+</script>
+</body>
 </html>
