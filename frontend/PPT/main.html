@@ -1601,6 +1601,38 @@
     </div>
   </div>
 
+  <!-- 题库选择弹窗 -->
+  <div class="knowledge-modal" id="questionBankModal" aria-hidden="true">
+    <div class="knowledge-modal__panel" role="dialog" aria-modal="true">
+      <div class="knowledge-modal__head">
+        <div>
+          <div class="eyebrow" style="margin-bottom: 4px;">Question Bank</div>
+          <h2 style="margin:0;font-size:20px;">选择题库章节</h2>
+          <p class="card-sub" style="margin-top:6px;">勾选章节，该章节的练习题将出现在PPT中。</p>
+        </div>
+        <button type="button" class="knowledge-modal__close" id="questionBankModalClose">关闭</button>
+      </div>
+      <div class="knowledge-modal__body">
+        <div class="knowledge-layout">
+          <div class="book-list" id="qbBookList"></div>
+          <div class="chapter-pane">
+            <div class="chapter-head">
+              <div>
+                <div class="eyebrow" style="margin-bottom: 4px;">Chapter</div>
+                <h3 id="qbBookTitle" style="margin:0;font-size:18px;">请选择一本书</h3>
+                <p class="card-sub" id="qbBookDesc" style="margin-top:6px;">左侧选择书目，右侧显示对应章节及题目数量。</p>
+              </div>
+            </div>
+            <div class="chapter-grid" id="qbChapterGrid"></div>
+          </div>
+        </div>
+      </div>
+      <div class="knowledge-modal__footer">
+        <button type="button" class="knowledge-modal__close" id="questionBankModalDone">完成选择</button>
+      </div>
+    </div>
+  </div>
+
   <div class="knowledge-modal" id="knowledgeModal" aria-hidden="true">
     <div class="knowledge-modal__panel" role="dialog" aria-modal="true" aria-labelledby="knowledgeModalTitle">
       <div class="knowledge-modal__head">
@@ -1895,8 +1927,108 @@
       openKnowledgeModal();
     });
 
-    document.getElementById('questionBankToggle').addEventListener('click', () => {
-      window.open('../practice/main.html', '_blank');
+    // ===== 题库选择 =====
+    const questionBankToggle = document.getElementById('questionBankToggle');
+    const questionBankToggleText = document.getElementById('questionBankToggleText');
+    const questionBankModal = document.getElementById('questionBankModal');
+    const questionBankModalClose = document.getElementById('questionBankModalClose');
+    const questionBankModalDone = document.getElementById('questionBankModalDone');
+    const qbBookList = document.getElementById('qbBookList');
+    const qbChapterGrid = document.getElementById('qbChapterGrid');
+    const qbBookTitle = document.getElementById('qbBookTitle');
+    const qbBookDesc = document.getElementById('qbBookDesc');
+    let questionBankData = null;
+    let selectedQuestionBank = [];
+    let qbActiveBookIndex = 0;
+
+    async function loadQuestionBank() {
+      if (questionBankData) return;
+      try {
+        const res = await fetch(API_BASE + '/question-bank/structure');
+        const json = await res.json();
+        if (json.success) {
+          questionBankData = json.data.textbooks;
+        }
+      } catch (e) {
+        console.error('加载题库失败:', e);
+      }
+    }
+
+    function renderQuestionBank() {
+      qbBookList.innerHTML = '';
+      const textbooks = questionBankData || [];
+      if (!textbooks.length) return;
+      if (qbActiveBookIndex >= textbooks.length) qbActiveBookIndex = 0;
+      const active = textbooks[qbActiveBookIndex];
+      if (!active) return;
+
+      textbooks.forEach((tb, i) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `book-item${i === qbActiveBookIndex ? ' active' : ''}`;
+        btn.innerHTML = `<span class="book-index">${i + 1}</span><strong>${tb.name.replace(/^必修|^选修|^选择性必修/, '')}</strong><span>${tb.question_count}题</span>`;
+        btn.addEventListener('click', () => { qbActiveBookIndex = i; renderQuestionBank(); });
+        qbBookList.appendChild(btn);
+      });
+
+      qbBookTitle.textContent = active.name;
+      qbBookDesc.textContent = `${active.chapters.length}章 · ${active.question_count}题`;
+
+      qbChapterGrid.innerHTML = '';
+      active.chapters.forEach(ch => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        const key = `${active.name}|${ch.name}`;
+        const isSelected = selectedQuestionBank.includes(key);
+        item.className = `chapter-item${isSelected ? ' active' : ''}`;
+        const sectionList = ch.sections.map(s => `${s.name}(${s.question_count}题)`).join(' / ');
+        item.innerHTML = `<strong>${ch.name}</strong><span>${ch.question_count}题 — ${sectionList}</span>`;
+        item.addEventListener('click', () => {
+          if (isSelected) {
+            selectedQuestionBank = selectedQuestionBank.filter(k => k !== key);
+          } else {
+            selectedQuestionBank.push(key);
+          }
+          renderQuestionBank();
+        });
+        qbChapterGrid.appendChild(item);
+      });
+
+      updateQuestionBankSummary();
+    }
+
+    function updateQuestionBankSummary() {
+      questionBankToggleText.textContent = selectedQuestionBank.length
+        ? `已选 ${selectedQuestionBank.length} 项`
+        : '选择题库';
+    }
+
+    function openQuestionBankModal() {
+      loadQuestionBank().then(() => {
+        renderQuestionBank();
+        questionBankModal.classList.add('open');
+        questionBankModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
+    function closeQuestionBankModal() {
+      questionBankModal.classList.remove('open');
+      questionBankModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      updateQuestionBankSummary();
+    }
+
+    questionBankToggle.addEventListener('click', openQuestionBankModal);
+    questionBankModalClose.addEventListener('click', closeQuestionBankModal);
+    questionBankModalDone.addEventListener('click', closeQuestionBankModal);
+    questionBankModal.addEventListener('click', (e) => {
+      if (e.target === questionBankModal) closeQuestionBankModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && questionBankModal.classList.contains('open')) {
+        closeQuestionBankModal();
+      }
     });
 
     knowledgeModalClose.addEventListener('click', () => {
@@ -2006,6 +2138,7 @@
         topic: topic,
         requirements: requirements,
         chapter_keys: selectedKnowledge,
+        question_bank_keys: selectedQuestionBank,
         model: modelSelect.value,
         slide_count: parseInt(slideCountInput.value) || 8,
         style: selectedStylePreset,

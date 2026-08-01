@@ -28,6 +28,7 @@ class GenerateRequest(BaseModel):
     topic: str = Field(..., min_length=1, description="课件主题")
     requirements: str = Field(default="", description="用户输入的详细需求")
     chapter_keys: list[str] = Field(default_factory=list, description="选中的知识点 key 列表")
+    question_bank_keys: list[str] = Field(default_factory=list, description="选中的题库章节列表")
     model: str = Field(default="GPT-4.1", description="模型名称")
     slide_count: int = Field(default=8, ge=4, le=15, description="生成页数")
     style: str = Field(default="clean", description="风格：clean/edu/tech")
@@ -50,6 +51,44 @@ def _deck_file_path(deck_id: str) -> Path:
     return path
 
 
+def _build_question_context(question_bank_keys: list[str]) -> str:
+    """根据选中的题库章节，提取题目内容作为上下文"""
+    if not question_bank_keys:
+        return ""
+
+    from database.db import get_db_connection
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        lines = []
+        for key in question_bank_keys:
+            parts = key.split("|", 1)
+            if len(parts) != 2:
+                continue
+            textbook, chapter = parts[0], parts[1]
+            cursor.execute(
+                "SELECT stem, option_a, option_b, option_c, option_d, answer, type, analysis FROM questions WHERE textbook=? AND chapter=? LIMIT 10",
+                (textbook, chapter)
+            )
+            rows = cursor.fetchall()
+            if rows:
+                lines.append(f"\n## {textbook} - {chapter}（共{len(rows)}道样题）")
+                for r in rows:
+                    stem, a, b, c, d, ans, qtype, analysis = r
+                    qtype_label = {"choice": "选择题", "fill": "填空题", "essay": "大题"}.get(qtype, qtype or "题")
+                    options = f"A. {a}  B. {b}  C. {c}  D. {d}" if a else ""
+                    lines.append(f"【{qtype_label}】{stem}")
+                    if options:
+                        lines.append(f"  选项: {options}")
+                    lines.append(f"  答案: {ans}")
+                    if analysis:
+                        lines.append(f"  解析: {analysis}")
+                    lines.append("")
+        return "\n".join(lines)
+    finally:
+        db.close()
+
+
 @router.post("/ppt/generate")
 def generate(request: GenerateRequest):
     """核心接口：根据知识点和需求，调用AI生成课件HTML"""
@@ -57,10 +96,16 @@ def generate(request: GenerateRequest):
         from ai_service import generate_deck
 
         knowledge_context = build_knowledge_context(request.chapter_keys)
+        question_context = _build_question_context(request.question_bank_keys)
+
+        # 将题库内容合并到需求中
+        combined_requirements = request.requirements
+        if question_context:
+            combined_requirements += f"\n\n【题库参考题目（可用于设计课堂练习）】\n{question_context}"
 
         deck = generate_deck(
             topic=request.topic,
-            requirements=request.requirements,
+            requirements=combined_requirements,
             knowledge_context=knowledge_context,
             model_name=request.model,
             slide_count=request.slide_count,

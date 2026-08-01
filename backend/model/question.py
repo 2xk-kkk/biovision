@@ -350,11 +350,61 @@ def get_daily_answer_counts(db, user_id, days=90):
 
 
 def get_total_answer_count(db, user_id):
-    """获取用户总做题数（去重题目数）"""
+    """获取用户题库总做题数（只统计教材题目，不包含真题试卷）"""
     cursor = db.cursor()
-    cursor.execute('SELECT COUNT(*) FROM user_answers WHERE user_id = ?', (user_id,))
+    cursor.execute('''
+        SELECT COUNT(*) FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ? AND q.textbook IS NOT NULL AND q.textbook != ''
+    ''', (user_id,))
     row = cursor.fetchone()
     return row[0] if row else 0
+
+
+def get_question_bank_structure(db):
+    """获取题库结构：教材→章→节，含每题数量"""
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT textbook, chapter, section, COUNT(*) as cnt
+        FROM questions
+        WHERE textbook IS NOT NULL AND textbook != ''
+        GROUP BY textbook, chapter, section
+        ORDER BY textbook, chapter, section
+    ''')
+    structure = {}
+    for row in cursor.fetchall():
+        textbook, chapter, section, cnt = row
+        if textbook not in structure:
+            structure[textbook] = {}
+        if chapter not in structure[textbook]:
+            structure[textbook][chapter] = {}
+        structure[textbook][chapter][section if section else '综合'] = cnt
+
+    # 转为列表格式
+    result = []
+    for textbook, chapters in structure.items():
+        textbook_data = {
+            "name": textbook,
+            "chapters": [],
+            "question_count": 0
+        }
+        for chapter, sections in chapters.items():
+            chapter_data = {
+                "name": chapter if chapter else "综合",
+                "sections": [],
+                "question_count": 0
+            }
+            for section, cnt in sections.items():
+                chapter_data["sections"].append({
+                    "name": section,
+                    "question_count": cnt
+                })
+                chapter_data["question_count"] += cnt
+            textbook_data["chapters"].append(chapter_data)
+            textbook_data["question_count"] += chapter_data["question_count"]
+        result.append(textbook_data)
+
+    return result
 
 
 def get_questions_by_type(db, textbook=None, chapter=None, section=None, question_type=None):

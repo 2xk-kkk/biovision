@@ -1,5 +1,5 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure
 from utils.response import ApiResponse
 import json
 import os
@@ -185,6 +185,19 @@ def get_user_daily_answers(user_id, days=90):
         })
     except Exception as e:
         return ApiResponse.error(msg=f"获取每日做题数据失败: {str(e)}")
+    finally:
+        db.close()
+
+
+def get_question_bank_structure_service():
+    """获取题库层级结构"""
+    db = get_db_connection()
+    try:
+        structure = get_question_bank_structure(db)
+        total = sum(t["question_count"] for t in structure)
+        return ApiResponse.success(data={"textbooks": structure, "total_questions": total})
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取题库结构失败: {str(e)}")
     finally:
         db.close()
 

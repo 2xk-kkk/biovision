@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, Query
-from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers
+from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service
 from utils.jwt_utils import verify_jwt
 from utils.response import ApiResponse
 
@@ -105,3 +105,9 @@ def textbook_questions(
 def user_daily_answers(user_id: int, days: int = Query(90)):
     """获取用户最近N天每天的做题数量"""
     return get_user_daily_answers(user_id, days)
+
+
+@router.get("/question-bank/structure")
+def question_bank_structure():
+    """获取题库的层级结构：教材→章→节，含各节点题目数量"""
+    return get_question_bank_structure_service()

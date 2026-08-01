@@ -1156,7 +1156,7 @@
                 <div class="stat-icon blue">📁</div>
                 <div class="stat-info">
                     <div class="stat-label">总题目</div>
-                    <div class="stat-value">877题</div>
+                    <div class="stat-value" id="totalQuestions">877题</div>
                     <div class="stat-desc">五本教材总计</div>
                 </div>
             </div>
@@ -1166,8 +1166,8 @@
                 <div class="stat-icon purple">🎯</div>
                 <div class="stat-info">
                     <div class="stat-label">通关进度</div>
-                    <div class="stat-value">0%</div>
-                    <div class="stat-desc">继续加油</div>
+                    <div class="stat-value" id="progressPercent">0%</div>
+                    <div class="stat-desc" id="progressDetail">继续加油</div>
                 </div>
             </div>
         </div>
@@ -1647,7 +1647,7 @@
         /**
          * 渲染热力图 - 三月并排，每月独立7列日历网格
          */
-        function renderHeatmap(apiData) {
+        function renderHeatmap(apiData, totalBankQuestions) {
             const container = document.getElementById('heatmapContainer');
             container.innerHTML = '';
 
@@ -1676,10 +1676,13 @@
             }
 
             // 更新统计卡片
-            const totalQuestions = 877;
-            const rate = totalQuestions > 0 ? Math.round((totalCount / totalQuestions) * 100) : 0;
+            const bankTotal = totalBankQuestions || 877;
+            const rate = bankTotal > 0 ? Math.round((totalCount / bankTotal) * 100) : 0;
+            document.getElementById('totalQuestions').textContent = `${bankTotal}题`;
             document.getElementById('answeredCount').textContent = totalCount;
             document.getElementById('completionRate').textContent = `完成度 ${rate}%`;
+            document.getElementById('progressPercent').textContent = `${rate}%`;
+            document.getElementById('progressDetail').textContent = rate >= 100 ? '全部通关！' : rate >= 50 ? '过半啦' : rate > 0 ? '继续加油' : '尚未开始';
             document.getElementById('activeDays').textContent = activeDayCount;
             document.getElementById('streakDays').textContent = calculateStreak(dateMap);
             document.getElementById('totalAnswers').textContent = totalAnswerCount;
@@ -1771,12 +1774,14 @@
          * 渲染空白热力图
          */
         function renderEmptyHeatmap() {
-            renderHeatmap({ daily_counts: {}, total_count: 0 });
+            renderHeatmap({ daily_counts: {}, total_count: 0 }, 0);
             document.getElementById('activeDays').textContent = '0';
             document.getElementById('streakDays').textContent = '0';
             document.getElementById('totalAnswers').textContent = '0';
             document.getElementById('answeredCount').textContent = '0';
             document.getElementById('completionRate').textContent = '完成度 0%';
+            document.getElementById('progressPercent').textContent = '0%';
+            document.getElementById('progressDetail').textContent = '继续加油';
         }
 
         /**
@@ -1796,11 +1801,18 @@
                     return;
                 }
 
-                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/daily-answers?days=90`);
-                const data = await resp.json();
+                // 并行请求：用户做题数据 + 题库总量
+                const [answerResp, bankResp] = await Promise.all([
+                    fetch(`http://localhost:8000/api/user/${payload.user_id}/daily-answers?days=90`),
+                    fetch('http://localhost:8000/api/question-bank/structure')
+                ]);
+                const answerData = await answerResp.json();
+                const bankData = await bankResp.json();
 
-                if (data.success) {
-                    renderHeatmap(data.data);
+                const totalBankQuestions = (bankData.success && bankData.data) ? bankData.data.total_questions : 877;
+
+                if (answerData.success) {
+                    renderHeatmap(answerData.data, totalBankQuestions);
                 } else {
                     renderEmptyHeatmap();
                 }
