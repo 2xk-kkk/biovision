@@ -891,6 +891,13 @@
             border-color: #e2e8f0;
         }
 
+        .question-cell.done {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border-color: #93c5fd;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+        }
+
         .question-cell:hover {
             transform: translateY(-2px) scale(1.08);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -1563,12 +1570,6 @@
                         
                         let inputClass = 'fill-blank-input';
                         if (isAnswerSubmitted) {
-                            const correctPart = correctAnswer.split(';')[i] || '';
-                            if (inputValue.trim() === correctPart.trim()) {
-                                inputClass += ' correct';
-                            } else {
-                                inputClass += ' wrong';
-                            }
                             inputClass += ' disabled';
                         }
 
@@ -1657,27 +1658,18 @@
             const questionType = getQuestionType(question);
             
             let isCorrect = false;
+            let isFillBlank = questionType === 'fill';
             
             if (questionType === 'choice') {
                 isCorrect = userAnswer === correctAnswer;
+                results[question.id] = isCorrect;
+                if (isCorrect) {
+                    correctCount++;
+                }
+            } else if (questionType === 'essay') {
+                results[question.id] = null;
             } else {
-                const userParts = userAnswer.split(';');
-                const correctParts = correctAnswer.split(';');
-                let correctCountParts = 0;
-                
-                userParts.forEach((part, index) => {
-                    const correctPart = correctParts[index] || '';
-                    if (part.trim() === correctPart.trim()) {
-                        correctCountParts++;
-                    }
-                });
-                
-                isCorrect = correctCountParts === correctParts.length && userParts.length === correctParts.length;
-            }
-
-            results[question.id] = isCorrect;
-            if (isCorrect) {
-                correctCount++;
+                results[question.id] = null;
             }
 
             const token = localStorage.getItem('token');
@@ -1695,8 +1687,11 @@
             updateProgress();
             renderCurrentQuestion();
             
-            // 显示右侧答案面板
-            showAnswerPanel(isCorrect, question.answer || '', question.analysis || '');
+            if (isFillBlank) {
+                showAnswerPanel(null, question.answer || '', question.analysis || '');
+            } else {
+                showAnswerPanel(isCorrect, question.answer || '', question.analysis || '');
+            }
         }
 
         function showAnswerPanel(isCorrect, correctAnswer, analysis) {
@@ -1712,15 +1707,25 @@
             // 展开答案面板
             answerPanel.classList.add('show');
             
-            // 更新答案内容
-            answerIcon.textContent = isCorrect ? '✅' : '❌';
-            answerTitle.textContent = isCorrect ? '回答正确！' : '回答错误';
-            answerTitle.style.color = isCorrect ? '#059669' : '#dc2626';
-            answerIcon.style.color = isCorrect ? '#059669' : '#dc2626';
+            if (isCorrect === null) {
+                // 填空题 - 不判断正误
+                answerIcon.textContent = '📝';
+                answerTitle.textContent = '答案已提交';
+                answerTitle.style.color = '#3b82f6';
+                answerIcon.style.color = '#3b82f6';
+                correctAnswerValue.style.color = '#3b82f6';
+                correctAnswerValue.style.borderLeftColor = '#3b82f6';
+            } else {
+                // 选择题 - 判断正误
+                answerIcon.textContent = isCorrect ? '✅' : '❌';
+                answerTitle.textContent = isCorrect ? '回答正确！' : '回答错误';
+                answerTitle.style.color = isCorrect ? '#059669' : '#dc2626';
+                answerIcon.style.color = isCorrect ? '#059669' : '#dc2626';
+                correctAnswerValue.style.color = isCorrect ? '#059669' : '#dc2626';
+                correctAnswerValue.style.borderLeftColor = isCorrect ? '#059669' : '#dc2626';
+            }
             
             correctAnswerValue.textContent = correctAnswer;
-            correctAnswerValue.style.color = isCorrect ? '#059669' : '#dc2626';
-            correctAnswerValue.style.borderLeftColor = isCorrect ? '#059669' : '#dc2626';
             
             if (analysis && analysis.trim()) {
                 analysisContent.innerHTML = analysis;
@@ -1760,19 +1765,23 @@
             let correct = 0;
             let wrong = 0;
             let unanswered = 0;
+            let judged = 0;
 
             quizQuestions.forEach(q => {
                 const userAnswer = answers[q.id];
+                const questionType = getQuestionType(q);
                 if (userAnswer === undefined || userAnswer === null || userAnswer === '') {
                     unanswered++;
-                } else if (results[q.id]) {
+                } else if (results[q.id] === true) {
                     correct++;
-                } else {
+                    judged++;
+                } else if (results[q.id] === false && questionType === 'choice') {
                     wrong++;
+                    judged++;
                 }
             });
 
-            const rate = total > 0 ? Math.round((correct / total) * 100) : 0;
+            const rate = judged > 0 ? Math.round((correct / judged) * 100) : 0;
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statCorrect').textContent = correct;
@@ -1844,9 +1853,16 @@
                     grouped[type].forEach(q => {
                         const userAnswer = answers[q.id];
                         let statusClass = 'unanswered';
+                        const qType = getQuestionType(q);
                         
                         if (userAnswer !== undefined && userAnswer !== null && userAnswer !== '') {
-                            statusClass = results[q.id] ? 'correct' : 'wrong';
+                            if (qType === 'fill' || qType === 'essay') {
+                                statusClass = 'done';
+                            } else if (results[q.id] === true) {
+                                statusClass = 'correct';
+                            } else if (results[q.id] === false) {
+                                statusClass = 'wrong';
+                            }
                         }
                         
                         html += `<div class="question-cell ${statusClass}" onclick="goToQuestion(${q.originalIndex - 1})" title="第${q.originalIndex}题">${q.originalIndex}</div>`;
@@ -1931,8 +1947,16 @@
                 let statusClass = 'unanswered';
                 let statusText = '未答';
                 if (userAnswer !== undefined && userAnswer !== null && userAnswer !== '') {
-                    statusClass = isCorrect ? 'correct' : 'wrong';
-                    statusText = isCorrect ? '✅ 正确' : '❌ 错误';
+                    if (questionType === 'fill' || questionType === 'essay') {
+                        statusClass = 'done';
+                        statusText = '📝 已提交';
+                    } else if (isCorrect === true) {
+                        statusClass = 'correct';
+                        statusText = '✅ 正确';
+                    } else if (isCorrect === false) {
+                        statusClass = 'wrong';
+                        statusText = '❌ 错误';
+                    }
                 }
 
                 html += `
@@ -1973,17 +1997,14 @@
                     const blanks = stemHtml.match(/_+/g) || [];
                     if (blanks.length > 0 && userAnswer) {
                         const userParts = userAnswer.split(';');
-                        const correctParts = q.answer ? q.answer.split(';') : [];
                         for (let i = 0; i < blanks.length; i++) {
                             const userPart = userParts[i] || '';
-                            const correctPart = correctParts[i] || '';
-                            const isCorrect = userPart.trim() === correctPart.trim();
-                            stemHtml = stemHtml.replace(/_+/, `<span style="padding:2px 8px; border-radius:4px; background:${isCorrect ? '#dcfce7' : '#fee2e2'}; color:${isCorrect ? '#166534' : '#991b1b'}; font-weight:500;">${userPart || '未填'}</span>`);
+                            stemHtml = stemHtml.replace(/_+/, `<span style="padding:2px 8px; border-radius:4px; background:#dbeafe; color:#1e40af; font-weight:500;">${userPart || '未填'}</span>`);
                         }
                     }
                     html += `<div style="font-size:16px; color:#1e293b; margin-bottom:15px; line-height:2;">${stemHtml}</div>`;
                     if (q.answer) {
-                        html += `<div style="padding:12px; background:#dcfce7; border-radius:8px; margin-bottom:10px;"><strong style="color:#059669;">参考答案：</strong><span style="color:#166534;">${q.answer}</span></div>`;
+                        html += `<div style="padding:12px; background:#eff6ff; border-radius:8px; margin-bottom:10px;"><strong style="color:#1e40af;">参考答案：</strong><span style="color:#1e3a8a;">${q.answer}</span></div>`;
                     }
                 }
 
