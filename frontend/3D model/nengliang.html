@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>细胞呼吸 - 有氧呼吸与无氧呼吸 互动演示</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background: #0a1628;
+    color: #e0e8f0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .header {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #0d2137 0%, #132d4a 50%, #0d2137 100%);
+    border-bottom: 2px solid #1e4a76;
+  }
+  .header h1 {
+    font-size: 2em;
+    background: linear-gradient(90deg, #4fc3f7, #81d4fa, #4fc3f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+  }
+  .header p { color: #8ab4d6; font-size: 0.95em; }
+
+  .main-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .anim-panel {
+    flex: 1.6;
+    background: linear-gradient(180deg, #0d1f33 0%, #112240 100%);
+    border-radius: 16px;
+    border: 1px solid #1e4a76;
+    padding: 20px;
+    min-height: 600px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cards-panel {
+    flex: 0.9;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cards-panel h2 {
+    color: #4fc3f7;
+    font-size: 1.2em;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .mode-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: 2px solid #1e4a76;
+    background: rgba(30,74,118,0.2);
+    color: #8ab4d6;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .mode-btn:hover { border-color: #4fc3f7; color: #b0d8f0; background: rgba(30,74,118,0.4); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, #0d47a1, #1565c0);
+    border-color: #4fc3f7;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(79,195,247,0.3);
+  }
+
+  canvas { display: block; background: #0a1628; border-radius: 10px; width: 100%; }
+
+  .stage-info {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 12px;
+    gap: 10px;
+  }
+  .stage-badge {
+    text-align: center;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.8em;
+    border: 1px solid;
+    background: rgba(255,255,255,0.03);
+  }
+  .stage-badge .num { font-size: 1.4em; font-weight: bold; }
+  .stage-badge.s1 { border-color: #ff9800; color: #ffb74d; }
+  .stage-badge.s2 { border-color: #ab47bc; color: #ce93d8; }
+  .stage-badge.s3 { border-color: #26c6da; color: #4dd0e1; }
+
+  .card {
+    perspective: 1000px;
+    height: 110px;
+    cursor: pointer;
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.hidden {
+    display: none;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+  .card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    text-align: center;
+    font-size: 0.92em;
+    border: 1px solid;
+  }
+  .card-front {
+    background: linear-gradient(145deg, #132d4a, #1a3a5c);
+    border-color: #1e4a76;
+    color: #b0d8f0;
+    font-weight: bold;
+    font-size: 1em;
+  }
+  .card-back {
+    background: linear-gradient(145deg, #0d2137, #152e4a);
+    border-color: #4fc3f7;
+    color: #e0e8f0;
+    transform: rotateY(180deg);
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+  }
+  .card-aerobic .card-front { border-left: 4px solid #26c6da; }
+  .card-aerobic .card-back  { border-left: 4px solid #26c6da; }
+  .card-anaerobic .card-front { border-left: 4px solid #ff7043; }
+  .card-anaerobic .card-back  { border-left: 4px solid #ff7043; }
+
+  .card-hint {
+    font-size: 0.7em;
+    color: #7a9db8;
+    text-align: center;
+    margin-top: -6px;
+  }
+
+  .legend-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #1e4a76;
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 12px;
+    font-size: 0.78em;
+    color: #8ab4d6;
+    line-height: 1.8;
+  }
+  .legend-box strong { color: #4fc3f7; }
+
+  .play-btn {
+    display: block;
+    margin: 12px auto 0;
+    padding: 10px 28px;
+    border: none;
+    background: linear-gradient(135deg, #0d47a1, #1565c0);
+    color: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-family: inherit;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  .play-btn:hover {
+    background: linear-gradient(135deg, #1565c0, #1976d2);
+    box-shadow: 0 0 16px rgba(79,195,247,0.4);
+  }
+
+  @media (max-width: 1100px) {
+    .main-container { flex-direction: column; }
+    .cards-panel { flex-direction: row; flex-wrap: wrap; }
+    .card { flex: 1; min-width: 220px; height: 100px; }
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1565c0;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+
+  .nav-btn {
+    position: fixed;
+    top: 16px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 24px;
+    background: rgba(13,33,55,0.85);
+    backdrop-filter: blur(8px);
+    color: #b0d8f0;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-family: inherit;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .nav-btn:hover {
+    border-color: #4fc3f7;
+    color: #fff;
+    background: rgba(13,71,161,0.7);
+    box-shadow: 0 0 14px rgba(79,195,247,0.35);
+  }
+  .nav-btn.back-btn { left: 20px; }
+  .nav-btn.switch-btn { right: 20px; }
+
+  sub, sup { font-size: 0.75em; }
+</style>
+</head>
+<body>
+
+<a href="main.html" class="nav-btn back-btn">← 返回</a>
+<a href="nengliang2.html" class="nav-btn switch-btn">⇄ 切换至光合作用</a>
+
+<div class="header">
+  <h1>线粒体中的细胞呼吸</h1>
+  <p>第5章 第3节 &nbsp;|&nbsp; 有氧呼吸 · 无氧呼吸 &nbsp;|&nbsp; 点击记忆卡翻转查看化学式</p>
+</div>
+
+<div class="main-container">
+  <div class="anim-panel">
+    <div class="mode-tabs">
+      <button class="mode-btn active" onclick="switchMode('aerobic', this)">有氧呼吸（线粒体）</button>
+      <button class="mode-btn" onclick="switchMode('anaerobic', this)">无氧呼吸（细胞质基质）</button>
+    </div>
+    <canvas id="mainCanvas"></canvas>
+    <div class="stage-info" id="stageInfo"></div>
+    <button class="play-btn" onclick="toggleAnimation()" id="playBtn">▶ 播放动画</button>
+    <div class="legend-box">
+      <strong>图例：</strong>
+      <span style="color:#ffb74d">● 葡萄糖 C₆H₁₂O₆</span> &nbsp;
+      <span style="color:#ce93d8">● 丙酮酸 C₃H₄O₃</span> &nbsp;
+      <span style="color:#f48fb1">● [H] (NADH)</span> &nbsp;
+      <span style="color:#80cbc4">● CO₂</span> &nbsp;
+      <span style="color:#4fc3f7">● O₂</span> &nbsp;
+      <span style="color:#a5d6a7">● H₂O</span> &nbsp;
+      <span style="color:#ef9a9a">● 乳酸/酒精</span>
+    </div>
+  </div>
+
+  <div class="cards-panel" id="cardsPanel">
+    <h2 id="cardsTitle">📝 有氧呼吸 记忆卡（点击翻转）</h2>
+
+    <!-- ====== 有氧呼吸卡片 ====== -->
+    <div class="card card-aerobic" data-mode="aerobic" onclick="flipCard(this)" id="card1">
+      <div class="card-inner">
+        <div class="card-front">有氧呼吸 总反应式</div>
+        <div class="card-back">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6H<sub>2</sub>O + 6O<sub>2</sub> <span style="color:#4fc3f7">─酶→</span> 6CO<sub>2</sub> + 12H<sub>2</sub>O + 能量</div>
+      </div>
+    </div>
+
+    <div class="card card-aerobic" data-mode="aerobic" onclick="flipCard(this)" id="card2">
+      <div class="card-inner">
+        <div class="card-front">有氧呼吸 第一阶段（糖酵解）</div>
+        <div class="card-back">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> <span style="color:#4fc3f7">─酶→</span> 2C<sub>3</sub>H<sub>4</sub>O<sub>3</sub> + 4[H] + <span style="color:#ffb74d">少量能量</span><br><small>场所：细胞质基质</small></div>
+      </div>
+    </div>
+
+    <div class="card card-aerobic" data-mode="aerobic" onclick="flipCard(this)" id="card3">
+      <div class="card-inner">
+        <div class="card-front">有氧呼吸 第二阶段（柠檬酸循环）</div>
+        <div class="card-back">2C<sub>3</sub>H<sub>4</sub>O<sub>3</sub> + 6H<sub>2</sub>O <span style="color:#4fc3f7">─酶→</span> 6CO<sub>2</sub> + 20[H] + <span style="color:#ffb74d">少量能量</span><br><small>场所：线粒体基质</small></div>
+      </div>
+    </div>
+
+    <div class="card card-aerobic" data-mode="aerobic" onclick="flipCard(this)" id="card4">
+      <div class="card-inner">
+        <div class="card-front">有氧呼吸 第三阶段（氧化磷酸化）</div>
+        <div class="card-back">24[H] + 6O<sub>2</sub> <span style="color:#4fc3f7">─酶→</span> 12H<sub>2</sub>O + <span style="color:#ffb74d">大量能量</span><br><small>场所：线粒体内膜</small></div>
+      </div>
+    </div>
+
+    <div class="card card-aerobic" data-mode="aerobic" onclick="flipCard(this)" id="card7">
+      <div class="card-inner">
+        <div class="card-front">有氧呼吸 · 能量转化效率</div>
+        <div class="card-back">1 mol 葡萄糖彻底氧化 → <span style="color:#ffb74d">2 870 kJ</span><br>储存在ATP中 ≈ <span style="color:#a5d6a7">977.28 kJ</span>（约34%）<br>热能散失 ≈ 1 892.72 kJ（约66%）</div>
+      </div>
+    </div>
+
+    <!-- ====== 无氧呼吸卡片 ====== -->
+    <div class="card card-anaerobic hidden" data-mode="anaerobic" onclick="flipCard(this)" id="card5">
+      <div class="card-inner">
+        <div class="card-front">无氧呼吸 · 乳酸发酵</div>
+        <div class="card-back">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> <span style="color:#4fc3f7">─酶→</span> 2C<sub>3</sub>H<sub>6</sub>O<sub>3</sub> + <span style="color:#ffb74d">少量能量</span><br><small>例：动物肌细胞、乳酸菌、马铃薯块茎</small></div>
+      </div>
+    </div>
+
+    <div class="card card-anaerobic hidden" data-mode="anaerobic" onclick="flipCard(this)" id="card6">
+      <div class="card-inner">
+        <div class="card-front">无氧呼吸 · 酒精发酵</div>
+        <div class="card-back">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> <span style="color:#4fc3f7">─酶→</span> 2C<sub>2</sub>H<sub>5</sub>OH + 2CO<sub>2</sub> + <span style="color:#ffb74d">少量能量</span><br><small>例：酵母菌、大多数植物细胞</small></div>
+      </div>
+    </div>
+
+    <div class="card card-anaerobic hidden" data-mode="anaerobic" onclick="flipCard(this)" id="card8">
+      <div class="card-inner">
+        <div class="card-front">无氧呼吸 · 能量对比</div>
+        <div class="card-back">1 mol 葡萄糖 → 乳酸仅释放 <span style="color:#ffb74d">196.65 kJ</span><br>储存ATP ≈ <span style="color:#a5d6a7">61.08 kJ</span>（约31%）<br>大部分能量存留在乳酸/酒精中</div>
+      </div>
+    </div>
+
+    <p class="card-hint">👆 点击每一张卡片翻转查看化学式</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+let mode = 'aerobic';
+let animationId;
+let particles = [];
+let playing = false;
+let animProgress = 0;
+
+function resize() {
+  const panel = canvas.parentElement;
+  const rect = panel.getBoundingClientRect();
+  W = rect.width - 40;
+  H = Math.max(480, Math.min(620, window.innerHeight * 0.55));
+  canvas.width = W * (devicePixelRatio || 1);
+  canvas.height = H * (devicePixelRatio || 1);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(devicePixelRatio || 1, devicePixelRatio || 1);
+}
+window.addEventListener('resize', () => { resize(); });
+resize();
+
+class Particle {
+  constructor(x, y, vx, vy, color, size, label, life) {
+    this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+    this.color = color; this.size = size; this.label = label;
+    this.life = life; this.maxLife = life;
+    this.trail = [];
+  }
+  update() {
+    this.trail.push({x: this.x, y: this.y, a: 1});
+    if (this.trail.length > 15) this.trail.shift();
+    this.trail.forEach(t => t.a *= 0.85);
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life--;
+    return this.life > 0;
+  }
+  draw(ctx) {
+    for (let i = 0; i < this.trail.length; i++) {
+      const tr = this.trail[i];
+      ctx.beginPath();
+      ctx.arc(tr.x, tr.y, this.size * 0.6, 0, Math.PI * 2);
+      ctx.fillStyle = this.color.replace('1)', `${tr.a * 0.3})`);
+      ctx.fill();
+    }
+    const alpha = Math.min(1, this.life / 20);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+    grad.addColorStop(0, this.color.replace('1)', '1)'));
+    grad.addColorStop(1, this.color.replace('1)', `${alpha * 0.3})`));
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+    ctx.fillStyle = this.color.replace('1)', `${alpha * 0.1})`);
+    ctx.fill();
+  }
+}
+
+function drawMitochondrion() {
+  const mx = W / 2, my = H / 2;
+  ctx.save();
+  // Outer membrane
+  ctx.beginPath();
+  ctx.ellipse(mx, my, W * 0.32, H * 0.33, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(79,195,247,0.55)';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([8, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Inner membrane
+  ctx.beginPath();
+  ctx.ellipse(mx, my, W * 0.24, H * 0.25, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(79,195,247,0.85)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Cristae folds
+  for (let i = 0; i < 16; i++) {
+    const angle = (i / 16) * Math.PI * 2;
+    const cx = mx + Math.cos(angle) * W * 0.19;
+    const cy = my + Math.sin(angle) * H * 0.20;
+    const nx = mx + Math.cos(angle) * W * 0.25;
+    const ny = my + Math.sin(angle) * H * 0.26;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    const mx2 = (cx + nx) / 2 + Math.cos(angle + Math.PI/2) * 10;
+    const my2 = (cy + ny) / 2 + Math.sin(angle + Math.PI/2) * 10;
+    ctx.quadraticCurveTo(mx2, my2, nx, ny);
+    ctx.strokeStyle = 'rgba(79,195,247,0.45)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  }
+  // Labels - positioned further out with higher opacity
+  ctx.fillStyle = '#81d4fa';
+  ctx.font = 'bold 11px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText('线粒体外膜', mx, my - H * 0.38);
+  ctx.fillText('线粒体内膜（嵴）', mx, my - H * 0.25);
+  ctx.fillText('线粒体基质', mx, my - H * 0.14);
+  // Matrix fill
+  ctx.beginPath();
+  ctx.ellipse(mx, my, W * 0.23, H * 0.24, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(79,195,247,0.04)';
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCytoMembrane() {
+  const mx = W / 2, my = H / 2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(W * 0.05, H * 0.05, W * 0.90, H * 0.90, 20);
+  ctx.strokeStyle = 'rgba(255,167,38,0.6)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ffa726';
+  ctx.font = 'bold 12px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText('细胞质基质（细胞溶胶）', mx, H * 0.10);
+  ctx.restore();
+}
+
+function drawAerobicScene() {
+  drawCytoMembrane();
+  drawMitochondrion();
+  const mx = W / 2, my = H / 2;
+
+  // Stage labels - placed with more spacing, white color
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 13px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText('第一阶段：糖酵解', W * 0.14, my + H * 0.36);
+  ctx.fillText('第二阶段：柠檬酸循环', mx, my + H * 0.30);
+  ctx.fillText('第三阶段：氧化磷酸化', mx, my - H * 0.20);
+
+  // Glucose at left side
+  drawMolecule(W * 0.13, my - H * 0.05, '#ffb74d', '葡萄糖\nC₆H₁₂O₆', 14);
+  // Pyruvate in center-bottom
+  if (playing && animProgress > 0.1) {
+    drawArrow(W * 0.20, my, mx - W * 0.05, my + H * 0.15, '#ce93d8', Math.min(1, animProgress * 3));
+  }
+  drawMolecule(mx - W * 0.03, my + H * 0.14, '#ce93d8', '丙酮酸\nC₃H₄O₃', 11);
+
+  // CO2 output
+  if (playing && animProgress > 0.3) {
+    for (let i = 0; i < 3; i++) {
+      drawMolecule(mx - W * 0.10 + i * W * 0.10, my + H * 0.26, '#80cbc4', 'CO₂', 9, Math.min(1, (animProgress - 0.3) * 3));
+    }
+  }
+  // O2 in, H2O out
+  if (playing && animProgress > 0.5) {
+    const a = Math.min(1, (animProgress - 0.5) * 2);
+    drawMolecule(W * 0.85, my - H * 0.20, '#4fc3f7', 'O₂', 11, a);
+    drawMolecule(W * 0.85, my - H * 0.05, '#a5d6a7', 'H₂O', 11, a);
+    drawArrow(W * 0.80, my - H * 0.18, mx + W * 0.10, my - H * 0.18, '#4fc3f7', a);
+    drawArrow(mx + W * 0.10, my - H * 0.05, W * 0.80, my - H * 0.05, '#a5d6a7', a);
+  }
+}
+
+function drawAnaerobicScene() {
+  drawCytoMembrane();
+  const mx = W / 2, my = H / 2;
+
+  // Stage labels - white for contrast
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 13px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.textAlign = 'left';
+  ctx.fillText('第一阶段：糖酵解（与有氧呼吸相同）', mx - W * 0.32, my - H * 0.22);
+  ctx.textAlign = 'center';
+  ctx.fillText('第二阶段：丙酮酸在细胞质基质中继续分解', mx, my + H * 0.12);
+
+  // Glucose at top
+  drawMolecule(mx, my - H * 0.22, '#ffb74d', 'C₆H₁₂O₆\n葡萄糖', 14);
+  // Arrow down
+  if (playing && animProgress > 0.05) {
+    drawArrow(mx - W * 0.12, my - H * 0.13, mx - W * 0.18, my + H * 0.14, '#ce93d8', Math.min(1, animProgress * 4));
+    drawArrow(mx + W * 0.12, my - H * 0.13, mx + W * 0.18, my + H * 0.14, '#ce93d8', Math.min(1, animProgress * 4));
+  }
+  // Pyruvate in center area
+  drawMolecule(mx, my - H * 0.01, '#ce93d8', '丙酮酸\nC₃H₄O₃', 11);
+
+  // Branch indicator
+  ctx.fillStyle = '#ffa726';
+  ctx.font = 'bold 12px "Microsoft YaHei"';
+  ctx.fillText('（缺氧条件）', mx, my + H * 0.15);
+
+  if (playing && animProgress > 0.3) {
+    const a1 = Math.min(1, (animProgress - 0.3) * 3);
+    drawArrow(mx - W * 0.05, my + H * 0.08, mx - W * 0.22, my + H * 0.32, '#ef9a9a', a1);
+    drawArrow(mx + W * 0.05, my + H * 0.08, mx + W * 0.22, my + H * 0.32, '#ce93d8', a1);
+  }
+  // Products
+  drawMolecule(mx - W * 0.22, my + H * 0.32, '#ef9a9a', '乳酸\nC₃H₆O₃\n（动物、乳酸菌）', 11);
+  drawMolecule(mx + W * 0.22, my + H * 0.32, '#ce93d8', '酒精+CO₂\nC₂H₅OH\n（酵母菌）', 11);
+}
+
+function drawMolecule(x, y, color, label, size, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  // Glow first (behind the circle)
+  ctx.beginPath();
+  ctx.arc(x, y, size * 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = color.replace('1)', '0.06)');
+  ctx.fill();
+  // Main circle
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Label - placed further above, with higher contrast
+  ctx.fillStyle = '#ffffff';
+  const fontSize = Math.max(10, size * 0.8);
+  ctx.font = `bold ${fontSize}px "Microsoft YaHei"`;
+  ctx.textAlign = 'center';
+  const lines = label.split('\n');
+  const totalH = lines.length * (fontSize + 3);
+  const baseY = y - size - 10 - totalH;
+  lines.forEach((l, i) => {
+    ctx.fillText(l, x, baseY + i * (fontSize + 3));
+  });
+  ctx.restore();
+}
+
+function drawArrow(x1, y1, x2, y2, color, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const len = 10;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - len * Math.cos(angle - 0.4), y2 - len * Math.sin(angle - 0.4));
+  ctx.lineTo(x2 - len * Math.cos(angle + 0.4), y2 - len * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  if (mode === 'aerobic') {
+    drawAerobicScene();
+  } else {
+    drawAnaerobicScene();
+  }
+  particles = particles.filter(p => p.update());
+  particles.forEach(p => p.draw(ctx));
+
+  if (playing) {
+    animProgress += 0.005;
+    if (animProgress > 1) animProgress = 0;
+    const mx = W / 2, my = H / 2;
+    if (mode === 'aerobic' && animProgress > 0.05 && animProgress < 0.15) {
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(
+          W * 0.13, my - H * 0.05,
+          (mx - W * 0.03 - W * 0.13) / 80 + (Math.random() - 0.5) * 0.4,
+          (my + H * 0.14 - (my - H * 0.05)) / 80 + (Math.random() - 0.5) * 0.4,
+          'rgba(206,147,216,1)', 3.5, '', 80
+        ));
+      }
+    }
+    if (mode === 'aerobic' && animProgress > 0.35 && animProgress < 0.45) {
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(
+          mx - W * 0.03, my + H * 0.14,
+          (Math.random() - 0.5) * 1.2, -0.8 + Math.random() * -0.6,
+          'rgba(128,203,196,1)', 3, 'CO₂', 60
+        ));
+      }
+    }
+    if (mode === 'aerobic' && animProgress > 0.55 && animProgress < 0.65) {
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(
+          mx + W * 0.10, my - H * 0.05,
+          (Math.random() - 0.5) * 0.8, 1.0 + Math.random(),
+          'rgba(165,214,167,1)', 3, 'H₂O', 70
+        ));
+      }
+    }
+    if (mode === 'anaerobic' && animProgress > 0.35 && animProgress < 0.55) {
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(
+          mx, my - H * 0.01,
+          -0.6 + Math.random() * -0.4, 1.0 + Math.random() * 1.0,
+          'rgba(239,154,154,1)', 3.5, '', 70
+        ));
+        particles.push(new Particle(
+          mx, my - H * 0.01,
+          0.6 + Math.random() * 0.4, 1.0 + Math.random() * 1.0,
+          'rgba(206,147,216,1)', 3.5, '', 70
+        ));
+      }
+    }
+  }
+
+  const pulseR = 14 + Math.sin(Date.now() / 800) * 2;
+  const mx = W / 2, my = H / 2;
+  if (mode === 'aerobic') {
+    ctx.beginPath(); ctx.arc(W * 0.13, my - H * 0.05, pulseR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,183,77,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(mx, my - H * 0.22, pulseR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,183,77,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  animationId = requestAnimationFrame(render);
+}
+
+function switchMode(m, btn) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  particles = [];
+  animProgress = 0;
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶ 播放动画';
+
+  // Show/hide memory cards
+  document.querySelectorAll('.card').forEach(card => {
+    card.classList.remove('flipped');
+    if (card.dataset.mode === m) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('cardsTitle').textContent =
+    m === 'aerobic' ? '📝 有氧呼吸 记忆卡（点击翻转）' : '📝 无氧呼吸 记忆卡（点击翻转）';
+
+  updateStageInfo();
+}
+
+function toggleAnimation() {
+  playing = !playing;
+  if (playing) { animProgress = 0; particles = []; }
+  document.getElementById('playBtn').textContent = playing ? '⏸ 暂停动画' : '▶ 播放动画';
+}
+
+function updateStageInfo() {
+  const el = document.getElementById('stageInfo');
+  if (mode === 'aerobic') {
+    el.innerHTML = `
+      <div class="stage-badge s1"><div class="num">①</div>糖酵解<br><small>细胞质基质</small></div>
+      <div class="stage-badge s2"><div class="num">②</div>柠檬酸循环<br><small>线粒体基质</small></div>
+      <div class="stage-badge s3"><div class="num">③</div>氧化磷酸化<br><small>线粒体内膜</small></div>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="stage-badge s1"><div class="num">①</div>糖酵解<br><small>细胞质基质</small></div>
+      <div class="stage-badge s2"><div class="num">②</div>丙酮酸分解<br><small>细胞质基质</small></div>
+    `;
+  }
+}
+updateStageInfo();
+
+function flipCard(card) {
+  card.classList.toggle('flipped');
+  const toast = document.getElementById('toast');
+  const isFlipped = card.classList.contains('flipped');
+  const frontText = card.querySelector('.card-front').textContent.trim();
+  toast.textContent = isFlipped ? `📖 ${frontText} - 化学式已显示` : `🔒 ${frontText} - 已隐藏`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); toggleAnimation(); return; }
+  if (e.key === 'a' || e.key === 'A') {
+    switchMode('aerobic', document.querySelectorAll('.mode-btn')[0]);
+    return;
+  }
+  if (e.key === 'n' || e.key === 'N') {
+    switchMode('anaerobic', document.querySelectorAll('.mode-btn')[1]);
+    return;
+  }
+  if (e.key === '1') flipCard(document.getElementById('card1'));
+  if (e.key === '2') flipCard(document.getElementById('card2'));
+  if (e.key === '3') flipCard(document.getElementById('card3'));
+  if (e.key === '4') flipCard(document.getElementById('card4'));
+  if (e.key === '5') flipCard(document.getElementById('card5'));
+  if (e.key === '6') flipCard(document.getElementById('card6'));
+  if (e.key === '7') flipCard(document.getElementById('card7'));
+  if (e.key === '8') flipCard(document.getElementById('card8'));
+});
+
+render();
+</script>
+</body>
+</html>

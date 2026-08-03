@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>光合作用 - 光反应与暗反应 互动演示</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background: #0a1628;
+    color: #e0e8f0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .header {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #0d2818 0%, #134a28 50%, #0d2818 100%);
+    border-bottom: 2px solid #2e7d32;
+  }
+  .header h1 {
+    font-size: 2em;
+    background: linear-gradient(90deg, #66bb6a, #a5d6a7, #66bb6a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+  }
+  .header p { color: #81c784; font-size: 0.95em; }
+
+  .main-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1700px;
+    margin: 0 auto;
+  }
+
+  .left-panel {
+    flex: 1.8;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .anim-panel {
+    background: linear-gradient(180deg, #0d1f18 0%, #112418 100%);
+    border-radius: 16px;
+    border: 1px solid #2e7d32;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cards-panel {
+    flex: 0.85;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .cards-panel h2 {
+    color: #66bb6a;
+    font-size: 1.15em;
+    text-align: center;
+    margin-bottom: 2px;
+  }
+
+  .phase-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .phase-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid #2e7d32;
+    background: rgba(46,125,50,0.15);
+    color: #81c784;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: bold;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .phase-btn:hover { border-color: #66bb6a; color: #a5d6a7; background: rgba(46,125,50,0.3); }
+  .phase-btn.active {
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    border-color: #66bb6a;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(102,187,106,0.3);
+  }
+
+  canvas { display: block; background: #0a1810; border-radius: 10px; width: 100%; }
+
+  .stage-info {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+    gap: 10px;
+  }
+  .stage-badge {
+    text-align: center;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.78em;
+    border: 1px solid;
+    background: rgba(255,255,255,0.03);
+    transition: all 0.5s;
+  }
+  .stage-badge .num { font-size: 1.4em; font-weight: bold; }
+  .stage-badge.light { border-color: #ffb74d; color: #ffb74d; }
+  .stage-badge.dark { border-color: #4fc3f7; color: #4fc3f7; }
+  .stage-badge.highlight {
+    box-shadow: 0 0 20px currentColor;
+    transform: scale(1.06);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .play-btn {
+    display: block;
+    margin: 10px auto 0;
+    padding: 10px 30px;
+    border: none;
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    color: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-family: inherit;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  .play-btn:hover {
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    box-shadow: 0 0 16px rgba(102,187,106,0.4);
+  }
+
+  /* ===== 循环图 ===== */
+  .cycle-diagram {
+    background: linear-gradient(180deg, #0d1f18 0%, #112418 100%);
+    border-radius: 16px;
+    border: 1px solid #2e7d32;
+    padding: 20px 24px;
+  }
+  .cycle-diagram h3 {
+    text-align: center;
+    color: #a5d6a7;
+    font-size: 1.1em;
+    margin-bottom: 18px;
+  }
+  .cycle-flow {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+  .cycle-box {
+    flex: 1;
+    min-width: 200px;
+    max-width: 340px;
+    border-radius: 14px;
+    padding: 18px 16px;
+    border: 2px solid #2e7d32;
+    background: rgba(255,255,255,0.03);
+    transition: all 0.6s ease;
+    position: relative;
+  }
+  .cycle-box.light-box { border-color: #ff9800; }
+  .cycle-box.dark-box { border-color: #4fc3f7; }
+  .cycle-box.highlight-glow {
+    box-shadow: 0 0 30px;
+    background: rgba(255,255,255,0.07);
+    transform: scale(1.03);
+    z-index: 2;
+  }
+  .cycle-box.light-box.highlight-glow { box-shadow: 0 0 30px rgba(255,152,0,0.6); border-color: #ffb74d; }
+  .cycle-box.dark-box.highlight-glow { box-shadow: 0 0 30px rgba(79,195,247,0.6); border-color: #81d4fa; }
+
+  .cycle-box h4 {
+    text-align: center;
+    font-size: 1.05em;
+    margin-bottom: 10px;
+  }
+  .light-box h4 { color: #ffb74d; }
+  .dark-box h4 { color: #4fc3f7; }
+
+  .cycle-box .rxns {
+    font-size: 0.82em;
+    line-height: 2;
+  }
+  .light-box .rxns { color: #ffe0b2; }
+  .dark-box .rxns { color: #b3e5fc; }
+
+  .cycle-arrows {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 12px;
+    gap: 17px;
+    min-width: 80px;
+  }
+  .cycle-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #ffcc80;
+    font-size: 0.75em;
+    font-weight: bold;
+  }
+  .cycle-arrow .arr-symbol { font-size: 1.5em; line-height: 1; }
+  .cycle-arrow.down { color: #ffcc80; }
+  .cycle-arrow.up { color: #81d4fa; }
+
+  .cycle-input, .cycle-output {
+    font-size: 0.72em;
+    text-align: center;
+    margin-top: 8px;
+    color: #8ab4d6;
+    font-weight: bold;
+  }
+
+  .legend-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #2e7d32;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 10px;
+    font-size: 0.76em;
+    color: #8ab4d6;
+    line-height: 1.8;
+  }
+  .legend-box strong { color: #66bb6a; }
+
+  /* ===== 记忆卡 ===== */
+  .card {
+    perspective: 1000px;
+    height: 100px;
+    cursor: pointer;
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+  .card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.88em;
+    border: 1px solid;
+  }
+  .card-front {
+    background: linear-gradient(145deg, #13241a, #1a3c2a);
+    border-color: #2e7d32;
+    color: #a5d6a7;
+    font-weight: bold;
+    font-size: 0.95em;
+  }
+  .card-back {
+    background: linear-gradient(145deg, #0d1f18, #152e24);
+    border-color: #66bb6a;
+    color: #e0e8f0;
+    transform: rotateY(180deg);
+    font-size: 0.8em;
+    letter-spacing: 0.3px;
+    line-height: 1.5;
+  }
+  .card .card-front { border-left: 4px solid #66bb6a; }
+  .card .card-back  { border-left: 4px solid #66bb6a; }
+
+  .card-hint {
+    font-size: 0.7em;
+    color: #7a9db8;
+    text-align: center;
+    margin-top: -4px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2e7d32;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+
+  .nav-btn {
+    position: fixed;
+    top: 16px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 24px;
+    background: rgba(13,33,23,0.85);
+    backdrop-filter: blur(8px);
+    color: #a5d6a7;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-family: inherit;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .nav-btn:hover {
+    border-color: #66bb6a;
+    color: #fff;
+    background: rgba(27,94,32,0.7);
+    box-shadow: 0 0 14px rgba(102,187,106,0.35);
+  }
+  .nav-btn.back-btn { left: 20px; }
+  .nav-btn.switch-btn { right: 20px; }
+
+  sub, sup { font-size: 0.75em; }
+
+  @media (max-width: 1200px) {
+    .main-container { flex-direction: column; }
+    .cards-panel { flex-direction: row; flex-wrap: wrap; }
+    .card { flex: 1; min-width: 200px; height: 90px; }
+    .cycle-flow { flex-direction: column; align-items: center; }
+    .cycle-arrows { flex-direction: row; padding: 12px 0; }
+    .cycle-box { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<a href="main.html" class="nav-btn back-btn">← 返回</a>
+<a href="nengliang.html" class="nav-btn switch-btn">⇄ 切换至细胞呼吸</a>
+
+<div class="header">
+  <h1>叶绿体中的光合作用</h1>
+  <p>第5章 第4节 &nbsp;|&nbsp; 光反应 · 暗反应（卡尔文循环）&nbsp;|&nbsp; 点击记忆卡翻转查看化学式</p>
+</div>
+
+<div class="main-container">
+  <div class="left-panel">
+    <div class="anim-panel">
+      <div class="phase-tabs">
+        <button class="phase-btn active" onclick="switchPhase('full', this)">完整过程</button>
+        <button class="phase-btn" onclick="switchPhase('light', this)">光反应阶段</button>
+        <button class="phase-btn" onclick="switchPhase('dark', this)">暗反应阶段</button>
+      </div>
+      <canvas id="mainCanvas"></canvas>
+      <div class="stage-info" id="stageInfo"></div>
+      <button class="play-btn" onclick="toggleAnimation()" id="playBtn">▶ 播放动画</button>
+      <div class="legend-box">
+        <strong>图例：</strong>
+        <span style="color:#64b5f6">● H₂O 水</span> &nbsp;
+        <span style="color:#ef5350">● H⁺ 质子</span> &nbsp;
+        <span style="color:#81c784">● O₂ 氧气</span> &nbsp;
+        <span style="color:#ce93d8">● NADPH</span> &nbsp;
+        <span style="color:#ffd54f">● ATP</span> &nbsp;
+        <span style="color:#90a4ae">● CO₂</span> &nbsp;
+        <span style="color:#ffb74d">● (CH₂O) 糖类</span>
+      </div>
+    </div>
+
+    <!-- 循环图 -->
+    <div class="cycle-diagram" id="cycleDiagram">
+      <h3>光反应与暗反应 循环关系图（对照课本P106）</h3>
+      <div class="cycle-flow">
+        <!-- 光反应 -->
+        <div class="cycle-box light-box" id="lightCycleBox">
+          <h4>☀ 光反应阶段</h4>
+          <div style="font-size:0.72em;color:#ffcc80;text-align:center;margin-bottom:6px;">场所：类囊体薄膜</div>
+          <div class="rxns">
+            <div>① 水的光解：<br>2H₂O → 4H⁺ + 4e⁻ + O₂↑</div>
+            <div style="margin-top:4px;">② 光合磷酸化：<br>ADP + Pi → ATP</div>
+            <div style="margin-top:4px;">③ NADPH生成：<br>NADP⁺ + 2e⁻ + H⁺ → NADPH</div>
+          </div>
+          <div class="cycle-input">↑ 需要：光能、H₂O、NADP⁺、ADP、Pi</div>
+          <div class="cycle-output" style="color:#ffcc80;">↓ 产出：O₂、ATP、NADPH</div>
+        </div>
+
+        <!-- 中间连接箭头 -->
+        <div class="cycle-arrows">
+          <div class="cycle-arrow down">
+            <span class="arr-symbol">▼</span>
+            <span>ATP</span>
+            <span>NADPH</span>
+            <span style="font-size:0.7em;color:#8ab4d6;">(活跃化学能)</span>
+          </div>
+          <div class="cycle-arrow up">
+            <span class="arr-symbol">▲</span>
+            <span>ADP+Pi</span>
+            <span>NADP⁺</span>
+          </div>
+        </div>
+
+        <!-- 暗反应 -->
+        <div class="cycle-box dark-box" id="darkCycleBox">
+          <h4>🌙 暗反应阶段（卡尔文循环）</h4>
+          <div style="font-size:0.72em;color:#81d4fa;text-align:center;margin-bottom:6px;">场所：叶绿体基质</div>
+          <div class="rxns">
+            <div>① CO₂的固定：<br>CO₂ + C₅ → 2C₃</div>
+            <div style="margin-top:4px;">② C₃的还原：<br>2C₃ →(ATP+NADPH)→ C₅ + (CH₂O)</div>
+            <div style="margin-top:4px; color:#8ab4d6;">C₅循环再生，继续参与CO₂固定</div>
+          </div>
+          <div class="cycle-input">↑ 需要：CO₂、ATP、NADPH、C₅</div>
+          <div class="cycle-output" style="color:#81d4fa;">↓ 产出：(CH₂O)、ADP、Pi、NADP⁺</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-panel" id="cardsPanel">
+    <h2>📝 光合作用 记忆卡（点击翻转）</h2>
+
+    <div class="card" onclick="flipCard(this)" id="card1">
+      <div class="card-inner">
+        <div class="card-front">光合作用 总反应式</div>
+        <div class="card-back">6CO<sub>2</sub> + 12H<sub>2</sub>O <span style="color:#ffd54f">─光能→</span><br><span style="color:#66bb6a">叶绿体</span><br>C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6O<sub>2</sub> + 6H<sub>2</sub>O</div>
+      </div>
+    </div>
+
+    <div class="card" onclick="flipCard(this)" id="card2">
+      <div class="card-inner">
+        <div class="card-front">光反应阶段</div>
+        <div class="card-back">H<sub>2</sub>O <span style="color:#ffb74d">─光能/色素→</span> O<sub>2</sub> + [H](NADPH)<br>ADP + Pi <span style="color:#ffb74d">─光能→</span> ATP<br><small>场所：类囊体薄膜</small></div>
+      </div>
+    </div>
+
+    <div class="card" onclick="flipCard(this)" id="card3">
+      <div class="card-inner">
+        <div class="card-front">暗反应阶段（卡尔文循环）</div>
+        <div class="card-back">CO<sub>2</sub> + C<sub>5</sub> <span style="color:#4fc3f7">─酶→</span> 2C<sub>3</sub><br>C<sub>3</sub> <span style="color:#4fc3f7">─ATP+NADPH→</span> (CH<sub>2</sub>O) + C<sub>5</sub><br><small>场所：叶绿体基质</small></div>
+      </div>
+    </div>
+
+    <div class="card" onclick="flipCard(this)" id="card4">
+      <div class="card-inner">
+        <div class="card-front">光反应与暗反应的联系</div>
+        <div class="card-back">光反应为暗反应提供 <span style="color:#ffd54f">ATP</span> 和 <span style="color:#ce93d8">NADPH</span><br>暗反应为光反应提供 <span style="color:#81d4fa">ADP、Pi</span> 和 <span style="color:#81d4fa">NADP⁺</span><br><small>两者相互依存，不可分割</small></div>
+      </div>
+    </div>
+
+    <div class="card" onclick="flipCard(this)" id="card5">
+      <div class="card-inner">
+        <div class="card-front">叶绿体结构</div>
+        <div class="card-back">双层膜 · 基质 · 基粒(类囊体堆叠)<br>色素分布在 <span style="color:#ffb74d">类囊体薄膜</span> 上<br>光反应酶 → 类囊体膜<br>暗反应酶 → 基质</div>
+      </div>
+    </div>
+
+    <div class="card" onclick="flipCard(this)" id="card6">
+      <div class="card-inner">
+        <div class="card-front">光合作用 · 能量转化</div>
+        <div class="card-back"><span style="color:#ffd54f">光能</span> → <span style="color:#ffb74d">ATP中活跃化学能</span><br>→ <span style="color:#a5d6a7">有机物中稳定化学能</span><br><small>光合作用是"地球上最重要的化学反应"</small></div>
+      </div>
+    </div>
+
+    <p class="card-hint">👆 点击每一张卡片翻转查看详细内容</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+let phase = 'full';
+let animationId;
+let particles = [];
+let playing = false;
+let animProgress = 0;
+
+function resize() {
+  const panel = canvas.parentElement;
+  const rect = panel.getBoundingClientRect();
+  W = rect.width - 40;
+  H = Math.max(480, Math.min(600, window.innerHeight * 0.52));
+  canvas.width = W * (devicePixelRatio || 1);
+  canvas.height = H * (devicePixelRatio || 1);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(devicePixelRatio || 1, devicePixelRatio || 1);
+}
+window.addEventListener('resize', () => { resize(); });
+resize();
+
+class Particle {
+  constructor(x, y, vx, vy, color, size, label, life) {
+    this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+    this.color = color; this.size = size; this.label = label;
+    this.life = life; this.maxLife = life;
+    this.trail = [];
+  }
+  update() {
+    this.trail.push({x: this.x, y: this.y, a: 1});
+    if (this.trail.length > 18) this.trail.shift();
+    this.trail.forEach(t => t.a *= 0.82);
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life--;
+    return this.life > 0;
+  }
+  draw(ctx) {
+    for (let i = 0; i < this.trail.length; i++) {
+      const tr = this.trail[i];
+      ctx.beginPath();
+      ctx.arc(tr.x, tr.y, this.size * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle = this.color.replace('1)', `${tr.a * 0.25})`);
+      ctx.fill();
+    }
+    const alpha = Math.min(1, this.life / 20);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+    grad.addColorStop(0, this.color.replace('1)', '1)'));
+    grad.addColorStop(1, this.color.replace('1)', `${alpha * 0.25})`));
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = this.color.replace('1)', `${alpha * 0.08})`);
+    ctx.fill();
+  }
+}
+
+// ─── 叶绿体结构绘制 ───
+function drawChloroplast() {
+  const mx = W * 0.48, my = H * 0.50;
+  ctx.save();
+
+  // Outer membrane
+  ctx.beginPath();
+  ctx.ellipse(mx, my, W * 0.35, H * 0.34, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(102,187,106,0.55)';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([8, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Inner membrane
+  ctx.beginPath();
+  ctx.ellipse(mx, my, W * 0.30, H * 0.29, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(102,187,106,0.8)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Stroma fill
+  ctx.beginPath();
+  ctx.ellipse(mx, my, W * 0.29, H * 0.28, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(129,199,132,0.04)';
+  ctx.fill();
+
+  // Draw grana (thylakoid stacks) - several stacks
+  const granaData = [
+    { cx: mx - W * 0.13, cy: my - H * 0.10, w: 28, h: 8, n: 5 },
+    { cx: mx - W * 0.04, cy: my - H * 0.16, w: 26, h: 7, n: 4 },
+    { cx: mx + W * 0.09, cy: my - H * 0.08, w: 30, h: 8, n: 6 },
+    { cx: mx - W * 0.08, cy: my + H * 0.10, w: 27, h: 7, n: 5 },
+    { cx: mx + W * 0.04, cy: my + H * 0.04, w: 25, h: 7, n: 4 },
+    { cx: mx + W * 0.14, cy: my + H * 0.12, w: 28, h: 8, n: 5 },
+  ];
+
+  granaData.forEach(g => {
+    for (let i = 0; i < g.n; i++) {
+      const gy = g.cy + (i - (g.n - 1) / 2) * (g.h + 3.5);
+      ctx.beginPath();
+      ctx.ellipse(g.cx, gy, g.w, g.h, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(129,199,132,0.25)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(165,214,167,0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  });
+
+  // Stroma lamellae (connecting thylakoids)
+  ctx.strokeStyle = 'rgba(165,214,167,0.3)';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([3, 4]);
+  ctx.beginPath();
+  ctx.moveTo(mx - W * 0.17, my - H * 0.14);
+  ctx.quadraticCurveTo(mx - W * 0.08, my - H * 0.15, mx + W * 0.06, my - H * 0.14);
+  ctx.moveTo(mx + W * 0.02, my - H * 0.05);
+  ctx.quadraticCurveTo(mx + W * 0.04, my + H * 0.02, mx + W * 0.10, my + H * 0.06);
+  ctx.moveTo(mx - W * 0.12, my + H * 0.04);
+  ctx.quadraticCurveTo(mx - W * 0.04, my + H * 0.06, mx + W * 0.02, my + H * 0.08);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  ctx.fillStyle = '#a5d6a7';
+  ctx.font = 'bold 11px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText('叶绿体外膜', mx, my - H * 0.39);
+  ctx.fillText('叶绿体内膜', mx, my - H * 0.32);
+  ctx.fillText('基粒（类囊体堆叠）', mx + W * 0.15, my - H * 0.18);
+  ctx.fillText('叶绿体基质', mx + W * 0.15, my - H * 0.30);
+
+  // Pointers from labels
+  ctx.setLineDash([2, 3]);
+  ctx.strokeStyle = 'rgba(165,214,167,0.4)';
+  ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(mx + W * 0.15, my - H * 0.16);
+  ctx.lineTo(mx + W * 0.08, my - H * 0.10);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.restore();
+  return { mx, my, granaData };
+}
+
+// ─── 光能入口绘制 ───
+function drawLightRays(mx, my, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const startX = W * 0.05, startY = H * 0.02;
+  const endX = mx + W * 0.08, endY = my - H * 0.22;
+
+  // Sun symbol
+  const sunX = W * 0.06, sunY = H * 0.06;
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 16, 0, Math.PI * 2);
+  const sunGrad = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 20);
+  sunGrad.addColorStop(0, 'rgba(255,235,59,0.95)');
+  sunGrad.addColorStop(0.5, 'rgba(255,193,7,0.6)');
+  sunGrad.addColorStop(1, 'rgba(255,152,0,0)');
+  ctx.fillStyle = sunGrad;
+  ctx.fill();
+
+  // Rays
+  for (let i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    const sx = startX + 20;
+    const sy = startY + 30 + i * 16;
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(endX + i * 18, endY);
+    ctx.strokeStyle = 'rgba(255,235,59,0.5)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+
+  // "光能" label
+  ctx.fillStyle = '#fff9c4';
+  ctx.font = 'bold 12px "Microsoft YaHei"';
+  ctx.textAlign = 'center';
+  ctx.fillText('光能', sunX, sunY + 30);
+
+  ctx.restore();
+}
+
+// ─── 分子绘制 ───
+function drawMolecule(x, y, color, label, size, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.arc(x, y, size * 2.8, 0, Math.PI * 2);
+  ctx.fillStyle = color.replace('1)', '0.05)');
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  const fs = Math.max(10, size * 0.75);
+  ctx.font = `bold ${fs}px "Microsoft YaHei"`;
+  ctx.textAlign = 'center';
+  const lines = label.split('\n');
+  const totalH = lines.length * (fs + 3);
+  const baseY = y - size - 11 - totalH;
+  lines.forEach((l, i) => {
+    ctx.fillText(l, x, baseY + i * (fs + 3));
+  });
+  ctx.restore();
+}
+
+// ─── 箭头 ───
+function drawArrow(x1, y1, x2, y2, color, alpha, dashed = false) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  if (dashed) ctx.setLineDash([4, 3]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const len = 9;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - len * Math.cos(angle - 0.4), y2 - len * Math.sin(angle - 0.4));
+  ctx.lineTo(x2 - len * Math.cos(angle + 0.4), y2 - len * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// ─── 场景渲染 ───
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  const { mx, my, granaData } = drawChloroplast();
+
+  // ── 共同静态标注 ──
+  // H₂O entry zone (left)
+  drawMolecule(W * 0.06, my - H * 0.06, 'rgba(100,181,246,1)', 'H₂O\n水', 12,
+    (phase === 'dark' && animProgress > 0.1) ? 0.3 : 1);
+  // CO₂ entry zone (bottom)
+  drawMolecule(mx + W * 0.05, my + H * 0.35, 'rgba(144,164,174,1)', 'CO₂', 10,
+    (phase === 'light' && animProgress < 0.85) ? 0.3 : 1);
+
+  const showLight = phase === 'full' || phase === 'light';
+  const showDark = phase === 'full' || phase === 'dark';
+
+  // ── 光反应内容 ──
+  let lightAlpha = 1;
+  if (phase === 'full') {
+    lightAlpha = animProgress < 0.45 ? 1 : Math.max(0.2, 1 - (animProgress - 0.45) * 4);
+  }
+
+  if (showLight) {
+    ctx.save();
+    ctx.globalAlpha = lightAlpha;
+    // Light rays
+    drawLightRays(mx, my, Math.min(1, animProgress < 0.05 ? animProgress * 20 : lightAlpha));
+
+    // H₂O molecules moving toward thylakoid
+    const h2oStartX = W * 0.06, h2oStartY = my - H * 0.06;
+    const h2oTargetX = mx - W * 0.06, h2oTargetY = my - H * 0.08;
+    const h2oProgress = Math.min(1, Math.max(0, (animProgress - 0.03) * 5));
+    const h2oX = h2oStartX + (h2oTargetX - h2oStartX) * h2oProgress;
+    const h2oY = h2oStartY + (h2oTargetY - h2oStartY) * h2oProgress;
+
+    if (h2oProgress > 0.05 && h2oProgress < 0.95) {
+      drawMolecule(h2oX, h2oY, 'rgba(100,181,246,1)', 'H₂O', 10, 1);
+      if (h2oProgress > 0.15) {
+        drawArrow(h2oStartX + 18, h2oStartY + 8, h2oX, h2oY, 'rgba(100,181,246,0.6)', 0.5, true);
+      }
+    }
+
+    // H₂O splitting at thylakoid → H⁺ and O₂
+    if (animProgress > 0.12 && animProgress < 0.40) {
+      const splitX = mx - W * 0.06, splitY = my - H * 0.08;
+      const splitA = Math.min(1, (animProgress - 0.12) * 4);
+
+      // H⁺ going into thylakoid (small red dots moving inward)
+      for (let i = 0; i < 3; i++) {
+        const hp = Math.min(1, (animProgress - 0.12 - i * 0.04) * 5);
+        if (hp > 0 && hp < 1) {
+          const hx = splitX + (mx - W * 0.13 - splitX + (i - 1) * 14) * hp;
+          const hy = splitY + (my - H * 0.14 - splitY) * hp;
+          ctx.beginPath();
+          ctx.arc(hx, hy, 3, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(239,83,80,0.9)';
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 8px "Microsoft YaHei"';
+          ctx.textAlign = 'center';
+          ctx.fillText('H⁺', hx, hy - 7);
+        }
+      }
+
+      // O₂ assembling and floating up
+      const o2p = Math.min(1, (animProgress - 0.18) * 4);
+      const o2x = splitX + (mx - W * 0.04) * o2p * 0.5;
+      const o2y = splitY - o2p * 50;
+      drawMolecule(o2x, o2y, 'rgba(129,199,132,1)', 'O₂', 10, Math.min(1, o2p * 2) * splitA);
+      if (o2p > 0.3) {
+        drawArrow(splitX, splitY - 8, o2x, o2y, 'rgba(129,199,132,0.6)', 0.5);
+      }
+    }
+
+    // ATP production
+    if (animProgress > 0.22 && animProgress < 0.48) {
+      const atpX = mx - W * 0.04, atpY = my - H * 0.22;
+      const atpA = Math.min(1, (animProgress - 0.22) * 5);
+      drawMolecule(atpX, atpY, 'rgba(255,213,79,1)', 'ATP', 10, atpA);
+      // NADPH
+      const nadphX = mx + W * 0.10, nadphY = my - H * 0.18;
+      const nadphA = Math.min(1, (animProgress - 0.26) * 5);
+      drawMolecule(nadphX, nadphY, 'rgba(206,147,216,1)', 'NADPH', 10, nadphA);
+    }
+
+    // H⁺ flowing out through ATP synthase (animation detail)
+    if (animProgress > 0.20 && animProgress < 0.35) {
+      const atpaseX = mx - W * 0.09, atpaseY = my - H * 0.13;
+      for (let i = 0; i < 4; i++) {
+        const fp = ((animProgress * 6 + i * 0.25) % 1);
+        const fx = atpaseX + Math.sin(fp * Math.PI * 2) * 6;
+        const fy = atpaseY + fp * 18;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(239,83,80,${0.9 - fp * 0.5})`;
+        ctx.fill();
+      }
+      ctx.fillStyle = '#ffcc80';
+      ctx.font = 'bold 9px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('ATP合酶', atpaseX, atpaseY - 12);
+    }
+
+    // O₂ exiting top-right
+    if (animProgress > 0.30 && animProgress < 0.50) {
+      const o2Out = Math.min(1, (animProgress - 0.30) * 6);
+      drawMolecule(W * 0.88, my - H * 0.28, 'rgba(129,199,132,1)', 'O₂↑', 12, o2Out);
+      if (o2Out > 0.2) {
+        drawArrow(mx + W * 0.08, my - H * 0.20, W * 0.88, my - H * 0.28, 'rgba(129,199,132,0.5)', o2Out * 0.6);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // ── 暗反应内容 ──
+  let darkAlpha = 1;
+  if (phase === 'full') {
+    darkAlpha = animProgress > 0.38 ? Math.min(1, (animProgress - 0.38) * 4) : 0.2;
+  }
+
+  if (showDark) {
+    ctx.save();
+    ctx.globalAlpha = darkAlpha;
+
+    // CO₂ entering from bottom
+    const co2StartY = my + H * 0.35;
+    const co2TargetY = my + H * 0.08;
+    const co2Progress = Math.min(1, Math.max(0, (animProgress - 0.42) * 4));
+    const co2Y = co2StartY + (co2TargetY - co2StartY) * co2Progress;
+    const co2X = mx + W * 0.05;
+
+    if (co2Progress > 0.03 && co2Progress < 0.95) {
+      drawMolecule(co2X, co2Y, 'rgba(144,164,174,1)', 'CO₂', 9, 1);
+    }
+
+    // Calvin cycle in stroma - show C₅ → C₃ → C₅ + (CH₂O)
+    if (animProgress > 0.48) {
+      const cycA = Math.min(1, (animProgress - 0.48) * 3);
+
+      // C₅
+      drawMolecule(mx - W * 0.04, my + H * 0.12, 'rgba(165,214,167,1)', 'C₅', 9, cycA);
+      // + CO₂ label
+      if (cycA > 0.3) {
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px "Microsoft YaHei"';
+        ctx.textAlign = 'center';
+        ctx.fillText('+', mx, my + H * 0.11);
+      }
+      // → 2C₃
+      if (cycA > 0.5) {
+        drawMolecule(mx + W * 0.06, my + H * 0.07, 'rgba(79,195,247,1)', '2C₃', 10, Math.min(1, (cycA - 0.4) * 3));
+        drawArrow(mx - W * 0.01, my + H * 0.10, mx + W * 0.03, my + H * 0.08, 'rgba(79,195,247,0.5)', Math.min(1, (cycA - 0.35) * 3));
+      }
+      // ATP + NADPH usage
+      if (cycA > 0.6) {
+        const useA = Math.min(1, (cycA - 0.55) * 4);
+        drawMolecule(mx + W * 0.04, my + H * 0.20, 'rgba(255,213,79,1)', 'ATP↘', 8, useA);
+        drawMolecule(mx + W * 0.11, my + H * 0.18, 'rgba(206,147,216,1)', 'NADPH↘', 8, useA);
+      }
+      // → (CH₂O) output
+      if (cycA > 0.75) {
+        const choA = Math.min(1, (cycA - 0.72) * 5);
+        drawMolecule(W * 0.88, my + H * 0.04, 'rgba(255,183,77,1)', '(CH₂O)\n糖类', 12, choA);
+        drawArrow(mx + W * 0.14, my + H * 0.05, W * 0.85, my + H * 0.05, 'rgba(255,183,77,0.6)', choA * 0.6);
+      }
+      // C₅ recycle arrow
+      if (cycA > 0.7) {
+        const reA = Math.min(1, (cycA - 0.65) * 4);
+        ctx.save();
+        ctx.globalAlpha = reA;
+        ctx.fillStyle = '#a5d6a7';
+        ctx.font = 'italic 10px "Microsoft YaHei"';
+        ctx.textAlign = 'center';
+        ctx.fillText('C₅再生循环 ↻', mx, my + H * 0.18);
+        ctx.restore();
+      }
+      // ADP + NADP⁺ return to light reaction
+      if (cycA > 0.8) {
+        const retA = Math.min(1, (cycA - 0.78) * 5);
+        drawMolecule(mx - W * 0.14, my + H * 0.20, 'rgba(129,212,250,1)', 'ADP+Pi\nNADP⁺', 8, retA);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // ── 粒子和尾迹 ──
+  particles = particles.filter(p => p.update());
+  particles.forEach(p => p.draw(ctx));
+
+  // ── 动画进度 ──
+  if (playing) {
+    const speed = phase === 'full' ? 0.0025 : 0.003;
+    animProgress += speed;
+    if (animProgress > 1) animProgress = 0;
+
+    // Spawn particles during light reaction
+    if (showLight && animProgress > 0.10 && animProgress < 0.18) {
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(
+          W * 0.06, my - H * 0.06,
+          0.8 + Math.random() * 0.6, (Math.random() - 0.5) * 0.5,
+          'rgba(100,181,246,1)', 3.5, 'H₂O', 70
+        ));
+      }
+    }
+    // H⁺ particles during splitting
+    if (showLight && animProgress > 0.14 && animProgress < 0.28) {
+      for (let i = 0; i < 3; i++) {
+        particles.push(new Particle(
+          mx - W * 0.06, my - H * 0.08,
+          (Math.random() - 0.5) * 0.8, -0.5 - Math.random() * 1.0,
+          'rgba(239,83,80,1)', 2.5, 'H⁺', 45
+        ));
+      }
+    }
+    // O₂ particles
+    if (showLight && animProgress > 0.20 && animProgress < 0.35) {
+      for (let i = 0; i < 1; i++) {
+        particles.push(new Particle(
+          mx - W * 0.06, my - H * 0.10,
+          (Math.random() - 0.3) * 0.6, -1.2 - Math.random() * 0.8,
+          'rgba(129,199,132,1)', 3.5, 'O₂', 60
+        ));
+      }
+    }
+    // CO₂ particles during dark reaction
+    if (showDark && animProgress > 0.45 && animProgress < 0.60) {
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(
+          mx + W * 0.05, my + H * 0.34,
+          (Math.random() - 0.5) * 0.5, -0.6 - Math.random() * 0.8,
+          'rgba(144,164,174,1)', 3, 'CO₂', 55
+        ));
+      }
+    }
+    // (CH₂O) particles
+    if (showDark && animProgress > 0.75 && animProgress < 0.90) {
+      for (let i = 0; i < 1; i++) {
+        particles.push(new Particle(
+          mx + W * 0.15, my + H * 0.04,
+          1.0 + Math.random() * 0.8, (Math.random() - 0.5) * 0.5,
+          'rgba(255,183,77,1)', 3.5, '(CH₂O)', 65
+        ));
+      }
+    }
+
+    // Update cycle diagram highlight
+    updateCycleHighlight();
+    // Update stage badges
+    updateStageHighlight();
+  }
+
+  // Pulse animation on key molecules
+  const pulseR = 14 + Math.sin(Date.now() / 700) * 2.5;
+  if (showLight && (animProgress < 0.40 || phase === 'light')) {
+    ctx.beginPath(); ctx.arc(W * 0.06, my - H * 0.06, pulseR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(100,181,246,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  if (showDark && (animProgress > 0.40 || phase === 'dark')) {
+    ctx.beginPath(); ctx.arc(mx + W * 0.05, my + H * 0.35, pulseR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(144,164,174,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  animationId = requestAnimationFrame(render);
+}
+
+// ── 循环图高亮 ──
+function updateCycleHighlight() {
+  const lightBox = document.getElementById('lightCycleBox');
+  const darkBox = document.getElementById('darkCycleBox');
+
+  if (phase === 'light') {
+    lightBox.classList.add('highlight-glow');
+    darkBox.classList.remove('highlight-glow');
+  } else if (phase === 'dark') {
+    lightBox.classList.remove('highlight-glow');
+    darkBox.classList.add('highlight-glow');
+  } else {
+    // full mode: highlight based on animProgress
+    if (animProgress < 0.42) {
+      lightBox.classList.add('highlight-glow');
+      darkBox.classList.remove('highlight-glow');
+    } else {
+      lightBox.classList.remove('highlight-glow');
+      darkBox.classList.add('highlight-glow');
+    }
+  }
+}
+
+// ── 阶段标记高亮 ──
+function updateStageHighlight() {
+  const badges = document.querySelectorAll('.stage-badge');
+  badges.forEach(b => b.classList.remove('highlight'));
+  if (phase === 'light') {
+    badges.forEach(b => { if (b.classList.contains('light')) b.classList.add('highlight'); });
+  } else if (phase === 'dark') {
+    badges.forEach(b => { if (b.classList.contains('dark')) b.classList.add('highlight'); });
+  } else {
+    if (animProgress < 0.42) {
+      badges.forEach(b => { if (b.classList.contains('light')) b.classList.add('highlight'); });
+    } else {
+      badges.forEach(b => { if (b.classList.contains('dark')) b.classList.add('highlight'); });
+    }
+  }
+}
+
+// ── 阶段切换 ──
+function switchPhase(p, btn) {
+  phase = p;
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  particles = [];
+  animProgress = 0;
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶ 播放动画';
+  updateCycleHighlight();
+  updateStageHighlight();
+  updateStageInfo();
+}
+
+// ── 播放控制 ──
+function toggleAnimation() {
+  playing = !playing;
+  if (playing) { animProgress = 0; particles = []; }
+  document.getElementById('playBtn').textContent = playing ? '⏸ 暂停动画' : '▶ 播放动画';
+}
+
+// ── 阶段信息 ──
+function updateStageInfo() {
+  const el = document.getElementById('stageInfo');
+  el.innerHTML = `
+    <div class="stage-badge light"><div class="num">①</div>光反应<br><small>类囊体薄膜</small></div>
+    <div class="stage-badge dark"><div class="num">②</div>暗反应（卡尔文循环）<br><small>叶绿体基质</small></div>
+  `;
+}
+updateStageInfo();
+
+// ── 记忆卡翻转 ──
+function flipCard(card) {
+  card.classList.toggle('flipped');
+  const toast = document.getElementById('toast');
+  const isFlipped = card.classList.contains('flipped');
+  const frontText = card.querySelector('.card-front').textContent.trim();
+  toast.textContent = isFlipped ? `📖 ${frontText} - 已显示` : `🔒 ${frontText} - 已隐藏`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+// ── 键盘快捷键 ──
+document.addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); toggleAnimation(); return; }
+  if (e.key === '1') { switchPhase('full', document.querySelectorAll('.phase-btn')[0]); return; }
+  if (e.key === '2') { switchPhase('light', document.querySelectorAll('.phase-btn')[1]); return; }
+  if (e.key === '3') { switchPhase('dark', document.querySelectorAll('.phase-btn')[2]); return; }
+  if (e.key === 'q') flipCard(document.getElementById('card1'));
+  if (e.key === 'w') flipCard(document.getElementById('card2'));
+  if (e.key === 'e') flipCard(document.getElementById('card3'));
+  if (e.key === 'r') flipCard(document.getElementById('card4'));
+  if (e.key === 't') flipCard(document.getElementById('card5'));
+  if (e.key === 'y') flipCard(document.getElementById('card6'));
+});
+
+render();
+</script>
+</body>
+</html>
