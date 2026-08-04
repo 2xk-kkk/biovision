@@ -291,8 +291,8 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, que
         params.append(textbook)
     
     if chapter:
-        query += ' AND chapter = ?'
-        params.append(chapter)
+        query += ' AND chapter LIKE ?'
+        params.append(f'{chapter}%')
     
     if section:
         query += ' AND section = ?'
@@ -557,12 +557,13 @@ def get_questions_by_type(db, textbook=None, chapter=None, section=None, questio
     params = []
     
     if textbook:
+        textbook = normalize_textbook_name(textbook)
         query += ' AND textbook = ?'
         params.append(textbook)
     
     if chapter:
-        query += ' AND chapter = ?'
-        params.append(chapter)
+        query += ' AND chapter LIKE ?'
+        params.append(f'{chapter}%')
     
     if section:
         query += ' AND section = ?'
