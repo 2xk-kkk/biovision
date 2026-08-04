@@ -1,5 +1,5 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure, get_textbook_progress, get_textbook_chapter_progress
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure, get_textbook_progress, get_textbook_chapter_progress, add_to_wrong_book, get_related_questions_by_knowledge, get_question_by_id
 from utils.response import ApiResponse
 import json
 import os
@@ -271,9 +271,59 @@ def get_questions_by_textbook_service(textbook=None, chapter=None, section=None,
                 questions = get_questions_by_textbook(db, textbook, chapter, section, question_type)
             
             if len(questions) == 0:
-                questions = get_questions_by_textbook(db, textbook, chapter, None, question_type)
+                questions = get_questions_by_textbook(db, textbook, None, question_type)
         
         return ApiResponse.success(data=questions)
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
+    finally:
+        db.close()
+
+
+def add_to_wrong_book_service(user_id, question_id, user_answer=None):
+    """将题目加入错题本"""
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        cursor.execute('SELECT id FROM questions WHERE id = ?', (question_id,))
+        question = cursor.fetchone()
+        if not question:
+            return ApiResponse.error(msg="题目不存在")
+        
+        add_to_wrong_book(db, user_id, question_id, user_answer)
+        return ApiResponse.success(msg="已加入错题本")
+    except Exception as e:
+        return ApiResponse.error(msg=f"加入错题本失败: {str(e)}")
+    finally:
+        db.close()
+
+
+def get_related_questions_service(user_id, question_id, limit=5):
+    """根据题目知识点推荐相关题目"""
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        cursor.execute('SELECT id FROM questions WHERE id = ?', (question_id,))
+        question = cursor.fetchone()
+        if not question:
+            return ApiResponse.error(msg="题目不存在")
+        
+        related = get_related_questions_by_knowledge(db, user_id, question_id, limit)
+        return ApiResponse.success(data=related)
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取推荐题目失败: {str(e)}")
+    finally:
+        db.close()
+
+
+def get_single_question_service(question_id):
+    """获取单个题目"""
+    db = get_db_connection()
+    try:
+        question = get_question_by_id(db, question_id)
+        if not question:
+            return ApiResponse.error(msg="题目不存在")
+        return ApiResponse.success(data=question)
     except Exception as e:
         return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
     finally:

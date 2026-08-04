@@ -209,6 +209,226 @@
             padding-top: 30px;
         }
 
+        .wrong-book-section {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wrong-book-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .wrong-book-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
+
+        .wrong-book-btn.added {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            cursor: default;
+        }
+
+        .wrong-book-btn.added:hover {
+            transform: none;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        }
+
+        .wrong-book-icon {
+            font-size: 18px;
+        }
+
+        .wrong-book-text {
+            letter-spacing: 0.5px;
+        }
+
+        .related-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(59, 130, 246, 0.15);
+        }
+
+        .related-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .related-title::before {
+            content: '🔥';
+            font-size: 18px;
+        }
+
+        .related-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .related-item {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .related-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+            background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+        }
+
+        .related-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .related-type {
+            font-size: 11px;
+            font-weight: 600;
+            color: #d97706;
+            background: rgba(251, 191, 36, 0.2);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .related-count {
+            font-size: 11px;
+            color: #92400e;
+            font-weight: 500;
+        }
+
+        .related-stem {
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .related-empty {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .related-loading {
+            text-align: center;
+            padding: 10px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .return-practice-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .return-practice-bar.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .return-practice-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .return-practice-icon {
+            font-size: 20px;
+        }
+
+        .return-practice-text {
+            flex: 1;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .return-practice-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .return-practice-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .return-practice-dismiss {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .return-practice-dismiss:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .return-practice-content {
+                font-size: 12px;
+            }
+            
+            .return-practice-btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+        }
+
         .question-card:hover {
             transform: none;
             box-shadow: none;
@@ -1228,6 +1448,18 @@
                                 <div class="no-analysis">暂无解析，敬请期待...</div>
                             </div>
                         </div>
+                        <div class="wrong-book-section" id="wrongBookSection" style="display: none;">
+                            <button class="wrong-book-btn" id="wrongBookBtn" onclick="addToWrongBook()">
+                                <span class="wrong-book-icon">📚</span>
+                                <span class="wrong-book-text">加入错题本</span>
+                            </button>
+                        </div>
+                        <div class="related-section" id="relatedSection" style="display: none;">
+                            <div class="related-title">相关知识点练习</div>
+                            <div class="related-list" id="relatedList">
+                                <div class="related-loading">加载中...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1334,12 +1566,13 @@
 
         async function loadExam() {
             examId = getQueryParam('exam_id');
+            const questionId = getQueryParam('question_id');
             const textbook = getQueryParam('textbook');
             const chapter = getQueryParam('chapter');
             const section = getQueryParam('section');
             const questionType = getQueryParam('type');
             
-            if (!examId && !textbook) {
+            if (!examId && !textbook && !questionId) {
                 document.getElementById('quizPaper').innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">❌</div>
@@ -1353,7 +1586,11 @@
             try {
                 let response, result;
                 
-                if (examId) {
+                if (questionId) {
+                    // 加载单个题目
+                    response = await fetch(`${API_BASE_URL}/questions/${questionId}`);
+                    result = await response.json();
+                } else if (examId) {
                     response = await fetch(`${API_BASE_URL}/exams/${examId}/questions`);
                     result = await response.json();
                 } else {
@@ -1383,6 +1620,10 @@
                         } else {
                             examName = textbook;
                         }
+                    } else if (questionId && typeof result.data === 'object' && !Array.isArray(result.data)) {
+                        // 单个题目
+                        qs = [result.data];
+                        examName = result.data.chapter || result.data.textbook || '相关知识点练习';
                     }
 
                     if (qs.length === 0) {
@@ -1694,6 +1935,8 @@
             }
         }
 
+        let isAddedToWrongBook = false;
+
         function showAnswerPanel(isCorrect, correctAnswer, analysis) {
             const questionPanel = document.getElementById('questionPanel');
             const answerPanel = document.getElementById('answerPanel');
@@ -1701,6 +1944,14 @@
             const answerTitle = document.getElementById('answerTitle');
             const correctAnswerValue = document.getElementById('correctAnswerValue');
             const analysisContent = document.getElementById('analysisContent');
+            const wrongBookSection = document.getElementById('wrongBookSection');
+            const wrongBookBtn = document.getElementById('wrongBookBtn');
+            const relatedSection = document.getElementById('relatedSection');
+            
+            isAddedToWrongBook = false;
+            wrongBookBtn.classList.remove('added');
+            wrongBookBtn.querySelector('.wrong-book-text').textContent = '加入错题本';
+            relatedSection.style.display = 'none';
             
             // 收缩题目面板
             questionPanel.classList.add('compact');
@@ -1715,6 +1966,10 @@
                 answerIcon.style.color = '#3b82f6';
                 correctAnswerValue.style.color = '#3b82f6';
                 correctAnswerValue.style.borderLeftColor = '#3b82f6';
+                // 显示加入错题本按钮
+                wrongBookSection.style.display = 'flex';
+                // 显示推荐知识点题目
+                loadRelatedQuestions();
             } else {
                 // 选择题 - 判断正误
                 answerIcon.textContent = isCorrect ? '✅' : '❌';
@@ -1723,6 +1978,14 @@
                 answerIcon.style.color = isCorrect ? '#059669' : '#dc2626';
                 correctAnswerValue.style.color = isCorrect ? '#059669' : '#dc2626';
                 correctAnswerValue.style.borderLeftColor = isCorrect ? '#059669' : '#dc2626';
+                // 选择题答错时显示加入错题本按钮
+                if (!isCorrect) {
+                    wrongBookSection.style.display = 'flex';
+                    // 答错时加载推荐知识点题目
+                    loadRelatedQuestions();
+                } else {
+                    wrongBookSection.style.display = 'none';
+                }
             }
             
             correctAnswerValue.textContent = correctAnswer;
@@ -1737,11 +2000,163 @@
         function hideAnswerPanel() {
             const questionPanel = document.getElementById('questionPanel');
             const answerPanel = document.getElementById('answerPanel');
+            const wrongBookSection = document.getElementById('wrongBookSection');
+            const relatedSection = document.getElementById('relatedSection');
             
             // 展开题目面板
             questionPanel.classList.remove('compact');
             // 隐藏答案面板
             answerPanel.classList.remove('show');
+            // 隐藏错题本按钮
+            if (wrongBookSection) {
+                wrongBookSection.style.display = 'none';
+            }
+            // 隐藏推荐错题
+            if (relatedSection) {
+                relatedSection.style.display = 'none';
+            }
+        }
+
+        async function addToWrongBook() {
+            if (isAddedToWrongBook) return;
+            
+            const question = quizQuestions[currentQuestionIndex];
+            if (!question) return;
+            
+            const userAnswer = answers[question.id] || '';
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+            
+            const wrongBookBtn = document.getElementById('wrongBookBtn');
+            const wrongBookText = wrongBookBtn.querySelector('.wrong-book-text');
+            const wrongBookIcon = wrongBookBtn.querySelector('.wrong-book-icon');
+            
+            wrongBookBtn.disabled = true;
+            wrongBookText.textContent = '添加中...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/wrong-answers/${question.id}?answer=${encodeURIComponent(userAnswer)}`, {
+                    method: 'POST',
+                    headers: { 'token': token }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    isAddedToWrongBook = true;
+                    wrongBookBtn.classList.add('added');
+                    wrongBookIcon.textContent = '✅';
+                    wrongBookText.textContent = '已加入错题本';
+                } else {
+                    alert(result.msg || '加入错题本失败');
+                    wrongBookBtn.disabled = false;
+                    wrongBookText.textContent = '加入错题本';
+                }
+            } catch (error) {
+                console.error('加入错题本失败:', error);
+                alert('网络错误，请稍后重试');
+                wrongBookBtn.disabled = false;
+                wrongBookText.textContent = '加入错题本';
+            }
+        }
+
+        async function loadRelatedQuestions() {
+            const question = quizQuestions[currentQuestionIndex];
+            if (!question) return;
+            
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            
+            const relatedSection = document.getElementById('relatedSection');
+            const relatedList = document.getElementById('relatedList');
+            
+            relatedSection.style.display = 'block';
+            relatedList.innerHTML = '<div class="related-loading">加载中...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/questions/related/${question.id}?limit=5`, {
+                    method: 'GET',
+                    headers: { 'token': token }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    renderRelatedQuestions(result.data);
+                } else {
+                    relatedList.innerHTML = '<div class="related-empty">暂无相关知识点题目</div>';
+                }
+            } catch (error) {
+                console.error('加载推荐题目失败:', error);
+                relatedList.innerHTML = '<div class="related-empty">加载推荐失败</div>';
+            }
+        }
+
+        function renderRelatedQuestions(questions) {
+            const relatedList = document.getElementById('relatedList');
+            const typeNames = {
+                'choice': '选择题',
+                'fill': '填空题',
+                'essay': '大题'
+            };
+            
+            let html = '';
+            questions.forEach(q => {
+                const typeName = typeNames[q.type] || '题目';
+                const stem = q.stem.length > 50 ? q.stem.substring(0, 50) + '...' : q.stem;
+                const badge = q.wrong_count > 0 ? `错${q.wrong_count}次` : '未做';
+                html += `
+                    <div class="related-item" onclick="goToRelatedQuestion(${q.id})">
+                        <div class="related-item-header">
+                            <span class="related-type">${typeName}</span>
+                            <span class="related-count">${badge}</span>
+                        </div>
+                        <div class="related-stem">${stem}</div>
+                    </div>
+                `;
+            });
+            relatedList.innerHTML = html;
+        }
+
+        function goToRelatedQuestion(questionId) {
+            // 保存当前练习状态到sessionStorage
+            const currentUrl = window.location.search;
+            const practiceState = {
+                originalUrl: currentUrl,
+                questions: allQuestions,
+                currentIndex: currentQuestionIndex,
+                answers: answers,
+                results: results,
+                startTime: startTime,
+                timestamp: Date.now()
+            };
+            sessionStorage.setItem('quizPracticeState', JSON.stringify(practiceState));
+            window.location.href = `quiz.html?question_id=${questionId}&from_practice=1`;
+        }
+
+        function returnToPractice() {
+            const savedState = sessionStorage.getItem('quizPracticeState');
+            if (savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    // 检查状态是否有效（5分钟内）
+                    if (Date.now() - state.timestamp < 5 * 60 * 1000) {
+                        sessionStorage.removeItem('quizPracticeState');
+                        window.location.href = state.originalUrl;
+                        return;
+                    } else {
+                        sessionStorage.removeItem('quizPracticeState');
+                        alert('练习状态已过期，请重新开始练习');
+                    }
+                } catch (e) {
+                    sessionStorage.removeItem('quizPracticeState');
+                }
+            }
+            window.location.href = 'main.html';
         }
 
         function nextQuestion() {
@@ -2038,7 +2453,61 @@
         window.addEventListener('load', () => {
             createParticles();
             loadExam();
+            
+            // 检查是否有保存的练习状态
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromPractice = urlParams.get('from_practice');
+            const savedState = sessionStorage.getItem('quizPracticeState');
+            
+            if ((fromPractice === '1' || savedState) && savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    if (Date.now() - state.timestamp < 5 * 60 * 1000) {
+                        showReturnToPracticeButton();
+                    }
+                } catch (e) {
+                    sessionStorage.removeItem('quizPracticeState');
+                }
+            }
         });
+
+        function showReturnToPracticeButton() {
+            // 在页面顶部添加返回练习按钮
+            const headerContainer = document.querySelector('.quiz-wrapper');
+            if (!headerContainer || document.getElementById('returnPracticeBtn')) return;
+            
+            const returnBar = document.createElement('div');
+            returnBar.className = 'return-practice-bar';
+            returnBar.id = 'returnPracticeBtn';
+            returnBar.innerHTML = `
+                <div class="return-practice-content">
+                    <span class="return-practice-icon">📖</span>
+                    <span class="return-practice-text">您有未完成的练习</span>
+                    <button class="return-practice-btn" onclick="returnToPractice()">
+                        <span>▶️</span> 返回练习
+                    </button>
+                    <button class="return-practice-dismiss" onclick="dismissReturnPractice()">✕</button>
+                </div>
+            `;
+            headerContainer.insertBefore(returnBar, headerContainer.firstChild);
+            
+            // 添加动画
+            setTimeout(() => {
+                returnBar.classList.add('show');
+            }, 100);
+        }
+
+        function dismissReturnPractice() {
+            const returnBar = document.getElementById('returnPracticeBtn');
+            if (returnBar) {
+                returnBar.remove();
+            }
+            sessionStorage.removeItem('quizPracticeState');
+            // 移除URL中的from_practice参数
+            const url = new URL(window.location.href);
+            url.searchParams.delete('from_practice');
+            window.history.replaceState({}, '', url.toString());
+        }
     </script>
 </body>
 </html>

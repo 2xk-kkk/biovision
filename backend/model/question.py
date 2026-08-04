@@ -600,3 +600,151 @@ def get_questions_by_type(db, textbook=None, chapter=None, section=None, questio
             'analysis': row[13] if row[13] else ''
         })
     return questions
+
+
+def add_to_wrong_book(db, user_id, question_id, user_answer=None):
+    """将题目加入错题本"""
+    cursor = db.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO user_answers (user_id, question_id, answer, is_correct, wrong_count, mastered)
+            VALUES (?, ?, ?, 0, 1, 0)
+            ON CONFLICT(user_id, question_id) DO UPDATE SET
+                answer = CASE WHEN excluded.answer IS NOT NULL AND excluded.answer != '' THEN excluded.answer ELSE user_answers.answer END,
+                is_correct = 0,
+                wrong_count = user_answers.wrong_count + 1,
+                mastered = 0,
+                create_at = CURRENT_TIMESTAMP
+        ''', (user_id, question_id, user_answer))
+        db.commit()
+        return True
+    except Exception as e:
+        db.rollback()
+        raise e
+
+
+def get_related_questions_by_knowledge(db, user_id, question_id, limit=5):
+    """根据题目的知识点（章节）推荐相关题目，从题库中查询同知识点的题目"""
+    cursor = db.cursor()
+    
+    # 获取当前题目的章节信息
+    cursor.execute('''
+        SELECT textbook, chapter, section FROM questions WHERE id = ?
+    ''', (question_id,))
+    current_question = cursor.fetchone()
+    
+    if not current_question:
+        return []
+    
+    textbook, chapter, section = current_question
+    
+    # 构建推荐查询：从questions表查询同知识点题目，排除用户已做对的题目
+    query = '''
+        SELECT q.id, q.stem, q.option_a, q.option_b, q.option_c, q.option_d, 
+               q.answer, q.textbook, q.chapter, q.section, q.type, q.analysis,
+               COALESCE(ua.wrong_count, 0) as wrong_count,
+               COALESCE(ua.mastered, 0) as mastered,
+               ua.answer as user_answer
+        FROM questions q
+        LEFT JOIN user_answers ua ON q.id = ua.question_id AND ua.user_id = ?
+        WHERE q.id != ?
+    '''
+    params = [user_id, question_id]
+    
+    # 添加章节匹配条件
+    conditions = []
+    if section and chapter:
+        # 同节 - 最高优先级
+        conditions.append('(q.section = ? AND q.chapter = ?)')
+        params.extend([section, chapter])
+    if chapter:
+        # 同章 - 次高优先级
+        conditions.append('(q.chapter = ?)')
+        params.append(chapter)
+    if textbook:
+        # 同教材 - 最低优先级
+        conditions.append('(q.textbook = ?)')
+        params.append(textbook)
+    
+    if conditions:
+        query += ' AND (' + ' OR '.join(conditions) + ')'
+    
+    # 排除用户已做对的题目（只推荐需要练习的题目）
+    query += ' AND (ua.is_correct = 0 OR ua.is_correct IS NULL)'
+    
+    # 排序：同节优先 > 同章 > 同教材，然后优先未做过的题目
+    query += ' ORDER BY '
+    order_clauses = []
+    if section and chapter:
+        order_clauses.append('CASE WHEN q.section = ? AND q.chapter = ? THEN 0 ELSE 1 END')
+        params.extend([section, chapter])
+    if chapter:
+        order_clauses.append('CASE WHEN q.chapter = ? THEN 0 ELSE 1 END')
+        params.append(chapter)
+    order_clauses.append('CASE WHEN ua.question_id IS NULL THEN 0 ELSE 1 END')  # 未做过的优先
+    order_clauses.append('COALESCE(ua.wrong_count, 0) DESC')  # 做错次数多的优先
+    
+    query += ', '.join(order_clauses) + ' LIMIT ?'
+    params.append(limit)
+    
+    cursor.execute(query, params)
+    
+    items = []
+    for row in cursor.fetchall():
+        items.append({
+            'id': row[0],
+            'stem': row[1],
+            'option_a': row[2],
+            'option_b': row[3],
+            'option_c': row[4],
+            'option_d': row[5],
+            'answer': row[6],
+            'textbook': row[7] or '',
+            'chapter': row[8] or '',
+            'section': row[9] or '',
+            'type': row[10] or '',
+            'analysis': row[11] or '',
+            'wrong_count': row[12] or 0,
+            'mastered': row[13] or 0,
+            'user_answer': row[14] or ''
+        })
+    
+    return items
+
+
+def get_question_by_id(db, question_id):
+    """根据ID获取单个题目"""
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT id, stem, option_a, option_b, option_c, option_d, answer, 
+               textbook, chapter, section, type, analysis, images
+        FROM questions WHERE id = ?
+    ''', (question_id,))
+    row = cursor.fetchone()
+    
+    if not row:
+        return None
+    
+    images_str = row[12] if row[12] else ''
+    try:
+        images = json.loads(images_str) if images_str else []
+    except:
+        images = []
+    
+    return {
+        'id': row[0],
+        'stem': row[1],
+        'options': {
+            'A': row[2],
+            'B': row[3],
+            'C': row[4],
+            'D': row[5]
+        },
+        'answer': row[6],
+        'textbook': row[7] or '',
+        'chapter': row[8] or '',
+        'section': row[9] or '',
+        'type': row[10] or '',
+        'analysis': row[11] or '',
+        'images': images
+    }

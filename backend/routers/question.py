@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, Query
-from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service, get_textbook_progress_service, get_textbook_chapter_progress_service
+from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service, get_textbook_progress_service, get_textbook_chapter_progress_service, add_to_wrong_book_service, get_related_questions_service, get_single_question_service
 from utils.jwt_utils import verify_jwt
 from utils.response import ApiResponse
 
@@ -123,3 +123,31 @@ def textbook_progress(user_id: int):
 def textbook_chapters(textbook: str = Query(...), user_id: int = Query(...)):
     """获取某本教材各章节的做题进度（含用户数据）"""
     return get_textbook_chapter_progress_service(textbook, user_id)
+
+
+@router.post("/wrong-answers/{question_id}")
+def add_wrong_answer(question_id: int, answer: str = None, token: str = Header(...)):
+    """将题目加入错题本"""
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+    
+    user_id = int(payload["msg"]["user_id"])
+    return add_to_wrong_book_service(user_id, question_id, answer)
+
+
+@router.get("/questions/related/{question_id}")
+def get_related_answers(question_id: int, limit: int = Query(5), token: str = Header(...)):
+    """获取根据知识点推荐的相关题目"""
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+    
+    user_id = int(payload["msg"]["user_id"])
+    return get_related_questions_service(user_id, question_id, limit)
+
+
+@router.get("/questions/{question_id}")
+def get_single_question(question_id: int):
+    """获取单个题目"""
+    return get_single_question_service(question_id)

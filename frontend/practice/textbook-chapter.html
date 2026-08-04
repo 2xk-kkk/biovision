@@ -1078,23 +1078,23 @@
             if (!chapterData[chapterIndex]) return;
 
             const chapter = chapterData[chapterIndex];
+            const realSections = chapter.sections.filter(s => s.title !== '专项训练');
             document.getElementById('contentTitle').textContent = chapter.title;
-            document.getElementById('contentSubtitle').textContent = `${chapter.sections.length}节 · ${chapter.total}题 · 已做${chapter.answered}题 · 正确率${chapter.accuracy}%`;
+            document.getElementById('contentSubtitle').textContent = `${realSections.length}节 · ${chapter.total}题 · 已做${chapter.answered}题 · 正确率${chapter.accuracy}%`;
 
             const cardList = document.getElementById('sectionCardList');
             cardList.innerHTML = '';
 
-            chapter.sections.forEach((section) => {
-                const isSpecial = section.title === '专项训练';
+            realSections.forEach((section) => {
                 const card = document.createElement('div');
                 card.className = 'section-card';
                 card.innerHTML = `
                     <div class="section-card-header">
-                        <div class="section-card-title">${isSpecial ? '📋 ' : ''}${section.title}</div>
+                        <div class="section-card-title">${section.title}</div>
                     </div>
                     <div class="section-card-body">
                         <div style="color:#64748b;font-size:14px;line-height:1.6;">
-                            ${isSpecial ? '综合专项训练，涵盖本章所有知识点。' : `练习${section.title}相关知识点，包括核心概念理解、原理应用和拓展延伸。`}
+                            练习${section.title}相关知识点，包括核心概念理解、原理应用和拓展延伸。
                         </div>
                     </div>
                     <div class="section-card-footer">
