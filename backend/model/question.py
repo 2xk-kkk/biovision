@@ -263,18 +263,30 @@ def get_exam_stats(db, exam_id, user_id):
     }
 
 def normalize_textbook_name(textbook):
-    name_map = {
+    # 完整名称映射（精确匹配优先）
+    full_map = {
+        '必修一：分子与细胞': '必修一：分子与细胞',
+        '必修二：遗传与进化': '必修二：遗传与进化',
+        '选择性必修一：稳态与调节': '选择性必修一：稳态与调节',
+        '选择性必修二：生物与环境': '选择性必修二：生物与环境',
+        '选择性必修三：生物技术与工程': '选择性必修三：生物技术与工程',
+        '选修一：稳态与调节': '选择性必修一：稳态与调节',
+        '选修二：生物与环境': '选择性必修二：生物与环境',
+        '选修三：生物技术与工程': '选择性必修三：生物技术与工程',
+    }
+    if textbook in full_map:
+        return full_map[textbook]
+    # 简称匹配（仅当不包含"选择性"时，防止"选择性必修一"被"必修一"误匹配）
+    short_map = {
         '必修一': '必修一：分子与细胞',
         '必修二': '必修二：遗传与进化',
         '选修一': '选择性必修一：稳态与调节',
         '选修二': '选择性必修二：生物与环境',
         '选修三': '选择性必修三：生物技术与工程',
     }
-    if textbook in name_map:
-        return name_map[textbook]
-    for key, value in name_map.items():
-        if key in textbook:
-            return value
+    for short, full in short_map.items():
+        if short in textbook and '选择性' not in textbook:
+            return full
     return textbook
 
 def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, question_type=None):
@@ -287,13 +299,15 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, que
     params = []
     
     if textbook:
-        query += ' AND textbook = ?'
+        short_name = textbook.split('：')[-1] if '：' in textbook else textbook
+        query += ' AND (textbook = ? OR textbook LIKE ?)'
         params.append(textbook)
-    
+        params.append(f'%{short_name}%')
+
     if chapter:
         query += ' AND chapter LIKE ?'
         params.append(f'{chapter}%')
-    
+
     if section:
         query += ' AND section = ?'
         params.append(section)

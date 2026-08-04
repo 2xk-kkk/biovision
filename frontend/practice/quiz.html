@@ -68,7 +68,7 @@
         .quiz-wrapper {
             position: relative;
             z-index: 1;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             width: 100%;
@@ -81,6 +81,7 @@
             padding: 0;
             width: 100%;
             overflow: hidden;
+            min-height: 0;
         }
 
         .question-panel {
@@ -1439,7 +1440,7 @@
                     </div>
                     <div class="answer-body">
                         <div class="correct-answer-section">
-                            <div class="section-title">正确答案</div>
+                            <div class="section-title">参考答案</div>
                             <div class="correct-answer-value" id="correctAnswerValue"></div>
                         </div>
                         <div class="analysis-section">
@@ -1899,16 +1900,14 @@
             const questionType = getQuestionType(question);
             
             let isCorrect = false;
-            let isFillBlank = questionType === 'fill';
-            
+            let isSubjective = questionType === 'fill' || questionType === 'essay';
+
             if (questionType === 'choice') {
                 isCorrect = userAnswer === correctAnswer;
                 results[question.id] = isCorrect;
                 if (isCorrect) {
                     correctCount++;
                 }
-            } else if (questionType === 'essay') {
-                results[question.id] = null;
             } else {
                 results[question.id] = null;
             }
@@ -1928,7 +1927,7 @@
             updateProgress();
             renderCurrentQuestion();
             
-            if (isFillBlank) {
+            if (isSubjective) {
                 showAnswerPanel(null, question.answer || '', question.analysis || '');
             } else {
                 showAnswerPanel(isCorrect, question.answer || '', question.analysis || '');
@@ -2067,28 +2066,45 @@
         async function loadRelatedQuestions() {
             const question = quizQuestions[currentQuestionIndex];
             if (!question) return;
-            
+
             const token = localStorage.getItem('token');
             if (!token) return;
-            
+
             const relatedSection = document.getElementById('relatedSection');
             const relatedList = document.getElementById('relatedList');
-            
+
             relatedSection.style.display = 'block';
             relatedList.innerHTML = '<div class="related-loading">加载中...</div>';
-            
+
             try {
-                const response = await fetch(`${API_BASE_URL}/questions/related/${question.id}?limit=5`, {
-                    method: 'GET',
-                    headers: { 'token': token }
-                });
-                
+                // 根据当前题目类型，从同一节抽5道同类型题
+                const questionType = getQuestionType(question);
+                const textbook = question.textbook || getQueryParam('textbook') || '';
+                const chapter = question.chapter || getQueryParam('chapter') || '';
+                const section = question.section || getQueryParam('section') || '';
+
+                const params = new URLSearchParams();
+                if (textbook) params.append('textbook', textbook);
+                if (chapter) params.append('chapter', chapter);
+                if (section) params.append('section', section);
+                params.append('type', questionType);
+
+                const response = await fetch(`${API_BASE_URL}/questions/textbook?${params.toString()}`);
                 const result = await response.json();
-                
-                if (result.success && result.data && result.data.length > 0) {
-                    renderRelatedQuestions(result.data);
+
+                if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                    // 过滤掉当前题目，随机抽5道
+                    const others = result.data.filter(q => q.id !== question.id);
+                    const shuffled = others.sort(() => Math.random() - 0.5);
+                    const picked = shuffled.slice(0, 5);
+
+                    if (picked.length > 0) {
+                        renderRelatedQuestions(picked);
+                    } else {
+                        relatedList.innerHTML = '<div class="related-empty">暂无同类型题目</div>';
+                    }
                 } else {
-                    relatedList.innerHTML = '<div class="related-empty">暂无相关知识点题目</div>';
+                    relatedList.innerHTML = '<div class="related-empty">暂无相关题目</div>';
                 }
             } catch (error) {
                 console.error('加载推荐题目失败:', error);
