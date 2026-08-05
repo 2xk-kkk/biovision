@@ -347,14 +347,14 @@ def get_questions_by_textbook(db, textbook=None, chapter=None, section=None, que
     return questions
 
 def get_daily_answer_counts(db, user_id, days=90):
-    """获取用户最近N天每天的做题数量，返回 {date_str: count} 字典"""
+    """获取用户最近N天每天的做题数量，返回 {date_str: count} 字典（使用本地时间）"""
     cursor = db.cursor()
     cursor.execute('''
-        SELECT DATE(create_at) as answer_date, COUNT(*) as count
+        SELECT DATE(create_at, 'localtime') as answer_date, COUNT(*) as count
         FROM user_answers
         WHERE user_id = ?
-        AND create_at >= DATE('now', ?)
-        GROUP BY DATE(create_at)
+        AND create_at >= DATETIME('now', 'localtime', ?)
+        GROUP BY DATE(create_at, 'localtime')
         ORDER BY answer_date
     ''', (user_id, f'-{days} days'))
     results = {}

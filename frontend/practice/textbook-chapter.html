@@ -942,6 +942,7 @@
                     <div class="content-subtitle" id="contentSubtitle">按照章节进行专项练习，巩固知识点</div>
                 </div>
                 <div class="content-actions">
+                    <a href="main.html" style="text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;background:white;color:#64748b;border:1px solid #e2e8f0;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;" onmouseover="this.style.borderColor='#667eea';this.style.color='#667eea'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">← 返回主页</a>
                     <button class="btn btn-primary" onclick="startQuickPractice()">
                         ⚡ 快速练习
                     </button>
@@ -1241,7 +1242,7 @@
             const { textbookId, chapterTitle, sectionTitle } = currentPracticeInfo;
             const questionType = selectedType.value;
             
-            window.location.href = `quiz.html?textbook=${encodeURIComponent(textbookId)}&chapter=${encodeURIComponent(chapterTitle)}&section=${encodeURIComponent(sectionTitle)}&type=${encodeURIComponent(questionType)}`;
+            window.location.replace(`quiz.html?textbook=${encodeURIComponent(textbookId)}&chapter=${encodeURIComponent(chapterTitle)}&section=${encodeURIComponent(sectionTitle)}&type=${encodeURIComponent(questionType)}`);
         }
     </script>
 

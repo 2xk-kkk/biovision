@@ -2547,7 +2547,10 @@
         }
 
         function closeResult() {
-            window.location.href = 'textbook-chapter.html';
+            // 用 replace 替换当前历史记录，避免浏览器返回时回到quiz页面
+            const textbook = getQueryParam('textbook');
+            const url = textbook ? `textbook-chapter.html?textbook=${encodeURIComponent(textbook)}` : 'main.html';
+            window.location.replace(url);
         }
 
         function restartQuiz() {
