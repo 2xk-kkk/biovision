@@ -346,90 +346,6 @@
             font-size: 13px;
         }
 
-        .return-practice-bar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-        }
-
-        .return-practice-bar.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .return-practice-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .return-practice-icon {
-            font-size: 20px;
-        }
-
-        .return-practice-text {
-            flex: 1;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .return-practice-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 20px;
-            background: white;
-            color: #667eea;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .return-practice-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .return-practice-dismiss {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .return-practice-dismiss:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        @media (max-width: 600px) {
-            .return-practice-content {
-                font-size: 12px;
-            }
-            
-            .return-practice-btn {
-                padding: 8px 14px;
-                font-size: 13px;
-            }
-        }
-
         .question-card:hover {
             transform: none;
             box-shadow: none;
@@ -937,8 +853,8 @@
             border-radius: 24px;
             padding: 0;
             text-align: center;
-            max-width: 560px;
-            width: 92%;
+            max-width: 720px;
+            width: 94%;
             max-height: 90vh;
             overflow-y: auto;
             animation: scaleUp 0.4s ease;
@@ -1157,6 +1073,110 @@
 
         .view-all-btn:active {
             transform: translateY(-1px);
+        }
+
+        .btn-wrong-recommend {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-wrong-recommend:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        }
+
+        .btn-wrong-recommend:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .wrong-recommend-section {
+            margin: 0 24px 20px 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .wrong-recommend-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 14px;
+            text-align: left;
+        }
+
+        .wrong-recommend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .wrong-recommend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .wrong-recommend-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .wrong-recommend-item-type {
+            font-size: 11px;
+            font-weight: 600;
+            color: #d97706;
+            background: rgba(251, 191, 36, 0.15);
+            padding: 3px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .wrong-recommend-item-stem {
+            flex: 1;
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.5;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .wrong-recommend-item-arrow {
+            color: #d97706;
+            font-size: 16px;
+        }
+
+        .wrong-recommend-loading {
+            text-align: center;
+            padding: 16px;
+            color: #92400e;
+            font-size: 14px;
+        }
+
+        .wrong-recommend-empty {
+            text-align: center;
+            padding: 16px;
+            color: #a16207;
+            font-size: 14px;
         }
 
         .time-display {
@@ -1511,9 +1531,15 @@
             </div>
 
             <button class="view-all-btn" onclick="viewAllQuestions()">查看全部题目</button>
-            
+
+            <div class="wrong-recommend-section" id="wrongRecommendSection" style="display: none;">
+                <div class="wrong-recommend-title">🔥 错题知识点推荐</div>
+                <div class="wrong-recommend-list" id="wrongRecommendList"></div>
+            </div>
+
             <div class="result-actions" style="margin-top: 20px;">
                 <button class="btn btn-secondary btn-large" onclick="closeResult()">返回列表</button>
+                <button class="btn btn-wrong-recommend" id="wrongRecommendBtn" onclick="loadWrongRecommendations()">🔥 错题推荐</button>
                 <button class="btn btn-success btn-large" onclick="restartQuiz()">再做一次</button>
             </div>
         </div>
@@ -2139,40 +2165,101 @@
         }
 
         function goToRelatedQuestion(questionId) {
-            // 保存当前练习状态到sessionStorage
-            const currentUrl = window.location.search;
-            const practiceState = {
-                originalUrl: currentUrl,
-                questions: allQuestions,
-                currentIndex: currentQuestionIndex,
-                answers: answers,
-                results: results,
-                startTime: startTime,
-                timestamp: Date.now()
-            };
-            sessionStorage.setItem('quizPracticeState', JSON.stringify(practiceState));
-            window.location.href = `quiz.html?question_id=${questionId}&from_practice=1`;
+            window.location.href = `quiz.html?question_id=${questionId}`;
         }
 
-        function returnToPractice() {
-            const savedState = sessionStorage.getItem('quizPracticeState');
-            if (savedState) {
-                try {
-                    const state = JSON.parse(savedState);
-                    // 检查状态是否有效（5分钟内）
-                    if (Date.now() - state.timestamp < 5 * 60 * 1000) {
-                        sessionStorage.removeItem('quizPracticeState');
-                        window.location.href = state.originalUrl;
-                        return;
-                    } else {
-                        sessionStorage.removeItem('quizPracticeState');
-                        alert('练习状态已过期，请重新开始练习');
-                    }
-                } catch (e) {
-                    sessionStorage.removeItem('quizPracticeState');
+        let wrongRecommendLoaded = false;
+
+        async function loadWrongRecommendations() {
+            if (wrongRecommendLoaded) {
+                const section = document.getElementById('wrongRecommendSection');
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
                 }
+                return;
             }
-            window.location.href = 'main.html';
+
+            // 收集本次练习中的错题
+            const wrongQuestions = quizQuestions.filter(q => {
+                const qType = getQuestionType(q);
+                return results[q.id] === false && qType === 'choice';
+            });
+
+            if (wrongQuestions.length === 0) {
+                const section = document.getElementById('wrongRecommendSection');
+                const list = document.getElementById('wrongRecommendList');
+                section.style.display = 'block';
+                list.innerHTML = '<div class="wrong-recommend-empty">本次练习没有错题，太棒了！</div>';
+                wrongRecommendLoaded = true;
+                return;
+            }
+
+            const section = document.getElementById('wrongRecommendSection');
+            const list = document.getElementById('wrongRecommendList');
+            const btn = document.getElementById('wrongRecommendBtn');
+            
+            section.style.display = 'block';
+            list.innerHTML = '<div class="wrong-recommend-loading">正在搜索相关知识点题目...</div>';
+            btn.disabled = true;
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                list.innerHTML = '<div class="wrong-recommend-empty">请先登录</div>';
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                // 对每道错题请求推荐题目，去重后合并
+                const allRecommendations = new Map();
+                
+                for (const wq of wrongQuestions) {
+                    const resp = await fetch(`${API_BASE_URL}/questions/related/${wq.id}?limit=3`, {
+                        method: 'GET',
+                        headers: { 'token': token }
+                    });
+                    const result = await resp.json();
+                    
+                    if (result.success && result.data) {
+                        result.data.forEach(q => {
+                            if (!allRecommendations.has(q.id) && q.id !== wq.id) {
+                                allRecommendations.set(q.id, q);
+                            }
+                        });
+                    }
+                }
+
+                // 最多展示8道
+                const recommendations = Array.from(allRecommendations.values()).slice(0, 8);
+                
+                if (recommendations.length === 0) {
+                    list.innerHTML = '<div class="wrong-recommend-empty">暂无相关知识点题目</div>';
+                } else {
+                    const typeNames = { 'choice': '选择题', 'fill': '填空题', 'essay': '大题' };
+                    let html = '';
+                    recommendations.forEach(q => {
+                        const typeName = typeNames[q.type] || '题目';
+                        const stem = q.stem.length > 60 ? q.stem.substring(0, 60) + '...' : q.stem;
+                        html += `
+                            <div class="wrong-recommend-item" onclick="goToRelatedQuestion(${q.id})">
+                                <span class="wrong-recommend-item-type">${typeName}</span>
+                                <span class="wrong-recommend-item-stem">${stem}</span>
+                                <span class="wrong-recommend-item-arrow">→</span>
+                            </div>
+                        `;
+                    });
+                    list.innerHTML = html;
+                }
+                
+                wrongRecommendLoaded = true;
+                btn.disabled = false;
+            } catch (error) {
+                console.error('加载错题推荐失败:', error);
+                list.innerHTML = '<div class="wrong-recommend-empty">加载失败，请稍后重试</div>';
+                btn.disabled = false;
+            }
         }
 
         function nextQuestion() {
@@ -2253,6 +2340,8 @@
             renderAnswerCard();
 
             viewAllMode = false;
+            wrongRecommendLoaded = false;
+            document.getElementById('wrongRecommendSection').style.display = 'none';
             document.getElementById('resultModal').classList.add('show');
         }
 
@@ -2469,61 +2558,7 @@
         window.addEventListener('load', () => {
             createParticles();
             loadExam();
-            
-            // 检查是否有保存的练习状态
-            const urlParams = new URLSearchParams(window.location.search);
-            const fromPractice = urlParams.get('from_practice');
-            const savedState = sessionStorage.getItem('quizPracticeState');
-            
-            if ((fromPractice === '1' || savedState) && savedState) {
-                try {
-                    const state = JSON.parse(savedState);
-                    if (Date.now() - state.timestamp < 5 * 60 * 1000) {
-                        showReturnToPracticeButton();
-                    }
-                } catch (e) {
-                    sessionStorage.removeItem('quizPracticeState');
-                }
-            }
         });
-
-        function showReturnToPracticeButton() {
-            // 在页面顶部添加返回练习按钮
-            const headerContainer = document.querySelector('.quiz-wrapper');
-            if (!headerContainer || document.getElementById('returnPracticeBtn')) return;
-            
-            const returnBar = document.createElement('div');
-            returnBar.className = 'return-practice-bar';
-            returnBar.id = 'returnPracticeBtn';
-            returnBar.innerHTML = `
-                <div class="return-practice-content">
-                    <span class="return-practice-icon">📖</span>
-                    <span class="return-practice-text">您有未完成的练习</span>
-                    <button class="return-practice-btn" onclick="returnToPractice()">
-                        <span>▶️</span> 返回练习
-                    </button>
-                    <button class="return-practice-dismiss" onclick="dismissReturnPractice()">✕</button>
-                </div>
-            `;
-            headerContainer.insertBefore(returnBar, headerContainer.firstChild);
-            
-            // 添加动画
-            setTimeout(() => {
-                returnBar.classList.add('show');
-            }, 100);
-        }
-
-        function dismissReturnPractice() {
-            const returnBar = document.getElementById('returnPracticeBtn');
-            if (returnBar) {
-                returnBar.remove();
-            }
-            sessionStorage.removeItem('quizPracticeState');
-            // 移除URL中的from_practice参数
-            const url = new URL(window.location.href);
-            url.searchParams.delete('from_practice');
-            window.history.replaceState({}, '', url.toString());
-        }
     </script>
 </body>
 </html>
