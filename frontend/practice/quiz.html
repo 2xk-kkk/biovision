@@ -257,95 +257,6 @@
             letter-spacing: 0.5px;
         }
 
-        .related-section {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 2px solid rgba(59, 130, 246, 0.15);
-        }
-
-        .related-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .related-title::before {
-            content: '🔥';
-            font-size: 18px;
-        }
-
-        .related-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .related-item {
-            padding: 14px 16px;
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-radius: 12px;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: left;
-        }
-
-        .related-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
-            background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
-        }
-
-        .related-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .related-type {
-            font-size: 11px;
-            font-weight: 600;
-            color: #d97706;
-            background: rgba(251, 191, 36, 0.2);
-            padding: 2px 8px;
-            border-radius: 6px;
-        }
-
-        .related-count {
-            font-size: 11px;
-            color: #92400e;
-            font-weight: 500;
-        }
-
-        .related-stem {
-            font-size: 13px;
-            color: #78350f;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .related-empty {
-            text-align: center;
-            padding: 20px;
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        .related-loading {
-            text-align: center;
-            padding: 10px;
-            color: #64748b;
-            font-size: 13px;
-        }
-
         .question-card:hover {
             transform: none;
             box-shadow: none;
@@ -853,15 +764,185 @@
             border-radius: 24px;
             padding: 0;
             text-align: center;
-            max-width: 720px;
+            max-width: 900px;
             width: 94%;
             max-height: 90vh;
-            overflow-y: auto;
+            overflow: hidden;
             animation: scaleUp 0.4s ease;
             border: 1px solid rgba(102, 187, 255, 0.15);
             box-shadow: 
                 0 32px 80px rgba(30, 41, 59, 0.18),
                 0 0 0 1px rgba(255,255,255,0.6) inset;
+        }
+
+        .result-layout {
+            display: flex;
+            gap: 0;
+            max-height: 90vh;
+        }
+
+        .result-left-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            min-width: 0;
+        }
+
+        .result-right-panel {
+            width: 340px;
+            flex-shrink: 0;
+            border-left: 1px solid #e2e8f0;
+            background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .right-panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #92400e;
+            padding: 20px 20px 12px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .wrong-tab-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+        }
+
+        .wrong-tab-item {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wrong-tab-item:hover {
+            background: rgba(251, 191, 36, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .wrong-tab-item.active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border-color: #d97706;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .wrong-tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+        }
+
+        .wrong-tab-placeholder {
+            text-align: center;
+            color: #a16207;
+            font-size: 14px;
+            padding: 40px 20px;
+        }
+
+        .wrong-tab-loading {
+            text-align: center;
+            color: #92400e;
+            font-size: 14px;
+            padding: 30px 20px;
+        }
+
+        .wrong-tab-recommend-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .wrong-tab-recommend-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .wrong-tab-recommend-type {
+            font-size: 11px;
+            font-weight: 600;
+            color: #d97706;
+            background: rgba(251, 191, 36, 0.15);
+            padding: 2px 8px;
+            border-radius: 5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .wrong-tab-recommend-stem {
+            flex: 1;
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.5;
+        }
+
+        .wrong-tab-empty {
+            text-align: center;
+            color: #a16207;
+            font-size: 13px;
+            padding: 20px;
+        }
+
+        .start-recommend-btn {
+            margin: 16px 20px;
+            padding: 14px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .start-recommend-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .start-recommend-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .result-layout {
+                flex-direction: column;
+            }
+            .result-right-panel {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+                max-height: 300px;
+            }
         }
 
         .result-content.with-card {
@@ -1073,110 +1154,6 @@
 
         .view-all-btn:active {
             transform: translateY(-1px);
-        }
-
-        .btn-wrong-recommend {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
-        }
-
-        .btn-wrong-recommend:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-        }
-
-        .btn-wrong-recommend:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .wrong-recommend-section {
-            margin: 0 24px 20px 24px;
-            padding: 20px;
-            background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
-            border-radius: 16px;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-
-        .wrong-recommend-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #92400e;
-            margin-bottom: 14px;
-            text-align: left;
-        }
-
-        .wrong-recommend-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .wrong-recommend-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            background: white;
-            border-radius: 12px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .wrong-recommend-item:hover {
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
-            border-color: rgba(251, 191, 36, 0.5);
-        }
-
-        .wrong-recommend-item-type {
-            font-size: 11px;
-            font-weight: 600;
-            color: #d97706;
-            background: rgba(251, 191, 36, 0.15);
-            padding: 3px 10px;
-            border-radius: 6px;
-            white-space: nowrap;
-        }
-
-        .wrong-recommend-item-stem {
-            flex: 1;
-            font-size: 13px;
-            color: #78350f;
-            line-height: 1.5;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .wrong-recommend-item-arrow {
-            color: #d97706;
-            font-size: 16px;
-        }
-
-        .wrong-recommend-loading {
-            text-align: center;
-            padding: 16px;
-            color: #92400e;
-            font-size: 14px;
-        }
-
-        .wrong-recommend-empty {
-            text-align: center;
-            padding: 16px;
-            color: #a16207;
-            font-size: 14px;
         }
 
         .time-display {
@@ -1475,12 +1452,6 @@
                                 <span class="wrong-book-text">加入错题本</span>
                             </button>
                         </div>
-                        <div class="related-section" id="relatedSection" style="display: none;">
-                            <div class="related-title">相关知识点练习</div>
-                            <div class="related-list" id="relatedList">
-                                <div class="related-loading">加载中...</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1495,52 +1466,61 @@
 
     <div class="result-modal" id="resultModal">
         <div class="result-content with-card">
-            <div class="result-header">
-                <div class="result-icon" id="resultIcon">🎉</div>
-                <div class="result-title" id="resultTitle">练习完成！</div>
-                <div class="result-desc" id="resultDesc">恭喜你完成了本次练习</div>
-            </div>
-            
-            <div class="time-display">
-                <span class="time-value" id="resultTime">00:00</span>
-                <span class="time-label">用时</span>
-            </div>
-            
-            <div class="result-body-stats">
-                <div class="body-stat-item">
-                    <div class="body-stat-value total" id="statTotal">0</div>
-                    <div class="body-stat-label">题量</div>
-                </div>
-                <div class="body-stat-item">
-                    <div class="body-stat-value correct" id="statCorrect">0</div>
-                    <div class="body-stat-label">答对</div>
-                </div>
-                <div class="body-stat-item">
-                    <div class="body-stat-value wrong" id="statWrong">0</div>
-                    <div class="body-stat-label">答错</div>
-                </div>
-                <div class="body-stat-item">
-                    <div class="body-stat-value unanswered" id="statUnanswered">0</div>
-                    <div class="body-stat-label">未答</div>
-                </div>
-            </div>
+            <div class="result-layout">
+                <!-- 左侧：练习总结 -->
+                <div class="result-left-panel">
+                    <div class="result-header">
+                        <div class="result-icon" id="resultIcon">🎉</div>
+                        <div class="result-title" id="resultTitle">练习完成！</div>
+                        <div class="result-desc" id="resultDesc">恭喜你完成了本次练习</div>
+                    </div>
+                    
+                    <div class="time-display">
+                        <span class="time-value" id="resultTime">00:00</span>
+                        <span class="time-label">用时</span>
+                    </div>
+                    
+                    <div class="result-body-stats">
+                        <div class="body-stat-item">
+                            <div class="body-stat-value total" id="statTotal">0</div>
+                            <div class="body-stat-label">题量</div>
+                        </div>
+                        <div class="body-stat-item">
+                            <div class="body-stat-value correct" id="statCorrect">0</div>
+                            <div class="body-stat-label">答对</div>
+                        </div>
+                        <div class="body-stat-item">
+                            <div class="body-stat-value wrong" id="statWrong">0</div>
+                            <div class="body-stat-label">答错</div>
+                        </div>
+                        <div class="body-stat-item">
+                            <div class="body-stat-value unanswered" id="statUnanswered">0</div>
+                            <div class="body-stat-label">未答</div>
+                        </div>
+                    </div>
 
-            <div class="answer-card-section">
-                <div class="answer-card-title">📋 答题卡</div>
-                <div id="answerCardContent"></div>
-            </div>
+                    <div class="answer-card-section">
+                        <div class="answer-card-title">📋 答题卡</div>
+                        <div id="answerCardContent"></div>
+                    </div>
 
-            <button class="view-all-btn" onclick="viewAllQuestions()">查看全部题目</button>
+                    <button class="view-all-btn" onclick="viewAllQuestions()">查看全部题目</button>
 
-            <div class="wrong-recommend-section" id="wrongRecommendSection" style="display: none;">
-                <div class="wrong-recommend-title">🔥 错题知识点推荐</div>
-                <div class="wrong-recommend-list" id="wrongRecommendList"></div>
-            </div>
+                    <div class="result-actions" style="margin-top: 20px;">
+                        <button class="btn btn-secondary btn-large" onclick="closeResult()">返回列表</button>
+                        <button class="btn btn-success btn-large" onclick="restartQuiz()">再做一次</button>
+                    </div>
+                </div>
 
-            <div class="result-actions" style="margin-top: 20px;">
-                <button class="btn btn-secondary btn-large" onclick="closeResult()">返回列表</button>
-                <button class="btn btn-wrong-recommend" id="wrongRecommendBtn" onclick="loadWrongRecommendations()">🔥 错题推荐</button>
-                <button class="btn btn-success btn-large" onclick="restartQuiz()">再做一次</button>
+                <!-- 右侧：错题知识点推荐 -->
+                <div class="result-right-panel" id="rightPanel">
+                    <div class="right-panel-title">🔥 错题知识点推荐</div>
+                    <div class="wrong-tab-bar" id="wrongTabBar"></div>
+                    <div class="wrong-tab-content" id="wrongTabContent">
+                        <div class="wrong-tab-placeholder">完成练习后查看错题推荐</div>
+                    </div>
+                    <button class="start-recommend-btn" id="startRecommendBtn" style="display:none;" onclick="startRecommendPractice()">📝 开始练习推荐题</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1559,6 +1539,8 @@
         let startTime = null;
         let timer = null;
         let isAnswerSubmitted = false;
+        let originalPracticeState = null; // 保存原始练习状态
+        let isRecommendPractice = false; // 标记是否在做推荐题
 
         function createParticles() {
             const container = document.getElementById('particles');
@@ -1971,12 +1953,10 @@
             const analysisContent = document.getElementById('analysisContent');
             const wrongBookSection = document.getElementById('wrongBookSection');
             const wrongBookBtn = document.getElementById('wrongBookBtn');
-            const relatedSection = document.getElementById('relatedSection');
             
             isAddedToWrongBook = false;
             wrongBookBtn.classList.remove('added');
             wrongBookBtn.querySelector('.wrong-book-text').textContent = '加入错题本';
-            relatedSection.style.display = 'none';
             
             // 收缩题目面板
             questionPanel.classList.add('compact');
@@ -1993,8 +1973,6 @@
                 correctAnswerValue.style.borderLeftColor = '#3b82f6';
                 // 显示加入错题本按钮
                 wrongBookSection.style.display = 'flex';
-                // 显示推荐知识点题目
-                loadRelatedQuestions();
             } else {
                 // 选择题 - 判断正误
                 answerIcon.textContent = isCorrect ? '✅' : '❌';
@@ -2006,8 +1984,6 @@
                 // 选择题答错时显示加入错题本按钮
                 if (!isCorrect) {
                     wrongBookSection.style.display = 'flex';
-                    // 答错时加载推荐知识点题目
-                    loadRelatedQuestions();
                 } else {
                     wrongBookSection.style.display = 'none';
                 }
@@ -2026,7 +2002,6 @@
             const questionPanel = document.getElementById('questionPanel');
             const answerPanel = document.getElementById('answerPanel');
             const wrongBookSection = document.getElementById('wrongBookSection');
-            const relatedSection = document.getElementById('relatedSection');
             
             // 展开题目面板
             questionPanel.classList.remove('compact');
@@ -2035,10 +2010,6 @@
             // 隐藏错题本按钮
             if (wrongBookSection) {
                 wrongBookSection.style.display = 'none';
-            }
-            // 隐藏推荐错题
-            if (relatedSection) {
-                relatedSection.style.display = 'none';
             }
         }
 
@@ -2089,177 +2060,232 @@
             }
         }
 
-        async function loadRelatedQuestions() {
-            const question = quizQuestions[currentQuestionIndex];
-            if (!question) return;
-
-            const token = localStorage.getItem('token');
-            if (!token) return;
-
-            const relatedSection = document.getElementById('relatedSection');
-            const relatedList = document.getElementById('relatedList');
-
-            relatedSection.style.display = 'block';
-            relatedList.innerHTML = '<div class="related-loading">加载中...</div>';
-
-            try {
-                // 根据当前题目类型，从同一节抽5道同类型题
-                const questionType = getQuestionType(question);
-                const textbook = question.textbook || getQueryParam('textbook') || '';
-                const chapter = question.chapter || getQueryParam('chapter') || '';
-                const section = question.section || getQueryParam('section') || '';
-
-                const params = new URLSearchParams();
-                if (textbook) params.append('textbook', textbook);
-                if (chapter) params.append('chapter', chapter);
-                if (section) params.append('section', section);
-                params.append('type', questionType);
-
-                const response = await fetch(`${API_BASE_URL}/questions/textbook?${params.toString()}`);
-                const result = await response.json();
-
-                if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-                    // 过滤掉当前题目，随机抽5道
-                    const others = result.data.filter(q => q.id !== question.id);
-                    const shuffled = others.sort(() => Math.random() - 0.5);
-                    const picked = shuffled.slice(0, 5);
-
-                    if (picked.length > 0) {
-                        renderRelatedQuestions(picked);
-                    } else {
-                        relatedList.innerHTML = '<div class="related-empty">暂无同类型题目</div>';
-                    }
-                } else {
-                    relatedList.innerHTML = '<div class="related-empty">暂无相关题目</div>';
-                }
-            } catch (error) {
-                console.error('加载推荐题目失败:', error);
-                relatedList.innerHTML = '<div class="related-empty">加载推荐失败</div>';
-            }
-        }
-
-        function renderRelatedQuestions(questions) {
-            const relatedList = document.getElementById('relatedList');
-            const typeNames = {
-                'choice': '选择题',
-                'fill': '填空题',
-                'essay': '大题'
-            };
-            
-            let html = '';
-            questions.forEach(q => {
-                const typeName = typeNames[q.type] || '题目';
-                const stem = q.stem.length > 50 ? q.stem.substring(0, 50) + '...' : q.stem;
-                const badge = q.wrong_count > 0 ? `错${q.wrong_count}次` : '未做';
-                html += `
-                    <div class="related-item" onclick="goToRelatedQuestion(${q.id})">
-                        <div class="related-item-header">
-                            <span class="related-type">${typeName}</span>
-                            <span class="related-count">${badge}</span>
-                        </div>
-                        <div class="related-stem">${stem}</div>
-                    </div>
-                `;
-            });
-            relatedList.innerHTML = html;
-        }
-
         function goToRelatedQuestion(questionId) {
             window.location.href = `quiz.html?question_id=${questionId}`;
         }
 
-        let wrongRecommendLoaded = false;
+        let wrongQuestionsCache = [];
+        let wrongRecommendationsCache = {};
+        let allRecommendQuestions = [];
+        let activeWrongTabIndex = 0;
 
-        async function loadWrongRecommendations() {
-            if (wrongRecommendLoaded) {
-                const section = document.getElementById('wrongRecommendSection');
-                if (section.style.display === 'none') {
-                    section.style.display = 'block';
-                } else {
-                    section.style.display = 'none';
-                }
-                return;
-            }
+        async function loadWrongTabRecommendations() {
+            const tabBar = document.getElementById('wrongTabBar');
+            const tabContent = document.getElementById('wrongTabContent');
+            const startBtn = document.getElementById('startRecommendBtn');
 
-            // 收集本次练习中的错题
-            const wrongQuestions = quizQuestions.filter(q => {
+            // 收集本次练习中的错题（选择题答错的）
+            wrongQuestionsCache = quizQuestions.filter(q => {
                 const qType = getQuestionType(q);
                 return results[q.id] === false && qType === 'choice';
             });
 
-            if (wrongQuestions.length === 0) {
-                const section = document.getElementById('wrongRecommendSection');
-                const list = document.getElementById('wrongRecommendList');
-                section.style.display = 'block';
-                list.innerHTML = '<div class="wrong-recommend-empty">本次练习没有错题，太棒了！</div>';
-                wrongRecommendLoaded = true;
+            if (wrongQuestionsCache.length === 0) {
+                tabBar.innerHTML = '';
+                tabContent.innerHTML = '<div class="wrong-tab-empty">本次练习没有错题，太棒了！🎉</div>';
+                startBtn.style.display = 'none';
                 return;
             }
 
-            const section = document.getElementById('wrongRecommendSection');
-            const list = document.getElementById('wrongRecommendList');
-            const btn = document.getElementById('wrongRecommendBtn');
-            
-            section.style.display = 'block';
-            list.innerHTML = '<div class="wrong-recommend-loading">正在搜索相关知识点题目...</div>';
-            btn.disabled = true;
+            // 渲染标签栏 - 使用题目在原试卷中的序号
+            let tabHtml = '';
+            wrongQuestionsCache.forEach((wq, idx) => {
+                const qIndex = quizQuestions.findIndex(q => q.id === wq.id);
+                const qNumber = qIndex >= 0 ? (qIndex + 1) : (idx + 1);
+                tabHtml += `<div class="wrong-tab-item ${idx === 0 ? 'active' : ''}" onclick="switchWrongTab(${idx})">${qNumber}</div>`;
+            });
+            tabBar.innerHTML = tabHtml;
 
-            const token = localStorage.getItem('token');
-            if (!token) {
-                list.innerHTML = '<div class="wrong-recommend-empty">请先登录</div>';
-                btn.disabled = false;
-                return;
-            }
+            tabContent.innerHTML = '<div class="wrong-tab-loading">正在加载推荐题目...</div>';
+            startBtn.style.display = 'none';
+
+            allRecommendQuestions = [];
 
             try {
-                // 对每道错题请求推荐题目，去重后合并
-                const allRecommendations = new Map();
-                
-                for (const wq of wrongQuestions) {
-                    const resp = await fetch(`${API_BASE_URL}/questions/related/${wq.id}?limit=3`, {
-                        method: 'GET',
-                        headers: { 'token': token }
-                    });
-                    const result = await resp.json();
-                    
-                    if (result.success && result.data) {
-                        result.data.forEach(q => {
-                            if (!allRecommendations.has(q.id) && q.id !== wq.id) {
-                                allRecommendations.set(q.id, q);
+                // 对每道错题，查询同章节同类型的题目
+                for (let i = 0; i < wrongQuestionsCache.length; i++) {
+                    const wq = wrongQuestionsCache[i];
+                    const questionType = getQuestionType(wq);
+                    const textbook = wq.textbook || getQueryParam('textbook') || '';
+                    const chapter = wq.chapter || getQueryParam('chapter') || '';
+                    const section = wq.section || getQueryParam('section') || '';
+
+                    const params = new URLSearchParams();
+                    if (textbook) params.append('textbook', textbook);
+                    if (chapter) params.append('chapter', chapter);
+                    if (section) params.append('section', section);
+                    params.append('type', questionType);
+
+                    const response = await fetch(`${API_BASE_URL}/questions/textbook?${params.toString()}`);
+                    const result = await response.json();
+
+                    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                        // 过滤掉当前错题，随机抽5道
+                        const others = result.data.filter(q => q.id !== wq.id);
+                        const shuffled = others.sort(() => Math.random() - 0.5);
+                        const picked = shuffled.slice(0, 5);
+                        
+                        wrongRecommendationsCache[i] = picked;
+                        // 收集所有推荐题目（去重）
+                        picked.forEach(q => {
+                            if (!allRecommendQuestions.find(aq => aq.id === q.id)) {
+                                allRecommendQuestions.push(q);
                             }
                         });
+                    } else {
+                        wrongRecommendationsCache[i] = [];
                     }
                 }
 
-                // 最多展示8道
-                const recommendations = Array.from(allRecommendations.values()).slice(0, 8);
-                
-                if (recommendations.length === 0) {
-                    list.innerHTML = '<div class="wrong-recommend-empty">暂无相关知识点题目</div>';
+                activeWrongTabIndex = 0;
+                renderWrongTabContent(0);
+
+                if (allRecommendQuestions.length > 0) {
+                    startBtn.style.display = 'block';
+                    startBtn.textContent = `📝 开始练习推荐题（${allRecommendQuestions.length}题）`;
                 } else {
-                    const typeNames = { 'choice': '选择题', 'fill': '填空题', 'essay': '大题' };
-                    let html = '';
-                    recommendations.forEach(q => {
-                        const typeName = typeNames[q.type] || '题目';
-                        const stem = q.stem.length > 60 ? q.stem.substring(0, 60) + '...' : q.stem;
-                        html += `
-                            <div class="wrong-recommend-item" onclick="goToRelatedQuestion(${q.id})">
-                                <span class="wrong-recommend-item-type">${typeName}</span>
-                                <span class="wrong-recommend-item-stem">${stem}</span>
-                                <span class="wrong-recommend-item-arrow">→</span>
-                            </div>
-                        `;
-                    });
-                    list.innerHTML = html;
+                    startBtn.style.display = 'none';
                 }
-                
-                wrongRecommendLoaded = true;
-                btn.disabled = false;
             } catch (error) {
                 console.error('加载错题推荐失败:', error);
-                list.innerHTML = '<div class="wrong-recommend-empty">加载失败，请稍后重试</div>';
-                btn.disabled = false;
+                tabContent.innerHTML = '<div class="wrong-tab-empty">加载失败，请稍后重试</div>';
             }
+        }
+
+        function switchWrongTab(index) {
+            activeWrongTabIndex = index;
+            // 更新标签高亮
+            document.querySelectorAll('.wrong-tab-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+            renderWrongTabContent(index);
+        }
+
+        function renderWrongTabContent(index) {
+            const tabContent = document.getElementById('wrongTabContent');
+            const recommendations = wrongRecommendationsCache[index] || [];
+
+            if (recommendations.length === 0) {
+                tabContent.innerHTML = '<div class="wrong-tab-empty">暂无相关知识点题目</div>';
+                return;
+            }
+
+            const typeNames = { 'choice': '选择题', 'fill': '填空题', 'essay': '大题' };
+            let html = '';
+            recommendations.forEach(q => {
+                const typeName = typeNames[q.type] || '题目';
+                const stem = q.stem.length > 60 ? q.stem.substring(0, 60) + '...' : q.stem;
+                html += `
+                    <div class="wrong-tab-recommend-item" onclick="goToRelatedQuestion(${q.id})">
+                        <span class="wrong-tab-recommend-type">${typeName}</span>
+                        <span class="wrong-tab-recommend-stem">${stem}</span>
+                    </div>
+                `;
+            });
+            tabContent.innerHTML = html;
+        }
+
+        function startRecommendPractice() {
+            if (allRecommendQuestions.length === 0) return;
+
+            // 保存原始练习状态
+            originalPracticeState = {
+                allQuestions: allQuestions,
+                quizQuestions: quizQuestions,
+                answers: JSON.parse(JSON.stringify(answers)),
+                results: JSON.parse(JSON.stringify(results)),
+                correctCount: correctCount,
+                headerTitle: document.querySelector('.quiz-header h1').textContent,
+                // 保存原始弹窗状态
+                modalStats: {
+                    total: document.getElementById('statTotal').textContent,
+                    correct: document.getElementById('statCorrect').textContent,
+                    wrong: document.getElementById('statWrong').textContent,
+                    unanswered: document.getElementById('statUnanswered').textContent,
+                    time: document.getElementById('resultTime').textContent,
+                    icon: document.getElementById('resultIcon').textContent,
+                    title: document.getElementById('resultTitle').textContent,
+                    desc: document.getElementById('resultDesc').textContent
+                }
+            };
+
+            // 关闭弹窗
+            document.getElementById('resultModal').classList.remove('show');
+
+            // 用推荐题目替换当前练习
+            allQuestions = allRecommendQuestions;
+            quizQuestions = allQuestions.slice(0, Math.min(QUESTION_COUNT, allQuestions.length));
+            currentQuestionIndex = 0;
+            answers = {};
+            results = {};
+            correctCount = 0;
+            isAnswerSubmitted = false;
+            isRecommendPractice = true;
+
+            // 重置UI
+            document.getElementById('answerPanel').classList.remove('show');
+            document.getElementById('questionPanel').classList.remove('compact');
+            hideAnswerPanel();
+
+            // 更新标题
+            document.querySelector('.quiz-header h1').textContent = '错题推荐练习';
+
+            // 开始计时
+            startTime = Date.now();
+            if (timer) clearInterval(timer);
+            startTimer();
+
+            // 渲染第一题
+            renderQuestion();
+        }
+
+        function returnToOriginalResult() {
+            if (!originalPracticeState) return;
+
+            // 恢复原始状态
+            allQuestions = originalPracticeState.allQuestions;
+            quizQuestions = originalPracticeState.quizQuestions;
+            answers = originalPracticeState.answers;
+            results = originalPracticeState.results;
+            correctCount = originalPracticeState.correctCount;
+
+            // 恢复标题
+            document.querySelector('.quiz-header h1').textContent = originalPracticeState.headerTitle;
+
+            // 恢复弹窗统计
+            const stats = originalPracticeState.modalStats;
+            document.getElementById('statTotal').textContent = stats.total;
+            document.getElementById('statCorrect').textContent = stats.correct;
+            document.getElementById('statWrong').textContent = stats.wrong;
+            document.getElementById('statUnanswered').textContent = stats.unanswered;
+            document.getElementById('resultTime').textContent = stats.time;
+            document.getElementById('resultIcon').textContent = stats.icon;
+            document.getElementById('resultTitle').textContent = stats.title;
+            document.getElementById('resultDesc').textContent = stats.desc;
+
+            // 重新渲染答题卡
+            renderAnswerCard();
+
+            // 重置UI
+            document.getElementById('answerPanel').classList.remove('show');
+            document.getElementById('questionPanel').classList.remove('compact');
+            hideAnswerPanel();
+
+            // 清除推荐题状态
+            isRecommendPractice = false;
+            originalPracticeState = null;
+            wrongQuestionsCache = [];
+            wrongRecommendationsCache = {};
+            allRecommendQuestions = [];
+
+            // 显示原始结果弹窗
+            document.getElementById('wrongTabBar').innerHTML = '';
+            document.getElementById('wrongTabContent').innerHTML = '<div class="wrong-tab-placeholder">正在加载...</div>';
+            document.getElementById('startRecommendBtn').style.display = 'none';
+            document.getElementById('resultModal').classList.add('show');
+
+            // 重新加载错题推荐
+            loadWrongTabRecommendations();
         }
 
         function nextQuestion() {
@@ -2340,9 +2366,34 @@
             renderAnswerCard();
 
             viewAllMode = false;
-            wrongRecommendLoaded = false;
-            document.getElementById('wrongRecommendSection').style.display = 'none';
             document.getElementById('resultModal').classList.add('show');
+
+            if (isRecommendPractice && originalPracticeState) {
+                // 推荐题练习完成 - 显示返回原结果按钮
+                document.getElementById('wrongTabBar').innerHTML = '';
+                document.getElementById('wrongTabContent').innerHTML = `
+                    <div style="text-align: center; padding: 30px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📖</div>
+                        <div style="font-size: 15px; color: #475569; margin-bottom: 24px;">推荐题练习完成！</div>
+                        <button class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;" onclick="returnToOriginalResult()">
+                            📋 返回原结果
+                        </button>
+                    </div>
+                `;
+                document.getElementById('startRecommendBtn').style.display = 'none';
+            } else {
+                // 正常练习完成 - 显示错题推荐
+                // 重置推荐状态
+                wrongQuestionsCache = [];
+                wrongRecommendationsCache = {};
+                allRecommendQuestions = [];
+                document.getElementById('wrongTabBar').innerHTML = '';
+                document.getElementById('wrongTabContent').innerHTML = '<div class="wrong-tab-placeholder">正在加载...</div>';
+                document.getElementById('startRecommendBtn').style.display = 'none';
+
+                // 自动加载错题推荐
+                loadWrongTabRecommendations();
+            }
         }
 
         function renderAnswerCard() {
