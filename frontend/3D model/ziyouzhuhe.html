@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>孟德尔自由组合定律 - 互动学习模型</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh; color: #e0e0e0; padding: 12px;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+
+h1 {
+  text-align: center; font-size: 26px; margin-bottom: 2px;
+  background: linear-gradient(90deg, #f7971e, #ffd200);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.subtitle { text-align: center; color: #8a8aa0; margin-bottom: 10px; font-size: 13px; }
+
+/* Tabs */
+.tab-nav { display: flex; justify-content: center; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab-btn {
+  padding: 8px 16px; border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04); color: #8a8aa0;
+  border-radius: 20px; cursor: pointer; font-size: 13px; font-family: inherit;
+  transition: all 0.2s; white-space: nowrap;
+}
+.tab-btn:hover { border-color: #ffd200; color: #ffd200; }
+.tab-btn.active { background: #ffd200; color: #1a1a2e; border-color: #ffd200; font-weight: bold; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Cards */
+.parent-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+@media (max-width: 750px) { .parent-row { grid-template-columns: 1fr; } }
+.parent-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 12px;
+}
+.parent-card h3 { text-align: center; font-size: 15px; }
+.parent-card.male h3 { color: #4fc3f7; }
+.parent-card.female h3 { color: #f48fb1; }
+
+.trait-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px; }
+.trait-label { font-size: 13px; width: 65px; text-align: right; color: #b0b0b0; }
+.allele-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.08); color: #fff;
+  font-size: 17px; font-weight: bold; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.allele-btn:hover { border-color: #ffd200; transform: scale(1.1); }
+.allele-btn.selected { background: #ffd200; color: #1a1a2e; border-color: #ffd200; }
+.allele-btn.dominant { border-style: solid; }
+.allele-btn.recessive { border-style: dashed; }
+.geno-display {
+  text-align: center; font-size: 20px; font-family: "Courier New", monospace;
+  letter-spacing: 2px; color: #fff; min-height: 26px;
+}
+
+.btn-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: none;
+  font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.btn-primary { background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a2e; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(247,151,30,0.4); }
+.btn-accent { background: #4fc3f7; color: #1a1a2e; }
+.btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(79,195,247,0.4); }
+.btn-secondary { background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.2); }
+.btn-secondary:hover { background: rgba(255,255,255,0.18); }
+
+.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+@media (max-width: 750px) { .main-grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 14px; overflow-x: auto;
+}
+.card h3 { text-align: center; margin-bottom: 8px; font-size: 14px; }
+.card h3.c-yellow { color: #ffd200; }
+.card h3.c-blue { color: #4fc3f7; }
+.card h3.c-green { color: #aed581; }
+
+/* 棋盘格 */
+.punnett-table { border-collapse: collapse; margin: 0 auto; font-size: 13px; }
+.punnett-table th, .punnett-table td {
+  border: 1px solid rgba(255,255,255,0.25); padding: 7px 9px;
+  text-align: center; min-width: 48px; font-family: "Courier New", monospace;
+}
+.punnett-table th { background: rgba(255,210,0,0.12); color: #ffd200; font-size: 14px; }
+.punnett-table td {
+  background: rgba(255,255,255,0.03); cursor: pointer; transition: all 0.2s; font-size: 12px;
+}
+.punnett-table td:hover { background: rgba(255,210,0,0.15); transform: scale(1.06); }
+.punnett-table td.hl-dom { background: rgba(79,195,247,0.35); outline: 2px solid #4fc3f7; }
+.punnett-table td.hl-rec { background: rgba(244,143,177,0.35); outline: 2px solid #f48fb1; }
+
+/* 统计 */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.stat-box {
+  text-align: center; padding: 8px 2px; border-radius: 8px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+}
+.stat-box .count { font-size: 24px; font-weight: bold; }
+.stat-box .label { font-size: 11px; color: #8a8aa0; margin-top: 2px; }
+.stat-box:nth-child(1) .count { color: #4fc3f7; }
+.stat-box:nth-child(2) .count { color: #aed581; }
+.stat-box:nth-child(3) .count { color: #ffb74d; }
+.stat-box:nth-child(4) .count { color: #f48fb1; }
+.ratio-display { text-align: center; margin-top: 8px; font-size: 14px; color: #8a8aa0; }
+.ratio-display strong { color: #ffd200; font-size: 17px; }
+
+/* Knowledge */
+.knowledge-section { margin-bottom: 10px; }
+.knowledge-section h4 {
+  font-size: 14px; color: #ffd200; margin-bottom: 4px;
+  border-left: 3px solid #ffd200; padding-left: 8px;
+}
+.knowledge-section p, .knowledge-section li { font-size: 13px; line-height: 1.75; color: #c0c0d0; }
+.knowledge-section ul { padding-left: 18px; }
+.knowledge-section li { margin-bottom: 3px; }
+.highlight-text { color: #ffd200; font-weight: bold; }
+
+.gamete-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.gamete-tag {
+  padding: 6px 14px; border-radius: 16px; font-family: "Courier New", monospace;
+  font-size: 15px; font-weight: bold;
+  background: rgba(255,210,0,0.12); border: 1px solid rgba(255,210,0,0.35); color: #ffd200;
+}
+
+.testcross-table { border-collapse: collapse; margin: 0 auto; font-size: 13px; }
+.testcross-table th, .testcross-table td {
+  border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; text-align: center;
+}
+.testcross-table th { background: rgba(255,210,0,0.1); color: #ffd200; }
+.testcross-table td { background: rgba(255,255,255,0.03); }
+
+.legend-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 12px; margin-top: 10px;
+}
+.legend-card h3 { text-align: center; font-size: 14px; color: #ffd200; margin-bottom: 8px; }
+
+/* ========= 计算器专属样式 ========= */
+.calc-input-row {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  flex-wrap: wrap; margin: 10px 0;
+}
+.calc-input-row label { font-size: 15px; font-weight: bold; white-space: nowrap; }
+.calc-input-row label.male-label { color: #4fc3f7; }
+.calc-input-row label.female-label { color: #f48fb1; }
+.calc-input-row .cross-symbol { font-size: 22px; color: #ffd200; margin: 0 4px; }
+
+.geno-input {
+  width: 100px; padding: 10px 12px; border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.08);
+  color: #fff; font-size: 18px; font-family: "Courier New", monospace;
+  text-align: center; letter-spacing: 2px; outline: none; transition: all 0.2s;
+}
+.geno-input:focus { border-color: #ffd200; box-shadow: 0 0 10px rgba(255,210,0,0.2); }
+.geno-input.error { border-color: #f48fb1; animation: shake 0.4s; }
+.geno-input.valid { border-color: #aed581; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.calc-result-area {
+  margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+@media (max-width: 750px) { .calc-result-area { grid-template-columns: 1fr; } }
+
+.result-step {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 10px; margin-bottom: 6px;
+}
+.result-step .step-label {
+  font-size: 11px; color: #8a8aa0; text-transform: uppercase; margin-bottom: 2px;
+}
+.result-step .step-content { font-size: 14px; color: #e0e0e0; }
+
+.quick-presets { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+.quick-preset {
+  padding: 4px 12px; border-radius: 14px; font-size: 12px; font-family: "Courier New", monospace;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+  color: #b0b0b0; cursor: pointer; transition: all 0.2s;
+}
+.quick-preset:hover { border-color: #ffd200; color: #ffd200; background: rgba(255,210,0,0.08); }
+
+.error-msg { color: #f48fb1; font-size: 12px; text-align: center; min-height: 18px; margin-top: 4px; }
+
+.back-btn {
+  position: fixed; top: 12px; left: 12px; z-index: 999;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(26,26,46,0.85); color: #ffd200;
+  font-size: 20px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+}
+.back-btn:hover { background: rgba(255,210,0,0.15); border-color: #ffd200; transform: scale(1.1); }
+</style>
+</head>
+<body>
+
+<a href="main2.html" class="back-btn" title="返回">←</a>
+
+<div class="container">
+
+<h1>孟德尔自由组合定律</h1>
+<p class="subtitle">Law of Independent Assortment — 普通高中教科书 · 生物学必修2 遗传与进化 第1章第2节</p>
+
+<!-- 模式标签 -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('calculator')">🧮 比例计算器</button>
+  <button class="tab-btn" onclick="switchTab('punnett')">📊 棋盘格交互</button>
+  <button class="tab-btn" onclick="switchTab('knowledge')">📖 知识讲解</button>
+  <button class="tab-btn" onclick="switchTab('testcross')">🧪 测交验证</button>
+  <button class="tab-btn" onclick="switchTab('application')">🌾 实际应用</button>
+</div>
+
+<!-- ===== 面板1：比例计算器 ===== -->
+<div class="tab-panel active" id="tab-calculator">
+<div class="card" style="margin-bottom:12px;">
+  <h3 class="c-yellow">输入亲本基因型，自动计算子代比例</h3>
+  <p style="text-align:center;font-size:12px;color:#8a8aa0;">只使用 <strong>R / r</strong>（种子形状）和 <strong>Y / y</strong>（子叶颜色），大小写敏感</p>
+
+  <div class="calc-input-row">
+    <label class="male-label">♂ 父本</label>
+    <input type="text" class="geno-input" id="calc-male" value="YyRr" maxlength="4" placeholder="如 YyRr" oninput="onInputChange()">
+    <span class="cross-symbol">×</span>
+    <label class="female-label">♀ 母本</label>
+    <input type="text" class="geno-input" id="calc-female" value="yyrr" maxlength="4" placeholder="如 yyrr" oninput="onInputChange()">
+  </div>
+  <div class="error-msg" id="calc-error"></div>
+
+  <div class="quick-presets">
+    <span style="font-size:12px;color:#8a8aa0;line-height:28px;">快捷填入：</span>
+    <span class="quick-preset" onclick="fillCalc('YyRr','yyrr')">测交</span>
+    <span class="quick-preset" onclick="fillCalc('YyRr','YyRr')">双杂合自交</span>
+    <span class="quick-preset" onclick="fillCalc('YYRR','yyrr')">P代杂交</span>
+    <span class="quick-preset" onclick="fillCalc('YyRr','Yyrr')">YyRr×Yyrr</span>
+    <span class="quick-preset" onclick="fillCalc('YyRr','yyRr')">YyRr×yyRr</span>
+    <span class="quick-preset" onclick="fillCalc('YYRr','YyRr')">YYRr×YyRr</span>
+    <span class="quick-preset" onclick="fillCalc('Yyrr','yyRr')">Yyrr×yyRr</span>
+  </div>
+
+  <div class="btn-row" style="margin-top:10px;">
+    <button class="btn btn-primary" onclick="runCalculator()">计算子代比例</button>
+    <button class="btn btn-secondary" onclick="clearCalc()">清空</button>
+  </div>
+
+  <div class="calc-result-area" id="calc-result-area">
+    <div style="text-align:center;color:#8a8aa0;padding:30px;grid-column:1/-1;">输入亲本基因型后点击"计算子代比例"查看结果</div>
+  </div>
+</div>
+</div>
+
+<!-- ===== 面板2：棋盘格交互 ===== -->
+<div class="tab-panel" id="tab-punnett">
+<div class="parent-row">
+  <div class="parent-card male">
+    <h3>♂ 父本 (P₁)</h3>
+    <div class="trait-row">
+      <span class="trait-label">种子形状：</span>
+      <button class="allele-btn dominant" onclick="setAllele('male',0,0,'R')" id="male-R-btn1">R</button>
+      <button class="allele-btn recessive" onclick="setAllele('male',0,1,'r')" id="male-r-btn1">r</button>
+      <span style="margin:0 6px;color:#8a8aa0">×</span>
+      <button class="allele-btn dominant" onclick="setAllele('male',0,2,'R')" id="male-R-btn2">R</button>
+      <button class="allele-btn recessive" onclick="setAllele('male',0,3,'r')" id="male-r-btn2">r</button>
+    </div>
+    <div class="trait-row">
+      <span class="trait-label">子叶颜色：</span>
+      <button class="allele-btn dominant" onclick="setAllele('male',1,0,'Y')" id="male-Y-btn1">Y</button>
+      <button class="allele-btn recessive" onclick="setAllele('male',1,1,'y')" id="male-y-btn1">y</button>
+      <span style="margin:0 6px;color:#8a8aa0">×</span>
+      <button class="allele-btn dominant" onclick="setAllele('male',1,2,'Y')" id="male-Y-btn2">Y</button>
+      <button class="allele-btn recessive" onclick="setAllele('male',1,3,'y')" id="male-y-btn2">y</button>
+    </div>
+    <div class="geno-display" id="male-genotype">YYRR</div>
+  </div>
+  <div class="parent-card female">
+    <h3>♀ 母本 (P₂)</h3>
+    <div class="trait-row">
+      <span class="trait-label">种子形状：</span>
+      <button class="allele-btn dominant" onclick="setAllele('female',0,0,'R')" id="female-R-btn1">R</button>
+      <button class="allele-btn recessive" onclick="setAllele('female',0,1,'r')" id="female-r-btn1">r</button>
+      <span style="margin:0 6px;color:#8a8aa0">×</span>
+      <button class="allele-btn dominant" onclick="setAllele('female',0,2,'R')" id="female-R-btn2">R</button>
+      <button class="allele-btn recessive" onclick="setAllele('female',0,3,'r')" id="female-r-btn2">r</button>
+    </div>
+    <div class="trait-row">
+      <span class="trait-label">子叶颜色：</span>
+      <button class="allele-btn dominant" onclick="setAllele('female',1,0,'Y')" id="female-Y-btn1">Y</button>
+      <button class="allele-btn recessive" onclick="setAllele('female',1,1,'y')" id="female-y-btn1">y</button>
+      <span style="margin:0 6px;color:#8a8aa0">×</span>
+      <button class="allele-btn dominant" onclick="setAllele('female',1,2,'Y')" id="female-Y-btn2">Y</button>
+      <button class="allele-btn recessive" onclick="setAllele('female',1,3,'y')" id="female-y-btn2">y</button>
+    </div>
+    <div class="geno-display" id="female-genotype">yyrr</div>
+  </div>
+</div>
+
+<div class="btn-row">
+  <button class="btn btn-primary" onclick="generateOffspring()">生成棋盘格</button>
+  <button class="btn btn-accent" onclick="presetDihybrid()">经典杂交 YyRr×YyRr</button>
+  <button class="btn btn-accent" onclick="presetF1()">P代杂交 YYRR×yyrr</button>
+  <button class="btn btn-accent" onclick="presetTestcrossPreset()">测交 YyRr×yyrr</button>
+  <button class="btn btn-secondary" onclick="resetHighlight()">清除高亮</button>
+</div>
+
+<div class="main-grid">
+  <div class="card"><h3 class="c-yellow">棋盘格 (Punnett Square)</h3><div id="punnett-container" style="overflow-x:auto;"></div></div>
+  <div class="card"><h3 class="c-yellow">表现型统计</h3><div id="stats-container"></div><div id="ratio-container"></div></div>
+</div>
+
+<div class="card" id="analysis-card">
+  <h3 class="c-blue">当前杂交分析</h3>
+  <div id="analysis-content"></div>
+</div>
+</div>
+
+<!-- ===== 面板3：知识讲解 ===== -->
+<div class="tab-panel" id="tab-knowledge">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="card">
+      <h3 class="c-yellow">一、两对相对性状的杂交实验</h3>
+      <div class="knowledge-section">
+        <p>孟德尔用<span class="highlight-text">纯种黄色圆粒</span>豌豆和<span class="highlight-text">纯种绿色皱粒</span>豌豆作亲本进行杂交。</p>
+        <ul>
+          <li><strong>P：</strong>黄色圆粒 (YYRR) × 绿色皱粒 (yyrr)</li>
+          <li><strong>F₁：</strong>全部为<span class="highlight-text">黄色圆粒</span> (YyRr)</li>
+          <li>说明<strong>黄色</strong>和<strong>圆粒</strong>是显性性状</li>
+        </ul>
+        <p style="margin-top:6px;">F₁ <strong>自交</strong>后，F₂出现4种表现型（课本P18）：</p>
+        <table class="testcross-table">
+          <tr><th>表现型</th><th>黄色圆粒</th><th>绿色圆粒</th><th>黄色皱粒</th><th>绿色皱粒</th></tr>
+          <tr><td>实际数</td><td>315</td><td>108</td><td>101</td><td>32</td></tr>
+          <tr><td>比例</td><td>9</td><td>3</td><td>3</td><td>1</td></tr>
+        </table>
+        <p style="margin-top:6px;font-size:12px;color:#8a8aa0;">孟德尔共获得556粒F₂种子，比例接近 <strong>9∶3∶3∶1</strong></p>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="c-yellow">二、对每一对性状单独分析</h3>
+      <div class="knowledge-section">
+        <p>孟德尔先将两对性状<strong>拆开</strong>单独分析（课本P19）：</p>
+        <ul>
+          <li><strong>种子形状：</strong>圆粒:皱粒 = (315+108):(101+32) = 423:133 ≈ <span class="highlight-text">3:1</span></li>
+          <li><strong>子叶颜色：</strong>黄色:绿色 = (315+101):(108+32) = 416:140 ≈ <span class="highlight-text">3:1</span></li>
+        </ul>
+        <p style="margin-top:8px;">结论：<span class="highlight-text">每一对相对性状的遗传都遵循分离定律</span>，说明控制种子形状的遗传因子与控制子叶颜色的遗传因子的遗传是<strong>互不干扰</strong>的。</p>
+        <p style="margin-top:6px;font-size:12px;color:#8a8aa0;">从数学角度看：9:3:3:1 = (3:1) × (3:1)，两对性状独立遗传</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="c-yellow">三、对自由组合现象的解释</h3>
+      <div class="knowledge-section">
+        <p>假设：圆粒/皱粒由 <strong>R/r</strong> 控制，黄色/绿色由 <strong>Y/y</strong> 控制。</p>
+        <p>F₁ (YyRr) 在产生配子时：</p>
+        <ul>
+          <li><strong>每对</strong>遗传因子彼此<strong>分离</strong></li>
+          <li><strong>不同对</strong>的遗传因子<strong>自由组合</strong></li>
+        </ul>
+        <p>F₁产生<span class="highlight-text">4种</span>配子（雌雄各4种）：</p>
+        <div class="gamete-tags" style="justify-content:flex-start;">
+          <span class="gamete-tag">YR</span><span class="gamete-tag">Yr</span><span class="gamete-tag">yR</span><span class="gamete-tag">yr</span>
+        </div>
+        <p style="margin-top:6px;">数量比 = <span class="highlight-text">1 : 1 : 1 : 1</span></p>
+        <p style="margin-top:6px;">受精时雌雄配子随机结合：</p>
+        <ul>
+          <li>结合方式：4 × 4 = <span class="highlight-text">16</span> 种</li>
+          <li>基因型：<span class="highlight-text">9</span> 种 (YYRR, YYRr, YyRR, YyRr, YYrr, Yyrr, yyRR, yyRr, yyrr)</li>
+          <li>表现型：<span class="highlight-text">4</span> 种，比例 <strong>9:3:3:1</strong></li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="c-yellow">四、自由组合定律 内容</h3>
+      <div class="knowledge-section">
+        <p style="font-size:14px;padding:8px;border:1px solid rgba(255,210,0,0.3);border-radius:8px;background:rgba(255,210,0,0.05);">
+          <span class="highlight-text">自由组合定律</span>（课本P21）：<br>
+          控制不同性状的遗传因子的分离和组合是<strong>互不干扰</strong>的；在形成配子时，决定同一性状的成对的遗传因子<strong>彼此分离</strong>，决定不同性状的遗传因子<strong>自由组合</strong>。
+        </p>
+        <p style="margin-top:8px;">关键概念（课本P22）：</p>
+        <ul>
+          <li><strong>等位基因：</strong>控制相对性状的基因（如 R和r）</li>
+          <li><strong>基因型：</strong>与表现型有关的基因组成（如 YYRR, YyRr）</li>
+          <li><strong>表现型：</strong>生物个体表现出来的性状（如 黄色圆粒）</li>
+          <li><strong>纯合子：</strong>遗传因子组成相同的个体（如 YYRR, yyrr）</li>
+          <li><strong>杂合子：</strong>遗传因子组成不同的个体（如 YyRr）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <h3 class="c-yellow">五、孟德尔成功的原因（课本P21）</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+      <div class="knowledge-section">
+        <h4>1. 正确选用实验材料</h4>
+        <p>豌豆是<strong>自花传粉</strong>植物，自然状态下为纯种；具有<strong>易于区分的相对性状</strong>；花大，便于人工杂交操作。</p>
+      </div>
+      <div class="knowledge-section">
+        <h4>2. 从简单到复杂</h4>
+        <p>先研究<strong>一对</strong>相对性状，再研究<strong>两对</strong>甚至多对相对性状的遗传规律。</p>
+      </div>
+      <div class="knowledge-section">
+        <h4>3. 运用数学统计</h4>
+        <p>对实验结果进行<strong>数量统计</strong>和<strong>数学分析</strong>，发现性状分离比，这是超越时代的方法。</p>
+      </div>
+      <div class="knowledge-section">
+        <h4>4. 假说—演绎法</h4>
+        <p>观察现象→提出假说→演绎推理→实验验证（测交），形成完整的科学研究方法。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 面板4：测交验证 ===== -->
+<div class="tab-panel" id="tab-testcross">
+  <div class="main-grid">
+    <div class="card">
+      <h3 class="c-yellow">测交：验证自由组合假说</h3>
+      <div class="knowledge-section">
+        <p><strong>实验设计（课本P20）：</strong></p>
+        <p>让杂种子一代 <span class="highlight-text">F₁ (YyRr)</span> 与 <span class="highlight-text">隐性纯合子 (yyrr)</span> 杂交。</p>
+        <ul>
+          <li><strong>预测：</strong>F₁产生4种配子 (YR:Yr:yR:yr=1:1:1:1)，隐性纯合子只产生yr一种配子</li>
+          <li>后代应出现4种类型，比例 <span class="highlight-text">1:1:1:1</span></li>
+        </ul>
+        <table class="testcross-table" style="margin-top:8px;">
+          <tr><th>配子</th><th>YR</th><th>Yr</th><th>yR</th><th>yr</th></tr>
+          <tr><td><strong>yr</strong></td>
+            <td style="color:#4fc3f7;">YyRr<br>黄色圆粒</td>
+            <td style="color:#aed581;">Yyrr<br>黄色皱粒</td>
+            <td style="color:#ffb74d;">yyRr<br>绿色圆粒</td>
+            <td style="color:#f48fb1;">yyrr<br>绿色皱粒</td></tr>
+        </table>
+        <p style="margin-top:8px;">预测比例 = <span class="highlight-text">1 : 1 : 1 : 1</span></p>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="c-green">实验结果（课本P20）</h3>
+      <div class="knowledge-section">
+        <p>孟德尔分别以F₁作母本和父本进行了测交：</p>
+        <table class="testcross-table" style="margin:8px 0;">
+          <tr><th>性状组合</th><th>黄色圆粒</th><th>黄色皱粒</th><th>绿色圆粒</th><th>绿色皱粒</th></tr>
+          <tr><td>F₁作母本</td><td>31</td><td>27</td><td>26</td><td>26</td></tr>
+          <tr><td>F₁作父本</td><td>24</td><td>22</td><td>25</td><td>26</td></tr>
+        </table>
+        <p style="margin-top:8px;">实验结果与预测相符，<span class="highlight-text">验证了假说的正确性</span>。</p>
+        <h4 style="margin-top:10px;">假说—演绎法（课本P16）</h4>
+        <ul>
+          <li><strong>① 观察现象：</strong>F₂出现9:3:3:1</li>
+          <li><strong>② 提出假说：</strong>配子形成时，不同对的遗传因子自由组合</li>
+          <li><strong>③ 演绎推理：</strong>若假说成立，测交应为1:1:1:1</li>
+          <li><strong>④ 实验验证：</strong>测交结果符合预期 → 假说正确</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:10px;">
+    <h3 class="c-yellow">交互式测交棋盘格</h3>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-accent" onclick="showTestcrossGrid()">生成测交棋盘格</button>
+    </div>
+    <div id="testcross-grid-container" style="overflow-x:auto;margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- ===== 面板5：实际应用 ===== -->
+<div class="tab-panel" id="tab-application">
+  <div class="main-grid">
+    <div class="card">
+      <h3 class="c-yellow">应用一：杂交育种（课本P22）</h3>
+      <div class="knowledge-section">
+        <p>将两个亲本的<strong>优良性状</strong>组合在一起，培育新品种。</p>
+        <p><strong>例题：小麦育种</strong></p>
+        <ul>
+          <li>抗倒伏 (D) 对易倒伏 (d) 显性</li>
+          <li>易染条锈病 (T) 对抗条锈病 (t) 显性</li>
+          <li>品种A：抗倒伏、易染病 (<strong>DDTT</strong>)</li>
+          <li>品种B：易倒伏、抗病 (<strong>ddtt</strong>)</li>
+          <li><strong>目标：</strong>培育既抗倒伏又抗条锈病的纯种 (<strong>DDtt</strong>)</li>
+        </ul>
+        <p style="margin-top:6px;">方法：两品种杂交 → F₁ (DdTt) → F₂中出现<strong>新类型</strong> (DDtt 或 Ddtt)，继续繁育筛选。</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="c-yellow">应用二：医学实践（课本P22）</h3>
+      <div class="knowledge-section">
+        <p>依据分离定律和自由组合定律，对某些遗传病在后代中的<strong>患病概率</strong>作出科学推断，为<strong>遗传咨询</strong>提供理论依据。</p>
+        <p><strong>例题：白化病</strong></p>
+        <ul>
+          <li>白化病由隐性基因 (a) 控制</li>
+          <li>患者双亲表型正常 → 双亲均为杂合子 (Aa)</li>
+          <li>后代患病概率 = <span class="highlight-text">1/4</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:10px;">
+    <h3 class="c-yellow">自测练习（课本P23 练习与应用）</h3>
+    <div class="knowledge-section">
+      <p><strong>1.</strong> 判断以下表述是否正确：</p>
+      <ul>
+        <li>(1) 表型相同的生物，基因型一定相同。 <span style="color:#f48fb1;">【×】</span> — 如DD和Dd表型相同但基因型不同</li>
+        <li>(2) 控制不同性状的基因的遗传互不干扰。 <span style="color:#aed581;">【√】</span></li>
+      </ul>
+      <p style="margin-top:8px;"><strong>2.</strong> 水稻：高秆(D)对矮秆(d)显性，抗病(R)对感病(r)显性，两对基因独立遗传。纯合易感矮秆 (ddrr) × 纯合抗病高秆 (DDRR)，F₂中既抗倒伏又抗病的类型占：</p>
+      <p style="text-align:center;font-size:16px;"><span class="highlight-text">3/16</span> (ddRR 占 1/16 + ddRr 占 2/16)</p>
+      <p style="font-size:12px;color:#8a8aa0;">提示：F₂ = 9 D_R_ : 3 D_rr : 3 ddR_ : 1 ddrr，其中 ddR_ 为既矮秆(抗倒伏)又抗病</p>
+    </div>
+  </div>
+</div>
+
+<!-- 底部图例 -->
+<div class="legend-card">
+  <h3>图例说明</h3>
+  <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:13px;">
+    <div>
+      <strong>R</strong> = 圆粒 (显性) &nbsp;|&nbsp; <strong>r</strong> = 皱粒 (隐性)<br>
+      <strong>Y</strong> = 黄色 (显性) &nbsp;|&nbsp; <strong>y</strong> = 绿色 (隐性)
+    </div>
+    <div style="border-left:1px solid rgba(255,255,255,0.2);padding-left:16px;">
+      <span style="color:#4fc3f7;">■ 双显性 (R_Y_) 圆黄</span> &nbsp;
+      <span style="color:#aed581;">■ 显隐 (R_yy) 圆绿</span> &nbsp;
+      <span style="color:#ffb74d;">■ 隐显 (rrY_) 皱黄</span> &nbsp;
+      <span style="color:#f48fb1;">■ 双隐性 (rryy) 皱绿</span>
+    </div>
+    <div style="border-left:1px solid rgba(255,255,255,0.2);padding-left:16px;font-size:12px;color:#8a8aa0;">
+      知识点来源：普通高中教科书<br>生物学必修2 遗传与进化 第1章第2节
+    </div>
+  </div>
+</div>
+
+</div><!-- container -->
+
+<script>
+// ======== 状态管理 ========
+const state = {
+  male: { shape: ['R','R'], color: ['Y','Y'] },
+  female: { shape: ['r','r'], color: ['y','y'] },
+};
+
+// ======== Tab切换 ========
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'punnett') { updateButtonStates(); updateGenotypeDisplay(); }
+}
+
+// ======== 解析基因型字符串 ========
+// 返回 { shape: [a,b], color: [a,b] } 或 null
+function parseGenotype(str) {
+  str = str.trim();
+  if (str.length !== 4) return null;
+  const validChars = /^[RrYy]{4}$/;
+  if (!validChars.test(str)) return null;
+  // 统计每个字母的出现次数
+  const count = {};
+  for (let c of str) count[c] = (count[c]||0) + 1;
+  // 必须恰好有2个形状基因(R/r)和2个颜色基因(Y/y)
+  const rCount = (count['R']||0) + (count['r']||0);
+  const yCount = (count['Y']||0) + (count['y']||0);
+  if (rCount !== 2 || yCount !== 2) return null;
+
+  // 提取形状和颜色基因
+  let shape = [], color = [];
+  for (let c of str) {
+    if (c === 'R' || c === 'r') shape.push(c);
+    else color.push(c);
+  }
+  return { shape, color };
+}
+
+// 生成配子列表
+function getGametesFromParsed(p) {
+  const gametes = [];
+  for (let s of p.shape) {
+    for (let c of p.color) {
+      gametes.push(s + c);
+    }
+  }
+  return [...new Set(gametes)];
+}
+
+// 基因型字符串标准化（形状在前颜色在后，大写在前）
+function normalizeGenotype(shape, color) {
+  let s = [...shape].sort((a,b) => {
+    if (a===a.toUpperCase() && b===b.toLowerCase()) return -1;
+    if (a===a.toLowerCase() && b===b.toUpperCase()) return 1;
+    return 0;
+  }).join('');
+  let c = [...color].sort((a,b) => {
+    if (a===a.toUpperCase() && b===b.toLowerCase()) return -1;
+    if (a===a.toLowerCase() && b===b.toUpperCase()) return 1;
+    return 0;
+  }).join('');
+  return s + c;
+}
+
+function getPhenotype(geno) {
+  const hasR = geno.includes('R');
+  const hasY = geno.includes('Y');
+  if (hasR && hasY) return 'both';
+  if (hasR && !hasY) return 'shape_only';
+  if (!hasR && hasY) return 'color_only';
+  return 'neither';
+}
+
+function phenoName(ph) {
+  return { 'both':'圆粒黄色','shape_only':'圆粒绿色','color_only':'皱粒黄色','neither':'皱粒绿色' }[ph];
+}
+
+function pheColor(ph) {
+  return { 'both':'#4fc3f7','shape_only':'#aed581','color_only':'#ffb74d','neither':'#f48fb1' }[ph];
+}
+
+// 子代基因型（male gamete × female gamete）
+function childGeno(mg, fg) {
+  let s = [mg[0], fg[0]].sort((a,b) => {
+    if (a===a.toUpperCase() && b===b.toLowerCase()) return -1;
+    if (a===a.toLowerCase() && b===b.toUpperCase()) return 1;
+    return 0;
+  });
+  let c = [mg[1], fg[1]].sort((a,b) => {
+    if (a===a.toUpperCase() && b===b.toLowerCase()) return -1;
+    if (a===a.toLowerCase() && b===b.toUpperCase()) return 1;
+    return 0;
+  });
+  return s.join('') + c.join('');
+}
+
+// ======== 计算器核心逻辑 ========
+function onInputChange() {
+  const maleEl = document.getElementById('calc-male');
+  const femaleEl = document.getElementById('calc-female');
+  const errorEl = document.getElementById('calc-error');
+  [maleEl, femaleEl].forEach(el => {
+    el.classList.remove('error','valid');
+    const v = el.value.trim();
+    if (v.length === 0) return;
+    if (parseGenotype(v)) el.classList.add('valid');
+    else if (v.length >= 4) el.classList.add('error');
+  });
+  errorEl.textContent = '';
+}
+
+function fillCalc(male, female) {
+  document.getElementById('calc-male').value = male;
+  document.getElementById('calc-female').value = female;
+  onInputChange();
+  runCalculator();
+}
+
+function clearCalc() {
+  document.getElementById('calc-male').value = '';
+  document.getElementById('calc-female').value = '';
+  document.getElementById('calc-error').textContent = '';
+  document.getElementById('calc-result-area').innerHTML =
+    '<div style="text-align:center;color:#8a8aa0;padding:30px;grid-column:1/-1;">输入亲本基因型后点击"计算子代比例"查看结果</div>';
+  ['calc-male','calc-female'].forEach(id => {
+    document.getElementById(id).classList.remove('error','valid');
+  });
+}
+
+function runCalculator() {
+  const errorEl = document.getElementById('calc-error');
+  const resultArea = document.getElementById('calc-result-area');
+  const maleRaw = document.getElementById('calc-male').value.trim();
+  const femaleRaw = document.getElementById('calc-female').value.trim();
+
+  // 验证输入
+  if (!maleRaw || !femaleRaw) {
+    errorEl.textContent = '请输入父本和母本的基因型';
+    return;
+  }
+  const male = parseGenotype(maleRaw);
+  const female = parseGenotype(femaleRaw);
+  if (!male) {
+    errorEl.textContent = `父本基因型 "${maleRaw}" 不合法，请使用 R/r/Y/y 四个字符（R和r各出现恰好2次，Y和y各出现恰好2次）`;
+    document.getElementById('calc-male').classList.add('error');
+    return;
+  }
+  if (!female) {
+    errorEl.textContent = `母本基因型 "${femaleRaw}" 不合法，请使用 R/r/Y/y 四个字符（R和r各出现恰好2次，Y和y各出现恰好2次）`;
+    document.getElementById('calc-female').classList.add('error');
+    return;
+  }
+  errorEl.textContent = '';
+  document.getElementById('calc-male').classList.add('valid');
+  document.getElementById('calc-female').classList.add('valid');
+
+  const maleNorm = normalizeGenotype(male.shape, male.color);
+  const femaleNorm = normalizeGenotype(female.shape, female.color);
+
+  const mGametes = getGametesFromParsed(male);
+  const fGametes = getGametesFromParsed(female);
+
+  const phenoCounts = { 'both':0, 'shape_only':0, 'color_only':0, 'neither':0 };
+  const allChildren = [];
+
+  for (let m of mGametes) {
+    for (let f of fGametes) {
+      const geno = childGeno(m, f);
+      const ph = getPhenotype(geno);
+      phenoCounts[ph]++;
+      allChildren.push(geno);
+    }
+  }
+
+  const total = allChildren.length;
+  const vals = Object.values(phenoCounts);
+  const gcd = (a,b) => b===0 ? a : gcd(b, a%b);
+  let g = vals.reduce(gcd);
+  if (g === 0) g = 1;
+
+  // 构建棋盘格HTML
+  let punnettHTML = '<table class="punnett-table"><tr><th>♂/♀</th>';
+  for (let f of fGametes) punnettHTML += `<th>${f}</th>`;
+  punnettHTML += '</tr>';
+  for (let m of mGametes) {
+    punnettHTML += `<tr><th>${m}</th>`;
+    for (let f of fGametes) {
+      const geno = childGeno(m, f);
+      const ph = getPhenotype(geno);
+      punnettHTML += `<td style="color:${pheColor(ph)}" title="${geno} — ${phenoName(ph)}">${geno}</td>`;
+    }
+    punnettHTML += '</tr>';
+  }
+  punnettHTML += '</table>';
+
+  // 统计盒
+  const statsHTML = `<div class="stats-grid">
+    <div class="stat-box"><div class="count" style="color:#4fc3f7">${phenoCounts['both']}</div><div class="label">圆粒黄色<br>R_Y_</div></div>
+    <div class="stat-box"><div class="count" style="color:#aed581">${phenoCounts['shape_only']}</div><div class="label">圆粒绿色<br>R_yy</div></div>
+    <div class="stat-box"><div class="count" style="color:#ffb74d">${phenoCounts['color_only']}</div><div class="label">皱粒黄色<br>rrY_</div></div>
+    <div class="stat-box"><div class="count" style="color:#f48fb1">${phenoCounts['neither']}</div><div class="label">皱粒绿色<br>rryy</div></div>
+  </div>`;
+
+  // 计算配子种类
+  const mGameteStr = mGametes.join('、');
+  const fGameteStr = fGametes.join('、');
+
+  resultArea.innerHTML = `
+    <div class="card">
+      <h3 class="c-yellow">棋盘格</h3>
+      <div style="overflow-x:auto;">${punnettHTML}</div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:10px;">
+        <h3 class="c-yellow">亲本信息</h3>
+        <div class="result-step">
+          <div class="step-label">父本基因型</div>
+          <div class="step-content">${maleNorm} → 配子类型：${mGameteStr}（${mGametes.length}种）</div>
+        </div>
+        <div class="result-step">
+          <div class="step-label">母本基因型</div>
+          <div class="step-content">${femaleNorm} → 配子类型：${fGameteStr}（${fGametes.length}种）</div>
+        </div>
+        <div class="result-step">
+          <div class="step-label">配子结合方式</div>
+          <div class="step-content">${mGametes.length} × ${fGametes.length} = ${total} 种</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="c-yellow">统计结果</h3>
+        ${statsHTML}
+        <div class="ratio-display" style="margin-top:6px;">
+          表现型比例 = <strong>${vals.map(v => v/g).join(' : ')}</strong>
+          <br><span style="font-size:12px;">(总计 ${total} 种组合)</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ======== 棋盘格交互 (面板2) ========
+function genotypeStr(p) {
+  let s = [...p.shape].sort((a,b) => {
+    if (a===a.toUpperCase() && b===b.toLowerCase()) return -1;
+    if (a===a.toLowerCase() && b===b.toUpperCase()) return 1;
+    return 0;
+  }).join('');
+  let c = [...p.color].sort((a,b) => {
+    if (a===a.toUpperCase() && b===b.toLowerCase()) return -1;
+    if (a===a.toLowerCase() && b===b.toUpperCase()) return 1;
+    return 0;
+  }).join('');
+  return s + c;
+}
+
+function updateGenotypeDisplay() {
+  document.getElementById('male-genotype').textContent = genotypeStr(state.male);
+  document.getElementById('female-genotype').textContent = genotypeStr(state.female);
+}
+
+function updateButtonStates() {
+  ['male','female'].forEach(sex => {
+    const p = state[sex];
+    ['R','r'].forEach(a => {
+      for (let pos of [0,1]) {
+        const btn = document.getElementById(`${sex}-${a}-btn${pos+1}`);
+        if (btn) {
+          btn.className = `allele-btn ${a==='R'?'dominant':'recessive'}`;
+          if (p.shape[pos] === a) btn.classList.add('selected');
+        }
+      }
+    });
+    ['Y','y'].forEach(a => {
+      for (let pos of [0,1]) {
+        const btn = document.getElementById(`${sex}-${a}-btn${pos+1}`);
+        if (btn) {
+          btn.className = `allele-btn ${a==='Y'?'dominant':'recessive'}`;
+          if (p.color[pos] === a) btn.classList.add('selected');
+        }
+      }
+    });
+  });
+}
+
+function setAllele(sex, geneIdx, alleleIdx, allele) {
+  const parent = state[sex];
+  if (geneIdx === 0) parent.shape[alleleIdx] = allele;
+  else parent.color[alleleIdx] = allele;
+  updateGenotypeDisplay();
+  updateButtonStates();
+}
+
+function getGametes(parent) {
+  const gametes = [];
+  for (let s of parent.shape) for (let c of parent.color) gametes.push(s + c);
+  return [...new Set(gametes)];
+}
+
+function highlightPhenotype(ph) {
+  document.querySelectorAll('.punnett-table td.offspring-cell').forEach(td => {
+    td.classList.remove('hl-dom','hl-rec');
+  });
+  document.querySelectorAll(`.punnett-table td.offspring-cell[data-ph="${ph}"]`).forEach(td => {
+    td.classList.add(ph==='neither'?'hl-rec':'hl-dom');
+  });
+}
+
+function resetHighlight() {
+  document.querySelectorAll('.punnett-table td.offspring-cell').forEach(td => {
+    td.classList.remove('hl-dom','hl-rec');
+  });
+}
+
+function generateOffspring() {
+  const mG = getGametes(state.male);
+  const fG = getGametes(state.female);
+  const phenoCounts = { 'both':0, 'shape_only':0, 'color_only':0, 'neither':0 };
+  const uGeno = new Map();
+
+  let html = '<table class="punnett-table"><tr><th>♂/♀</th>';
+  for (let f of fG) html += `<th>${f}</th>`;
+  html += '</tr>';
+
+  for (let m of mG) {
+    html += `<tr><th>${m}</th>`;
+    for (let f of fG) {
+      const geno = childGeno(m, f);
+      const ph = getPhenotype(geno);
+      phenoCounts[ph]++;
+      uGeno.set(geno, (uGeno.get(geno)||0)+1);
+      html += `<td class="offspring-cell" data-ph="${ph}" data-geno="${geno}"
+               onclick="highlightPhenotype('${ph}')" title="基因型: ${geno}&#10;表现型: ${phenoName(ph)}"
+               style="color:${pheColor(ph)}">${geno}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+  document.getElementById('punnett-container').innerHTML = html;
+
+  const total = Object.values(phenoCounts).reduce((a,b)=>a+b,0);
+  document.getElementById('stats-container').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-box"><div class="count" style="color:#4fc3f7">${phenoCounts['both']}</div><div class="label">圆粒黄色<br>R_Y_</div></div>
+      <div class="stat-box"><div class="count" style="color:#aed581">${phenoCounts['shape_only']}</div><div class="label">圆粒绿色<br>R_yy</div></div>
+      <div class="stat-box"><div class="count" style="color:#ffb74d">${phenoCounts['color_only']}</div><div class="label">皱粒黄色<br>rrY_</div></div>
+      <div class="stat-box"><div class="count" style="color:#f48fb1">${phenoCounts['neither']}</div><div class="label">皱粒绿色<br>rryy</div></div>
+    </div>`;
+
+  const vals = Object.values(phenoCounts);
+  const gcd = (a,b) => b===0 ? a : gcd(b, a%b);
+  let g = vals.reduce(gcd);
+  if (g===0) g=1;
+
+  document.getElementById('ratio-container').innerHTML = `
+    <div class="ratio-display">
+      表现型比例 ≈ <strong>${vals.map(v => Math.round(v/g*10)/10).join(' : ')}</strong>
+      ${g>1 ? `<br>(约简后 = ${vals.map(v=>v/g).join(' : ')})` : ''}
+      <br><span style="font-size:12px;">总组合: ${total} | 基因型种类: ${uGeno.size}</span>
+    </div>`;
+
+  // 分析文本
+  generateAnalysis(phenoCounts, total);
+}
+
+function generateAnalysis(phenoCounts, total) {
+  let analysis = '';
+  const both=phenoCounts['both'], so=phenoCounts['shape_only'], co=phenoCounts['color_only'], ne=phenoCounts['neither'];
+  const vals = [both, so, co, ne];
+
+  if (both===9 && so===3 && co===3 && ne===1) {
+    analysis = `<p><span class="highlight-text">这是经典的双杂合子自交 (YyRr × YyRr)，表现型分离比严格为 9:3:3:1。</span></p>
+      <p>根据课本P19，将两对性状拆开：</p>
+      <ul><li>圆粒:皱粒 = ${both+so}:${co+ne} ≈ 3:1（遵循分离定律）</li>
+      <li>黄色:绿色 = ${both+co}:${so+ne} ≈ 3:1（遵循分离定律）</li></ul>
+      <p>从数学上看：<strong>9:3:3:1 = (3:1) × (3:1)</strong>，说明两对性状的遗传是独立的。</p>`;
+  } else if (both===1 && so===1 && co===1 && ne===1) {
+    analysis = `<p><span class="highlight-text">这是测交 (YyRr × yyrr) 的结果，表现型分离比为 1:1:1:1。</span>测交验证了F₁产生了四种比例相等的配子 (YR:Yr:yR:yr=1:1:1:1)，证明了自由组合假说的正确性。</p>`;
+  } else if (both === total && total > 0) {
+    analysis = `<p>所有子代均为<span class="highlight-text">黄色圆粒</span>（双显性）。这符合P代纯合亲本杂交的结果：YYRR × yyrr → F₁全部为YyRr，表现为黄色圆粒。</p><p>黄色和圆粒为显性性状，与课本P18描述一致。</p>`;
+  } else {
+    analysis = `<p>当前杂交组合的表现型分离情况如上表所示，反映了两对等位基因<strong>独立分配</strong>到配子中的规律。</p>`;
+  }
+  document.getElementById('analysis-content').innerHTML = analysis;
+}
+
+function setParent(sex, shape, color) {
+  state[sex].shape = shape.split('');
+  state[sex].color = color.split('');
+}
+
+function presetDihybrid() {
+  setParent('male','Rr','Yy'); setParent('female','Rr','Yy');
+  updateGenotypeDisplay(); updateButtonStates(); generateOffspring();
+}
+function presetF1() {
+  setParent('male','RR','YY'); setParent('female','rr','yy');
+  updateGenotypeDisplay(); updateButtonStates(); generateOffspring();
+}
+function presetTestcrossPreset() {
+  setParent('male','Rr','Yy'); setParent('female','rr','yy');
+  updateGenotypeDisplay(); updateButtonStates(); generateOffspring();
+}
+
+function showTestcrossGrid() {
+  setParent('male','Rr','Yy'); setParent('female','rr','yy');
+  const mG = getGametes(state.male);
+  const fG = getGametes(state.female);
+  const names = {'YyRr':'黄色圆粒','Yyrr':'黄色皱粒','yyRr':'绿色圆粒','yyrr':'绿色皱粒'};
+  const colors = {'YyRr':'#4fc3f7','Yyrr':'#aed581','yyRr':'#ffb74d','yyrr':'#f48fb1'};
+  let html = '<table class="testcross-table"><tr><th>F₁配子 →</th>';
+  for (let m of mG) html += `<th>${m}</th>`;
+  html += '</tr><tr><td><strong>yr</strong></td>';
+  for (let m of mG) {
+    const geno = childGeno(m, fG[0]);
+    html += `<td style="color:${colors[geno]||'#fff'};font-weight:bold;">${geno}<br><small>${names[geno]||''}</small></td>`;
+  }
+  html += '</tr></table><p class="ratio-display" style="margin-top:8px;"><strong>比例 = 1 : 1 : 1 : 1</strong></p>';
+  document.getElementById('testcross-grid-container').innerHTML = html;
+}
+
+// ======== 初始化 ========
+updateButtonStates();
+updateGenotypeDisplay();
+presetF1();
+</script>
+</body>
+</html>
