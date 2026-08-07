@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神经元 — 3D 交互模型</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: rgba(13,17,23,0.92);
+    --text: #e6edf3; --muted: #8b949e;
+    --gold: #f59e0b; --cyan: #58b9e8; --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:var(--text);background:var(--bg)}
+  #three-canvas{position:fixed;inset:0;display:block}
+
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:100;height:48px;
+    display:flex;align-items:center;gap:14px;padding:0 18px;
+    background:rgba(13,17,23,0.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  .back-btn{
+    width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.05);color:#c9d1d9;font-size:17px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;text-decoration:none;
+    transition:all 0.25s;flex-shrink:0;
+  }
+  .back-btn:hover{background:rgba(255,255,255,0.12);border-color:#fff}
+  .topbar h1{font-size:15px;font-weight:600;letter-spacing:0.5px;
+    background:linear-gradient(90deg,var(--gold),#fbbf24);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  }
+  .topbar-actions{margin-left:auto;display:flex;gap:6px}
+  .tb-btn{
+    padding:5px 13px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.04);color:#b0b8c0;font-size:12px;
+    font-family:inherit;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+  }
+  .tb-btn:hover{background:rgba(255,255,255,0.1);color:#e6edf3}
+  .tb-btn.on{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.4);color:var(--gold)}
+
+  .legend{
+    position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:50;
+    background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:12px;
+    padding:14px 16px;min-width:165px;backdrop-filter:blur(10px);box-shadow:var(--shadow);
+  }
+  .legend h3{font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:1px}
+  .lg-item{display:flex;align-items:center;gap:9px;padding:4px 6px;margin:1px -6px;border-radius:5px;font-size:11px;color:#b0b8c0}
+  .lg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .lg-dot.soma{background:#f59e0b;box-shadow:0 0 6px #f59e0b}
+  .lg-dot.nucleus{background:#fef3c7;border:1px solid #d97706}
+  .lg-dot.dendrite{background:#fb923c}
+  .lg-dot.axon{background:#fbbf24}
+  .lg-dot.myelin{background:#fef3c7;border-radius:3px}
+  .lg-dot.terminal{background:#f97316;box-shadow:0 0 4px #f97316}
+
+  .hint{
+    position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:50;
+    padding:7px 18px;border-radius:999px;background:rgba(0,0,0,0.45);
+    border:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--muted);
+    backdrop-filter:blur(8px);pointer-events:none;
+  }
+  .hint em{color:var(--gold);font-style:normal}
+
+  .info-popup{
+    position:fixed;z-index:200;pointer-events:none;opacity:0;
+    transform:translate(-50%,-115%);transition:opacity 0.25s,transform 0.25s;
+    background:var(--panel);border:1px solid rgba(255,255,255,0.15);
+    border-radius:10px;padding:12px 15px;box-shadow:var(--shadow);
+    max-width:260px;backdrop-filter:blur(12px);
+  }
+  .info-popup.show{opacity:1;transform:translate(-50%,-130%)}
+  .info-popup h4{font-size:13px;margin-bottom:4px}
+  .info-popup p{font-size:11px;color:var(--muted);line-height:1.5}
+
+  @media(max-width:768px){
+    .legend{right:2px;padding:8px 10px;min-width:135px}
+    .lg-item{font-size:10px}
+    .topbar h1{font-size:13px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main3.html" class="back-btn">←</a>
+  <h1>神经元 · 神经系统基本单位</h1>
+  <div class="topbar-actions">
+    <button class="tb-btn on" id="btnAuto" onclick="toggleAuto()">⟳ 自动旋转</button>
+    <button class="tb-btn on" id="btnLabel" onclick="toggleLabels()">🏷 标注</button>
+    <button class="tb-btn" onclick="resetView()">↺ 重置</button>
+  </div>
+</div>
+
+<canvas id="three-canvas"></canvas>
+
+<div class="legend">
+  <h3>图例</h3>
+  <div class="lg-item"><div class="lg-dot soma"></div> 细胞体</div>
+  <div class="lg-item"><div class="lg-dot nucleus"></div> 细胞核</div>
+  <div class="lg-item"><div class="lg-dot dendrite"></div> 树突</div>
+  <div class="lg-item"><div class="lg-dot axon"></div> 轴突</div>
+  <div class="lg-item"><div class="lg-dot myelin"></div> 髓鞘</div>
+  <div class="lg-item"><div class="lg-dot terminal"></div> 突触末梢</div>
+</div>
+
+<div class="info-popup" id="popup"><h4 id="popTitle"></h4><p id="popDesc"></p></div>
+<div class="hint">🖱 <em>拖拽</em>旋转 &nbsp;|&nbsp; 🔍 <em>滚轮</em>缩放 &nbsp;|&nbsp; 👆 <em>点击</em>查看结构详情</div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// ==================== 场景 ====================
+const canvas=document.getElementById('three-canvas');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
+
+const labelRenderer=new CSS2DRenderer();
+labelRenderer.setSize(innerWidth,innerHeight);
+labelRenderer.domElement.style.cssText='position:fixed;top:0;left:0;pointer-events:none;z-index:55';
+document.body.appendChild(labelRenderer.domElement);
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0d1117);
+scene.fog=new THREE.Fog(0x0d1117,20,50);
+
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,0.5,60);
+camera.position.set(6,2.5,9);
+camera.lookAt(0,0,0);
+
+// 光照
+scene.add(new THREE.AmbientLight(0x3a4e6b,2.8));
+const sun=new THREE.DirectionalLight(0xfff5e8,5);
+sun.position.set(6,5,5);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+scene.add(sun);
+const fill=new THREE.DirectionalLight(0x8899cc,1.8);
+fill.position.set(-4,0,-3);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xb0c8ff,2);
+rim.position.set(0,-1.5,4);scene.add(rim);
+
+// OrbitControls
+const ctrl=new OrbitControls(camera,renderer.domElement);
+ctrl.target.set(1.5,0,0);
+ctrl.enableDamping=true;ctrl.dampingFactor=0.08;
+ctrl.minDistance=3;ctrl.maxDistance=20;
+ctrl.maxPolarAngle=Math.PI*0.72;ctrl.minPolarAngle=0.15;
+ctrl.autoRotate=true;ctrl.autoRotateSpeed=0.35;ctrl.update();
+
+// ==================== 材质 ====================
+const matSoma=new THREE.MeshStandardMaterial({color:0xf59e0b,roughness:0.32,metalness:0.04,emissive:0xf59e0b,emissiveIntensity:0.2});
+const matNucleus=new THREE.MeshStandardMaterial({color:0xfef3c7,roughness:0.25,metalness:0.05,emissive:0xfef3c7,emissiveIntensity:0.3});
+const matDendrite=new THREE.MeshStandardMaterial({color:0xfb923c,roughness:0.38,metalness:0.04,emissive:0xfb923c,emissiveIntensity:0.12});
+const matAxon=new THREE.MeshStandardMaterial({color:0xfbbf24,roughness:0.36,metalness:0.04,emissive:0xfbbf24,emissiveIntensity:0.15});
+const matMyelin=new THREE.MeshStandardMaterial({color:0xfef9c3,roughness:0.28,metalness:0.05,emissive:0xfef9c3,emissiveIntensity:0.25});
+const matTerminal=new THREE.MeshStandardMaterial({color:0xf97316,roughness:0.28,metalness:0.05,emissive:0xf97316,emissiveIntensity:0.3});
+const matNode=new THREE.MeshStandardMaterial({color:0xfbbf24,roughness:0.3,metalness:0.3,emissive:0xfbbf24,emissiveIntensity:0.4});
+
+const clickTargets=[];
+
+// ==================== 细胞体 ====================
+const somaGroup=new THREE.Group();scene.add(somaGroup);
+
+const somaGeo=new THREE.SphereGeometry(0.7,32,24);
+const soma=new THREE.Mesh(somaGeo,matSoma);
+soma.castShadow=true;soma.position.set(-0.2,0,0);
+soma.userData={title:'细胞体',desc:'神经元的代谢中心，内含细胞核和多种细胞器，负责整合来自树突的信号。',color:'#f59e0b'};
+somaGroup.add(soma);clickTargets.push(soma);
+
+// 细胞核
+const nucleusGeo=new THREE.SphereGeometry(0.28,20,14);
+const nucleus=new THREE.Mesh(nucleusGeo,matNucleus);
+nucleus.position.set(0.05,0.04,-0.18);
+nucleus.userData={title:'细胞核',desc:'含有遗传物质DNA，控制神经元的基因表达和蛋白质合成。',color:'#fef3c7'};
+soma.add(nucleus);clickTargets.push(nucleus);
+
+// 核仁
+const nucleolusGeo=new THREE.SphereGeometry(0.1,12,8);
+const nucleolus=new THREE.Mesh(nucleolusGeo,new THREE.MeshStandardMaterial({color:0xd97706,roughness:0.2,emissive:0xd97706,emissiveIntensity:0.35}));
+nucleolus.position.set(0.06,0.03,-0.04);
+nucleus.add(nucleolus);
+
+// ==================== 树突 ====================
+const dendriteGroup=new THREE.Group();scene.add(dendriteGroup);
+
+function createDendriteTree(origin, mainDir, length, baseR, branches){
+  // 垂直方向向量，用于侧向弯曲
+  const perp=new THREE.Vector3(-mainDir.y,mainDir.x,mainDir.z).normalize();
+  const perp2=new THREE.Vector3().crossVectors(mainDir,perp).normalize();
+
+  // 中点：轻微偏离直线
+  const mid=origin.clone().add(mainDir.clone().multiplyScalar(length*0.45));
+  mid.add(perp.clone().multiplyScalar((Math.random()-0.5)*length*0.22));
+  mid.add(perp2.clone().multiplyScalar((Math.random()-0.5)*length*0.22));
+
+  // 终点
+  const end=origin.clone().add(mainDir.clone().multiplyScalar(length));
+  end.add(perp.clone().multiplyScalar((Math.random()-0.5)*length*0.15));
+  end.add(perp2.clone().multiplyScalar((Math.random()-0.5)*length*0.15));
+
+  const curve=new THREE.QuadraticBezierCurve3(origin.clone(),mid,end);
+  const segs=Math.max(18,Math.floor(length*15));
+  const r=Math.max(baseR*0.35,0.022);
+  const geo=new THREE.TubeGeometry(curve,segs,r,8,false);
+  const mesh=new THREE.Mesh(geo,matDendrite);
+  mesh.castShadow=true;
+
+  if(branches>0){
+    const subCount=branches>=3?3:branches>=2?2:1;
+    for(let i=0;i<subCount;i++){
+      const bt=0.55+(i/(subCount||1))*0.3;
+      const bp=curve.getPointAt(Math.min(bt,0.95));
+      const spread=0.5+branches*0.12;
+      const subDir=mainDir.clone();
+      const angle=((i/Math.max(subCount-1,1))-0.5)*Math.PI*0.75;
+      subDir.add(perp.clone().multiplyScalar(Math.cos(angle)*spread));
+      subDir.add(perp2.clone().multiplyScalar(Math.sin(angle)*spread));
+      subDir.normalize();
+      mesh.add(createDendriteTree(bp,subDir,length*0.48,baseR*0.52,branches-1));
+    }
+  }
+  return mesh;
+}
+
+const dendriteDefs=[
+  {o:new THREE.Vector3(-0.58,0.5,0.28),d:new THREE.Vector3(-0.95,0.8,0.42).normalize(),l:1.5,r:0.07,b:3},
+  {o:new THREE.Vector3(-0.55,-0.42,0.32),d:new THREE.Vector3(-0.9,-0.72,0.5).normalize(),l:1.45,r:0.07,b:3},
+  {o:new THREE.Vector3(-0.42,0.52,-0.35),d:new THREE.Vector3(-0.7,0.88,-0.58).normalize(),l:1.3,r:0.065,b:2},
+  {o:new THREE.Vector3(-0.48,-0.38,-0.4),d:new THREE.Vector3(-0.8,-0.62,-0.68).normalize(),l:1.35,r:0.065,b:2},
+  {o:new THREE.Vector3(-0.64,0.1,0.02),d:new THREE.Vector3(-1.05,0.2,0.04).normalize(),l:1.6,r:0.07,b:3},
+  {o:new THREE.Vector3(-0.48,0.58,0.18),d:new THREE.Vector3(-0.58,1.06,0.3).normalize(),l:1.1,r:0.06,b:2},
+  {o:new THREE.Vector3(-0.46,-0.52,0.14),d:new THREE.Vector3(-0.6,-0.96,0.24).normalize(),l:1.15,r:0.06,b:2},
+];
+dendriteDefs.forEach(def=>{
+  const d=createDendriteTree(def.o,def.d,def.l,def.r,def.b);
+  dendriteGroup.add(d);
+});
+
+// ==================== 轴突起始段（轴丘） ====================
+const hillockGeo=new THREE.ConeGeometry(0.22,0.35,12,8);
+const hillock=new THREE.Mesh(hillockGeo,matAxon);
+hillock.rotation.z=-Math.PI/2;
+hillock.position.set(0.5,0,0);
+hillock.castShadow=true;
+hillock.userData={title:'轴丘',desc:'轴突从细胞体发出的起始部位，是动作电位产生的关键位置——整合树突信号后决定是否发放冲动。',color:'#fbbf24'};
+somaGroup.add(hillock);clickTargets.push(hillock);
+
+// ==================== 轴突 ====================
+const axonLen=8;
+const axonZ=0;
+const axonPts=[new THREE.Vector3(0.7,0,axonZ),new THREE.Vector3(0.7+axonLen*0.5,0,axonZ),new THREE.Vector3(0.7+axonLen,0.02,axonZ)];
+const axonCurve=new THREE.CatmullRomCurve3(axonPts);
+const axonGeo=new THREE.TubeGeometry(axonCurve,40,0.08,8,false);
+const axon=new THREE.Mesh(axonGeo,matAxon);
+axon.castShadow=true;scene.add(axon);
+
+// ==================== 髓鞘 ====================
+const myelinGroup=new THREE.Group();scene.add(myelinGroup);
+const segLen=0.55,segGap=0.08,segR=0.16;
+const totalSegs=Math.floor(axonLen/ (segLen+segGap));
+for(let i=0;i<totalSegs;i++){
+  const t0=(0.7+(i*(segLen+segGap)))/axonLen;
+  const t1=t0+segLen/axonLen;
+  const sm=axonCurve.getPointAt(Math.min(t0,0.99));
+  const em=axonCurve.getPointAt(Math.min(t1,0.99));
+  const mx=(sm.x+em.x)/2,my=(sm.y+em.y)/2,mz=(sm.z+em.z)/2;
+  const segGeo=new THREE.CylinderGeometry(segR,segR,segLen,12);
+  const seg=new THREE.Mesh(segGeo,matMyelin);
+  seg.position.set(mx,my,mz);
+  const dx=em.x-sm.x,dy=em.y-sm.y,dz=em.z-sm.z;
+  seg.rotation.z=Math.PI/2;
+  seg.rotation.y=Math.atan2(dz,dx);
+  seg.castShadow=true;
+  seg.userData={title:'髓鞘',desc:'由施万细胞（PNS）或少突胶质细胞（CNS）形成，包裹轴突起绝缘作用，加快神经冲动传导速度（跳跃传导）。',color:'#fef9c3'};
+  myelinGroup.add(seg);clickTargets.push(seg);
+}
+
+// ==================== 郎飞结 ====================
+const nodeGroup=new THREE.Group();scene.add(nodeGroup);
+for(let i=0;i<totalSegs-1;i++){
+  const t=(0.7+((i+1)*(segLen+segGap)-segGap/2))/axonLen;
+  const pt=axonCurve.getPointAt(Math.min(t,0.99));
+  const nodeGeo=new THREE.TorusGeometry(0.12,0.03,8,10);
+  const node=new THREE.Mesh(nodeGeo,matNode);
+  node.position.copy(pt);
+  node.userData={title:'郎飞结',desc:'髓鞘之间的裸露轴突区域，富含电压门控钠通道，是动作电位再生的位置，实现跳跃传导。',color:'#fbbf24'};
+  nodeGroup.add(node);clickTargets.push(node);
+}
+
+// ==================== 轴突末梢（突触终末） ====================
+const terminalGroup=new THREE.Group();scene.add(terminalGroup);
+const endPt=axonCurve.getPointAt(0.99);
+
+function createTerminalBranch(start,dir,len){
+  const tps=[start.clone(),start.clone().add(dir.clone().multiplyScalar(len*0.5)),start.clone().add(dir.clone().multiplyScalar(len))];
+  const tc=new THREE.CatmullRomCurve3(tps);
+  const tgeo=new THREE.TubeGeometry(tc,8,0.04,5,false);
+  const tm=new THREE.Mesh(tgeo,matAxon);terminalGroup.add(tm);
+  const btnGeo=new THREE.SphereGeometry(0.08,8,6);
+  const btn=new THREE.Mesh(btnGeo,matTerminal);
+  btn.position.copy(tps[2]);
+  btn.castShadow=true;
+  btn.userData={title:'突触小体',desc:'轴突末梢的膨大结构，内含突触囊泡（含神经递质），将信号传递给下一个神经元或效应器。',color:'#f97316'};
+  terminalGroup.add(btn);clickTargets.push(btn);
+}
+
+const termDefs=[
+  {d:new THREE.Vector3(0.8,0.3,0.3),l:0.6},
+  {d:new THREE.Vector3(0.8,-0.3,0.3),l:0.55},
+  {d:new THREE.Vector3(0.8,0.3,-0.3),l:0.5},
+  {d:new THREE.Vector3(0.8,-0.3,-0.3),l:0.55},
+  {d:new THREE.Vector3(0.9,0,0.4),l:0.65},
+  {d:new THREE.Vector3(0.9,0,-0.4),l:0.6},
+];
+termDefs.forEach(td=>createTerminalBranch(endPt,td.d.normalize(),td.l));
+
+// ==================== CSS2D 标签 ====================
+const labelGroup=new THREE.Group();scene.add(labelGroup);
+function addLabel(text,pos,color='#e6edf3'){
+  const d=document.createElement('div');
+  d.textContent=text;d.style.cssText=`color:${color};font-size:11px;font-weight:600;text-shadow:0 0 6px rgba(0,0,0,0.9);white-space:nowrap`;
+  const l=new CSS2DObject(d);l.position.copy(pos);labelGroup.add(l);
+}
+addLabel('细胞体',new THREE.Vector3(-0.2,1.05,0),'#f59e0b');
+addLabel('细胞核',new THREE.Vector3(-0.15,0.55,-0.25),'#fef3c7');
+addLabel('树突',new THREE.Vector3(-1.8,0.9,0.7),'#fb923c');
+addLabel('树突',new THREE.Vector3(-1.8,-0.7,-0.8),'#fb923c');
+addLabel('轴丘',new THREE.Vector3(0.5,0.4,0),'#fbbf24');
+addLabel('髓鞘',new THREE.Vector3(3.5,0.38,0),'#fef9c3');
+addLabel('郎飞结',new THREE.Vector3(2.2,0.35,0),'#fbbf24');
+addLabel('突触末梢',new THREE.Vector3(8.3,0.6,0.6),'#f97316');
+
+let showLabels=true;
+labelGroup.visible=showLabels;
+
+// ==================== 点击检测 ====================
+const raycaster=new THREE.Raycaster();
+const popup=document.getElementById('popup');
+const popTitle=document.getElementById('popTitle');
+const popDesc=document.getElementById('popDesc');
+let popTimer=null;
+
+canvas.addEventListener('click',ev=>{
+  const m=new THREE.Vector2((ev.clientX/innerWidth)*2-1,-(ev.clientY/innerHeight)*2+1);
+  raycaster.setFromCamera(m,camera);
+  const hits=raycaster.intersectObjects(clickTargets,true);
+  if(hits.length){
+    let obj=hits[0].object;
+    while(obj){
+      if(obj.userData&&obj.userData.title){showPopup(ev.clientX,ev.clientY,obj.userData);return;}
+      obj=obj.parent;
+    }
+  }
+  hidePopup();
+});
+function showPopup(x,y,d){
+  clearTimeout(popTimer);popTitle.textContent=d.title;popTitle.style.color=d.color;
+  popDesc.textContent=d.desc;popup.style.left=x+'px';popup.style.top=y+'px';popup.classList.add('show');
+}
+function hidePopup(){popup.classList.remove('show');popTimer=setTimeout(()=>{popTitle.textContent='';popDesc.textContent=''},250);}
+
+// ==================== 按钮 ====================
+window.toggleAuto=()=>{ctrl.autoRotate=!ctrl.autoRotate;document.getElementById('btnAuto').classList.toggle('on',ctrl.autoRotate)};
+window.toggleLabels=()=>{showLabels=!showLabels;labelGroup.visible=showLabels;document.getElementById('btnLabel').classList.toggle('on',showLabels)};
+window.resetView=()=>{
+  const sT=ctrl.target.clone(),eT=new THREE.Vector3(1.5,0,0);
+  const sC=camera.position.clone(),eC=new THREE.Vector3(6,2.5,9);
+  const t0=performance.now();
+  function anim(now){const t=Math.min((now-t0)/800,1);const e=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;ctrl.target.lerpVectors(sT,eT,e);camera.position.lerpVectors(sC,eC,e);ctrl.update();if(t<1)requestAnimationFrame(anim)}
+  requestAnimationFrame(anim);hidePopup();
+};
+
+// ==================== 动画循环 ====================
+function animate(){
+  requestAnimationFrame(animate);
+  ctrl.update();
+  renderer.render(scene,camera);
+  labelRenderer.render(scene,camera);
+}
+animate();
+
+// ==================== 事件 ====================
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);labelRenderer.setSize(innerWidth,innerHeight);
+});
+window.addEventListener('keydown',e=>{
+  switch(e.key.toLowerCase()){
+    case'r':resetView();break;case'a':toggleAuto();break;case'l':toggleLabels();break;case'escape':hidePopup();break;
+  }
+});
+
+console.log('🧠 神经元 3D 模型已就绪');
+</script>
+</body>
+</html>

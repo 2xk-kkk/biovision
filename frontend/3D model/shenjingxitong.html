@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神经系统基本结构</title>
+<style>
+  :root {
+    --bg:#f5f7fa; --card:#fff; --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
+    --cns:#f59e0b; --pns:#fbbf24;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .topbar{
+    background:linear-gradient(45deg,#fff,#f0f5f9,#d9e8ed,#c5e5fd,#c7e9fb);
+    height:56px;padding:0 20px;display:flex;align-items:center;gap:14px;
+    border-bottom:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.05);
+    position:sticky;top:0;z-index:100;
+  }
+  .back-btn{
+    width:34px;height:34px;border-radius:50%;border:1.5px solid #cbd5e1;
+    background:#fff;color:#475569;font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;text-decoration:none;
+    transition:all .2s;flex-shrink:0;
+  }
+  .back-btn:hover{background:#f1f5f9;border-color:#94a3b8}
+  .topbar h1{font-size:16px;font-weight:600;color:#1e293b}
+
+  .main-container{max-width:1200px;margin:0 auto;padding:20px}
+  .row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+
+  .card{
+    background:var(--card);border-radius:16px;border:1px solid var(--border);
+    padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  .card h2{font-size:15px;margin-bottom:10px}
+  .card h3{font-size:14px;margin-bottom:8px}
+
+  canvas{display:block;width:100%;height:auto!important;border-radius:6px}
+
+  .tips{display:flex;gap:14px;flex-wrap:wrap}
+  .tip{
+    flex:1;min-width:180px;background:var(--card);border-radius:12px;
+    border:1px solid var(--border);padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  .tip h4{font-size:13px;margin-bottom:4px}
+  .tip p{font-size:12px;color:var(--muted);line-height:1.6}
+
+  .hint{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+
+  @media(max-width:860px){.row{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main3.html" class="back-btn">←</a>
+  <h1>神经系统基本结构 · 中枢神经系统与周围神经系统</h1>
+</div>
+
+<div class="main-container">
+  <!-- 第一行：全身图 + 右侧(神经元+反射弧) -->
+  <div class="row">
+    <div class="card" style="flex:1.2;min-width:380px">
+      <h2>🧍 人体神经系统</h2>
+      <canvas id="bodyCvs" width="620" height="620"></canvas>
+      <div class="hint">🟡 金色=中枢神经系统 &nbsp;|&nbsp; 🟠 浅金=周围神经系统</div>
+    </div>
+
+    <div style="flex:1.15;min-width:440px;display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+        <h2>🔬 神经元（基本单位）</h2>
+        <canvas id="neuronCvs" width="640" height="280"></canvas>
+      </div>
+      <div class="card">
+        <h2>⚡ 反射弧（5个环节）</h2>
+        <canvas id="reflexCvs" width="640" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- 要���卡片 -->
+  <div class="tips">
+    <div class="tip"><h4>🧠 大脑</h4><p>最高级中枢——感觉、运动、语言、思维、记忆</p></div>
+    <div class="tip"><h4>🎯 小脑</h4><p>协调随意运动，维持身体平衡</p></div>
+    <div class="tip"><h4>💓 脑干</h4><p>生命中枢——呼吸、心跳、血压等基本生命活动</p></div>
+    <div class="tip"><h4>🦴 脊髓</h4><p>传导神经冲动 + 完成低级反射（膝跳反射）</p></div>
+    <div class="tip"><h4>📡 周围神经</h4><p>脑神经12对 + 脊神经31对，连接全身各处</p></div>
+  </div>
+</div>
+
+<script>
+const DPR = Math.min(devicePixelRatio||1, 2);
+
+function setup(id,W,H){
+  const c=document.getElementById(id);
+  c.width=W*DPR;c.height=H*DPR;
+  // 不设固定px宽度，由CSS width:100%自适应容器
+  const ctx=c.getContext('2d');ctx.scale(DPR,DPR);
+  c._w=W;c._h=H;c._ratio=W/H;
+  return ctx;
+}
+
+// ==================== 1. 人体神经系统 ====================
+(function(){
+  const W=620,H=620,ctx=setup('bodyCvs',W,H);
+  const cx=W/2-10,hy=38,bh=400;
+
+  // 身体轮廓
+  ctx.save();
+  ctx.fillStyle='rgba(203,213,225,0.15)';ctx.strokeStyle='rgba(148,163,184,0.45)';ctx.lineWidth=1.8;
+  // 头
+  ctx.beginPath();ctx.ellipse(cx,hy+28,27,33,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  // 颈
+  ctx.fillStyle='rgba(203,213,225,0.1)';ctx.fillRect(cx-9,hy+57,18,18);
+  // 躯干
+  ctx.fillStyle='rgba(203,213,225,0.12)';
+  ctx.beginPath();ctx.moveTo(cx-36,hy+75);ctx.lineTo(cx-32,hy+240);ctx.lineTo(cx-22,hy+320);ctx.lineTo(cx+22,hy+320);ctx.lineTo(cx+32,hy+240);ctx.lineTo(cx+36,hy+75);ctx.closePath();ctx.fill();ctx.stroke();
+  // 臂
+  ctx.fillStyle='rgba(203,213,225,0.08)';
+  [[-1,1]].forEach(([s])=>{s=s||1;
+    ctx.beginPath();ctx.moveTo(cx-36*s,hy+75);ctx.lineTo(cx-60*s,hy+160);ctx.lineTo(cx-54*s,hy+250);ctx.lineTo(cx-44*s,hy+250);ctx.lineTo(cx-46*s,hy+160);ctx.lineTo(cx-28*s,hy+92);ctx.closePath();ctx.fill();ctx.stroke();
+  });
+  // 右臂
+  ctx.beginPath();ctx.moveTo(cx+36,hy+75);ctx.lineTo(cx+60,hy+160);ctx.lineTo(cx+54,hy+250);ctx.lineTo(cx+44,hy+250);ctx.lineTo(cx+46,hy+160);ctx.lineTo(cx+28,hy+92);ctx.closePath();ctx.fill();ctx.stroke();
+  // 腿
+  ctx.fillStyle='rgba(203,213,225,0.1)';
+  [[-1,1]].forEach(()=>{
+    ctx.beginPath();ctx.moveTo(cx-22,hy+320);ctx.lineTo(cx-34,hy+380);ctx.lineTo(cx-26,hy+455);ctx.lineTo(cx-14,hy+455);ctx.lineTo(cx-12,hy+380);ctx.lineTo(cx-8,hy+330);ctx.closePath();ctx.fill();ctx.stroke();
+  });
+  ctx.beginPath();ctx.moveTo(cx+22,hy+320);ctx.lineTo(cx+34,hy+380);ctx.lineTo(cx+26,hy+455);ctx.lineTo(cx+14,hy+455);ctx.lineTo(cx+12,hy+380);ctx.lineTo(cx+8,hy+330);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.restore();
+
+  // 中枢神经（脑 + 脊髓）
+  const bgrad=ctx.createLinearGradient(0,hy,0,hy+48);
+  bgrad.addColorStop(0,'#f59e0b');bgrad.addColorStop(1,'#d97706');
+  ctx.fillStyle=bgrad;ctx.beginPath();ctx.ellipse(cx,hy+27,18,25,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='bold 13px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='center';ctx.fillText('脑',cx,hy+31);
+
+  // 脊髓
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=6;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx,hy+54);ctx.lineTo(cx,hy+295);ctx.stroke();
+  ctx.strokeStyle='#fcd34d';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(cx,hy+54);ctx.lineTo(cx,hy+295);ctx.stroke();
+
+  // 周围神经
+  ctx.strokeStyle='#fbbf24';ctx.lineWidth=1.6;ctx.lineCap='round';
+  function N(x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);const mx=(x1+x2)/2,my=(y1+y2)/2;ctx.quadraticCurveTo(mx+(Math.random()-.5)*6,my+(Math.random()-.5)*6,x2,y2);ctx.stroke();}
+  // 臂丛
+  N(cx,hy+65,cx-52,hy+120);N(cx-52,hy+120,cx-48,hy+200);N(cx-48,hy+200,cx-44,hy+245);
+  N(cx,hy+65,cx+52,hy+120);N(cx+52,hy+120,cx+48,hy+200);N(cx+48,hy+200,cx+44,hy+245);
+  // 肋间
+  ctx.globalAlpha=0.45;
+  for(let i=0;i<6;i++){const ny=hy+95+i*28;N(cx-2,ny,cx-34,ny-4);N(cx+2,ny,cx+34,ny-4);}
+  ctx.globalAlpha=1;
+  // 腰骶丛
+  N(cx-6,hy+288,cx-32,hy+375);N(cx-32,hy+375,cx-22,hy+450);
+  N(cx+6,hy+288,cx+32,hy+375);N(cx+32,hy+375,cx+22,hy+450);
+
+  // 标注
+  ctx.fillStyle='#d97706';ctx.font='bold 15px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign='right';ctx.fillText('中枢神经系统',cx-28,hy+170);
+  ctx.font='13px "Microsoft YaHei","PingFang SC",sans-serif';ctx.fillText('（脑 + 脊髓）',cx-28,hy+186);
+  ctx.fillStyle='#b45309';ctx.font='13px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='left';
+  ctx.fillText('周围神经系统',cx+44,hy+100);
+  ctx.fillText('脑神经(12对)+脊神经(31对)',cx+44,hy+116);
+})();
+
+// ==================== 2. 神经元 ====================
+(function(){
+  const W=640,H=280,ctx=setup('neuronCvs',W,H);
+  const sx=60,sy=H/2;
+
+  // 树突
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=2;ctx.lineCap='round';
+  const dend=[[sx,sy,sx-30,sy-18,sx-48,sy-14],[sx,sy,sx-34,sy,sx-52,sy],[sx,sy,sx-30,sy+18,sx-48,sy+22],[sx,sy,sx-18,sy-24,sx-28,sy-36],[sx,sy,sx-18,sy+24,sx-28,sy+36]];
+  dend.forEach(d=>{ctx.beginPath();ctx.moveTo(d[0],d[1]);for(let i=2;i<d.length;i+=2)ctx.lineTo(d[i],d[i+1]);ctx.stroke();});
+
+  // 细胞体
+  const sg=ctx.createRadialGradient(sx,sy,2,sx,sy,20);
+  sg.addColorStop(0,'#fef3c7');sg.addColorStop(0.6,'#f59e0b');sg.addColorStop(1,'#d97706');
+  ctx.fillStyle=sg;ctx.beginPath();ctx.arc(sx,sy,19,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#b45309';ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx,sy,19,0,Math.PI*2);ctx.stroke();
+  // 核
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(sx-3,sy-1,6,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#d97706';ctx.beginPath();ctx.arc(sx-3,sy-1,3,0,Math.PI*2);ctx.fill();
+
+  // 轴突
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=2.5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(sx+19,sy);ctx.lineTo(W-60,sy);ctx.stroke();
+
+  // 髓鞘
+  for(let i=0;i<5;i++){
+    const mx=sx+30+i*44;
+    ctx.fillStyle='#fef3c7';ctx.strokeStyle='#d97706';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.roundRect(mx,sy-8,26,16,4);ctx.fill();ctx.stroke();
+  }
+  // 郎飞结
+  for(let i=0;i<4;i++){
+    const nx=sx+56+i*44;
+    ctx.fillStyle='#fff';ctx.strokeStyle='#f59e0b';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(nx,sy,3.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }
+
+  // 神经末梢
+  const tx=W-60;
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=1.8;
+  [[tx,sy,tx+18,sy-14],[tx,sy,tx+18,sy],[tx,sy,tx+18,sy+14]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(x2,y2,4,0,Math.PI*2);ctx.fill();
+  });
+
+  // 标注
+  ctx.textAlign='center';
+  ctx.fillStyle='#1e293b';ctx.font='bold 15px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('树突',sx-28,sy-46);
+  ctx.fillText('细胞体',sx,sy+36);
+  ctx.fillText('细胞核',sx-3,sy-13);
+  ctx.fillText('轴突',sx+130,sy-16);
+  ctx.fillText('髓鞘',sx+78,sy-20);
+  ctx.fillText('郎飞结',sx+98,sy+18);
+  ctx.fillText('神经末梢',W-44,sy-24);
+  ctx.fillStyle='#64748b';ctx.font='13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('→ 兴奋传导方向：树突 → 细胞体 → 轴突 → 末梢 →',W/2+20,H-8);
+})();
+
+// ==================== 3. 反射弧 ====================
+(function(){
+  const W=640,H=280,ctx=setup('reflexCvs',W,H);
+
+  const py=H/2+10;
+  const gap=110;
+  const startX=70;
+
+  const parts=[
+    {label:'感受器',sub:'皮肤感受器',color:'#f59e0b'},
+    {label:'传入神经',sub:'感觉神经',color:'#fbbf24'},
+    {label:'神经中枢',sub:'脊髓灰质',color:'#f97316'},
+    {label:'传出神经',sub:'运动神经',color:'#fbbf24'},
+    {label:'效应器',sub:'肌肉 / 腺体',color:'#f59e0b'},
+  ];
+
+  // 连接粗线
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=4;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(startX+22,py);ctx.lineTo(startX+gap*4+22,py);ctx.stroke();
+  // 内亮线
+  ctx.strokeStyle='#fef3c7';ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(startX+22,py);ctx.lineTo(startX+gap*4+22,py);ctx.stroke();
+
+  // 箭头
+  for(let i=0;i<parts.length-1;i++){
+    const ax=startX+gap*(i+0.5)+12;
+    ctx.fillStyle='#f59e0b';
+    ctx.beginPath();ctx.moveTo(ax+8,py);ctx.lineTo(ax-4,py-7);ctx.lineTo(ax-4,py+7);ctx.closePath();ctx.fill();
+  }
+
+  // 节点
+  parts.forEach((p,i)=>{
+    const px=startX+i*gap+22;
+
+    // 外发光
+    ctx.fillStyle=p.color;ctx.globalAlpha=0.12;
+    ctx.beginPath();ctx.arc(px,py,28,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+
+    // 主体
+    const grad=ctx.createRadialGradient(px-3,py-3,3,px,py,22);
+    grad.addColorStop(0,'#fff');grad.addColorStop(0.5,p.color);grad.addColorStop(1,'#b45309');
+    ctx.fillStyle=grad;ctx.beginPath();ctx.arc(px,py,22,0,Math.PI*2);ctx.fill();
+
+    // 边框
+    ctx.strokeStyle='#b45309';ctx.lineWidth=2.2;
+    ctx.beginPath();ctx.arc(px,py,22,0,Math.PI*2);ctx.stroke();
+
+    // 内亮点
+    ctx.fillStyle='rgba(255,255,255,0.35)';
+    ctx.beginPath();ctx.arc(px-3,py-3,7,0,Math.PI*2);ctx.fill();
+
+    // 标签（上方）
+    ctx.fillStyle='#1e293b';ctx.font='bold 17px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='center';
+    ctx.fillText(p.label,px,py-34);
+    // 副标签
+    ctx.fillStyle='#64748b';ctx.font='13px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillText(p.sub,px,py-17);
+  });
+
+  // 脊神经节
+  const gx=startX+gap+22;
+  const sgg=ctx.createRadialGradient(gx,py-58,1,gx,py-58,13);
+  sgg.addColorStop(0,'#fef3c7');sgg.addColorStop(0.5,'#fbbf24');sgg.addColorStop(1,'#b45309');
+  ctx.fillStyle=sgg;ctx.beginPath();ctx.arc(gx,py-58,13,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#b45309';ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(gx,py-58,13,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(gx,py-45);ctx.lineTo(gx,py-22);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#1e293b';ctx.font='bold 14px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='center';
+  ctx.fillText('脊神经节',gx,py-70);
+  ctx.fillStyle='#64748b';ctx.font='12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('传入神经元',gx,py+48);
+  ctx.fillText('细胞体聚集',gx,py+62);
+
+  // 中间神经元
+  const mx=startX+gap*2+22;
+  const mgg=ctx.createRadialGradient(mx-1,py-58,1,mx,py-58,13);
+  mgg.addColorStop(0,'#fff');mgg.addColorStop(0.5,'#f97316');mgg.addColorStop(1,'#9a3412');
+  ctx.fillStyle=mgg;ctx.beginPath();ctx.arc(mx,py-58,13,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#b45309';ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(mx,py-58,13,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#f97316';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(mx,py-45);ctx.lineTo(mx,py-22);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#1e293b';ctx.font='bold 14px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='center';
+  ctx.fillText('中间神经元',mx,py-70);
+  ctx.fillStyle='#64748b';ctx.font='12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('联络神经元',mx,py+48);
+
+  // 标题
+  ctx.fillStyle='#1e293b';ctx.font='bold 17px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='center';
+  ctx.fillText('反射弧 —— 神经调节的基本方式',W/2,28);
+
+  // 底部流程
+  ctx.fillStyle='#64748b';ctx.font='bold 14px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('刺激 → 感受器 → 传入神经 → 中枢 → 传出神经 → 效应器 → 反应',W/2,H-14);
+})();
+
+// Canvas 已通过 CSS width:100% 自适应，无需 JS resize
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>种群数量变化曲线 — 交互模型</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card: #fff;
+    --text: #333;
+    --muted: #64748b;
+    --j-color: #f0a040;
+    --s-color: #3b82f6;
+    --k-color: #22c55e;
+    --khalf-color: #ef4444;
+    --border: #e2e8f0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* 顶部导航 */
+  .topbar {
+    background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+    height: 56px; padding: 0 20px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .back-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid #cbd5e1; background: #fff;
+    color: #475569; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.2s; flex-shrink: 0;
+  }
+  .back-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .topbar h1 {
+    font-size: 16px; font-weight: 600; color: #1e293b;
+  }
+
+  /* 主体 */
+  .main-container {
+    max-width: 1200px; margin: 0 auto; padding: 24px;
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+
+  /* 图表区 */
+  .chart-panel {
+    flex: 2; min-width: 600px;
+    background: var(--card); border-radius: 16px;
+    border: 1px solid var(--border); padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .chart-panel h2 {
+    font-size: 16px; color: #1e293b; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  canvas {
+    display: block; width: 100%; border-radius: 8px;
+    border: 1px solid #f1f5f9;
+  }
+
+  /* 控制面板 */
+  .control-panel {
+    flex: 1; min-width: 280px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .card {
+    background: var(--card); border-radius: 16px;
+    border: 1px solid var(--border); padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card h3 {
+    font-size: 14px; color: #1e293b; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* 图例 */
+  .legend-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; margin: 2px -6px; border-radius: 6px;
+    font-size: 13px; color: #475569; cursor: pointer; transition: background 0.15s;
+  }
+  .legend-item:hover { background: #f8fafc; }
+  .lg-line {
+    width: 24px; height: 3px; border-radius: 3px; flex-shrink: 0;
+  }
+  .lg-line.j { background: var(--j-color); }
+  .lg-line.s { background: var(--s-color); }
+  .lg-dash {
+    width: 24px; height: 0; flex-shrink: 0;
+    border-top: 2px dashed var(--k-color);
+  }
+  .lg-dash.khalf { border-top-color: var(--khalf-color); }
+
+  /* 参数滑块 */
+  .param-row { margin-bottom: 14px; }
+  .param-row:last-child { margin-bottom: 0; }
+  .param-row label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: #475569; margin-bottom: 4px;
+  }
+  .param-row label .val {
+    font-weight: 600; color: #3b82f6; min-width: 36px; text-align: right;
+  }
+  .param-row input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 5px;
+    border-radius: 3px; background: #e2e8f0; outline: none; cursor: pointer;
+  }
+  .param-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: #3b82f6; cursor: pointer;
+    border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  /* 按钮 */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    flex: 1; min-width: 60px; padding: 8px 12px;
+    border-radius: 8px; border: 1px solid var(--border);
+    background: #fff; color: #475569; font-size: 12px;
+    font-family: inherit; cursor: pointer; transition: all 0.2s;
+    text-align: center;
+  }
+  .btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .btn.active {
+    background: #eff6ff; border-color: #3b82f6; color: #3b82f6;
+    font-weight: 600;
+  }
+
+  /* 阶段指示器 */
+  .phase-row {
+    display: flex; gap: 6px;
+  }
+  .phase-tag {
+    flex: 1; text-align: center; padding: 6px 4px;
+    border-radius: 8px; font-size: 11px; color: var(--muted);
+    background: #f8fafc; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .phase-tag:hover { border-color: #94a3b8; }
+  .phase-tag.highlight {
+    background: #eff6ff; border-color: #3b82f6; color: #3b82f6;
+    font-weight: 600;
+  }
+
+  /* 提示 */
+  .hint {
+    font-size: 12px; color: var(--muted); text-align: center;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 960px) {
+    .main-container { flex-direction: column; }
+    .chart-panel { min-width: auto; }
+    canvas { height: 320px !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main4.html" class="back-btn" title="返回">←</a>
+  <h1>种群数量变化曲线 · J型增长与S型增长</h1>
+</div>
+
+<div class="main-container">
+  <!-- 图表区 -->
+  <div class="chart-panel">
+    <h2>📈 种群数量 — 时间曲线</h2>
+    <canvas id="chart" width="780" height="460"></canvas>
+    <div class="hint">💡 拖拽 <b>时间滑块</b> 查看种群动态 &nbsp;|&nbsp; 点击 <b>阶段标签</b> 跳转</div>
+  </div>
+
+  <!-- 控制面板 -->
+  <div class="control-panel">
+    <!-- 图例 -->
+    <div class="card">
+      <h3>📋 图例</h3>
+      <div class="legend-item"><div class="lg-line j"></div> J型曲线（指数增长）</div>
+      <div class="legend-item"><div class="lg-line s"></div> S型曲线（逻辑斯谛增长）</div>
+      <div class="legend-item"><div class="lg-dash"></div> 环境容纳量 K</div>
+      <div class="legend-item"><div class="lg-dash khalf"></div> K/2（最大增长速率点）</div>
+    </div>
+
+    <!-- 参数调节 -->
+    <div class="card">
+      <h3>⚙ 参数调节</h3>
+      <div class="param-row">
+        <label>初始种群 N₀ <span class="val" id="valN0">10</span></label>
+        <input type="range" id="sliderN0" min="2" max="80" value="10" step="1">
+      </div>
+      <div class="param-row">
+        <label>增长率 r <span class="val" id="valR">0.30</span></label>
+        <input type="range" id="sliderR" min="5" max="80" value="30" step="1">
+      </div>
+      <div class="param-row">
+        <label>环境容纳量 K <span class="val" id="valK">1000</span></label>
+        <input type="range" id="sliderK" min="200" max="2000" value="1000" step="10">
+      </div>
+      <div class="param-row">
+        <label>时间 t <span class="val" id="valT">0.0</span></label>
+        <input type="range" id="sliderT" min="0" max="250" value="0" step="1">
+      </div>
+    </div>
+
+    <!-- 曲线开关 -->
+    <div class="card">
+      <h3>👁 显示控制</h3>
+      <div class="btn-row">
+        <button class="btn active" id="btnJ" onclick="toggle('j')">J型曲线</button>
+        <button class="btn active" id="btnS" onclick="toggle('s')">S型曲线</button>
+        <button class="btn active" id="btnAni" onclick="toggleAnim()">▶ 播放</button>
+      </div>
+    </div>
+
+    <!-- S型增长阶段 -->
+    <div class="card">
+      <h3>📌 S型增长四阶段</h3>
+      <div class="phase-row" id="phaseRow">
+        <span class="phase-tag" data-t="0.02">调整期</span>
+        <span class="phase-tag" data-t="0.25">对数期</span>
+        <span class="phase-tag" data-t="0.70">减速期</span>
+        <span class="phase-tag" data-t="0.95">稳定期</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== 参数 ====================
+let N0 = 10, r = 0.30, K = 1000, simT = 0;
+let showJ = true, showS = true, playing = false;
+const T_MAX = 25;
+
+function jCurve(t) { return N0 * Math.exp(r * t); }
+function sCurve(t) { return K / (1 + ((K - N0) / N0) * Math.exp(-r * t)); }
+
+// ==================== Canvas 设置 ====================
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const W = 780, H = 460;
+canvas.width = W * DPR;
+canvas.height = H * DPR;
+canvas.style.width = W + 'px';
+canvas.style.height = H + 'px';
+ctx.scale(DPR, DPR);
+
+// 绘图区域边距
+const MARGIN = { top: 30, right: 40, bottom: 50, left: 65 };
+const PW = W - MARGIN.left - MARGIN.right;
+const PH = H - MARGIN.top - MARGIN.bottom;
+
+// ==================== 坐标转换 ====================
+function toX(t) { return MARGIN.left + (t / T_MAX) * PW; }
+function toY(n) {
+  const maxN = K * 1.15;
+  return MARGIN.top + PH - (n / maxN) * PH;
+}
+
+// ==================== 绘图 ====================
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 背景
+  ctx.fillStyle = '#fafbfc';
+  ctx.fillRect(MARGIN.left, MARGIN.top, PW, PH);
+
+  // 网格
+  ctx.strokeStyle = '#e8ecf0';
+  ctx.lineWidth = 1;
+  const maxN = K * 1.15;
+  // 水平网格 (每 200 单位)
+  for (let n = 0; n <= maxN; n += 200) {
+    const y = toY(n);
+    ctx.beginPath(); ctx.moveTo(MARGIN.left, y); ctx.lineTo(MARGIN.left + PW, y); ctx.stroke();
+  }
+  // 垂直网格 (每 5 单位时间)
+  for (let t = 0; t <= T_MAX; t += 5) {
+    const x = toX(t);
+    ctx.beginPath(); ctx.moveTo(x, MARGIN.top); ctx.lineTo(x, MARGIN.top + PH); ctx.stroke();
+  }
+
+  // 坐标轴
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  // Y轴
+  ctx.moveTo(MARGIN.left, MARGIN.top); ctx.lineTo(MARGIN.left, MARGIN.top + PH);
+  // X轴
+  ctx.moveTo(MARGIN.left, MARGIN.top + PH); ctx.lineTo(MARGIN.left + PW, MARGIN.top + PH);
+  ctx.stroke();
+
+  // 箭头
+  ctx.fillStyle = '#94a3b8';
+  // Y轴箭头
+  ctx.beginPath();
+  ctx.moveTo(MARGIN.left, MARGIN.top - 6);
+  ctx.lineTo(MARGIN.left - 5, MARGIN.top + 4);
+  ctx.lineTo(MARGIN.left + 5, MARGIN.top + 4);
+  ctx.closePath(); ctx.fill();
+  // X轴箭头
+  ctx.beginPath();
+  ctx.moveTo(MARGIN.left + PW + 6, MARGIN.top + PH);
+  ctx.lineTo(MARGIN.left + PW - 4, MARGIN.top + PH - 5);
+  ctx.lineTo(MARGIN.left + PW - 4, MARGIN.top + PH + 5);
+  ctx.closePath(); ctx.fill();
+
+  // --- K/2 虚线 ---
+  if (showS) {
+    ctx.save();
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    const yKhalf = toY(K / 2);
+    ctx.beginPath(); ctx.moveTo(MARGIN.left, yKhalf); ctx.lineTo(MARGIN.left + PW, yKhalf); ctx.stroke();
+    ctx.setLineDash([]);
+    // 标签
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('K/2 = ' + Math.round(K/2), MARGIN.left + PW + 4, yKhalf + 4);
+    ctx.restore();
+  }
+
+  // --- K值虚线 ---
+  ctx.save();
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  const yK = toY(K);
+  ctx.beginPath(); ctx.moveTo(MARGIN.left, yK); ctx.lineTo(MARGIN.left + PW, yK); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#22c55e';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('K = ' + K, MARGIN.left + PW + 4, yK + 4);
+  ctx.restore();
+
+  // --- S型曲线 ---
+  if (showS) {
+    ctx.save();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    let first = true;
+    for (let px = MARGIN.left; px <= MARGIN.left + PW; px += 1) {
+      const t = ((px - MARGIN.left) / PW) * T_MAX;
+      const n = Math.min(sCurve(t), K * 1.3);
+      const y = toY(n);
+      if (first) { ctx.moveTo(px, y); first = false; }
+      else { ctx.lineTo(px, y); }
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // S型曲线标签
+    const labelTs = T_MAX * 0.55;
+    const labelNs = sCurve(labelTs);
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = 'italic 12px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('S型曲线', toX(labelTs) + 6, toY(labelNs) - 8);
+
+    // 填充 S型曲线下方面积（半透明）
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.moveTo(MARGIN.left, MARGIN.top + PH);
+    for (let px = MARGIN.left; px <= MARGIN.left + PW; px += 1) {
+      const t = ((px - MARGIN.left) / PW) * T_MAX;
+      const n = Math.min(sCurve(t), K * 1.3);
+      ctx.lineTo(px, toY(n));
+    }
+    ctx.lineTo(MARGIN.left + PW, MARGIN.top + PH);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // --- J型曲线 ---
+  if (showJ) {
+    ctx.save();
+    ctx.strokeStyle = '#f0a040';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    let first = true;
+    for (let px = MARGIN.left; px <= MARGIN.left + PW; px += 1) {
+      const t = ((px - MARGIN.left) / PW) * T_MAX;
+      const n = Math.min(jCurve(t), K * 1.3);
+      const y = toY(n);
+      if (first) { ctx.moveTo(px, y); first = false; }
+      else { ctx.lineTo(px, y); }
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // J型曲线标签
+    const labelTj = T_MAX * 0.72;
+    const labelNj = Math.min(jCurve(labelTj), K * 1.3);
+    ctx.fillStyle = '#f0a040';
+    ctx.font = 'italic 12px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('J型曲线', toX(labelTj) + 6, toY(labelNj) - 8);
+  }
+
+  // --- 当前时间指示点 ---
+  const currentJ = Math.min(jCurve(simT), K * 1.3);
+  const currentS = Math.min(sCurve(simT), K * 1.3);
+  const cx = toX(simT);
+
+  // J型指示点
+  if (showJ) {
+    drawIndicator(cx, toY(currentJ), '#f0a040');
+    // 数值标签
+    ctx.fillStyle = '#92400e';
+    ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    const labelY = Math.min(toY(currentJ), MARGIN.top + PH - 10);
+    ctx.fillText('N=' + Math.round(currentJ), cx + 14, labelY - 10);
+  }
+
+  // S型指示点
+  if (showS) {
+    drawIndicator(cx, toY(currentS), '#3b82f6');
+    ctx.fillStyle = '#1e40af';
+    ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    const labelY = Math.min(toY(currentS), MARGIN.top + PH - 10);
+    ctx.fillText('N=' + Math.round(currentS), cx + 14, labelY - 10);
+  }
+
+  // 时间竖线
+  ctx.save();
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 5]);
+  ctx.beginPath();
+  ctx.moveTo(cx, MARGIN.top); ctx.lineTo(cx, MARGIN.top + PH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // --- 轴标签 ---
+  ctx.fillStyle = '#475569';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('时间 t', MARGIN.left + PW / 2, H - 6);
+
+  ctx.save();
+  ctx.translate(14, MARGIN.top + PH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('种群数量 N', 0, 0);
+  ctx.restore();
+
+  // 轴刻度
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  // X轴刻度
+  for (let t = 0; t <= T_MAX; t += 5) {
+    ctx.fillText(t, toX(t), MARGIN.top + PH + 16);
+  }
+  // Y轴刻度
+  ctx.textAlign = 'right';
+  const step = K >= 1600 ? 400 : K >= 1000 ? 200 : K >= 500 ? 100 : 50;
+  for (let n = 0; n <= maxN; n += step) {
+    ctx.fillText(n, MARGIN.left - 8, toY(n) + 4);
+  }
+
+  // 原点
+  ctx.fillStyle = '#475569';
+  ctx.textAlign = 'right';
+  ctx.fillText('0', MARGIN.left - 8, MARGIN.top + PH + 16);
+
+  // 当前时间标签
+  ctx.fillStyle = '#475569';
+  ctx.font = '600 11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('t=' + simT.toFixed(1), cx, MARGIN.top + PH + 32);
+}
+
+function drawIndicator(x, y, color) {
+  // 发光外圈
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.2;
+  ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  // 实心点
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
+  // 边框
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.stroke();
+}
+
+// ==================== 更新阶段高亮 ====================
+function updatePhaseHighlight() {
+  const sn = sCurve(simT);
+  const ratio = sn / K;
+  const tags = document.querySelectorAll('.phase-tag');
+  tags.forEach(t => t.classList.remove('highlight'));
+  if (ratio < 0.05) tags[0].classList.add('highlight');
+  else if (ratio < 0.5) tags[1].classList.add('highlight');
+  else if (ratio < 0.9) tags[2].classList.add('highlight');
+  else tags[3].classList.add('highlight');
+}
+
+// ==================== 事件 ====================
+function updateAll() {
+  N0 = parseInt(document.getElementById('sliderN0').value);
+  r = parseInt(document.getElementById('sliderR').value) / 100;
+  K = parseInt(document.getElementById('sliderK').value);
+  simT = parseInt(document.getElementById('sliderT').value) / 10;
+
+  document.getElementById('valN0').textContent = N0;
+  document.getElementById('valR').textContent = r.toFixed(2);
+  document.getElementById('valK').textContent = K;
+  document.getElementById('valT').textContent = simT.toFixed(1);
+
+  draw();
+  updatePhaseHighlight();
+}
+
+['sliderN0','sliderR','sliderK','sliderT'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateAll);
+});
+
+// 曲线开关
+window.toggle = function(type) {
+  if (type === 'j') { showJ = !showJ; document.getElementById('btnJ').classList.toggle('active', showJ); }
+  if (type === 's') { showS = !showS; document.getElementById('btnS').classList.toggle('active', showS); }
+  draw();
+};
+
+// 播放动画
+window.toggleAnim = function() {
+  playing = !playing;
+  document.getElementById('btnAni').classList.toggle('active', playing);
+  document.getElementById('btnAni').textContent = playing ? '⏸ 暂停' : '▶ 播放';
+};
+
+let animId;
+function animLoop() {
+  if (playing) {
+    simT += 0.08;
+    if (simT > T_MAX) simT = 0;
+    document.getElementById('sliderT').value = Math.round(simT * 10);
+    document.getElementById('valT').textContent = simT.toFixed(1);
+    draw();
+    updatePhaseHighlight();
+  }
+  animId = requestAnimationFrame(animLoop);
+}
+animId = requestAnimationFrame(animLoop);
+
+// 阶段标签点击
+document.querySelectorAll('.phase-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    const targetRatio = parseFloat(tag.dataset.t);
+    // 二分查找对应时间
+    let lo = 0, hi = T_MAX;
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if (sCurve(mid) / K < targetRatio) lo = mid; else hi = mid;
+    }
+    simT = hi;
+    document.getElementById('sliderT').value = Math.round(simT * 10);
+    document.getElementById('valT').textContent = simT.toFixed(1);
+    draw();
+    updatePhaseHighlight();
+
+    // 停止播放
+    if (playing) toggleAnim();
+  });
+});
+
+// 响应式
+window.addEventListener('resize', () => {
+  const container = document.querySelector('.chart-panel');
+  const w = Math.min(container.clientWidth - 48, 780);
+  const ratio = w / 780;
+  canvas.style.width = w + 'px';
+  canvas.style.height = Math.round(460 * ratio) + 'px';
+});
+
+// 初始绘制
+updateAll();
+</script>
+</body>
+</html>

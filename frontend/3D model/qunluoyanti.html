@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>群落演替 — 初生演替与次生演替</title>
+<style>
+  :root {
+    --bg: #f5f7fa; --card: #fff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+    --pri: #8b5cf6; --sec: #f59e0b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+
+  .topbar {
+    background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+    height: 56px; padding: 0 20px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .back-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid #cbd5e1; background: #fff;
+    color: #475569; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.2s; flex-shrink: 0;
+  }
+  .back-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: #1e293b; }
+
+  .main-container {
+    max-width: 1200px; margin: 0 auto; padding: 24px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  /* 顶部对比卡片 */
+  .compare-row {
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+
+  .col-card {
+    flex: 1; min-width: 420px;
+    background: var(--card); border-radius: 16px;
+    border: 1px solid var(--border); padding: 20px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .col-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .col-badge {
+    padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    color: #fff;
+  }
+  .col-badge.pri { background: var(--pri); }
+  .col-badge.sec { background: var(--sec); }
+  .col-header .subtitle { font-size: 12px; color: var(--muted); }
+
+  canvas { display: block; width: 100%; border-radius: 8px; }
+
+  /* 底部要点 */
+  .tips-row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .tip-card {
+    flex: 1; min-width: 220px;
+    background: var(--card); border-radius: 12px;
+    border: 1px solid var(--border); padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tip-card h4 { font-size: 13px; color: #1e293b; margin-bottom: 6px; }
+  .tip-card p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .hint { font-size: 11px; color: var(--muted); text-align: center; }
+
+  @media (max-width: 960px) {
+    .col-card { min-width: auto; }
+    canvas { height: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main4.html" class="back-btn" title="返回">←</a>
+  <h1>群落演替 · 初生演替与次生演替对比</h1>
+</div>
+
+<div class="main-container">
+  <!-- 双栏对比 -->
+  <div class="compare-row">
+    <!-- 初生演替 -->
+    <div class="col-card">
+      <div class="col-header">
+        <span class="col-badge pri">初生演替</span>
+        <span class="subtitle">从裸岩开始，土壤从无到有，历经百年以上</span>
+      </div>
+      <canvas id="priCanvas" width="500" height="560"></canvas>
+    </div>
+
+    <!-- 次生演替 -->
+    <div class="col-card">
+      <div class="col-header">
+        <span class="col-badge sec">次生演替</span>
+        <span class="subtitle">保留原有土壤+种子库，仅需数十年恢复</span>
+      </div>
+      <canvas id="secCanvas" width="500" height="560"></canvas>
+    </div>
+  </div>
+
+  <!-- 关键要点 -->
+  <div class="tips-row">
+    <div class="tip-card">
+      <h4>🔑 相同点</h4>
+      <p>都是从结构简单的群落发展为结构复杂的群落，最终趋向稳定的顶极群落，物种多样性逐渐增加。</p>
+    </div>
+    <div class="tip-card">
+      <h4>⚡ 不同点</h4>
+      <p><b>起点：</b>初生从裸岩开始（无土壤）；次生从原有土壤开始。<br><b>速度：</b>次生演替比初生演替快得多。</p>
+    </div>
+    <div class="tip-card">
+      <h4>🧪 实例</h4>
+      <p><b>初生：</b>火山喷发后的冷却熔岩、冰川退却后的裸地<br><b>次生：</b>森林火灾后、弃耕农田、砍伐后的林地</p>
+    </div>
+    <div class="tip-card">
+      <h4>🌲 顶极群落</h4>
+      <p>演替最终阶段，群落结构稳定，与当地气候、土壤条件相适应。主要由当地优势乔木树种组成。</p>
+    </div>
+  </div>
+
+  <div class="hint">💡 左右对比观察初生演替与次生演替的异同 &nbsp;|&nbsp; 阶段场景图随演替推进逐渐茂盛</div>
+</div>
+
+<script>
+// ==================== 数据 ====================
+const priStages = [
+  { name:'裸岩阶段', time:'0年', desc:'火山岩/裸石，无土壤，仅物理风化', scene:'rock' },
+  { name:'地衣苔藓阶段', time:'5~20年', desc:'壳状地衣→叶状地衣→苔藓，开始分泌有机酸加速岩石风化，初步形成土壤', scene:'lichen' },
+  { name:'草本植物阶段', time:'20~50年', desc:'一年生→多年生草本，土壤逐渐加厚，小型动物迁入', scene:'grass' },
+  { name:'灌木阶段', time:'50~150年', desc:'灌木成丛，进一步改良土壤，鸟类和中小型动物增多', scene:'shrub' },
+  { name:'森林阶段（顶极）', time:'150年+', desc:'乔木成林，群落结构复杂稳定，生物多样性达到最高', scene:'forest' },
+];
+
+const secStages = [
+  { name:'迹地阶段', time:'0年', desc:'火灾/弃耕后，原有植被消失但土壤保留，含种子库和根茎', scene:'bare' },
+  { name:'一年生草本阶段', time:'1~3年', desc:'一年生杂草快速占领，生长迅速，覆盖地表', scene:'grass1' },
+  { name:'多年生草本阶段', time:'3~10年', desc:'多年生草本取代一年生草本，根系更深，群落趋于稳定', scene:'grass' },
+  { name:'灌木阶段', time:'10~30年', desc:'灌木逐渐占优势，喜光乔木幼苗开始出现', scene:'shrub' },
+  { name:'森林阶段（顶极）', time:'30年+', desc:'乔木成林，恢复为与当地气候相适应的顶极群落', scene:'forest' },
+];
+
+// ==================== 通用 Canvas 参数 ====================
+const CW = 500, CH = 560;
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const STAGE_H = 92;
+const SCENE_W = 150, SCENE_H = 76;
+const START_Y = 56;
+const LEFT_MARGIN = 44;
+const ARROW_H = 20;
+
+function setupCanvas(id) {
+  const c = document.getElementById(id);
+  c.width = CW * DPR; c.height = CH * DPR;
+  c.style.width = CW + 'px'; c.style.height = CH + 'px';
+  const ctx = c.getContext('2d');
+  ctx.scale(DPR, DPR);
+  return ctx;
+}
+
+// ==================== 场景绘制 ====================
+function drawScene(ctx, x, y, w, h, sceneType) {
+  ctx.save();
+  // 裁剪区域——防止内容溢出
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.clip();
+  // 背景天空
+  const skyGrad = ctx.createLinearGradient(0, y, 0, y + h);
+  skyGrad.addColorStop(0, '#e0f2fe'); skyGrad.addColorStop(0.6, '#f0fdf4'); skyGrad.addColorStop(1, '#dcfce7');
+  ctx.fillStyle = skyGrad;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+
+  const cx = x + w / 2, base = y + h;
+
+  switch (sceneType) {
+    case 'rock':
+      // 灰色裸岩山
+      drawMountain(ctx, cx - 30, base, 60, 60, '#94a3b8', '#64748b');
+      drawMountain(ctx, cx + 25, base, 50, 50, '#cbd5e1', '#94a3b8');
+      // 碎石
+      ctx.fillStyle = '#94a3b8';
+      drawRock(ctx, cx - 45, base - 8, 12, 7);
+      drawRock(ctx, cx + 50, base - 5, 10, 6);
+      drawRock(ctx, cx + 10, base - 10, 9, 5);
+      break;
+
+    case 'lichen':
+      // 岩石+绿色斑块
+      drawMountain(ctx, cx - 25, base, 55, 55, '#94a3b8', '#64748b');
+      drawMountain(ctx, cx + 28, base, 48, 48, '#cbd5e1', '#94a3b8');
+      // 绿色地衣斑块
+      for (let i = 0; i < 8; i++) {
+        const gx = cx - 40 + i * 12 + Math.random() * 6;
+        const gy = base - 30 - Math.random() * 25;
+        ctx.fillStyle = i % 3 === 0 ? '#86efac' : '#4ade80';
+        ctx.beginPath(); ctx.arc(gx, gy, 3 + Math.random() * 3, 0, Math.PI * 2); ctx.fill();
+      }
+      break;
+
+    case 'bare':
+      // 火烧迹地——褐色土地 + 残桩
+      ctx.fillStyle = '#d4a574';
+      ctx.fillRect(x, base - 25, w, 25);
+      // 残桩
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(cx - 20, base - 38, 6, 18);
+      ctx.fillRect(cx + 18, base - 32, 5, 12);
+      // 稀疏草芽
+      ctx.fillStyle = '#a3e635';
+      drawGrassBlade(ctx, cx - 30, base - 25);
+      drawGrassBlade(ctx, cx + 5, base - 25);
+      drawGrassBlade(ctx, cx + 35, base - 25);
+      break;
+
+    case 'grass1':
+      // 稀疏草地
+      ctx.fillStyle = '#d4a574';
+      ctx.fillRect(x, base - 18, w, 18);
+      for (let i = 0; i < 15; i++) {
+        const gx = x + 10 + i * (w - 20) / 14;
+        ctx.fillStyle = i % 2 === 0 ? '#86efac' : '#4ade80';
+        ctx.beginPath();
+        ctx.moveTo(gx, base - 20);
+        ctx.lineTo(gx - 3, base - 30 - Math.random() * 10);
+        ctx.lineTo(gx + 3, base - 20);
+        ctx.fill();
+      }
+      break;
+
+    case 'grass':
+      // 茂密草地
+      ctx.fillStyle = '#8b6914';
+      ctx.fillRect(x, base - 12, w, 12);
+      for (let i = 0; i < 30; i++) {
+        const gx = x + 6 + i * (w - 12) / 29;
+        ctx.fillStyle = i % 3 === 0 ? '#22c55e' : (i % 3 === 1 ? '#4ade80' : '#86efac');
+        const gh = 10 + Math.random() * 20;
+        ctx.beginPath(); ctx.moveTo(gx, base - 14); ctx.lineTo(gx - 2, base - 14 - gh); ctx.lineTo(gx + 2, base - 14); ctx.fill();
+      }
+      break;
+
+    case 'shrub':
+      // 灌木丛 + 草地
+      ctx.fillStyle = '#8b6914';
+      ctx.fillRect(x, base - 10, w, 10);
+      for (let i = 0; i < 5; i++) {
+        const bx = x + 20 + i * 35;
+        drawBush(ctx, bx, base - 12, 12 + Math.random() * 8);
+      }
+      // 一些小草
+      for (let i = 0; i < 12; i++) {
+        const gx = x + 10 + i * 18;
+        ctx.fillStyle = '#4ade80';
+        ctx.beginPath(); ctx.moveTo(gx, base - 12); ctx.lineTo(gx - 1, base - 20); ctx.lineTo(gx + 1, base - 12); ctx.fill();
+      }
+      break;
+
+    case 'forest':
+      // 森林（树高限制在场景框内）
+      ctx.fillStyle = '#3f6212';
+      ctx.fillRect(x, base - 8, w, 8);
+      drawTree(ctx, x + 20, base - 10, 7, 42, '#15803d');
+      drawTree(ctx, x + 55, base - 10, 8, 50, '#166534');
+      drawTree(ctx, x + 90, base - 10, 6, 36, '#15803d');
+      drawTree(ctx, x + 125, base - 10, 8, 48, '#14532d');
+      drawBush(ctx, x + 35, base - 10, 7);
+      drawBush(ctx, x + 105, base - 10, 7);
+      break;
+  }
+  ctx.restore();
+}
+
+function drawMountain(ctx, x, base, w, h, color1, color2) {
+  ctx.fillStyle = color1;
+  ctx.beginPath(); ctx.moveTo(x - w / 2, base); ctx.lineTo(x, base - h); ctx.lineTo(x + w / 2, base); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = color2;
+  ctx.beginPath(); ctx.moveTo(x, base - h); ctx.lineTo(x + w / 4, base - h * 0.4); ctx.lineTo(x + w / 2, base); ctx.closePath(); ctx.fill();
+}
+
+function drawRock(ctx, x, y, w, h) {
+  ctx.beginPath(); ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawGrassBlade(ctx, x, base) {
+  ctx.beginPath(); ctx.moveTo(x, base); ctx.lineTo(x - 2, base - 16); ctx.lineTo(x + 2, base); ctx.fill();
+}
+
+function drawBush(ctx, x, base, r) {
+  ctx.fillStyle = '#22c55e';
+  ctx.beginPath(); ctx.arc(x, base - r * 0.7, r * 0.7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x - r * 0.4, base - r * 0.5, r * 0.55, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + r * 0.4, base - r * 0.5, r * 0.55, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawTree(ctx, x, base, trunkW, h, leafColor) {
+  // 树干
+  ctx.fillStyle = '#78350f';
+  ctx.fillRect(x - trunkW / 2, base - h, trunkW, h);
+  // 树冠（三角形叠层）
+  ctx.fillStyle = leafColor;
+  const crownR = trunkW * 3.5;
+  ctx.beginPath(); ctx.arc(x, base - h - crownR * 0.3, crownR, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x - crownR * 0.3, base - h, crownR * 0.7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + crownR * 0.3, base - h, crownR * 0.7, 0, Math.PI * 2); ctx.fill();
+}
+
+// ==================== 绘制一列 ====================
+function drawColumn(ctx, stages, color, startY) {
+  const nextY = startY;
+
+  for (let i = 0; i < stages.length; i++) {
+    const s = stages[i];
+    const y = nextY + i * (STAGE_H + ARROW_H);
+
+    // 序号圆圈
+    const numX = LEFT_MARGIN;
+    const numY = y + STAGE_H / 2;
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(numX, numY, 14, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(i + 1, numX, numY + 5);
+
+    // 场景图
+    const sceneX = LEFT_MARGIN + 24;
+    const sceneY = y + (STAGE_H - SCENE_H) / 2;
+    drawScene(ctx, sceneX, sceneY, SCENE_W, SCENE_H, s.scene);
+
+    // 阶段名称
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '600 14px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(s.name, sceneX + SCENE_W + 22, y + STAGE_H / 2 - 8);
+
+    // 时间
+    ctx.fillStyle = color;
+    ctx.font = '600 11px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillText('⏱ ' + s.time, sceneX + SCENE_W + 22, y + STAGE_H / 2 + 10);
+
+    // 说明文字
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillText(s.desc, sceneX + SCENE_W + 22, y + STAGE_H / 2 + 26);
+
+    // 阶段框
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(sceneX - 6, y + 2, CW - sceneX - 16, STAGE_H - 4, 8); ctx.stroke();
+
+    // 箭头 (不是最后一个)
+    if (i < stages.length - 1) {
+      const arrowY = y + STAGE_H;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(numX, arrowY + 4);
+      ctx.lineTo(numX, arrowY + ARROW_H - 6);
+      ctx.stroke();
+      // 箭头尖
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(numX, arrowY + ARROW_H - 2);
+      ctx.lineTo(numX - 5, arrowY + ARROW_H - 10);
+      ctx.lineTo(numX + 5, arrowY + ARROW_H - 10);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+}
+
+// ==================== 渲染 ====================
+const priCtx = setupCanvas('priCanvas');
+const secCtx = setupCanvas('secCanvas');
+
+drawColumn(priCtx, priStages, '#8b5cf6', START_Y);
+drawColumn(secCtx, secStages, '#f59e0b', START_Y);
+
+
+// 响应式
+window.addEventListener('resize', () => {
+  ['priCanvas','secCanvas'].forEach(id => {
+    const c = document.getElementById(id);
+    const container = c.parentElement;
+    const w = Math.min(container.clientWidth - 32, 500);
+    const ratio = w / 500;
+    c.style.width = w + 'px';
+    c.style.height = Math.round(560 * ratio) + 'px';
+  });
+});
+</script>
+</body>
+</html>

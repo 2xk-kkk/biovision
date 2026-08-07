@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>能量流动 — 生态系能量金字塔</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card: #fff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --green1: #22c55e; --green2: #16a34a; --green3: #15803d; --green4: #166534;
+    --heat: #f97316;
+    --sun: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+
+  .topbar {
+    background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+    height: 56px; padding: 0 20px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .back-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid #cbd5e1; background: #fff;
+    color: #475569; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.2s; flex-shrink: 0;
+  }
+  .back-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: #1e293b; }
+
+  .main-container {
+    max-width: 1100px; margin: 0 auto; padding: 24px;
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+
+  /* 图表区 */
+  .chart-panel {
+    flex: 2; min-width: 560px;
+    background: var(--card); border-radius: 16px;
+    border: 1px solid var(--border); padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .chart-panel h2 { font-size: 16px; color: #1e293b; margin-bottom: 8px; align-self: flex-start; }
+  canvas { display: block; border-radius: 8px; }
+
+  /* 右侧面板 */
+  .side-panel {
+    flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .card {
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); padding: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card h3 { font-size: 14px; color: #1e293b; margin-bottom: 12px; }
+
+  /* 图例 */
+  .lg-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; color: #475569; }
+  .lg-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+  /* 效率选择 */
+  .eff-options { display: flex; gap: 6px; }
+  .eff-btn {
+    flex: 1; padding: 8px 6px; border-radius: 8px;
+    border: 1px solid var(--border); background: #fff;
+    color: #475569; font-size: 13px; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .eff-btn:hover { background: #f1f5f9; }
+  .eff-btn.sel {
+    background: #f0fdf4; border-color: #22c55e; color: #16a34a;
+    font-weight: 600; box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+  }
+
+  /* 要点 */
+  .key-point {
+    padding: 8px 10px; border-radius: 6px; font-size: 12px; color: #475569;
+    background: #f8fafc; margin-bottom: 6px;
+    border-left: 3px solid var(--green1); line-height: 1.5;
+  }
+  .key-point b { color: #1e293b; }
+
+  .hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main4.html" class="back-btn" title="返回">←</a>
+  <h1>生态系统能量流动 · 能量金字塔</h1>
+</div>
+
+<div class="main-container">
+  <div class="chart-panel">
+    <h2>☀️ 能量金字塔</h2>
+    <canvas id="chart" width="720" height="520"></canvas>
+    <div class="hint">💡 点击右侧 <b>传递效率</b> 切换比例 &nbsp;|&nbsp; 能量 <b>逐级递减</b>，单向流动</div>
+  </div>
+
+  <div class="side-panel">
+    <!-- 图例 -->
+    <div class="card">
+      <h3>📋 营养级</h3>
+      <div class="lg-row"><div class="lg-swatch" style="background:#22c55e"></div> 生产者（绿色植物）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#16a34a"></div> 初级消费者（植食动物）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#15803d"></div> 次级消费者（小型肉食）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#166534"></div> 三级消费者（大型肉食）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#f97316"></div> 呼吸消耗（热能散失）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#f59e0b;border-radius:50%"></div> 太阳能输入</div>
+    </div>
+
+    <!-- 传递效率 -->
+    <div class="card">
+      <h3>⚙ 传递效率</h3>
+      <div class="eff-options" id="effGroup">
+        <button class="eff-btn" data-pct="10">10%</button>
+        <button class="eff-btn sel" data-pct="15">15%</button>
+        <button class="eff-btn" data-pct="20">20%</button>
+      </div>
+    </div>
+
+    <!-- 关键要点 -->
+    <div class="card">
+      <h3>📌 关键要点</h3>
+      <div class="key-point"><b>单向流动：</b>能量沿食物链单向传递，不可逆转</div>
+      <div class="key-point"><b>逐级递减：</b>每一营养级约80%~90%能量以热能形式散失</div>
+      <div class="key-point"><b>金字塔形：</b>营养级越高，获得的能量越少</div>
+      <div class="key-point"><b>传递效率：</b>一般为 10%~20%（林德曼效率）</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== 参数 ====================
+const SOLAR = 10000; // 生产者固定的太阳能 (kJ)
+let efficiency = 0.15; // 传递效率，默认15%
+
+// 四个营养级的能量
+function calcLevels() {
+  return [
+    { name: '生产者', sub: '绿色植物', energy: SOLAR, pct: 100, color: '#22c55e', icon: '🌿' },
+    { name: '初级消费者', sub: '植食动物', energy: Math.round(SOLAR * efficiency), pct: efficiency * 100, color: '#16a34a', icon: '🐰' },
+    { name: '次级消费者', sub: '小型肉食动物', energy: Math.round(SOLAR * efficiency * efficiency), pct: efficiency * efficiency * 100, color: '#15803d', icon: '🦊' },
+    { name: '三级消费者', sub: '大型肉食动物', energy: Math.round(SOLAR * efficiency * efficiency * efficiency), pct: efficiency * efficiency * efficiency * 100, color: '#166534', icon: '🦅' },
+  ];
+}
+
+// ==================== Canvas ====================
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const W = 720, H = 520;
+canvas.width = W * DPR; canvas.height = H * DPR;
+canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+ctx.scale(DPR, DPR);
+
+// 金字塔参数
+const PY = { x: 360, topY: 55, totalH: 370, bottomW: 480, topW: 80 };
+const levels = 4;
+const levelH = PY.totalH / levels;
+
+function getLevelY(i) { return PY.topY + i * levelH; }
+function getLevelW(i) {
+  // 宽度按能量比例（平方根缩放避免太窄）
+  const frac = Math.pow(efficiency, i);
+  return PY.bottomW * Math.sqrt(frac) * 0.9 + PY.topW * 0.1;
+}
+
+// ==================== 绘制 ====================
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const lv = calcLevels();
+
+  // --- 太阳能输入 ---
+  const sunX = PY.x;
+  const sunY = PY.topY - 30;
+  drawSun(sunX, sunY);
+
+  // --- 金字塔层 ---
+  for (let i = 0; i < levels; i++) {
+    const y = getLevelY(i);
+    const w = getLevelW(i);
+    const nextW = i < levels - 1 ? getLevelW(i + 1) : PY.topW;
+    const h = levelH;
+    const l = lv[i];
+
+    // 梯形主体
+    const grad = ctx.createLinearGradient(0, y, 0, y + h);
+    grad.addColorStop(0, l.color);
+    grad.addColorStop(1, i < levels - 1 ? lv[i + 1].color : l.color);
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(PY.x - w / 2, y);
+    ctx.lineTo(PY.x + w / 2, y);
+    ctx.lineTo(PY.x + nextW / 2, y + h);
+    ctx.lineTo(PY.x - nextW / 2, y + h);
+    ctx.closePath();
+    ctx.fill();
+
+    // 边框
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 层标签（居中）
+    ctx.fillStyle = '#fff';
+    ctx.font = '600 15px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(l.icon + ' ' + l.name, PY.x, y + h / 2 - 6);
+
+    ctx.font = '12px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(l.sub, PY.x, y + h / 2 + 14);
+
+    // 能量数值（右侧）
+    ctx.fillStyle = '#fff';
+    ctx.font = '600 18px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    const numX = PY.x + w / 2 + 12;
+    ctx.fillText(l.energy.toLocaleString() + ' kJ', numX, y + h / 2 - 2);
+
+    ctx.font = '12px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText('(' + (l.pct < 1 ? l.pct.toFixed(1) : l.pct.toFixed(0)) + '%)', numX, y + h / 2 + 16);
+
+    // --- 呼吸消耗箭头 ---
+    if (i < levels - 1) {
+      const heatY = y + h;
+      const heatW = getLevelW(i);
+      const nextHeatW = getLevelW(i + 1);
+      const midW = (heatW + nextHeatW) / 2;
+
+      drawHeatArrow(i, heatY, midW, l, lv[i + 1]);
+    }
+  }
+
+  // --- 底部标注：呼吸消耗 ---
+  const bottomY = getLevelY(levels - 1) + levelH + 40;
+  ctx.fillStyle = '#f97316';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('每层 → 呼吸消耗（热能散失）+ 未被下一营养级利用', PY.x, bottomY);
+
+  // --- 分解者标注 ---
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('残枝败叶、粪便、尸体 → 分解者（微生物）分解', PY.x, bottomY + 22);
+}
+
+function drawSun(x, y) {
+  // 光芒
+  ctx.save();
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2 + Date.now() * 0.0003;
+    const r1 = 16, r2 = i % 3 === 0 ? 28 : 24;
+    ctx.strokeStyle = 'rgba(245,158,11,0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + Math.cos(angle) * r1, y + Math.sin(angle) * r1);
+    ctx.lineTo(x + Math.cos(angle) * r2, y + Math.sin(angle) * r2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 太阳圆
+  const sunGrad = ctx.createRadialGradient(x, y, 4, x, y, 16);
+  sunGrad.addColorStop(0, '#fef3c7');
+  sunGrad.addColorStop(0.6, '#f59e0b');
+  sunGrad.addColorStop(1, '#d97706');
+  ctx.fillStyle = sunGrad;
+  ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill();
+
+  // 标签
+  ctx.fillStyle = '#92400e';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('☀ 太阳能', x, y - 22);
+}
+
+function drawHeatArrow(i, y, totalW, upperLevel, lowerLevel) {
+  const xLeft = PY.x - totalW / 2 - 20;
+  const xRight = PY.x + totalW / 2 + 20;
+  const loss = upperLevel.energy - lowerLevel.energy;
+  const lossPct = Math.round((1 - efficiency) * 100);
+
+  // 左侧热浪箭头
+  drawHeatWave(xLeft, y, loss, lossPct, -1);
+  // 右侧热浪箭头
+  drawHeatWave(xRight, y, loss, lossPct, 1);
+}
+
+function drawHeatWave(x, y, loss, lossPct, dir) {
+  const sign = dir;
+  ctx.save();
+
+  // 波浪热浪
+  const waveLen = 35;
+  const waveH = 16;
+  ctx.strokeStyle = '#f97316';
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.6;
+  ctx.beginPath();
+  ctx.moveTo(x, y + 8);
+  for (let py = y + 8; py <= y + waveLen; py += 4) {
+    ctx.lineTo(x + Math.sin((py - y) * 0.5) * 5 * sign, py);
+  }
+  ctx.stroke();
+
+  // 小箭头
+  const tipX = x + Math.sin(waveLen * 0.5) * 5 * sign;
+  ctx.fillStyle = '#f97316';
+  ctx.beginPath();
+  ctx.moveTo(tipX, y + waveLen + 6);
+  ctx.lineTo(tipX - 5 * sign, y + waveLen);
+  ctx.lineTo(tipX + 5 * sign, y + waveLen);
+  ctx.closePath(); ctx.fill();
+
+  // 文字
+  ctx.fillStyle = '#c2410c';
+  ctx.font = '600 11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = sign > 0 ? 'left' : 'right';
+  ctx.fillText('呼吸消耗', x + 8 * sign, y + waveLen / 2);
+  ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('≈' + lossPct + '%', x + 8 * sign, y + waveLen / 2 + 14);
+
+  ctx.restore();
+}
+
+// ==================== 动画循环（太阳旋转） ====================
+function animLoop() {
+  draw();
+  requestAnimationFrame(animLoop);
+}
+
+// ==================== 效率切换 ====================
+document.querySelectorAll('.eff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.eff-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    efficiency = parseInt(btn.dataset.pct) / 100;
+  });
+});
+
+// 初始绘制
+animLoop();
+
+// 响应式
+window.addEventListener('resize', () => {
+  const container = document.querySelector('.chart-panel');
+  const w = Math.min(container.clientWidth - 48, 720);
+  const ratio = w / 720;
+  canvas.style.width = w + 'px';
+  canvas.style.height = Math.round(520 * ratio) + 'px';
+});
+</script>
+</body>
+</html>
