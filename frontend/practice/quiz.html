@@ -1519,7 +1519,6 @@
                     <div class="wrong-tab-content" id="wrongTabContent">
                         <div class="wrong-tab-placeholder">完成练习后查看错题推荐</div>
                     </div>
-                    <button class="start-recommend-btn" id="startRecommendBtn" style="display:none;" onclick="startRecommendPractice()">📝 开始练习推荐题</button>
                 </div>
             </div>
         </div>
@@ -2060,8 +2059,90 @@
             }
         }
 
-        function goToRelatedQuestion(questionId) {
-            window.location.href = `quiz.html?question_id=${questionId}`;
+        function practiceSingleQuestion(questionId) {
+            // 从缓存中查找题目
+            let targetQuestion = null;
+            for (let i = 0; i < wrongRecommendationsCache.length; i++) {
+                const recs = wrongRecommendationsCache[i] || [];
+                targetQuestion = recs.find(q => String(q.id) === String(questionId));
+                if (targetQuestion) break;
+            }
+            if (!targetQuestion) {
+                targetQuestion = allRecommendQuestions.find(q => String(q.id) === String(questionId));
+            }
+
+            if (!targetQuestion) {
+                alert('题目不存在，正在重新加载...');
+                // 备用方案：通过API加载
+                fetch(`${API_BASE_URL}/questions/${questionId}`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success && result.data) {
+                            startPracticeWithQuestion(result.data);
+                        } else {
+                            alert('加载题目失败');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('加载推荐题失败:', error);
+                        alert('加载推荐题失败，请重试');
+                    });
+                return;
+            }
+
+            startPracticeWithQuestion(targetQuestion);
+        }
+
+        function startPracticeWithQuestion(question) {
+            // 保存原始练习状态
+            const quizTitleEl = document.getElementById('quizTitle');
+            originalPracticeState = {
+                allQuestions: allQuestions,
+                quizQuestions: quizQuestions,
+                answers: JSON.parse(JSON.stringify(answers)),
+                results: JSON.parse(JSON.stringify(results)),
+                correctCount: correctCount,
+                headerTitle: quizTitleEl ? quizTitleEl.textContent : '生物练习',
+                modalStats: {
+                    total: document.getElementById('statTotal').textContent,
+                    correct: document.getElementById('statCorrect').textContent,
+                    wrong: document.getElementById('statWrong').textContent,
+                    unanswered: document.getElementById('statUnanswered').textContent,
+                    time: document.getElementById('resultTime').textContent,
+                    icon: document.getElementById('resultIcon').textContent,
+                    title: document.getElementById('resultTitle').textContent,
+                    desc: document.getElementById('resultDesc').textContent
+                }
+            };
+
+            // 关闭结果弹窗
+            document.getElementById('resultModal').classList.remove('show');
+
+            // 使用缓存的题目
+            allQuestions = [question];
+            quizQuestions = [question];
+            currentQuestionIndex = 0;
+            answers = {};
+            results = {};
+            correctCount = 0;
+            isAnswerSubmitted = false;
+            isRecommendPractice = true;
+
+            // 重置UI
+            document.getElementById('answerPanel').classList.remove('show');
+            document.getElementById('questionPanel').classList.remove('compact');
+            hideAnswerPanel();
+
+            // 更新标题
+            if (quizTitleEl) quizTitleEl.textContent = '错题推荐练习';
+
+            // 开始计时
+            startTime = Date.now();
+            if (timer) clearInterval(timer);
+            startTimer();
+
+            // 渲染题目
+            renderCurrentQuestion();
         }
 
         let wrongQuestionsCache = [];
@@ -2072,18 +2153,18 @@
         async function loadWrongTabRecommendations() {
             const tabBar = document.getElementById('wrongTabBar');
             const tabContent = document.getElementById('wrongTabContent');
-            const startBtn = document.getElementById('startRecommendBtn');
 
-            // 收集本次练习中的错题（选择题答错的）
+            // 收集本次练习中的错题（选择题答错的 + 填空题已提交的）
             wrongQuestionsCache = quizQuestions.filter(q => {
                 const qType = getQuestionType(q);
-                return results[q.id] === false && qType === 'choice';
+                if (qType === 'essay') return false;
+                if (qType === 'choice') return results[q.id] === false;
+                return results[q.id] === null;
             });
 
             if (wrongQuestionsCache.length === 0) {
                 tabBar.innerHTML = '';
                 tabContent.innerHTML = '<div class="wrong-tab-empty">本次练习没有错题，太棒了！🎉</div>';
-                startBtn.style.display = 'none';
                 return;
             }
 
@@ -2097,7 +2178,6 @@
             tabBar.innerHTML = tabHtml;
 
             tabContent.innerHTML = '<div class="wrong-tab-loading">正在加载推荐题目...</div>';
-            startBtn.style.display = 'none';
 
             allRecommendQuestions = [];
 
@@ -2139,13 +2219,6 @@
 
                 activeWrongTabIndex = 0;
                 renderWrongTabContent(0);
-
-                if (allRecommendQuestions.length > 0) {
-                    startBtn.style.display = 'block';
-                    startBtn.textContent = `📝 开始练习推荐题（${allRecommendQuestions.length}题）`;
-                } else {
-                    startBtn.style.display = 'none';
-                }
             } catch (error) {
                 console.error('加载错题推荐失败:', error);
                 tabContent.innerHTML = '<div class="wrong-tab-empty">加载失败，请稍后重试</div>';
@@ -2176,67 +2249,13 @@
                 const typeName = typeNames[q.type] || '题目';
                 const stem = q.stem.length > 60 ? q.stem.substring(0, 60) + '...' : q.stem;
                 html += `
-                    <div class="wrong-tab-recommend-item" onclick="goToRelatedQuestion(${q.id})">
+                    <div class="wrong-tab-recommend-item" onclick="practiceSingleQuestion(${q.id})">
                         <span class="wrong-tab-recommend-type">${typeName}</span>
                         <span class="wrong-tab-recommend-stem">${stem}</span>
                     </div>
                 `;
             });
             tabContent.innerHTML = html;
-        }
-
-        function startRecommendPractice() {
-            if (allRecommendQuestions.length === 0) return;
-
-            // 保存原始练习状态
-            originalPracticeState = {
-                allQuestions: allQuestions,
-                quizQuestions: quizQuestions,
-                answers: JSON.parse(JSON.stringify(answers)),
-                results: JSON.parse(JSON.stringify(results)),
-                correctCount: correctCount,
-                headerTitle: document.querySelector('.quiz-header h1').textContent,
-                // 保存原始弹窗状态
-                modalStats: {
-                    total: document.getElementById('statTotal').textContent,
-                    correct: document.getElementById('statCorrect').textContent,
-                    wrong: document.getElementById('statWrong').textContent,
-                    unanswered: document.getElementById('statUnanswered').textContent,
-                    time: document.getElementById('resultTime').textContent,
-                    icon: document.getElementById('resultIcon').textContent,
-                    title: document.getElementById('resultTitle').textContent,
-                    desc: document.getElementById('resultDesc').textContent
-                }
-            };
-
-            // 关闭弹窗
-            document.getElementById('resultModal').classList.remove('show');
-
-            // 用推荐题目替换当前练习
-            allQuestions = allRecommendQuestions;
-            quizQuestions = allQuestions.slice(0, Math.min(QUESTION_COUNT, allQuestions.length));
-            currentQuestionIndex = 0;
-            answers = {};
-            results = {};
-            correctCount = 0;
-            isAnswerSubmitted = false;
-            isRecommendPractice = true;
-
-            // 重置UI
-            document.getElementById('answerPanel').classList.remove('show');
-            document.getElementById('questionPanel').classList.remove('compact');
-            hideAnswerPanel();
-
-            // 更新标题
-            document.querySelector('.quiz-header h1').textContent = '错题推荐练习';
-
-            // 开始计时
-            startTime = Date.now();
-            if (timer) clearInterval(timer);
-            startTimer();
-
-            // 渲染第一题
-            renderQuestion();
         }
 
         function returnToOriginalResult() {
@@ -2250,7 +2269,18 @@
             correctCount = originalPracticeState.correctCount;
 
             // 恢复标题
-            document.querySelector('.quiz-header h1').textContent = originalPracticeState.headerTitle;
+            const quizTitleEl = document.getElementById('quizTitle');
+            if (quizTitleEl) quizTitleEl.textContent = originalPracticeState.headerTitle;
+
+            // 恢复右侧面板结构
+            const rightPanel = document.getElementById('rightPanel');
+            rightPanel.innerHTML = `
+                <div class="right-panel-title">🔥 错题知识点推荐</div>
+                <div class="wrong-tab-bar" id="wrongTabBar"></div>
+                <div class="wrong-tab-content" id="wrongTabContent">
+                    <div class="wrong-tab-placeholder">正在加载...</div>
+                </div>
+            `;
 
             // 恢复弹窗统计
             const stats = originalPracticeState.modalStats;
@@ -2262,6 +2292,10 @@
             document.getElementById('resultIcon').textContent = stats.icon;
             document.getElementById('resultTitle').textContent = stats.title;
             document.getElementById('resultDesc').textContent = stats.desc;
+
+            // 移除左侧面板临时添加的返回按钮
+            const backBtn = document.getElementById('backToOriginalBtn');
+            if (backBtn) backBtn.remove();
 
             // 重新渲染答题卡
             renderAnswerCard();
@@ -2279,9 +2313,6 @@
             allRecommendQuestions = [];
 
             // 显示原始结果弹窗
-            document.getElementById('wrongTabBar').innerHTML = '';
-            document.getElementById('wrongTabContent').innerHTML = '<div class="wrong-tab-placeholder">正在加载...</div>';
-            document.getElementById('startRecommendBtn').style.display = 'none';
             document.getElementById('resultModal').classList.add('show');
 
             // 重新加载错题推荐
@@ -2369,18 +2400,28 @@
             document.getElementById('resultModal').classList.add('show');
 
             if (isRecommendPractice && originalPracticeState) {
-                // 推荐题练习完成 - 显示返回原结果按钮
-                document.getElementById('wrongTabBar').innerHTML = '';
-                document.getElementById('wrongTabContent').innerHTML = `
-                    <div style="text-align: center; padding: 30px 20px;">
-                        <div style="font-size: 48px; margin-bottom: 16px;">📖</div>
-                        <div style="font-size: 15px; color: #475569; margin-bottom: 24px;">推荐题练习完成！</div>
-                        <button class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;" onclick="returnToOriginalResult()">
-                            📋 返回原结果
+                // 推荐题练习完成 - 右侧面板显示返回原结果按钮
+                const rightPanel = document.getElementById('rightPanel');
+                rightPanel.innerHTML = `
+                    <div class="right-panel-title">📋 推荐题完成</div>
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 30px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+                        <div style="font-size: 16px; font-weight:600; color:#1e293b; margin-bottom:8px;">推荐题练习完成！</div>
+                        <div style="font-size: 13px; color:#64748b; text-align:center; margin-bottom:24px;">点击下方按钮返回原来的练习结果</div>
+                        <button class="start-recommend-btn" style="display:block; margin:0; width:100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 14px rgba(99,102,241,0.3);" onclick="returnToOriginalResult()">
+                            ↩️ 返回原结果弹窗
                         </button>
                     </div>
                 `;
-                document.getElementById('startRecommendBtn').style.display = 'none';
+                
+                // 在左侧面板的按钮区域也添加返回按钮
+                const resultActionsDiv = document.querySelector('.result-actions');
+                if (resultActionsDiv) {
+                    const backBtnHtml = `<button class="btn btn-primary btn-large" id="backToOriginalBtn" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);" onclick="returnToOriginalResult()">📋 返回原练习结果</button>`;
+                    if (!document.getElementById('backToOriginalBtn')) {
+                        resultActionsDiv.insertAdjacentHTML('afterbegin', backBtnHtml);
+                    }
+                }
             } else {
                 // 正常练习完成 - 显示错题推荐
                 // 重置推荐状态
@@ -2389,7 +2430,6 @@
                 allRecommendQuestions = [];
                 document.getElementById('wrongTabBar').innerHTML = '';
                 document.getElementById('wrongTabContent').innerHTML = '<div class="wrong-tab-placeholder">正在加载...</div>';
-                document.getElementById('startRecommendBtn').style.display = 'none';
 
                 // 自动加载错题推荐
                 loadWrongTabRecommendations();
