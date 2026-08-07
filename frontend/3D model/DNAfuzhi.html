@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNA复制 - 互动学习</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, #0a0a2e 0%, #1a1a4e 50%, #0d0d35 100%);
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+.back-btn {
+  position: fixed;
+  top: 14px;
+  left: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(79,195,247,0.15);
+  border: 2px solid #4fc3f7;
+  color: #4fc3f7;
+  font-size: 1.4em;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.3s;
+  line-height: 1;
+}
+.back-btn:hover {
+  background: #4fc3f7;
+  color: #0a0a2e;
+  box-shadow: 0 0 18px rgba(79,195,247,0.5);
+}
+
+.video-btn {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(239,83,80,0.15);
+  border: 2px solid #ef5350;
+  color: #ef5350;
+  font-size: 0.9em;
+  text-decoration: none;
+  font-weight: bold;
+  z-index: 100;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+.video-btn:hover {
+  background: #ef5350;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(239,83,80,0.5);
+}
+
+header {
+  text-align: center; padding: 25px 20px 15px;
+  background: rgba(0,0,0,0.3); border-bottom: 2px solid #4fc3f7;
+}
+header h1 {
+  font-size: 2.2em;
+  background: linear-gradient(90deg, #4fc3f7, #81c784, #ffb74d);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 5px;
+}
+header p { color: #90a4ae; font-size: 0.95em; }
+
+.tab-nav {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 8px; padding: 15px 10px; background: rgba(0,0,0,0.2);
+}
+.tab-btn {
+  padding: 10px 20px; border: 2px solid #4fc3f7;
+  background: transparent; color: #4fc3f7;
+  border-radius: 25px; cursor: pointer; font-size: 0.95em;
+  transition: all 0.3s; font-family: inherit;
+}
+.tab-btn:hover, .tab-btn.active {
+  background: #4fc3f7; color: #0a0a2e;
+  box-shadow: 0 0 20px rgba(79,195,247,0.4);
+}
+
+.tab-content { display: none; padding: 20px; max-width: 1100px; margin: 0 auto; }
+.tab-content.active { display: block; }
+
+.section-title { text-align: center; font-size: 1.5em; margin-bottom: 20px; color: #4fc3f7; }
+
+.card {
+  background: rgba(255,255,255,0.05); border-radius: 15px;
+  padding: 25px; margin-bottom: 20px;
+  border: 1px solid rgba(79,195,247,0.2);
+}
+
+.panels { display: flex; gap: 20px; flex-wrap: wrap; }
+.panels > * { flex: 1; min-width: 280px; }
+
+.canvas-box {
+  display: flex; justify-content: center; align-items: center;
+  background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;
+}
+canvas { display: block; max-width: 100%; }
+
+/* Tab 0 fullscreen DNA */
+#tab0 {
+  position: relative;
+  padding: 0 !important;
+  max-width: none !important;
+  height: calc(100vh - 170px);
+  overflow: hidden;
+}
+#tab0 canvas {
+  width: 100%;
+  height: 100%;
+}
+.floating-knowledge {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(5,5,25,0.85);
+  border: 1px solid rgba(79,195,247,0.35);
+  border-radius: 10px;
+  padding: 10px 14px;
+  max-width: 360px;
+  font-size: 0.78em;
+  line-height: 1.45;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  pointer-events: none;
+}
+.floating-knowledge h3 {
+  color: #4fc3f7;
+  margin-bottom: 4px;
+  font-size: 0.95em;
+}
+.floating-knowledge .bond-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+.floating-knowledge .bond-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin: 0 1px;
+}
+
+.btn {
+  padding: 10px 24px; border: none; border-radius: 25px;
+  cursor: pointer; font-size: 1em; font-family: inherit;
+  transition: all 0.3s; font-weight: bold;
+}
+.btn-primary { background: #4fc3f7; color: #0a0a2e; }
+.btn-primary:hover { box-shadow: 0 0 20px rgba(79,195,247,0.6); transform: translateY(-2px); }
+.btn-success { background: #81c784; color: #0a0a2e; }
+.btn-success:hover { box-shadow: 0 0 20px rgba(129,199,132,0.6); transform: translateY(-2px); }
+.btn-warning { background: #ffb74d; color: #0a0a2e; }
+.btn-warning:hover { box-shadow: 0 0 20px rgba(255,183,77,0.6); transform: translateY(-2px); }
+.btn-danger { background: #ef5350; color: #fff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* ============ DRAG PAIRING GAME ============ */
+.game-container {
+  display: flex; flex-direction: column; align-items: center; gap: 25px;
+}
+
+.template-strand {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(0,0,0,0.3); padding: 15px 5px;
+  border-radius: 12px; position: relative;
+  flex-wrap: wrap; justify-content: center;
+}
+.template-base {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 1.15em; color: #fff;
+  position: relative; z-index: 1;
+}
+.template-base::after {
+  content: '';
+  position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  width: 2px; height: 14px; background: rgba(255,255,255,0.35);
+}
+
+.answer-strand {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(0,0,0,0.2); padding: 15px 5px;
+  border-radius: 12px; position: relative;
+  flex-wrap: wrap; justify-content: center;
+  min-height: 82px;
+}
+.answer-slot {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 3px dashed rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; transition: all 0.3s;
+  background: rgba(255,255,255,0.03);
+}
+.answer-slot.drag-over {
+  border-color: #ffb74d;
+  background: rgba(255,183,77,0.15);
+  box-shadow: 0 0 20px rgba(255,183,77,0.4);
+  transform: scale(1.12);
+}
+.answer-slot.filled {
+  border-style: solid;
+  border-color: rgba(255,255,255,0.5);
+}
+.answer-slot.correct {
+  border-color: #81c784;
+  box-shadow: 0 0 15px rgba(129,199,132,0.5);
+  background: rgba(129,199,132,0.15);
+}
+.answer-slot.wrong {
+  border-color: #ef5350;
+  box-shadow: 0 0 15px rgba(239,83,80,0.5);
+  background: rgba(239,83,80,0.15);
+  animation: shake 0.5s;
+}
+
+.drag-palette {
+  display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;
+  padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px;
+  align-items: center;
+}
+.drag-base {
+  width: 65px; height: 65px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 1.1em; color: #fff;
+  cursor: grab; user-select: none; transition: all 0.2s;
+  border: 3px solid rgba(255,255,255,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.drag-base:active { cursor: grabbing; }
+.drag-base:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+.drag-base.dragging { opacity: 0.4; transform: scale(0.9); }
+/* Never grey out! Cards are reusable */
+.drag-base.a-base { background: #ef5350; }
+.drag-base.t-base { background: #42a5f5; }
+.drag-base.c-base { background: #66bb6a; }
+.drag-base.g-base { background: #ffa726; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.game-score {
+  display: flex; gap: 25px; align-items: center; flex-wrap: wrap;
+  justify-content: center;
+}
+.game-score .score-item { font-size: 1.05em; }
+.game-score span { color: #ffb74d; font-weight: bold; font-size: 1.2em; }
+
+.progress-bar {
+  width: 100%; max-width: 500px; height: 8px;
+  background: rgba(255,255,255,0.1); border-radius: 4px;
+  overflow: hidden; margin: 0 auto;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4fc3f7, #81c784);
+  border-radius: 4px; transition: width 0.5s;
+}
+
+.feedback-msg { font-size: 1.1em; min-height: 28px; text-align: center; margin-top: 5px; }
+
+.mode-toggle {
+  display: flex; gap: 0; border-radius: 25px; overflow: hidden;
+  border: 2px solid #4fc3f7;
+}
+.mode-toggle button {
+  padding: 8px 18px; border: none; cursor: pointer;
+  font-family: inherit; font-size: 0.9em; transition: all 0.3s;
+  background: transparent; color: #4fc3f7;
+}
+.mode-toggle button.active {
+  background: #4fc3f7; color: #0a0a2e; font-weight: bold;
+}
+
+/* ============ Replication steps ============ */
+.steps {
+  display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin: 20px 0;
+}
+.step {
+  flex: 1; min-width: 150px; max-width: 220px;
+  text-align: center; padding: 15px; border-radius: 10px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(79,195,247,0.2);
+  position: relative;
+}
+.step::after {
+  content: '\2192'; position: absolute; right: -18px; top: 50%;
+  transform: translateY(-50%); font-size: 1.5em; color: #4fc3f7;
+}
+.step:last-child::after { display: none; }
+.step-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #4fc3f7; color: #0a0a2e;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px; font-weight: bold; font-size: 1.1em;
+}
+.step h3 { font-size: 1em; margin-bottom: 5px; color: #4fc3f7; }
+.step p { font-size: 0.85em; color: #90a4ae; }
+
+.info-box {
+  background: rgba(79,195,247,0.1); border-left: 4px solid #4fc3f7;
+  padding: 15px; border-radius: 0 10px 10px 0; margin: 15px 0;
+  font-size: 0.95em; line-height: 1.7;
+}
+
+.calc-input {
+  padding: 12px 16px; font-size: 1.1em; border-radius: 8px;
+  border: 2px solid #4fc3f7; background: rgba(255,255,255,0.1);
+  color: #fff; width: 120px; text-align: center; font-family: inherit;
+}
+.calc-result {
+  padding: 15px; border-radius: 10px;
+  background: rgba(129,199,132,0.15); border: 1px solid #81c784;
+  margin-top: 15px; display: none;
+}
+.calc-result.show { display: block; }
+.calc-result.error { background: rgba(239,83,80,0.15); border-color: #ef5350; }
+.formula { color: #ffb74d; font-weight: bold; }
+
+/* ============ Tree ============ */
+.tree-legend-row {
+  display: flex; gap: 30px; justify-content: center; margin-top: 10px;
+  flex-wrap: wrap; font-size: 0.9em;
+}
+.tree-legend-row .leg-item { display: flex; align-items: center; gap: 6px; }
+.tree-bar { display: inline-block; width: 18px; height: 5px; border-radius: 2px; vertical-align: middle; }
+
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+.concept-card {
+  padding: 20px; border-radius: 12px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(79,195,247,0.2);
+  text-align: center; transition: transform 0.3s;
+}
+.concept-card:hover { transform: translateY(-3px); }
+.concept-icon { font-size: 2.5em; margin-bottom: 10px; }
+.concept-card h3 { color: #4fc3f7; margin-bottom: 8px; }
+.concept-card p { font-size: 0.9em; color: #b0bec5; line-height: 1.6; }
+
+footer {
+  text-align: center; padding: 20px; color: #546e7a;
+  font-size: 0.85em; border-top: 1px solid rgba(79,195,247,0.1);
+}
+
+@media (max-width: 768px) {
+  .step::after { display: none; }
+  .tab-btn { padding: 8px 14px; font-size: 0.85em; }
+  .template-base, .answer-slot { width: 40px; height: 40px; font-size: 0.8em; }
+  .drag-base { width: 50px; height: 50px; font-size: 0.85em; }
+}
+
+.celebration {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none; z-index: 999;
+}
+.confetti {
+  position: absolute;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  0% { transform: translateY(-100px) rotate(0); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<a href="main2.html" class="back-btn" title="返回主页">&#8592;</a>
+<a href="https://www.bilibili.com/video/BV1tc41157TW/?spm_id_from=333.337.search-card.all.click&vd_source=c048e7ba7c5062e0208051838d1f1f46" class="video-btn" target="_blank" title="B站演示视频">B站演示视频</a>
+
+<header>
+  <h1>DNA复制学习</h1>
+  <p>半保留复制 | 碱基互补配对 | 复制计算</p>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab(0)">DNA结构</button>
+  <button class="tab-btn" onclick="switchTab(1)">复制动画</button>
+  <button class="tab-btn" onclick="switchTab(2)">碱基配对</button>
+  <button class="tab-btn" onclick="switchTab(3)">复制计算</button>
+  <button class="tab-btn" onclick="switchTab(4)">知识总结</button>
+</nav>
+
+<!-- ==================== Tab 0 ==================== -->
+<div class="tab-content active" id="tab0">
+  <canvas id="dnaCanvas"></canvas>
+  <div class="floating-knowledge">
+    <h3>DNA双螺旋结构</h3>
+    <p>两条脱氧核苷酸链<strong>反向平行</strong>盘绕，呈<strong>右手双螺旋</strong>；外侧磷酸-脱氧核糖构成骨架，内侧含氮碱基（A/T/C/G）通过氢键配对；直径约2nm，螺距3.4nm（10对碱基/圈）。</p>
+    <div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(79,195,247,0.2);">
+      <span style="color:#81c784; font-weight:bold;">碱基互补配对：</span>
+      <span style="color:#ef5350; font-weight:bold;">A</span><span style="color:rgba(255,255,255,0.7);">=</span><span style="color:#42a5f5; font-weight:bold;">T</span>
+      <span class="bond-dot" style="background:#fff;"></span><span class="bond-dot" style="background:#fff;"></span>
+      <span style="color:rgba(255,255,255,0.5);">2氢键</span>
+      <span style="margin-left:12px;"></span>
+      <span style="color:#66bb6a; font-weight:bold;">C</span><span style="color:rgba(255,215,0,0.8);">&equiv;</span><span style="color:#ffa726; font-weight:bold;">G</span>
+      <span class="bond-dot" style="background:#ffd54f;"></span><span class="bond-dot" style="background:#ffd54f;"></span><span class="bond-dot" style="background:#ffd54f;"></span>
+      <span style="color:rgba(255,255,255,0.5);">3氢键</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 1: 复制动画 ==================== -->
+<div class="tab-content" id="tab1">
+  <h2 class="section-title">DNA半保留复制过程</h2>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h3>解旋</h3><p>解旋酶解开双螺旋，氢键断裂，两条母链分离</p></div>
+    <div class="step"><div class="step-num">2</div><h3>分离</h3><p>两条母链完全分开，各自作为模板</p></div>
+    <div class="step"><div class="step-num">3</div><h3>配对合成</h3><p>游离核苷酸按碱基互补配对原则，分别与两条母链结合</p></div>
+    <div class="step"><div class="step-num">4</div><h3>完成</h3><p>形成两个相同DNA分子，各含一条旧链一条新链</p></div>
+  </div>
+  <div class="panels">
+    <div class="canvas-box">
+      <canvas id="replicationCanvas" width="650" height="400"></canvas>
+    </div>
+    <div class="card">
+      <h3 style="color:#4fc3f7; margin-bottom:15px;">控制面板</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+        <button class="btn btn-primary" onclick="replicationAnim.start()">播放动画</button>
+        <button class="btn btn-warning" onclick="replicationAnim.pause()">暂停</button>
+        <button class="btn btn-danger" onclick="replicationAnim.reset()">重置</button>
+        <button class="btn btn-success" onclick="replicationAnim.stepForward()">单步</button>
+      </div>
+      <div class="info-box" id="replicationInfo">
+        点击 <strong>"播放动画"</strong> 观看DNA半保留复制过程。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 2: 碱基配对游戏 ==================== -->
+<div class="tab-content" id="tab2">
+  <h2 class="section-title">碱基互补配对挑战</h2>
+  <div class="card">
+    <div style="display:flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+      <span style="color:#90a4ae;">难度选择：</span>
+      <div class="mode-toggle">
+        <button class="active" id="modeEasy" onclick="pairingGame.setMode('easy')">简易 - A T C G</button>
+        <button id="modeHard" onclick="pairingGame.setMode('hard')">困难 - 纯中文名</button>
+      </div>
+    </div>
+
+    <div class="game-score">
+      <div class="score-item">得分：<span id="pairScore">0</span></div>
+      <div class="score-item">进度：<span id="pairCount">0</span> / <span id="pairTotal">0</span></div>
+      <div class="score-item"><span id="roundIndicator" style="font-size:0.85em; color:#90a4ae;"></span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <div class="game-container" id="gameContainer">
+      <div style="text-align:center;">
+        <div style="color:#ffb74d; font-weight:bold; margin-bottom:8px; font-size:1.05em;">模板链（已知碱基序列）</div>
+        <div class="template-strand" id="templateStrand"></div>
+      </div>
+
+      <div style="text-align:center;">
+        <div style="color:#4fc3f7; font-weight:bold; margin-bottom:8px; font-size:1.05em;">互补链（请将下方碱基拖入对应空位）</div>
+        <div class="answer-strand" id="answerStrand"></div>
+      </div>
+
+      <div style="text-align:center;">
+        <div style="color:#90a4ae; margin-bottom:8px; font-size:0.9em;">拖动下方碱基到虚线空位中完成配对（碱基可重复使用）</div>
+        <div class="drag-palette" id="dragPalette"></div>
+      </div>
+    </div>
+
+    <div class="feedback-msg" id="pairFeedback"></div>
+
+    <div style="text-align:center; margin-top:10px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-danger" onclick="pairingGame.undoLast()">撤销</button>
+      <button class="btn btn-warning" onclick="pairingGame.resetCurrent()">重做本题</button>
+      <button class="btn btn-success" onclick="pairingGame.nextRound()">下一轮</button>
+      <button class="btn btn-primary" onclick="pairingGame.newGame()">新游戏</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 3: 复制计算 ==================== -->
+<div class="tab-content" id="tab3">
+  <h2 class="section-title">DNA复制数量计算</h2>
+  <div class="panels">
+    <div class="card">
+      <h3 style="color:#4fc3f7; margin-bottom:15px;">计算公式</h3>
+      <div class="info-box">
+        <p>1个DNA分子经过 <strong>n 轮复制</strong>后：</p>
+        <p style="font-size:1.3em; text-align:center; margin:15px 0;">
+          <span class="formula">DNA总数 = 2<sup>n</sup></span>
+        </p>
+        <p>含有亲代链的DNA = <strong>2</strong> 个（始终只有2条亲代链）</p>
+        <p>全新合成的DNA = <strong>2<sup>n</sup> &minus; 2</strong> 个</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="color:#81c784; margin-bottom:15px;">自己算一算</h3>
+      <div style="text-align:center;">
+        <p style="margin-bottom:10px;">请输入复制轮数 n：</p>
+        <input type="number" class="calc-input" id="roundInput" min="0" max="30" value="1" placeholder="n"
+          onkeydown="if(event.key==='Enter')calcDNA()">
+        <br><br>
+        <button class="btn btn-success" onclick="calcDNA()">提交答案</button>
+        <button class="btn btn-primary" onclick="showAnswer()" style="margin-left:8px;">查看答案</button>
+        <div class="calc-result" id="calcResult">
+          <p style="margin:5px 0;">经过 <strong id="nValue">1</strong> 轮复制后：</p>
+          <p style="font-size:1.2em; margin:8px 0;">DNA总数 = <strong style="color:#81c784;" id="totalDNA">2</strong> 个</p>
+          <p style="margin:5px 0; color:#ffb74d;">含亲代链：<strong id="oldDNA">2</strong> 个</p>
+          <p style="margin:5px 0; color:#4fc3f7;">全新DNA：<strong id="newDNA">0</strong> 个</p>
+        </div>
+        <div class="calc-result" id="calcInputResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <h3 style="color:#4fc3f7; margin-bottom:5px;">半保留复制示意图</h3>
+    <p style="color:#90a4ae; margin-bottom:8px; font-size:0.9em;">
+      每个DNA用两根 <strong>|</strong> 表示（等于两条链），拖动滑块观察亲代链走向
+    </p>
+    <div class="tree-legend-row">
+      <div class="leg-item"><span class="tree-bar" style="background:#ff8c00;"></span> 亲代链（旧链）</div>
+      <div class="leg-item"><span class="tree-bar" style="background:#4fc3f7;"></span> 新合成链</div>
+      <div class="leg-item" style="color:#90a4ae;">橙色+蓝色 = 半保留DNA</div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin:15px 0; flex-wrap:wrap;">
+      <span style="color:#90a4ae;">复制轮数 n =</span>
+      <input type="range" id="treeRange" min="0" max="5" value="2"
+        oninput="drawTree(this.value)" style="width:200px; accent-color:#4fc3f7;">
+      <span style="color:#ffb74d; font-weight:bold; font-size:1.3em;" id="treeN">2</span>
+      <span style="color:#90a4ae; margin-left:10px;">DNA总数：</span>
+      <span style="color:#81c784; font-weight:bold; font-size:1.3em;" id="treeTotal">4</span>
+    </div>
+    <canvas id="treeCanvas" width="900" height="380" style="max-width:100%; margin-top:5px;"></canvas>
+  </div>
+</div>
+
+<!-- ==================== Tab 4 ==================== -->
+<div class="tab-content" id="tab4">
+  <h2 class="section-title">核心知识总结</h2>
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="concept-icon">&#127970;</div>
+      <h3>DNA结构</h3>
+      <p>双螺旋结构，磷酸-脱氧核糖构成骨架，含氮碱基（A/T/C/G）在内侧配对</p>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">&#128279;</div>
+      <h3>碱基互补配对</h3>
+      <p>A与T配对（2个氢键）<br>C与G配对（3个氢键）<br>保证了遗传信息的准确传递</p>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">&#9986;</div>
+      <h3>半保留复制</h3>
+      <p>每个子代DNA含一条旧链（亲代）和一条新链，遗传信息得以保留</p>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">&#129514;</div>
+      <h3>关键酶</h3>
+      <p>解旋酶：打开双螺旋<br>DNA聚合酶：合成新链<br>连接酶：连接片段</p>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">&#128202;</div>
+      <h3>复制计算</h3>
+      <p>n轮复制 &rarr; 2<sup>n</sup>个DNA<br>含亲代链的始终只有2个<br>全新DNA = 2<sup>n</sup> &minus; 2</p>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">&#128161;</div>
+      <h3>生物学意义</h3>
+      <p>DNA复制实现了遗传信息从亲代到子代的传递，是生命延续的基础</p>
+    </div>
+  </div>
+</div>
+
+<footer>DNA复制互动学习工具 | 适合高中生物学习</footer>
+
+<div class="celebration" id="celebration"></div>
+
+<script>
+// ==================== Tab switching ====================
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach(function(b,i) { b.classList.toggle('active', i===idx); });
+  document.querySelectorAll('.tab-content').forEach(function(t,i) { t.classList.toggle('active', i===idx); });
+  if (idx === 1) replicationAnim.drawStatic();
+  if (idx === 3) drawTree(parseInt(document.getElementById('treeRange').value));
+}
+
+// ==================== DNA Structure Canvas (Fullscreen) ====================
+(function(){
+  var c = document.getElementById('dnaCanvas');
+  var ctx = c.getContext('2d');
+  var floatPhase = 0;
+  var basesTop = ['A','T','C','G','A','T','G','C','A','T','C','G'];
+  var basesBot = ['T','A','G','C','T','A','C','G','T','A','G','C'];
+  var baseColors = { A: '#ef5350', T: '#42a5f5', C: '#66bb6a', G: '#ffa726' };
+
+  function resize() {
+    var container = c.parentElement;
+    var w = container.clientWidth;
+    var h = container.clientHeight;
+    if (c.width !== w || c.height !== h) {
+      c.width = w;
+      c.height = h;
+    }
+  }
+
+  function drawDNA() {
+    resize();
+    var w = c.width, h = c.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Gradient background
+    var bg = ctx.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, '#0a0a2e');
+    bg.addColorStop(0.5, '#0d0d35');
+    bg.addColorStop(1, '#0a0a2e');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+
+    // Gentle up-down floating
+    floatPhase += 0.008;
+    var floatY = Math.sin(floatPhase) * 18;
+
+    var paddingX = 80;
+    var startX = paddingX;
+    var endX = w - paddingX;
+    var cy = h / 2 + floatY;
+    var amp = 72;
+    var freq = 0.022;
+    var n = basesTop.length;
+
+    // --- Backbone glow ---
+    for (var s = 0; s < 2; s++) {
+      var off = s * Math.PI;
+      ctx.beginPath();
+      ctx.strokeStyle = s === 0 ? '#ff8a80' : '#82b1ff';
+      ctx.lineWidth = 12;
+      ctx.globalAlpha = 0.15;
+      for (var x = startX; x <= endX; x++) {
+        var y = cy + Math.sin(x * freq + off) * amp;
+        if (x === startX) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // --- Backbones ---
+    for (var s2 = 0; s2 < 2; s2++) {
+      var off2 = s2 * Math.PI;
+      var color2 = s2 === 0 ? '#ef5350' : '#42a5f5';
+      ctx.beginPath();
+      ctx.strokeStyle = color2;
+      ctx.lineWidth = 5;
+      for (var x2 = startX; x2 <= endX; x2++) {
+        var y2 = cy + Math.sin(x2 * freq + off2) * amp;
+        if (x2 === startX) ctx.moveTo(x2, y2); else ctx.lineTo(x2, y2);
+      }
+      ctx.stroke();
+    }
+
+    // --- Base pairs, rungs, and hydrogen bonds ---
+    var stepX = (endX - startX) / (n - 1);
+    for (var i = 0; i < n; i++) {
+      var bx = startX + i * stepX;
+      var yTop = cy + Math.sin(bx * freq) * amp;
+      var yBot = cy + Math.sin(bx * freq + Math.PI) * amp;
+      var bt = basesTop[i];
+      var bb = basesBot[i];
+
+      // Rung (connecting line between the two backbones)
+      ctx.beginPath();
+      ctx.moveTo(bx, yTop);
+      ctx.lineTo(bx, yBot);
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Hydrogen bonds (clearly visible in the middle)
+      var bonds = (bt === 'A' || bt === 'T') ? 2 : 3;
+      var midY = (yTop + yBot) / 2;
+      var halfGap = (yBot - yTop) * 0.22;
+
+      // Draw H-bond dashed lines
+      for (var b = 0; b < bonds; b++) {
+        var hx = bx + (b - (bonds - 1) / 2) * 8;
+        var hy1 = midY - halfGap;
+        var hy2 = midY + halfGap;
+        ctx.beginPath();
+        ctx.setLineDash([2.5, 3]);
+        ctx.moveTo(hx, hy1);
+        ctx.lineTo(hx, hy2);
+        ctx.strokeStyle = bonds === 2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,215,0,0.85)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Small dots at endpoints
+        ctx.beginPath();
+        ctx.arc(hx, hy1, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = bonds === 2 ? 'rgba(255,255,255,0.9)' : 'rgba(255,215,0,0.9)';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(hx, hy2, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Base circles (top strand)
+      ctx.beginPath();
+      ctx.arc(bx, yTop, 9, 0, Math.PI * 2);
+      ctx.fillStyle = baseColors[bt];
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 11px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText(bt, bx, yTop + 4);
+
+      // Base circles (bottom strand)
+      ctx.beginPath();
+      ctx.arc(bx, yBot, 9, 0, Math.PI * 2);
+      ctx.fillStyle = baseColors[bb];
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillText(bb, bx, yBot + 4);
+    }
+
+    // --- Labels ---
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 17px "Microsoft YaHei"';
+    ctx.fillText('DNA 双螺旋结构', w / 2, 30);
+
+    ctx.font = '12px "Microsoft YaHei"';
+    ctx.fillStyle = '#ef5350';
+    ctx.fillText("链1 (5' → 3')", startX + 50, 52);
+    ctx.fillStyle = '#42a5f5';
+    ctx.fillText("链2 (3' ← 5')", endX - 50, 52);
+
+    // Hydrogen bond legend at the bottom
+    var legY = h - 25;
+    ctx.font = '13px "Microsoft YaHei"';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+
+    // A=T legend
+    var lx1 = w / 2 - 110;
+    ctx.fillText('A = T', lx1 - 25, legY);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    for (var d1 = 0; d1 < 2; d1++) {
+      ctx.beginPath();
+      ctx.arc(lx1 + d1 * 12, legY - 4, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillText('2个氢键', lx1 + 28, legY);
+
+    // C≡G legend
+    var lx2 = w / 2 + 40;
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText('C ≡ G', lx2 - 25, legY);
+    ctx.fillStyle = 'rgba(255,215,0,0.85)';
+    for (var d2 = 0; d2 < 3; d2++) {
+      ctx.beginPath();
+      ctx.arc(lx2 + d2 * 12, legY - 4, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillText('3个氢键', lx2 + 40, legY);
+
+    ctx.textAlign = 'start';
+    requestAnimationFrame(drawDNA);
+  }
+  drawDNA();
+})();
+
+// ==================== REPLICATION ANIMATION - Left/Right Layout ====================
+var replicationAnim = (function(){
+  var c = document.getElementById('replicationCanvas');
+  var ctx = c.getContext('2d');
+  var info = document.getElementById('replicationInfo');
+  var phase = 0, progress = 0, running = false, animId = null;
+
+  // Template bases for the two strands
+  var basesLeft = ['A','T','C','G','A','T','G','C'];
+  var basesRight = ['T','A','G','C','T','A','C','G'];
+  var baseColors = { A: '#ef5350', T: '#42a5f5', C: '#66bb6a', G: '#ffa726' };
+
+  function complement(b) { return { A:'T', T:'A', C:'G', G:'C' }[b]; }
+
+  var w = c.width, h = c.height;
+
+  function render() {
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = '#0d0d25'; ctx.fillRect(0,0,w,h);
+
+    var cx = w/2, topY = 40, botY = h - 30;
+    var leftX = w * 0.25;
+    var rightX = w * 0.75;
+    var strandLen = 8;
+
+    if (phase === 0) {
+      // === Phase 0: Original double helix in center ===
+      drawDoubleHelix(cx, topY, botY, basesLeft, basesRight, 0);
+
+      ctx.fillStyle = '#ffb74d'; ctx.font = 'bold 14px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('初始DNA双螺旋', cx, botY + 20);
+      ctx.textAlign = 'start';
+    }
+    else if (phase === 1) {
+      // === Phase 1: Unwinding ===
+      var spread = progress * 40;
+      drawDoubleHelix(cx, topY, botY, basesLeft, basesRight, spread);
+
+      ctx.fillStyle = '#ffb74d'; ctx.font = 'bold 14px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('解旋中...氢键断裂，双链逐渐分离', cx, botY + 20);
+      ctx.textAlign = 'start';
+    }
+    else if (phase === 2) {
+      // === Phase 2: Two separated single strands ===
+      var gap = 50 + progress * 100; // move them apart
+
+      // Left template strand
+      var lx = cx - gap;
+      drawSingleStrand(lx, topY, botY, basesLeft, '#ff8a80', '左边母链');
+      // Right template strand
+      var rx = cx + gap;
+      drawSingleStrand(rx, topY, botY, basesRight, '#82b1ff', '右边母链');
+
+      // Show empty slots waiting for pairing
+      var slotOffset = 25;
+      drawEmptySlots(lx + slotOffset, topY, botY, strandLen, '#ff8a80');
+      drawEmptySlots(rx - slotOffset, topY, botY, strandLen, '#82b1ff');
+
+      ctx.fillStyle = '#ffb74d'; ctx.font = 'bold 14px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('两条母链完全分离，各自作为模板', cx, botY + 20);
+      ctx.textAlign = 'start';
+    }
+    else if (phase === 3) {
+      // === Phase 3: Free nucleotides pairing ===
+      var gap = 150;
+      var lx = cx - gap;
+      var rx = cx + gap;
+      var slotOffset = 25;
+
+      drawSingleStrand(lx, topY, botY, basesLeft, '#ff8a80', '左边母链');
+      drawSingleStrand(rx, topY, botY, basesRight, '#82b1ff', '右边母链');
+
+      // New strand forming with progress
+      drawPairingStrand(lx + slotOffset, topY, botY, basesLeft, progress, '#81c784');
+      drawPairingStrand(rx - slotOffset, topY, botY, basesRight, progress, '#81c784');
+
+      // Floating nucleotides
+      drawFloatingNucleotides(lx + slotOffset, topY, botY, basesLeft, progress);
+      drawFloatingNucleotides(rx - slotOffset, topY, botY, basesRight, progress);
+
+      ctx.fillStyle = '#ffb74d'; ctx.font = 'bold 14px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('游离核苷酸按A-T/C-G规则与母链配对', cx, botY + 20);
+      ctx.textAlign = 'start';
+    }
+    else if (phase === 4) {
+      // === Phase 4: Two complete DNA molecules ===
+      var gap = 150;
+      var lx = cx - gap;
+      var rx = cx + gap;
+      var slotOffset = 25;
+
+      // Left DNA: old (red) + new (green)
+      drawSingleStrand(lx, topY, botY, basesLeft, '#ff8a80', '');
+      drawSingleStrand(lx + slotOffset, topY, botY, basesLeft.map(complement), '#81c784', '');
+      // connecting lines
+      drawConnectors(lx, lx + slotOffset, topY, botY, strandLen, '#81c784');
+      ctx.fillStyle = '#81c784'; ctx.font = 'bold 13px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('子代DNA 1', lx + slotOffset/2, topY - 12);
+      ctx.fillText('（1旧+1新）', lx + slotOffset/2, topY + 4);
+
+      // Right DNA: old (blue) + new (green)
+      drawSingleStrand(rx, topY, botY, basesRight, '#82b1ff', '');
+      drawSingleStrand(rx - slotOffset, topY, botY, basesRight.map(complement), '#81c784', '');
+      drawConnectors(rx - slotOffset, rx, topY, botY, strandLen, '#81c784');
+      ctx.fillText('子代DNA 2', rx - slotOffset/2, topY - 12);
+      ctx.fillText('（1旧+1新）', rx - slotOffset/2, topY + 4);
+      ctx.textAlign = 'start';
+
+      ctx.fillStyle = '#ffb74d'; ctx.font = 'bold 14px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('复制完成！两个DNA分子，各含一条旧链一条新链 —— 半保留复制', cx, botY + 20);
+      ctx.textAlign = 'start';
+    }
+  }
+
+  function drawDoubleHelix(cx, topY, botY, leftBases, rightBases, spread) {
+    var spacing = (botY - topY) / (leftBases.length - 1);
+    var amp = 20 - spread * 0.5;
+    for (var i = 0; i < leftBases.length; i++) {
+      var y = topY + i * spacing;
+      var xl = cx - spread - Math.sin(i * 0.8) * amp;
+      var xr = cx + spread + Math.sin(i * 0.8) * amp;
+
+      // Rung
+      ctx.beginPath(); ctx.moveTo(xl, y); ctx.lineTo(xr, y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      // Base circles
+      ctx.beginPath(); ctx.arc(xl, y, 7, 0, Math.PI*2);
+      ctx.fillStyle = baseColors[leftBases[i]]; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 10px "Microsoft YaHei"';
+      ctx.textAlign = 'center'; ctx.fillText(leftBases[i], xl, y+4); ctx.textAlign = 'start';
+
+      ctx.beginPath(); ctx.arc(xr, y, 7, 0, Math.PI*2);
+      ctx.fillStyle = baseColors[rightBases[i]]; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.textAlign = 'center'; ctx.fillText(rightBases[i], xr, y+4); ctx.textAlign = 'start';
+    }
+    // Backbone
+    drawBackbone(leftBases, cx - spread, topY, botY, '#ff8a80', amp, -1);
+    drawBackbone(rightBases, cx + spread, topY, botY, '#82b1ff', amp, 1);
+  }
+
+  function drawBackbone(bases, cx, topY, botY, color, amp, sign) {
+    var spacing = (botY - topY) / (bases.length - 1);
+    ctx.beginPath();
+    ctx.strokeStyle = color; ctx.lineWidth = 3;
+    for (var i = 0; i < bases.length; i++) {
+      var y = topY + i * spacing;
+      var x = cx + sign * Math.sin(i * 0.8) * amp;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawSingleStrand(x, topY, botY, bases, color, label) {
+    var spacing = (botY - topY) / (bases.length - 1);
+    // Backbone
+    ctx.beginPath();
+    ctx.strokeStyle = color; ctx.lineWidth = 4;
+    for (var i = 0; i < bases.length; i++) {
+      var y = topY + i * spacing;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Base circles
+    for (var i2 = 0; i2 < bases.length; i2++) {
+      var y2 = topY + i2 * spacing;
+      ctx.beginPath(); ctx.arc(x, y2, 8, 0, Math.PI*2);
+      ctx.fillStyle = baseColors[bases[i2]]; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 10px "Microsoft YaHei"';
+      ctx.textAlign = 'center'; ctx.fillText(bases[i2], x, y2+4); ctx.textAlign = 'start';
+    }
+
+    if (label) {
+      ctx.fillStyle = color; ctx.font = 'bold 12px "Microsoft YaHei"';
+      ctx.textAlign = 'center'; ctx.fillText(label, x, topY - 15); ctx.textAlign = 'start';
+    }
+  }
+
+  function drawEmptySlots(x, topY, botY, count, hintColor) {
+    var spacing = (botY - topY) / (count - 1);
+    for (var i = 0; i < count; i++) {
+      var y = topY + i * spacing;
+      ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI*2);
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = hintColor;
+      ctx.lineWidth = 2; ctx.globalAlpha = 0.5;
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      // Question mark
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px "Microsoft YaHei"';
+      ctx.textAlign = 'center'; ctx.fillText('?', x, y+4); ctx.textAlign = 'start';
+    }
+  }
+
+  function drawPairingStrand(x, topY, botY, templateBases, fraction, color) {
+    var spacing = (botY - topY) / (templateBases.length - 1);
+    var count = Math.floor(templateBases.length * fraction);
+
+    // Backbone for completed bases
+    if (count > 1) {
+      ctx.beginPath();
+      ctx.strokeStyle = color; ctx.lineWidth = 3;
+      for (var i = 0; i < count; i++) {
+        var y = topY + i * spacing;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    for (var i2 = 0; i2 < templateBases.length; i2++) {
+      var y2 = topY + i2 * spacing;
+      if (i2 < count) {
+        // Base paired
+        var comp = complement(templateBases[i2]);
+        ctx.beginPath(); ctx.arc(x, y2, 8, 0, Math.PI*2);
+        ctx.fillStyle = baseColors[comp]; ctx.fill();
+        ctx.strokeStyle = '#81c784'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 10px "Microsoft YaHei"';
+        ctx.textAlign = 'center'; ctx.fillText(comp, x, y2+4); ctx.textAlign = 'start';
+        // Connector
+        ctx.beginPath(); ctx.moveTo(x - 15, y2); ctx.lineTo(x, y2);
+        ctx.strokeStyle = 'rgba(129,199,132,0.5)'; ctx.lineWidth = 1;
+        ctx.stroke();
+      } else if (i2 === count && fraction < 1) {
+        // Currently being paired (animated)
+        var alpha = fraction * templateBases.length - count;
+        ctx.beginPath(); ctx.arc(x, y2, 8*alpha, 0, Math.PI*2);
+        ctx.fillStyle = baseColors[complement(templateBases[i2])];
+        ctx.globalAlpha = alpha;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+  }
+
+  function drawFloatingNucleotides(x, topY, botY, templateBases, fraction) {
+    var spacing = (botY - topY) / (templateBases.length - 1);
+    var startIdx = Math.floor(templateBases.length * fraction) + 1;
+    for (var i = startIdx; i < templateBases.length; i++) {
+      var y = topY + i * spacing;
+      var comp = complement(templateBases[i]);
+      // Float slightly to the right
+      var fx = x + 35 + Math.sin(Date.now()/300 + i) * 8;
+      var fy = y + Math.cos(Date.now()/400 + i) * 6;
+      ctx.beginPath(); ctx.arc(fx, fy, 7, 0, Math.PI*2);
+      ctx.fillStyle = baseColors[comp]; ctx.globalAlpha = 0.7;
+      ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.globalAlpha = 0.5;
+      ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 9px "Microsoft YaHei"';
+      ctx.textAlign = 'center'; ctx.fillText(comp, fx, fy+3); ctx.textAlign = 'start';
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawConnectors(x1, x2, topY, botY, count, color) {
+    var spacing = (botY - topY) / (count - 1);
+    for (var i = 0; i < count; i++) {
+      var y = topY + i * spacing;
+      ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y);
+      ctx.strokeStyle = 'rgba(129,199,132,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+  }
+
+  function animate() {
+    if (!running) return;
+    progress += 0.012;
+    if (progress >= 1) {
+      progress = 0;
+      phase++;
+      if (phase > 4) { phase = 4; progress = 1; running = false; render(); updateInfo(); return; }
+    }
+    render(); updateInfo();
+    animId = requestAnimationFrame(animate);
+  }
+
+  function updateInfo() {
+    var msgs = [
+      'DNA双螺旋结构，两条链通过碱基间氢键连接。',
+      '解旋酶正在解开双螺旋，氢键逐渐断裂，双链开始分离...',
+      '两条母链已完全分离到左右两侧，各自暴露碱基序列，等待游离核苷酸配对。',
+      '游离核苷酸按A-T/C-G规则分别与左右两条母链配对，DNA聚合酶催化新链合成。',
+      '复制完成！得到2个完全相同的DNA分子。每个含一条旧链（红色/蓝色）+一条新链（绿色）。这就是<strong>半保留复制</strong>。'
+    ];
+    info.innerHTML = msgs[phase];
+  }
+
+  return {
+    drawStatic: function() { phase = 0; progress = 0; running = false; render(); updateInfo(); },
+    start: function() { if (phase >= 4) { phase = 0; progress = 0; } running = true; animate(); },
+    pause: function() { running = false; if (animId) cancelAnimationFrame(animId); },
+    reset: function() { running = false; if (animId) cancelAnimationFrame(animId); phase = 0; progress = 0; render(); updateInfo(); },
+    stepForward: function() { if (phase < 4) { phase++; progress = phase === 4 ? 1 : 0; render(); updateInfo(); } },
+    render: render, updateInfo: updateInfo
+  };
+})();
+
+setTimeout(function() { replicationAnim.drawStatic(); }, 100);
+
+// ==================== DRAG PAIRING GAME - Only 4 reusable cards ====================
+var pairingGame = (function(){
+  var rounds = [];
+
+  function generateRounds() {
+    var bases = ['A','T','C','G'];
+    var newRounds = [];
+    for (var r = 0; r < 5; r++) {
+      var len = 8 + Math.floor(Math.random() * 5); // 8-12 bases
+      var seq = [];
+      for (var i = 0; i < len; i++) {
+        seq.push(bases[Math.floor(Math.random() * 4)]);
+      }
+      newRounds.push({ template: seq });
+    }
+    return newRounds;
+  }
+
+  var currentRound = 0;
+  var mode = 'easy';
+  var score = 0;
+  var totalAttempts = 0;
+  var slotFilled = [];
+
+  var baseInfo = {
+    A: { color: '#ef5350', label: 'A', name: '腺嘌呤', cssClass: 'a-base' },
+    T: { color: '#42a5f5', label: 'T', name: '胸腺嘧啶', cssClass: 't-base' },
+    C: { color: '#66bb6a', label: 'C', name: '胞嘧啶', cssClass: 'c-base' },
+    G: { color: '#ffa726', label: 'G', name: '鸟嘌呤', cssClass: 'g-base' }
+  };
+
+  function complement(b) { return { A:'T', T:'A', C:'G', G:'C' }[b]; }
+
+  function getDisplay(base) {
+    return mode === 'easy' ? baseInfo[base].label : baseInfo[base].name;
+  }
+
+  function buildUI() {
+    var template = rounds[currentRound].template;
+    document.getElementById('pairTotal').textContent = template.length;
+    document.getElementById('pairCount').textContent = 0;
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('roundIndicator').textContent =
+      '第 ' + (currentRound + 1) + '/' + rounds.length + ' 轮';
+    slotFilled = new Array(template.length).fill(false);
+
+    // Template strand
+    var templateEl = document.getElementById('templateStrand');
+    templateEl.innerHTML = template.map(function(b) {
+      var info = baseInfo[b];
+      return '<div class="template-base" style="background:' + info.color + ';" title="' + info.name + '">' +
+        getDisplay(b) + '</div>';
+    }).join('');
+
+    // Answer strand (drop slots)
+    var answerEl = document.getElementById('answerStrand');
+    answerEl.innerHTML = template.map(function(b, i) {
+      return '<div class="answer-slot" data-index="' + i + '" data-answer="' + complement(b) + '"></div>';
+    }).join('');
+
+    var slots = answerEl.querySelectorAll('.answer-slot');
+    slots.forEach(function(slot) {
+      slot.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (!this.classList.contains('correct')) this.classList.add('drag-over');
+      });
+      slot.addEventListener('dragleave', function(e) {
+        this.classList.remove('drag-over');
+      });
+      slot.addEventListener('drop', handleDrop);
+    });
+
+    // Always 4 base cards: A, T, C, G (reusable)
+    var allBases = ['A','T','C','G'];
+    var paletteEl = document.getElementById('dragPalette');
+    paletteEl.innerHTML = '';
+    allBases.forEach(function(b) {
+      var info = baseInfo[b];
+      var el = document.createElement('div');
+      el.className = 'drag-base ' + info.cssClass;
+      el.textContent = getDisplay(b);
+      el.draggable = true;
+      el.dataset.base = b;
+      el.id = 'drag-' + b;
+      el.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', JSON.stringify({ base: this.dataset.base }));
+        this.classList.add('dragging');
+      });
+      el.addEventListener('dragend', function(e) {
+        this.classList.remove('dragging');
+      });
+      paletteEl.appendChild(el);
+    });
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    var slot = e.currentTarget;
+    slot.classList.remove('drag-over');
+
+    if (slot.classList.contains('correct') || slotFilled[parseInt(slot.dataset.index)] === true) return;
+
+    var data;
+    try { data = JSON.parse(e.dataTransfer.getData('text/plain')); }
+    catch(ex) { return; }
+
+    var userBase = data.base;
+    var answer = slot.dataset.answer;
+    var idx = parseInt(slot.dataset.index);
+
+    // Remove previous wrong fill if any
+    if (slot.classList.contains('filled') && slotFilled[idx] === 'wrong') {
+      slot.innerHTML = '';
+      slot.classList.remove('filled', 'wrong');
+    }
+
+    totalAttempts++;
+
+    if (userBase === answer) {
+      slot.classList.add('correct', 'filled');
+      slot.innerHTML = '<span style="font-weight:bold; font-size:1.1em; color:' +
+        baseInfo[userBase].color + ';">' + getDisplay(userBase) + '</span>';
+      slotFilled[idx] = true;
+      score++;
+      document.getElementById('pairScore').textContent = score;
+      document.getElementById('pairFeedback').innerHTML =
+        '<span style="color:#81c784;">&#10004; 正确！' +
+        getDisplay(rounds[currentRound].template[idx]) + ' - ' + getDisplay(answer) + ' 配对成功</span>';
+    } else {
+      slot.classList.add('filled', 'wrong');
+      slot.innerHTML = '<span style="font-weight:bold; font-size:1.1em; color:' +
+        baseInfo[userBase].color + ';">' + getDisplay(userBase) + '</span>';
+      slotFilled[idx] = 'wrong';
+      document.getElementById('pairFeedback').innerHTML =
+        '<span style="color:#ef5350;">&#10008; 错误！' +
+        getDisplay(rounds[currentRound].template[idx]) + ' 应该配对 ' + getDisplay(answer) +
+        '，而不是 ' + getDisplay(userBase) + '</span>';
+      setTimeout(function() { slot.classList.remove('wrong'); }, 600);
+    }
+
+    var filledCount = slotFilled.filter(function(s) { return s === true; }).length;
+    document.getElementById('pairCount').textContent = filledCount;
+    document.getElementById('progressFill').style.width =
+      (filledCount / rounds[currentRound].template.length * 100) + '%';
+
+    if (filledCount === rounds[currentRound].template.length) {
+      setTimeout(function() {
+        if (currentRound < rounds.length - 1) {
+          document.getElementById('pairFeedback').innerHTML +=
+            ' <span style="color:#ffb74d;">本轮完成！点击"下一轮"继续挑战</span>';
+        } else {
+          document.getElementById('pairFeedback').innerHTML =
+            '<span style="color:#81c784; font-size:1.2em;">&#127881; 全部5关完成！得分：' +
+            score + '/' + totalAttempts + '。点击"新游戏"再来一轮</span>';
+          spawnConfetti();
+        }
+      }, 300);
+    }
+  }
+
+  function undoLast() {
+    var slots = document.querySelectorAll('#answerStrand .answer-slot');
+    var lastFilled = -1;
+    slots.forEach(function(s) {
+      var idx = parseInt(s.dataset.index);
+      if (slotFilled[idx] === true || slotFilled[idx] === 'wrong') {
+        if (idx > lastFilled) lastFilled = idx;
+      }
+    });
+    if (lastFilled >= 0) {
+      var wasCorrect = slotFilled[lastFilled] === true;
+      slotFilled[lastFilled] = false;
+      slots[lastFilled].classList.remove('correct', 'filled', 'wrong');
+      slots[lastFilled].innerHTML = '';
+      if (wasCorrect) score = Math.max(0, score - 1);
+      document.getElementById('pairScore').textContent = score;
+      var filledCount = slotFilled.filter(function(s) { return s === true; }).length;
+      document.getElementById('pairCount').textContent = filledCount;
+      document.getElementById('progressFill').style.width =
+        (filledCount / rounds[currentRound].template.length * 100) + '%';
+      document.getElementById('pairFeedback').textContent = '';
+    }
+  }
+
+  function resetCurrent() {
+    score = Math.max(0, score - slotFilled.filter(function(s) { return s === true; }).length);
+    document.getElementById('pairScore').textContent = score;
+    slotFilled = new Array(rounds[currentRound].template.length).fill(false);
+    document.getElementById('pairCount').textContent = 0;
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('pairFeedback').textContent = '';
+    document.querySelectorAll('#answerStrand .answer-slot').forEach(function(s) {
+      s.classList.remove('correct', 'filled', 'wrong');
+      s.innerHTML = '';
+    });
+  }
+
+  function newGame() {
+    rounds = generateRounds();
+    currentRound = 0; score = 0; totalAttempts = 0;
+    document.getElementById('pairScore').textContent = '0';
+    document.getElementById('pairFeedback').textContent = '';
+    buildUI();
+  }
+
+  function nextRound() {
+    if (currentRound < rounds.length - 1) {
+      currentRound++;
+      document.getElementById('pairFeedback').textContent = '';
+      buildUI();
+    }
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    document.getElementById('modeEasy').classList.toggle('active', mode === 'easy');
+    document.getElementById('modeHard').classList.toggle('active', mode === 'hard');
+    score = 0; totalAttempts = 0; currentRound = 0;
+    document.getElementById('pairScore').textContent = '0';
+    document.getElementById('pairFeedback').textContent = '';
+    buildUI();
+  }
+
+  return { buildUI: buildUI, undoLast: undoLast, resetCurrent: resetCurrent, newGame: newGame, nextRound: nextRound, setMode: setMode };
+})();
+
+setTimeout(function() { pairingGame.newGame(); }, 200);
+
+// ==================== Calculation ====================
+function calcDNA() {
+  var n = parseInt(document.getElementById('roundInput').value);
+  var resultDiv = document.getElementById('calcResult');
+  var inputResultDiv = document.getElementById('calcInputResult');
+  if (isNaN(n) || n < 0) {
+    inputResultDiv.className = 'calc-result error show';
+    inputResultDiv.innerHTML = '<p style="color:#ef5350;">请输入大于等于0的整数！</p>';
+    resultDiv.classList.remove('show');
+    return;
+  }
+  inputResultDiv.classList.remove('show');
+  var total = Math.pow(2, n);
+  var oldWithParent = n === 0 ? 1 : 2;
+  var newDNA = n === 0 ? 0 : total - 2;
+  document.getElementById('nValue').textContent = n;
+  document.getElementById('totalDNA').textContent = total;
+  document.getElementById('oldDNA').textContent = oldWithParent;
+  document.getElementById('newDNA').textContent = newDNA;
+  resultDiv.classList.add('show');
+  var clampedN = Math.min(n, 5);
+  document.getElementById('treeRange').value = clampedN;
+  document.getElementById('treeN').textContent = clampedN;
+  document.getElementById('treeTotal').textContent = Math.pow(2, clampedN);
+  drawTree(clampedN);
+}
+
+function showAnswer() {
+  var n = parseInt(document.getElementById('roundInput').value);
+  var div = document.getElementById('calcInputResult');
+  if (isNaN(n) || n < 0) {
+    div.className = 'calc-result error show';
+    div.innerHTML = '<p style="color:#ef5350;">请输入大于等于0的整数！</p>';
+    return;
+  }
+  var total = Math.pow(2, n);
+  var oldWithParent = n === 0 ? 1 : 2;
+  var newDNA = n === 0 ? 0 : total - 2;
+  div.className = 'calc-result show';
+  div.style.borderColor = '#ffb74d';
+  div.style.background = 'rgba(255,183,77,0.15)';
+  div.innerHTML =
+    '<p style="color:#ffb74d;">&#128161; 参考答案：</p>' +
+    '<p>DNA总数 = 2<sup>' + n + '</sup> = <strong>' + total + '</strong> 个</p>' +
+    '<p>含亲代链DNA = <strong>' + oldWithParent + '</strong> 个（半保留复制，亲代链始终只有2条）</p>' +
+    '<p>全新DNA = ' + total + ' &minus; ' + oldWithParent + ' = <strong>' + newDNA + '</strong> 个</p>';
+}
+
+// ==================== TREE - Simple bar | representation ====================
+function drawTree(n) {
+  n = parseInt(n);
+  document.getElementById('treeN').textContent = n;
+
+  var c = document.getElementById('treeCanvas');
+  var ctx = c.getContext('2d');
+  var w = c.width, h = c.height;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#0d0d25'; ctx.fillRect(0,0,w,h);
+
+  var total = Math.pow(2, n);
+  document.getElementById('treeTotal').textContent = total;
+
+  var barW = 5, barH = 28, barGap = 4;
+  var ORANGE = '#ff8c00', BLUE = '#4fc3f7';
+
+  // Compute which molecules at each level carry a parent strand.
+  // Semi-conservative: at n=0, 1 DNA has BOTH parent strands.
+  // At n=1, the 2 strands separate: molecule 0 and 1 each get one.
+  // At each subsequent replication, the parent strand stays in the
+  // FIRST (leftmost) child of whichever molecule carried it before.
+  // So: level 0 -> {0:2} (2 parent strands in molecule 0)
+  //     level 1 -> {0:1, 1:1}
+  //     level 2 -> {0:1, 2:1}
+  //     level 3 -> {0:1, 4:1}
+  //     level L -> {0:1, 2^(L-1):1}  for L>=1
+  var orangeIdx = {}; // orangeIdx[level] = { index: strandCount }
+  for (var lvl = 0; lvl <= n; lvl++) {
+    orangeIdx[lvl] = {};
+  }
+  if (n === 0) {
+    orangeIdx[0][0] = 2; // both strands orange
+  } else {
+    orangeIdx[0][0] = 2; // original
+    for (var lvl = 1; lvl <= n; lvl++) {
+      orangeIdx[lvl][0] = 1;
+      orangeIdx[lvl][Math.pow(2, lvl - 1)] = 1;
+    }
+  }
+
+  var levels = n + 1;
+  var vSpacing = (h - 110) / n;
+  var topY = 55;
+
+  if (n === 0) {
+    var cx0 = w/2, cy0 = h/2;
+    drawDNABars(ctx, cx0, cy0, barW, barH, barGap, ORANGE, ORANGE);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 14px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('1个DNA分子（两条链均为亲代链）', cx0, cy0 + barH/2 + 25);
+    ctx.textAlign = 'start';
+    return;
+  }
+
+  // ---- Connecting lines ----
+  // If a parent has a parent strand, its FIRST child gets it -> orange line
+  for (var level = 0; level < n; level++) {
+    var count = Math.pow(2, level);
+    var y1 = topY + level * vSpacing;
+    var y2 = topY + (level + 1) * vSpacing;
+    var startSpacing = w / (count + 1);
+    var nextCount = Math.pow(2, level + 1);
+    var endSpacing = w / (nextCount + 1);
+
+    for (var i = 0; i < count; i++) {
+      var x1 = startSpacing * (i + 1);
+      var x2a = endSpacing * (2*i + 1); // first (left) child
+      var x2b = endSpacing * (2*i + 2); // second (right) child
+
+      var parentStrands = orangeIdx[level][i] || 0;
+
+      // First child gets a parent strand if parent has any
+      var firstGetsOrange = parentStrands >= 1;
+      // Second child gets a parent strand only when parent has 2 strands (n=0->n=1 split)
+      var secondGetsOrange = parentStrands >= 2;
+
+      // First child line
+      ctx.beginPath();
+      ctx.moveTo(x1, y1 + barH/2);
+      ctx.lineTo(x2a, y2 - barH/2);
+      if (firstGetsOrange) {
+        ctx.strokeStyle = ORANGE;
+        ctx.lineWidth = 2.5;
+        ctx.globalAlpha = 0.8;
+      } else {
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.lineWidth = 1.2;
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Second child line
+      ctx.beginPath();
+      ctx.moveTo(x1, y1 + barH/2);
+      ctx.lineTo(x2b, y2 - barH/2);
+      if (secondGetsOrange) {
+        ctx.strokeStyle = ORANGE;
+        ctx.lineWidth = 2.5;
+        ctx.globalAlpha = 0.8;
+      } else {
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 1.2;
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ---- Draw DNA bars at each node ----
+  for (var level2 = 0; level2 < levels; level2++) {
+    var count2 = Math.pow(2, level2);
+    var y = topY + level2 * vSpacing;
+    var spacing = w / (count2 + 1);
+
+    for (var j = 0; j < count2; j++) {
+      var x = spacing * (j + 1);
+      var strands = orangeIdx[level2][j] || 0; // how many parent strands (0, 1, or 2)
+
+      var s1Color, s2Color;
+      if (strands === 2) {
+        // Both parent strands (only at n=0)
+        s1Color = ORANGE; s2Color = ORANGE;
+      } else if (strands === 1) {
+        // Semi-conservative: one parent + one new
+        s1Color = ORANGE; s2Color = BLUE;
+      } else {
+        // Fully new
+        s1Color = BLUE; s2Color = BLUE;
+      }
+
+      drawDNABars(ctx, x, y, barW, barH, barGap, s1Color, s2Color);
+
+      // Label
+      ctx.fillStyle = '#fff'; ctx.font = '10px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('#' + (j+1), x, y + barH/2 + 16);
+      ctx.textAlign = 'start';
+
+      // Highlight parent-carrying molecules with a small star
+      if (strands > 0) {
+        ctx.fillStyle = ORANGE; ctx.font = 'bold 11px "Microsoft YaHei"';
+        ctx.fillText('★', x, y - barH/2 - 6);
+      }
+    }
+  }
+
+  // ---- Level labels ----
+  for (var level3 = 0; level3 < levels; level3++) {
+    var ly = topY + level3 * vSpacing;
+    ctx.fillStyle = '#90a4ae'; ctx.font = '11px "Microsoft YaHei"';
+    ctx.fillText('n=' + level3, 8, ly + 4);
+    var count3 = Math.pow(2, level3);
+    ctx.fillText(count3 + '个DNA', 8, ly + 18);
+  }
+}
+
+function drawDNABars(ctx, cx, cy, barW, barH, gap, color1, color2) {
+  var halfGap = gap / 2;
+  // Left bar (strand 1)
+  ctx.fillStyle = color1;
+  ctx.fillRect(cx - barW - halfGap, cy - barH/2, barW, barH);
+  // Right bar (strand 2)
+  ctx.fillStyle = color2;
+  ctx.fillRect(cx + halfGap, cy - barH/2, barW, barH);
+}
+
+// Initialize tree
+setTimeout(function() { drawTree(2); }, 300);
+
+// ==================== Confetti ====================
+function spawnConfetti() {
+  var container = document.getElementById('celebration');
+  var colors = ['#4fc3f7','#81c784','#ffb74d','#ef5350','#42a5f5','#ffa726','#ab47bc'];
+  for (var i = 0; i < 60; i++) {
+    var el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random()*100 + '%';
+    el.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (1.5 + Math.random()*2) + 's';
+    el.style.animationDelay = Math.random()*0.5 + 's';
+    el.style.width = (6 + Math.random()*10) + 'px';
+    el.style.height = (6 + Math.random()*10) + 'px';
+    el.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+    container.appendChild(el);
+    setTimeout(function() { el.remove(); }, 3000);
+  }
+}
+</script>
+</body>
+</html>
