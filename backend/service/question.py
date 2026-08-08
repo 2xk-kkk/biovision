@@ -265,13 +265,16 @@ def get_questions_by_textbook_service(textbook=None, chapter=None, section=None,
             questions = selected_choice + selected_fill + selected_essay
             random.shuffle(questions)
         else:
-            questions = get_questions_by_textbook(db, textbook, chapter, '专项训练', question_type)
+            # 优先按知识点精确匹配
+            questions = get_questions_by_textbook(db, textbook, chapter, section, question_type)
             
-            if len(questions) == 0:
-                questions = get_questions_by_textbook(db, textbook, chapter, section, question_type)
+            # 如果没有结果，降级为只按章节查询
+            if len(questions) == 0 and section:
+                questions = get_questions_by_textbook(db, textbook, chapter, None, question_type)
             
+            # 如果还是没有结果，降级为只按教材查询
             if len(questions) == 0:
-                questions = get_questions_by_textbook(db, textbook, None, question_type)
+                questions = get_questions_by_textbook(db, textbook, None, None, question_type)
         
         return ApiResponse.success(data=questions)
     except Exception as e:

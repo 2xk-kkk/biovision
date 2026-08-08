@@ -1540,6 +1540,9 @@
         let isAnswerSubmitted = false;
         let originalPracticeState = null; // 保存原始练习状态
         let isRecommendPractice = false; // 标记是否在做推荐题
+        let currentTextbook = '';  // 当前教材
+        let currentChapter = '';   // 当前章节
+        let currentSection = '';   // 当前知识点
 
         function createParticles() {
             const container = document.getElementById('particles');
@@ -1579,6 +1582,11 @@
             const chapter = getQueryParam('chapter');
             const section = getQueryParam('section');
             const questionType = getQueryParam('type');
+            
+            // 保存URL参数到全局变量，供推荐功能使用
+            currentTextbook = textbook || '';
+            currentChapter = chapter || '';
+            currentSection = section || '';
             
             if (!examId && !textbook && !questionId) {
                 document.getElementById('quizPaper').innerHTML = `
@@ -2060,24 +2068,39 @@
         }
 
         function practiceSingleQuestion(questionId) {
+            console.log(`点击练习，题目ID=${questionId}`);
+            
             // 从缓存中查找题目
             let targetQuestion = null;
+            console.log(`wrongRecommendationsCache 长度: ${wrongRecommendationsCache.length}`);
+            
             for (let i = 0; i < wrongRecommendationsCache.length; i++) {
                 const recs = wrongRecommendationsCache[i] || [];
+                console.log(`  查找推荐缓存[${i}]，共${recs.length}题`);
                 targetQuestion = recs.find(q => String(q.id) === String(questionId));
-                if (targetQuestion) break;
+                if (targetQuestion) {
+                    console.log(`  ✓ 在推荐缓存[${i}]中找到题目: ${targetQuestion.stem.substring(0, 30)}...`);
+                    break;
+                }
             }
+            
             if (!targetQuestion) {
+                console.log(`在allRecommendQuestions中查找，共${allRecommendQuestions.length}题`);
                 targetQuestion = allRecommendQuestions.find(q => String(q.id) === String(questionId));
+                if (targetQuestion) {
+                    console.log(`✓ 在全部推荐中找到题目: ${targetQuestion.stem.substring(0, 30)}...`);
+                }
             }
 
             if (!targetQuestion) {
-                alert('题目不存在，正在重新加载...');
+                console.log(`❌ 缓存中未找到，使用API加载题目ID=${questionId}`);
+                alert('缓存中未找到题目，正在重新加载...');
                 // 备用方案：通过API加载
                 fetch(`${API_BASE_URL}/questions/${questionId}`)
                     .then(response => response.json())
                     .then(result => {
                         if (result.success && result.data) {
+                            console.log(`API返回题目: ${result.data.stem.substring(0, 30)}...`);
                             startPracticeWithQuestion(result.data);
                         } else {
                             alert('加载题目失败');
@@ -2146,7 +2169,7 @@
         }
 
         let wrongQuestionsCache = [];
-        let wrongRecommendationsCache = {};
+        let wrongRecommendationsCache = [];  // 必须是数组，不是对象
         let allRecommendQuestions = [];
         let activeWrongTabIndex = 0;
 
@@ -2187,35 +2210,74 @@
                 for (let i = 0; i < wrongQuestionsCache.length; i++) {
                     const wq = wrongQuestionsCache[i];
                     const questionType = getQuestionType(wq);
-                    const textbook = wq.textbook || getQueryParam('textbook') || '';
-                    const chapter = wq.chapter || getQueryParam('chapter') || '';
-                    const section = wq.section || getQueryParam('section') || '';
+                    // 优先从题目对象获取，然后使用全局变量（从URL保存的）
+                    const textbook = wq.textbook || currentTextbook || '';
+                    const chapter = wq.chapter || currentChapter || '';
+                    const section = wq.section || currentSection || '';
 
-                    const params = new URLSearchParams();
-                    if (textbook) params.append('textbook', textbook);
-                    if (chapter) params.append('chapter', chapter);
-                    if (section) params.append('section', section);
-                    params.append('type', questionType);
+                    console.log(`错题推荐[${i}]: textbook=${textbook}, chapter=${chapter}, section=${section}, type=${questionType}`);
 
-                    const response = await fetch(`${API_BASE_URL}/questions/textbook?${params.toString()}`);
-                    const result = await response.json();
+                    let recommendQuestions = [];
 
-                    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-                        // 过滤掉当前错题，随机抽5道
-                        const others = result.data.filter(q => q.id !== wq.id);
-                        const shuffled = others.sort(() => Math.random() - 0.5);
-                        const picked = shuffled.slice(0, 5);
+                    // 第一级：按知识点精确匹配
+                    if (section) {
+                        const params1 = new URLSearchParams();
+                        if (textbook) params1.append('textbook', textbook);
+                        if (chapter) params1.append('chapter', chapter);
+                        params1.append('section', section);
+                        params1.append('type', questionType);
                         
-                        wrongRecommendationsCache[i] = picked;
-                        // 收集所有推荐题目（去重）
-                        picked.forEach(q => {
-                            if (!allRecommendQuestions.find(aq => aq.id === q.id)) {
-                                allRecommendQuestions.push(q);
-                            }
-                        });
-                    } else {
-                        wrongRecommendationsCache[i] = [];
+                        const r1 = await fetch(`${API_BASE_URL}/questions/textbook?${params1.toString()}`);
+                        const result1 = await r1.json();
+                        if (result1.success && Array.isArray(result1.data) && result1.data.length > 0) {
+                            console.log(`同section匹配: ${result1.data.length}题`);
+                            recommendQuestions = result1.data;
+                        }
                     }
+
+                    // 第二级：按章节匹配（如果第一级没结果）
+                    if (recommendQuestions.length === 0 && chapter) {
+                        const params2 = new URLSearchParams();
+                        if (textbook) params2.append('textbook', textbook);
+                        params2.append('chapter', chapter);
+                        params2.append('type', questionType);
+                        
+                        const r2 = await fetch(`${API_BASE_URL}/questions/textbook?${params2.toString()}`);
+                        const result2 = await r2.json();
+                        if (result2.success && Array.isArray(result2.data) && result2.data.length > 0) {
+                            console.log(`同chapter匹配: ${result2.data.length}题`);
+                            recommendQuestions = result2.data;
+                        }
+                    }
+
+                    // 第三级：按教材匹配（如果还没结果）
+                    if (recommendQuestions.length === 0 && textbook) {
+                        const params3 = new URLSearchParams();
+                        params3.append('textbook', textbook);
+                        params3.append('type', questionType);
+                        
+                        const r3 = await fetch(`${API_BASE_URL}/questions/textbook?${params3.toString()}`);
+                        const result3 = await r3.json();
+                        if (result3.success && Array.isArray(result3.data) && result3.data.length > 0) {
+                            console.log(`同textbook匹配: ${result3.data.length}题`);
+                            recommendQuestions = result3.data;
+                        }
+                    }
+
+                    // 过滤掉当前错题，随机抽5道
+                    const others = recommendQuestions.filter(q => q.id !== wq.id);
+                    const shuffled = others.sort(() => Math.random() - 0.5);
+                    const picked = shuffled.slice(0, 5);
+                    
+                    wrongRecommendationsCache[i] = picked;
+                    console.log(`最终推荐: ${picked.length}题`);
+                    
+                    // 收集所有推荐题目（去重）
+                    picked.forEach(q => {
+                        if (!allRecommendQuestions.find(aq => aq.id === q.id)) {
+                            allRecommendQuestions.push(q);
+                        }
+                    });
                 }
 
                 activeWrongTabIndex = 0;
@@ -2238,6 +2300,10 @@
         function renderWrongTabContent(index) {
             const tabContent = document.getElementById('wrongTabContent');
             const recommendations = wrongRecommendationsCache[index] || [];
+            console.log(`渲染推荐列表[${index}]，共${recommendations.length}题:`);
+            recommendations.forEach((q, idx) => {
+                console.log(`  [${idx}] ID=${q.id}, 题干=${q.stem.substring(0, 40)}...`);
+            });
 
             if (recommendations.length === 0) {
                 tabContent.innerHTML = '<div class="wrong-tab-empty">暂无相关知识点题目</div>';
@@ -2249,8 +2315,9 @@
             recommendations.forEach(q => {
                 const typeName = typeNames[q.type] || '题目';
                 const stem = q.stem.length > 60 ? q.stem.substring(0, 60) + '...' : q.stem;
+                // 使用数据属性存储题目信息，避免直接嵌入onclick中的ID有问题
                 html += `
-                    <div class="wrong-tab-recommend-item" onclick="practiceSingleQuestion(${q.id})">
+                    <div class="wrong-tab-recommend-item" data-qid="${q.id}" data-stem="${q.stem.substring(0, 20)}" onclick="practiceSingleQuestion(${q.id})">
                         <span class="wrong-tab-recommend-type">${typeName}</span>
                         <span class="wrong-tab-recommend-stem">${stem}</span>
                     </div>
