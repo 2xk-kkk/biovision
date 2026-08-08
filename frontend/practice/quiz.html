@@ -2154,17 +2154,18 @@
             const tabBar = document.getElementById('wrongTabBar');
             const tabContent = document.getElementById('wrongTabContent');
 
-            // 收集本次练习中的错题（选择题答错的 + 填空题已提交的）
+            // 收集需要推荐的题目（选择题答错的 + 填空题/大题全部推荐）
             wrongQuestionsCache = quizQuestions.filter(q => {
                 const qType = getQuestionType(q);
-                if (qType === 'essay') return false;
+                if (qType === 'essay') return true;   // 大题不判正误，默认都推荐
+                if (qType === 'fill') return true;     // 填空题不判正误，默认都推荐
                 if (qType === 'choice') return results[q.id] === false;
-                return results[q.id] === null;
+                return false;
             });
 
             if (wrongQuestionsCache.length === 0) {
                 tabBar.innerHTML = '';
-                tabContent.innerHTML = '<div class="wrong-tab-empty">本次练习没有错题，太棒了！🎉</div>';
+                tabContent.innerHTML = '<div class="wrong-tab-empty">本次练习全部正确，太棒了！🎉</div>';
                 return;
             }
 
