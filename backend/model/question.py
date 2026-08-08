@@ -638,92 +638,218 @@ def add_to_wrong_book(db, user_id, question_id, user_answer=None):
 
 
 def get_related_questions_by_knowledge(db, user_id, question_id, limit=5):
-    """根据题目的知识点（章节）推荐相关题目，从题库中查询同知识点的题目"""
+    """根据题目的知识点标签推荐相关题目。
+
+    优先按 knowledge_tags 重合度排序，无标签时回退到章节/教材匹配。
+    """
+    import json
     cursor = db.cursor()
-    
-    # 获取当前题目的章节信息
+
+    # 获取当前题目的章节信息和知识点标签
     cursor.execute('''
-        SELECT textbook, chapter, section FROM questions WHERE id = ?
+        SELECT textbook, chapter, section, knowledge_tags FROM questions WHERE id = ?
     ''', (question_id,))
     current_question = cursor.fetchone()
-    
+
     if not current_question:
         return []
-    
-    textbook, chapter, section = current_question
-    
-    # 构建推荐查询：从questions表查询同知识点题目，排除用户已做对的题目
-    query = '''
-        SELECT q.id, q.stem, q.option_a, q.option_b, q.option_c, q.option_d, 
-               q.answer, q.textbook, q.chapter, q.section, q.type, q.analysis,
-               COALESCE(ua.wrong_count, 0) as wrong_count,
-               COALESCE(ua.mastered, 0) as mastered,
-               ua.answer as user_answer
-        FROM questions q
-        LEFT JOIN user_answers ua ON q.id = ua.question_id AND ua.user_id = ?
-        WHERE q.id != ?
-    '''
-    params = [user_id, question_id]
-    
-    # 添加章节匹配条件
-    conditions = []
-    if section and chapter:
-        # 同节 - 最高优先级
-        conditions.append('(q.section = ? AND q.chapter = ?)')
-        params.extend([section, chapter])
-    if chapter:
-        # 同章 - 次高优先级
-        conditions.append('(q.chapter = ?)')
-        params.append(chapter)
-    if textbook:
-        # 同教材 - 最低优先级
-        conditions.append('(q.textbook = ?)')
-        params.append(textbook)
-    
-    if conditions:
-        query += ' AND (' + ' OR '.join(conditions) + ')'
-    
-    # 排除用户已做对的题目（只推荐需要练习的题目）
-    query += ' AND (ua.is_correct = 0 OR ua.is_correct IS NULL)'
-    
-    # 排序：同节优先 > 同章 > 同教材，然后优先未做过的题目
-    query += ' ORDER BY '
-    order_clauses = []
-    if section and chapter:
-        order_clauses.append('CASE WHEN q.section = ? AND q.chapter = ? THEN 0 ELSE 1 END')
-        params.extend([section, chapter])
-    if chapter:
-        order_clauses.append('CASE WHEN q.chapter = ? THEN 0 ELSE 1 END')
-        params.append(chapter)
-    order_clauses.append('CASE WHEN ua.question_id IS NULL THEN 0 ELSE 1 END')  # 未做过的优先
-    order_clauses.append('COALESCE(ua.wrong_count, 0) DESC')  # 做错次数多的优先
-    
-    query += ', '.join(order_clauses) + ' LIMIT ?'
-    params.append(limit)
-    
-    cursor.execute(query, params)
-    
-    items = []
-    for row in cursor.fetchall():
-        items.append({
-            'id': row[0],
-            'stem': row[1],
-            'option_a': row[2],
-            'option_b': row[3],
-            'option_c': row[4],
-            'option_d': row[5],
-            'answer': row[6],
-            'textbook': row[7] or '',
-            'chapter': row[8] or '',
-            'section': row[9] or '',
-            'type': row[10] or '',
-            'analysis': row[11] or '',
-            'wrong_count': row[12] or 0,
-            'mastered': row[13] or 0,
-            'user_answer': row[14] or ''
-        })
-    
-    return items
+
+    textbook, chapter, section, knowledge_tags_json = current_question
+
+    # 解析知识点标签
+    source_tags = []
+    try:
+        if knowledge_tags_json and knowledge_tags_json != '[]':
+            source_tags = json.loads(knowledge_tags_json)  # [[kp_id, score], ...]
+    except (json.JSONDecodeError, TypeError):
+        source_tags = []
+
+    if source_tags:
+        # ===== 路径 A：知识点标签匹配 =====
+        source_kp_ids = {t[0]: t[1] for t in source_tags}
+
+        # 查询候选题目：同章 + 同教材（扩大池子做标签重合）
+        query = '''
+            SELECT q.id, q.stem, q.option_a, q.option_b, q.option_c, q.option_d,
+                   q.answer, q.textbook, q.chapter, q.section, q.type, q.analysis,
+                   q.knowledge_tags,
+                   COALESCE(ua.wrong_count, 0) as wrong_count,
+                   COALESCE(ua.mastered, 0) as mastered,
+                   ua.answer as user_answer
+            FROM questions q
+            LEFT JOIN user_answers ua ON q.id = ua.question_id AND ua.user_id = ?
+            WHERE q.id != ?
+            AND (ua.is_correct = 0 OR ua.is_correct IS NULL)
+        '''
+        params = [user_id, question_id]
+
+        # 先用章节条件缩小候选池
+        conditions = []
+        if chapter:
+            conditions.append('q.chapter = ?')
+            params.append(chapter)
+        if textbook:
+            conditions.append('q.textbook = ?')
+            params.append(textbook)
+        if section and chapter:
+            conditions.append('(q.section = ? AND q.chapter = ?)')
+            params.extend([section, chapter])
+
+        if conditions:
+            query += ' AND (' + ' OR '.join(conditions) + ')'
+
+        cursor.execute(query, params)
+        candidates = cursor.fetchall()
+
+        # 对每道候选计算标签重合分数
+        scored = []
+        for row in candidates:
+            candidate_tags_json = row[12]  # knowledge_tags column
+            candidate_tags = []
+            try:
+                if candidate_tags_json and candidate_tags_json != '[]':
+                    candidate_tags = json.loads(candidate_tags_json)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+            # 计算重合分数
+            overlap_score = 0.0
+            shared_kp_ids = []
+            for ckp_id, c_score in candidate_tags:
+                if ckp_id in source_kp_ids:
+                    overlap_score += min(source_kp_ids[ckp_id], c_score)
+                    shared_kp_ids.append(ckp_id)
+
+            # 章节/教材加分
+            bonus = 0.0
+            c_textbook = row[7] or ''
+            c_chapter = row[8] or ''
+            c_section = row[9] or ''
+
+            if section and c_section == section and chapter and c_chapter == chapter:
+                bonus += 3.0
+            elif chapter and c_chapter == chapter:
+                bonus += 2.0
+            elif textbook and c_textbook == textbook:
+                bonus += 1.0
+
+            # 综合分 = 标签重合 × 10 + 章节加分 + 之前错过加分
+            score = overlap_score * 10 + bonus
+            if row[13] and row[13] > 0:  # wrong_count
+                score += 1.0
+            if row[14] is None or row[14] == 0:  # 未做过
+                score += 0.5
+
+            scored.append((score, row, shared_kp_ids))
+
+        # 按分数降序排序
+        scored.sort(key=lambda x: x[0], reverse=True)
+
+        # 取 top-N，去重（按 ID）
+        seen_ids = set()
+        items = []
+        for score, row, shared_kp_ids in scored:
+            qid = row[0]
+            if qid in seen_ids:
+                continue
+            seen_ids.add(qid)
+
+            item = {
+                'id': row[0],
+                'stem': row[1],
+                'options': {
+                    'A': row[2],
+                    'B': row[3],
+                    'C': row[4],
+                    'D': row[5]
+                },
+                'answer': row[6],
+                'textbook': row[7] or '',
+                'chapter': row[8] or '',
+                'section': row[9] or '',
+                'type': row[10] or '',
+                'analysis': row[11] or '',
+                'wrong_count': row[13] or 0,
+                'mastered': row[14] or 0,
+                'user_answer': row[15] or '',
+                '_shared_kp_ids': shared_kp_ids,
+            }
+            items.append(item)
+
+            if len(items) >= limit:
+                break
+
+        return items
+
+    else:
+        # ===== 路径 B：无知识点标签，回退到章节/教材匹配 =====
+        query = '''
+            SELECT q.id, q.stem, q.option_a, q.option_b, q.option_c, q.option_d,
+                   q.answer, q.textbook, q.chapter, q.section, q.type, q.analysis,
+                   COALESCE(ua.wrong_count, 0) as wrong_count,
+                   COALESCE(ua.mastered, 0) as mastered,
+                   ua.answer as user_answer
+            FROM questions q
+            LEFT JOIN user_answers ua ON q.id = ua.question_id AND ua.user_id = ?
+            WHERE q.id != ?
+        '''
+        params = [user_id, question_id]
+
+        conditions = []
+        if section and chapter:
+            conditions.append('(q.section = ? AND q.chapter = ?)')
+            params.extend([section, chapter])
+        if chapter:
+            conditions.append('(q.chapter = ?)')
+            params.append(chapter)
+        if textbook:
+            conditions.append('(q.textbook = ?)')
+            params.append(textbook)
+
+        if conditions:
+            query += ' AND (' + ' OR '.join(conditions) + ')'
+
+        query += ' AND (ua.is_correct = 0 OR ua.is_correct IS NULL)'
+
+        query += ' ORDER BY '
+        order_clauses = []
+        if section and chapter:
+            order_clauses.append('CASE WHEN q.section = ? AND q.chapter = ? THEN 0 ELSE 1 END')
+            params.extend([section, chapter])
+        if chapter:
+            order_clauses.append('CASE WHEN q.chapter = ? THEN 0 ELSE 1 END')
+            params.append(chapter)
+        order_clauses.append('CASE WHEN ua.question_id IS NULL THEN 0 ELSE 1 END')
+        order_clauses.append('COALESCE(ua.wrong_count, 0) DESC')
+
+        query += ', '.join(order_clauses) + ' LIMIT ?'
+        params.append(limit)
+
+        cursor.execute(query, params)
+
+        items = []
+        for row in cursor.fetchall():
+            items.append({
+                'id': row[0],
+                'stem': row[1],
+                'options': {
+                    'A': row[2],
+                    'B': row[3],
+                    'C': row[4],
+                    'D': row[5]
+                },
+                'answer': row[6],
+                'textbook': row[7] or '',
+                'chapter': row[8] or '',
+                'section': row[9] or '',
+                'type': row[10] or '',
+                'analysis': row[11] or '',
+                'wrong_count': row[12] or 0,
+                'mastered': row[13] or 0,
+                'user_answer': row[14] or ''
+            })
+
+        return items
 
 
 def get_question_by_id(db, question_id):

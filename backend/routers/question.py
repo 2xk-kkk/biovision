@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Header, Query
-from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service, get_textbook_progress_service, get_textbook_chapter_progress_service, add_to_wrong_book_service, get_related_questions_service, get_single_question_service
+from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service, get_textbook_progress_service, get_textbook_chapter_progress_service, add_to_wrong_book_service, get_related_questions_service, get_single_question_service, run_knowledge_tagging_service
+from model.knowledge_point import get_knowledge_points_by_chapter_key, get_all_knowledge_points
+from database.db import get_db_connection
 from utils.jwt_utils import verify_jwt
 from utils.response import ApiResponse
 
@@ -151,3 +153,25 @@ def get_related_answers(question_id: int, limit: int = Query(5), token: str = He
 def get_single_question(question_id: int):
     """获取单个题目"""
     return get_single_question_service(question_id)
+
+
+@router.post("/knowledge/tag-all")
+def tag_all_questions():
+    """管理员触发：重新为所有题目自动打标"""
+    return run_knowledge_tagging_service()
+
+
+@router.get("/knowledge/points")
+def get_knowledge_points(chapter_key: str = Query(None)):
+    """获取知识点列表，可按章节 key 筛选（如 book1-ch1）"""
+    db = get_db_connection()
+    try:
+        if chapter_key:
+            points = get_knowledge_points_by_chapter_key(db, chapter_key)
+        else:
+            points = get_all_knowledge_points(db)
+        return ApiResponse.success(data=points)
+    except Exception as e:
+        return ApiResponse.error(msg=f"获取知识点失败: {str(e)}")
+    finally:
+        db.close()

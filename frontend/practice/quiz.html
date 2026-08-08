@@ -847,6 +847,10 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-content: flex-start;
         }
 
         .wrong-tab-placeholder {
@@ -865,20 +869,21 @@
 
         .wrong-tab-recommend-item {
             display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 12px 14px;
+            flex-direction: column;
+            gap: 6px;
+            padding: 14px 16px;
             background: white;
             border-radius: 10px;
             border: 1px solid rgba(251, 191, 36, 0.2);
-            margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.25s ease;
+            flex: 1 1 0;
+            min-width: 200px;
         }
 
         .wrong-tab-recommend-item:hover {
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(251, 191, 36, 0.25);
             border-color: rgba(251, 191, 36, 0.5);
         }
 
@@ -890,15 +895,47 @@
             padding: 2px 8px;
             border-radius: 5px;
             white-space: nowrap;
-            flex-shrink: 0;
-            margin-top: 2px;
+            align-self: flex-start;
         }
 
         .wrong-tab-recommend-stem {
-            flex: 1;
             font-size: 13px;
             color: #78350f;
             line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .knowledge-context-tag {
+            display: inline-block;
+            font-size: 11px;
+            color: #7b1fa2;
+            background: #f3e5f5;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            align-self: flex-start;
+        }
+
+        .knowledge-context-tag.important {
+            color: #e65100;
+            background: #fff3e0;
+        }
+
+        .knowledge-context-tag.memorize {
+            color: #c62828;
+            background: #fce4ec;
+        }
+
+        .knowledge-context-tag.understand {
+            color: #1565c0;
+            background: #e3f2fd;
         }
 
         .wrong-tab-empty {
@@ -1722,10 +1759,18 @@
         }
 
         function renderCurrentQuestion() {
-            const question = quizQuestions[currentQuestionIndex];
+            console.log('renderCurrentQuestion: idx=' + currentQuestionIndex + ' len=' + quizQuestions.length);
+            var question = quizQuestions[currentQuestionIndex];
             if (!question) {
+                console.log('renderCurrentQuestion: question为空');
                 showResult();
                 return;
+            }
+            console.log('renderCurrentQuestion: 渲染 id=' + question.id + ' ' + (question.stem||'').substring(0, 40));
+            // 直接修改DOM确认渲染正确
+            var qp = document.getElementById('quizPaper');
+            if (qp) {
+                qp.setAttribute('data-rendered-id', question.id);
             }
 
             const questionType = getQuestionType(question);
@@ -2067,56 +2112,43 @@
             }
         }
 
-        function practiceSingleQuestion(questionId) {
-            console.log(`点击练习，题目ID=${questionId}`);
-            
-            // 从缓存中查找题目
-            let targetQuestion = null;
-            console.log(`wrongRecommendationsCache 长度: ${wrongRecommendationsCache.length}`);
-            
-            for (let i = 0; i < wrongRecommendationsCache.length; i++) {
-                const recs = wrongRecommendationsCache[i] || [];
-                console.log(`  查找推荐缓存[${i}]，共${recs.length}题`);
-                targetQuestion = recs.find(q => String(q.id) === String(questionId));
-                if (targetQuestion) {
-                    console.log(`  ✓ 在推荐缓存[${i}]中找到题目: ${targetQuestion.stem.substring(0, 30)}...`);
-                    break;
-                }
-            }
-            
-            if (!targetQuestion) {
-                console.log(`在allRecommendQuestions中查找，共${allRecommendQuestions.length}题`);
-                targetQuestion = allRecommendQuestions.find(q => String(q.id) === String(questionId));
-                if (targetQuestion) {
-                    console.log(`✓ 在全部推荐中找到题目: ${targetQuestion.stem.substring(0, 30)}...`);
-                }
-            }
-
-            if (!targetQuestion) {
-                console.log(`❌ 缓存中未找到，使用API加载题目ID=${questionId}`);
-                alert('缓存中未找到题目，正在重新加载...');
-                // 备用方案：通过API加载
-                fetch(`${API_BASE_URL}/questions/${questionId}`)
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success && result.data) {
-                            console.log(`API返回题目: ${result.data.stem.substring(0, 30)}...`);
-                            startPracticeWithQuestion(result.data);
-                        } else {
-                            alert('加载题目失败');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('加载推荐题失败:', error);
-                        alert('加载推荐题失败，请重试');
-                    });
+        async function practiceSingleQuestion(questionId) {
+            console.log('推荐题点击: 题目ID=' + questionId);
+            questionId = parseInt(questionId);
+            if (!questionId || questionId <= 0) {
+                console.error('无效的题目ID');
                 return;
             }
 
-            startPracticeWithQuestion(targetQuestion);
+            // 优先从内存Map读取（零网络请求，100%可靠）
+            var cached = recommendQuestionMap[questionId];
+            if (cached) {
+                console.log('从Map缓存读取: id=' + cached.id + ' stem=' + (cached.stem||'').substring(0,30));
+                startPracticeWithQuestion(cached);
+                return;
+            }
+
+            // 兜底：API加载
+            console.log('Map中未找到，API加载: ' + questionId);
+            try {
+                const url = `${API_BASE_URL}/questions/${questionId}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                console.log('API响应:', result.success, result.data?.id);
+                if (result.success && result.data) {
+                    startPracticeWithQuestion(result.data);
+                } else {
+                    alert('加载失败: ' + (result.msg || ''));
+                }
+            } catch (error) {
+                console.error('fetch失败:', error);
+                alert('网络请求失败，请确认后端已启动');
+            }
         }
 
         function startPracticeWithQuestion(question) {
+            console.log('startPracticeWithQuestion CALLED: id=' + question.id + ' stem=' + (question.stem||'').substring(0, 40));
+
             // 保存原始练习状态
             const quizTitleEl = document.getElementById('quizTitle');
             originalPracticeState = {
@@ -2151,27 +2183,31 @@
             isAnswerSubmitted = false;
             isRecommendPractice = true;
 
+            console.log('quizQuestions已设置为: [' + quizQuestions[0].id + '] ' + quizQuestions[0].stem.substring(0, 30));
+
             // 重置UI
             document.getElementById('answerPanel').classList.remove('show');
             document.getElementById('questionPanel').classList.remove('compact');
             hideAnswerPanel();
 
             // 更新标题
-            if (quizTitleEl) quizTitleEl.textContent = '错题推荐练习';
+            if (quizTitleEl) quizTitleEl.textContent = '▶ 错题推荐练习 ◀';
 
             // 开始计时
             startTime = Date.now();
             if (timer) clearInterval(timer);
-            startTimer();
 
             // 渲染题目
+            console.log('即将调用renderCurrentQuestion, quizQuestions.length=' + quizQuestions.length + ' currentQuestionIndex=' + currentQuestionIndex);
             renderCurrentQuestion();
+            console.log('renderCurrentQuestion完成, quizPaper内容长度=' + (document.getElementById('quizPaper').innerHTML.length));
         }
 
         let wrongQuestionsCache = [];
         let wrongRecommendationsCache = [];  // 必须是数组，不是对象
         let allRecommendQuestions = [];
         let activeWrongTabIndex = 0;
+        let recommendQuestionMap = {};  // id -> 完整题目数据，点击时直接读取
 
         async function loadWrongTabRecommendations() {
             const tabBar = document.getElementById('wrongTabBar');
@@ -2204,63 +2240,79 @@
             tabContent.innerHTML = '<div class="wrong-tab-loading">正在加载推荐题目...</div>';
 
             allRecommendQuestions = [];
+            wrongRecommendationsCache = [];
+            recommendQuestionMap = {};
+            const token = localStorage.getItem('token');
 
             try {
-                // 对每道错题，查询同章节同类型的题目
+                // 对每道需要推荐的题，调用知识点推荐端点
                 for (let i = 0; i < wrongQuestionsCache.length; i++) {
                     const wq = wrongQuestionsCache[i];
                     const questionType = getQuestionType(wq);
-                    // 优先从题目对象获取，然后使用全局变量（从URL保存的）
-                    const textbook = wq.textbook || currentTextbook || '';
-                    const chapter = wq.chapter || currentChapter || '';
-                    const section = wq.section || currentSection || '';
 
-                    console.log(`错题推荐[${i}]: textbook=${textbook}, chapter=${chapter}, section=${section}, type=${questionType}`);
+                    console.log(`错题推荐[${i}]: QID=${wq.id}, type=${questionType}`);
 
                     let recommendQuestions = [];
 
-                    // 第一级：按知识点精确匹配
-                    if (section) {
-                        const params1 = new URLSearchParams();
-                        if (textbook) params1.append('textbook', textbook);
-                        if (chapter) params1.append('chapter', chapter);
-                        params1.append('section', section);
-                        params1.append('type', questionType);
-                        
-                        const r1 = await fetch(`${API_BASE_URL}/questions/textbook?${params1.toString()}`);
-                        const result1 = await r1.json();
-                        if (result1.success && Array.isArray(result1.data) && result1.data.length > 0) {
-                            console.log(`同section匹配: ${result1.data.length}题`);
-                            recommendQuestions = result1.data;
+                    // 优先使用知识点推荐端点（需要登录）
+                    if (token) {
+                        try {
+                            const params = new URLSearchParams();
+                            params.append('limit', '5');
+                            const r = await fetch(`${API_BASE_URL}/questions/related/${wq.id}?${params.toString()}`, {
+                                headers: { 'token': token }
+                            });
+                            const result = await r.json();
+                            if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                                console.log(`知识点推荐: ${result.data.length}题`);
+                                recommendQuestions = result.data;
+                            }
+                        } catch (e) {
+                            console.log('知识点推荐失败，回退到章节匹配:', e);
                         }
                     }
 
-                    // 第二级：按章节匹配（如果第一级没结果）
-                    if (recommendQuestions.length === 0 && chapter) {
-                        const params2 = new URLSearchParams();
-                        if (textbook) params2.append('textbook', textbook);
-                        params2.append('chapter', chapter);
-                        params2.append('type', questionType);
-                        
-                        const r2 = await fetch(`${API_BASE_URL}/questions/textbook?${params2.toString()}`);
-                        const result2 = await r2.json();
-                        if (result2.success && Array.isArray(result2.data) && result2.data.length > 0) {
-                            console.log(`同chapter匹配: ${result2.data.length}题`);
-                            recommendQuestions = result2.data;
-                        }
-                    }
+                    // 降级：未登录或知识点端点无结果，使用原3层章节匹配
+                    if (recommendQuestions.length === 0) {
+                        const textbook = wq.textbook || currentTextbook || '';
+                        const chapter = wq.chapter || currentChapter || '';
+                        const section = wq.section || currentSection || '';
 
-                    // 第三级：按教材匹配（如果还没结果）
-                    if (recommendQuestions.length === 0 && textbook) {
-                        const params3 = new URLSearchParams();
-                        params3.append('textbook', textbook);
-                        params3.append('type', questionType);
-                        
-                        const r3 = await fetch(`${API_BASE_URL}/questions/textbook?${params3.toString()}`);
-                        const result3 = await r3.json();
-                        if (result3.success && Array.isArray(result3.data) && result3.data.length > 0) {
-                            console.log(`同textbook匹配: ${result3.data.length}题`);
-                            recommendQuestions = result3.data;
+                        // 第一级：按节匹配
+                        if (section) {
+                            const params1 = new URLSearchParams();
+                            if (textbook) params1.append('textbook', textbook);
+                            if (chapter) params1.append('chapter', chapter);
+                            params1.append('section', section);
+                            params1.append('type', questionType);
+                            const r1 = await fetch(`${API_BASE_URL}/questions/textbook?${params1.toString()}`);
+                            const result1 = await r1.json();
+                            if (result1.success && Array.isArray(result1.data) && result1.data.length > 0) {
+                                recommendQuestions = result1.data;
+                            }
+                        }
+                        // 第二级：按章匹配
+                        if (recommendQuestions.length === 0 && chapter) {
+                            const params2 = new URLSearchParams();
+                            if (textbook) params2.append('textbook', textbook);
+                            params2.append('chapter', chapter);
+                            params2.append('type', questionType);
+                            const r2 = await fetch(`${API_BASE_URL}/questions/textbook?${params2.toString()}`);
+                            const result2 = await r2.json();
+                            if (result2.success && Array.isArray(result2.data) && result2.data.length > 0) {
+                                recommendQuestions = result2.data;
+                            }
+                        }
+                        // 第三级：按教材匹配
+                        if (recommendQuestions.length === 0 && textbook) {
+                            const params3 = new URLSearchParams();
+                            params3.append('textbook', textbook);
+                            params3.append('type', questionType);
+                            const r3 = await fetch(`${API_BASE_URL}/questions/textbook?${params3.toString()}`);
+                            const result3 = await r3.json();
+                            if (result3.success && Array.isArray(result3.data) && result3.data.length > 0) {
+                                recommendQuestions = result3.data;
+                            }
                         }
                     }
 
@@ -2268,12 +2320,13 @@
                     const others = recommendQuestions.filter(q => q.id !== wq.id);
                     const shuffled = others.sort(() => Math.random() - 0.5);
                     const picked = shuffled.slice(0, 5);
-                    
+
                     wrongRecommendationsCache[i] = picked;
                     console.log(`最终推荐: ${picked.length}题`);
-                    
-                    // 收集所有推荐题目（去重）
+
+                    // 收集所有推荐题目（去重）并存入快速查找Map
                     picked.forEach(q => {
+                        recommendQuestionMap[q.id] = q;
                         if (!allRecommendQuestions.find(aq => aq.id === q.id)) {
                             allRecommendQuestions.push(q);
                         }
@@ -2312,18 +2365,36 @@
 
             const typeNames = { 'choice': '选择题', 'fill': '填空题', 'essay': '大题' };
             let html = '';
-            recommendations.forEach(q => {
+            recommendations.forEach((q, idx) => {
                 const typeName = typeNames[q.type] || '题目';
                 const stem = q.stem.length > 60 ? q.stem.substring(0, 60) + '...' : q.stem;
-                // 使用数据属性存储题目信息，避免直接嵌入onclick中的ID有问题
+                const kpLabel = q.knowledge_context && q.knowledge_context.length > 0
+                    ? q.knowledge_context[0].label : '';
+                const kpCategory = q.tag_category || '';
+                const kpCategoryClass = kpCategory === '重点' ? 'important' :
+                    kpCategory === '记忆' ? 'memorize' :
+                    kpCategory === '理解' ? 'understand' : '';
+                // 直接把完整题目数据编码后嵌入DOM，点击时解码
+                const encoded = encodeURIComponent(JSON.stringify(q));
                 html += `
-                    <div class="wrong-tab-recommend-item" data-qid="${q.id}" data-stem="${q.stem.substring(0, 20)}" onclick="practiceSingleQuestion(${q.id})">
+                    <div class="wrong-tab-recommend-item" data-question="${encoded}" style="cursor:pointer">
                         <span class="wrong-tab-recommend-type">${typeName}</span>
                         <span class="wrong-tab-recommend-stem">${stem}</span>
+                        ${kpLabel ? `<span class="knowledge-context-tag ${kpCategoryClass}">📌 ${kpLabel}${kpCategory ? ' · ' + kpCategory : ''}</span>` : ''}
                     </div>
                 `;
             });
             tabContent.innerHTML = html;
+            // 给每个推荐项绑定点击事件（不用onclick属性，避免模板问题）
+            tabContent.querySelectorAll('.wrong-tab-recommend-item').forEach(function(el) {
+                el.addEventListener('click', function() {
+                    var encoded = this.getAttribute('data-question');
+                    if (!encoded) return;
+                    var question = JSON.parse(decodeURIComponent(encoded));
+                    console.log('DOM读取题目: id=' + question.id + ' stem=' + (question.stem||'').substring(0,30));
+                    startPracticeWithQuestion(question);
+                });
+            });
         }
 
         function returnToOriginalResult() {
@@ -2377,7 +2448,8 @@
             isRecommendPractice = false;
             originalPracticeState = null;
             wrongQuestionsCache = [];
-            wrongRecommendationsCache = {};
+            wrongRecommendationsCache = [];
+            recommendQuestionMap = {};
             allRecommendQuestions = [];
 
             // 显示原始结果弹窗
@@ -2494,7 +2566,8 @@
                 // 正常练习完成 - 显示错题推荐
                 // 重置推荐状态
                 wrongQuestionsCache = [];
-                wrongRecommendationsCache = {};
+                wrongRecommendationsCache = [];
+                recommendQuestionMap = {};
                 allRecommendQuestions = [];
                 document.getElementById('wrongTabBar').innerHTML = '';
                 document.getElementById('wrongTabContent').innerHTML = '<div class="wrong-tab-placeholder">正在加载...</div>';
