@@ -1808,10 +1808,6 @@
                 
                 html += `<textarea class="${textareaClass}" id="${textareaId}" rows="6" ${isAnswerSubmitted ? 'disabled' : ''} oninput="updateEssayAnswer(${question.id})">${userAnswer || ''}</textarea>`;
                 
-                if (isAnswerSubmitted && correctAnswer) {
-                    html += `<div class="essay-answer"><div class="answer-label">参考答案：</div><div class="answer-content">${correctAnswer}</div></div>`;
-                }
-                
                 html += `</div>`;
             } else {
                 let stemHtml = question.stem;
@@ -1943,15 +1939,15 @@
             renderCurrentQuestion();
             
             if (isSubjective) {
-                showAnswerPanel(null, question.answer || '', question.analysis || '');
+                showAnswerPanel(null, question.answer || '', question.analysis || '', userAnswer);
             } else {
-                showAnswerPanel(isCorrect, question.answer || '', question.analysis || '');
+                showAnswerPanel(isCorrect, question.answer || '', question.analysis || '', userAnswer);
             }
         }
 
         let isAddedToWrongBook = false;
 
-        function showAnswerPanel(isCorrect, correctAnswer, analysis) {
+        function showAnswerPanel(isCorrect, correctAnswer, analysis, userAnswer) {
             const questionPanel = document.getElementById('questionPanel');
             const answerPanel = document.getElementById('answerPanel');
             const answerIcon = document.getElementById('answerIcon');
@@ -1998,10 +1994,10 @@
             
             correctAnswerValue.textContent = correctAnswer;
             
-            if (analysis && analysis.trim()) {
-                analysisContent.innerHTML = analysis;
+            if (analysis && analysis.trim() && analysis !== 'None') {
+                analysisContent.innerHTML = `<div style="padding:12px; color:#374151; line-height:1.6; font-size:14px;">${analysis}</div>`;
             } else {
-                analysisContent.innerHTML = '<div class="no-analysis">暂无解析，敬请期待...</div>';
+                analysisContent.innerHTML = `<div style="padding:12px; color:#9ca3af; text-align:center;">暂无解析</div>`;
             }
         }
 
@@ -2687,8 +2683,21 @@
                     }
                 }
 
-                if (q.analysis && q.analysis.trim()) {
+                if (q.analysis && q.analysis.trim() && q.analysis !== 'None') {
                     html += `<div style="margin-top:15px; padding:12px; background:#fef3c7; border-radius:8px; border-left:4px solid #f59e0b;"><strong style="color:#92400e;">💡 解析：</strong><span style="color:#78350f;">${q.analysis}</span></div>`;
+                } else {
+                    // 无解析时显示基础说明
+                    const typeNames2 = { 'choice': '选择题', 'fill': '填空题', 'essay': '大题' };
+                    const typeName2 = typeNames2[questionType] || '题目';
+                    html += `<div style="margin-top:15px; padding:12px; background:#f0f9ff; border-radius:8px; border-left:4px solid #3b82f6;">`;
+                    html += `<strong style="color:#1d4ed8;">📖 ${typeName2}答案说明：</strong>`;
+                    if (questionType === 'choice' && q.answer && q.options && q.options[q.answer]) {
+                        html += `<p style="margin:8px 0 0 0; color:#1e40af;">正确答案 <strong>${q.answer}</strong>：${q.options[q.answer]}</p>`;
+                    } else if (q.answer) {
+                        html += `<p style="margin:8px 0 0 0; color:#1e40af;">参考答案：${q.answer}</p>`;
+                    }
+                    html += `<p style="margin:8px 0 0 0; color:#64748b; font-size:13px;">💡 请结合教材对应章节理解本题核心知识点。</p>`;
+                    html += `</div>`;
                 }
 
                 html += '</div>';

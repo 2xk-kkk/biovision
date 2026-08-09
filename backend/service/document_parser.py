@@ -212,8 +212,8 @@ def save_questions(exam_id, questions):
             
             cursor.execute('''
                 INSERT INTO questions 
-                (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images, analysis)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 exam_id,
                 q['number'],
@@ -223,7 +223,8 @@ def save_questions(exam_id, questions):
                 q['options'].get('C', ''),
                 q['options'].get('D', ''),
                 q.get('answer', ''),
-                images_json
+                images_json,
+                q.get('analysis', '')
             ))
         
         conn.commit()
@@ -275,8 +276,8 @@ def parse_and_save(file_path, custom_title=None):
             
             cursor.execute('''
                 INSERT OR REPLACE INTO questions 
-                (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, images, analysis)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 exam_id,
                 q['number'],
@@ -286,7 +287,8 @@ def parse_and_save(file_path, custom_title=None):
                 q['options'].get('C', ''),
                 q['options'].get('D', ''),
                 q.get('answer', ''),
-                images_json
+                images_json,
+                q.get('analysis', '')
             ))
         
         conn.commit()

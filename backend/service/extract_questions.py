@@ -156,8 +156,11 @@ def parse_questions(docx_path, exam_name):
     elements = read_docx_content(docx_path)
     
     answers = {}
+    analysis_dict = {}  # 存解析内容
     current_answer_num = None
+    current_analysis_num = None
     in_answer_section = False
+    collecting_analysis = False
     
     for elem in elements:
         if elem['type'] == 'paragraph':
@@ -171,20 +174,50 @@ def parse_questions(docx_path, exam_name):
                 num_match = re.search(r'【(\d+)题答案】', text)
                 if num_match:
                     current_answer_num = int(num_match.group(1))
+                    collecting_analysis = True
+                    continue
                 
                 ans_match = re.match(r'【答案】\s*(.+)$', text)
                 if ans_match and current_answer_num:
                     answers[current_answer_num] = ans_match.group(1).strip()
+                    continue
+                
+                an_match = re.match(r'【解析】\s*(.+)$', text)
+                if an_match and current_answer_num:
+                    analysis_dict[current_answer_num] = an_match.group(1).strip()
+                    collecting_analysis = False
                     current_answer_num = None
+                    continue
+                
+                # 继续收集解析内容（多行）
+                if collecting_analysis and current_answer_num and text:
+                    if current_answer_num in analysis_dict:
+                        analysis_dict[current_answer_num] += '\n' + text
+                    else:
+                        analysis_dict[current_answer_num] = text
             else:
+                # 参考答案区域
                 num_match = re.match(r'^(\d+)[．.、]\s*(.+)$', text)
                 if num_match:
                     answers[int(num_match.group(1))] = num_match.group(2).strip()
+                    current_analysis_num = int(num_match.group(1))
+                    continue
                 
                 inline_matches = re.findall(r'(\d+)[．.、]\s*([ABCDabcd]+)', text)
                 if inline_matches:
                     for match in inline_matches:
                         answers[int(match[0])] = match[1].strip().upper()
+                    continue
+                
+                # 解析：xxx 或 【解析】xxx
+                if text.startswith('解析：') or text.startswith('解析:') or text.startswith('【解析】'):
+                    content = text.replace('解析：', '').replace('解析:', '').replace('【解析】', '').strip()
+                    if current_analysis_num:
+                        analysis_dict[current_analysis_num] = content
+                elif text.startswith('答案解析：') or text.startswith('答案解析:') or text.startswith('【答案解析】'):
+                    content = text.replace('答案解析：', '').replace('答案解析:', '').replace('【答案解析】', '').strip()
+                    if current_analysis_num:
+                        analysis_dict[current_analysis_num] = content
     
     start_index = 0
     found_choice_title = False
@@ -368,13 +401,17 @@ def parse_questions(docx_path, exam_name):
             'options': options,
             'answer': answer,
             'images': final_images,
-            'type': 'non_choice' if not has_options else 'choice'
+            'type': 'non_choice' if not has_options else 'choice',
+            'analysis': analysis_dict.get(question_num, '')
         })
     
     sorted_answers = sorted(answers.items(), key=lambda x: x[0])
     for i, (ans_num, ans_val) in enumerate(sorted_answers):
         if i < len(questions):
             questions[i]['answer'] = ans_val
+            # 如果题目自身没找到解析，也按题号尝试填充
+            if not questions[i].get('analysis') and analysis_dict.get(ans_num):
+                questions[i]['analysis'] = analysis_dict[ans_num]
     
     return questions
 
