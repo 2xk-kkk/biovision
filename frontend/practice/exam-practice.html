@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>试卷练习 - 生物视界</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50C55 45 60 45 65 50C70 55 70 60 65 65C60 70 55 70 50 65C45 70 40 70 35 65C30 60 30 55 35 50C40 45 45 45 50 50Z' fill='%23667eea' fill-opacity='0.05'/%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            min-width: 120px;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .region-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .region-tag {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+        }
+
+        .region-tag:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .region-tag.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .exam-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .exam-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: #e5e7eb;
+        }
+
+        .exam-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .exam-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .exam-title {
+            flex: 1;
+        }
+
+        .exam-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.4;
+        }
+
+        .exam-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f9fafb;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .meta-icon {
+            font-size: 12px;
+        }
+
+        .meta-value {
+            font-weight: 500;
+        }
+
+        .exam-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 16px;
+            margin-top: 12px;
+        }
+
+        .exam-tag {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tag-new {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .tag-hot {
+            background: #fed7aa;
+            color: #ea580c;
+        }
+
+        .exam-footer {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 2px;
+            font-size: 14px;
+        }
+
+        .star {
+            color: #fbbf24;
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-start:hover {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-preview {
+            background: #3b82f6;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            margin-right: 8px;
+        }
+
+        .btn-preview:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-quiz {
+            background: #f59e0b;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            margin-right: 8px;
+        }
+
+        .btn-quiz:hover {
+            background: #d97706;
+            color: white;
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: #8c8c8c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .preview-modal {
+            width: 95%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .preview-header {
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            color: white;
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .preview-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .preview-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            background: #fafafa;
+        }
+
+        .preview-paper {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            min-height: 600px;
+        }
+
+        .preview-paper-header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .preview-paper-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .preview-paper-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .preview-question {
+            margin-bottom: 32px;
+            line-height: 1.8;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .preview-question-number {
+            float: left;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: 16px;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .preview-question-content {
+            margin-left: 64px;
+        }
+
+        .preview-question-stem {
+            margin-bottom: 16px;
+        }
+
+        .preview-q-images {
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .preview-q-images img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .preview-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .preview-option-letter {
+            font-weight: 600;
+            color: #0083b0;
+            font-size: 16px;
+            width: 24px;
+            flex-shrink: 0;
+        }
+
+        .preview-option-text {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .preview-answer {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+            font-size: 14px;
+        }
+
+        .preview-paper-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .preview-no-questions {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .preview-q-number {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .preview-q-type {
+            font-size: 12px;
+            color: #6b7280;
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .preview-q-content {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .preview-q-images {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .preview-q-images img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+
+        .preview-options {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .preview-option {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .preview-option span:first-child {
+            font-weight: 600;
+            margin-right: 8px;
+            color: #3b82f6;
+        }
+
+        .preview-answer {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #ecfdf5;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #059669;
+            border-left: 3px solid #10b981;
+        }
+
+        .preview-no-questions {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+        .modal-close:hover {
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #faf5ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f3f4f6;
+        }
+
+        .file-upload-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .file-upload-text {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .file-upload-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+         .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .exam-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="logo"></div>
+        <div class="search">
+            <form class="search-form">
+                <input type="text" class="search-input" placeholder="搜索知识点、课件、3D模型..." />
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" style="color: #90b2e6;">🔬 必修一：分子与细胞</a>
+                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" style="color: #a194e3;">🧬 必修二：遗传与进化</a>
+                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" style="color: #c576b4;">⚖️选择性必修一：稳态与调节</a>
+                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" style="color: burlywood;">🌿 选择性必修二：生物与环境</a>
+                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" style="color: #6bd3b1;">🧫 选择性必修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link active">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
+                <a href="../forum/main.html" class="nav-link">论坛</a>
+            </div>
+            <div class="user-actions">
+                <div class="avatar-wrapper" id="navAvatarBtn">
+                    <div class="avatar" id="navAvatar">👤</div>
+                    <div class="user-dropdown-menu" id="navDropdownMenu">
+                        <a href="../user-center/main.html" class="user-dropdown-item">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="#" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-title">📝 试卷练习</div>
+            <div class="hero-subtitle">汇聚全国知名高中模拟试题，精准训练高效提分</div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotalExams">0</div>
+                    <div class="stat-label">试卷总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotalRegions">0</div>
+                    <div class="stat-label">覆盖高中</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statYearRange">--</div>
+                    <div class="stat-label">年份范围</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotalQuestions">0</div>
+                    <div class="stat-label">题目总量</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <span class="filter-label">年份</span>
+                    <select class="filter-select" id="yearSelect" onchange="handleFilterChange()">
+                        <option value="全部">全部年份</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">类型</span>
+                    <select class="filter-select" id="typeSelect" onchange="handleFilterChange()">
+                        <option value="全部">全部类型</option>
+                        <option value="月考">月考</option>
+                        <option value="期中">期中</option>
+                        <option value="期末">期末</option>
+                        <option value="模拟考">模拟考</option>
+                        <option value="联考">联考</option>
+                    </select>
+                </div>
+                <div class="region-tags" id="uniTags">
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-primary" onclick="openUploadModal()">📤 上传试卷</button>
+            <button class="btn btn-success" onclick="importFromD()">📥 从D盘导入</button>
+        </div>
+
+        <div id="examContainer" class="exam-grid">
+            <div class="loading">⏳ 加载试卷列表中...</div>
+        </div>
+    </main>
+
+    <div id="uploadModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">上传试卷</div>
+                <div class="modal-close" onclick="closeUploadModal()">×</div>
+            </div>
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label class="form-label">试卷分类（格式：年份_高中_类型，如 2025_人大附中_月考）</label>
+                    <input type="text" class="form-input" id="categoryInput" placeholder="例如：2025_人大附中_月考" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择文件</label>
+                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
+                        <div class="file-upload-icon">📁</div>
+                        <div class="file-upload-text">点击或拖拽文件到此处</div>
+                        <div class="file-upload-hint">支持 .docx, .pdf, .doc, .zip 等格式</div>
+                        <input type="file" id="fileInput" style="display: none;" accept=".docx,.doc,.pdf,.zip,.rar,.jpg,.png" onchange="handleFileSelect(event)">
+                    </div>
+                </div>
+                <div id="selectedFile" style="display: none; margin-bottom: 16px; padding: 10px; background: #f3f4f6; border-radius: 8px;">
+                    <span id="fileName"></span>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="clearFile()" style="margin-left: 10px;">清除</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">上传</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal preview-modal">
+            <div class="preview-header">
+                <div class="preview-title">试卷预览</div>
+                <button class="preview-close" onclick="closePreviewModal()">×</button>
+            </div>
+            <div class="preview-content" id="previewContent">
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2026 DOXW 生物教学平台. 保留所有权利.</p>
+    </div>
+
+    <script>
+        // 全国知名高中列表
+        const FAMOUS_UNIVERSITIES = [
+            '人大附中', '北京四中', '上海中学', '华师大二附中',
+            '南京外国语', '杭二中', '华师一附中', '成都七中',
+            '深圳中学', '衡水中学'
+        ];
+
+        const HOT_UNIVERSITIES = ['人大附中', '上海中学', '衡水中学', '成都七中', '华师一附中'];
+
+        let selectedFile = null;
+        let currentYear = '全部';
+        let currentUniversity = '全部';
+        let currentType = '全部';
+        let years = [];
+
+        async function loadExams(year = null, university = null, type = null) {
+            const container = document.getElementById('examContainer');
+            try {
+                let url = 'http://localhost:8000/api/exams';
+                const params = [];
+                if (year && year !== '全部') params.push(`year=${year}`);
+                if (university && university !== '全部') params.push(`region=${encodeURIComponent(university)}`);
+                if (type && type !== '全部') params.push(`type=${encodeURIComponent(type)}`);
+                if (params.length > 0) url += '?' + params.join('&');
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (!result.success) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">${result.msg || '试卷目录为空'}</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const data = result.data;
+                const exams = data.exams;
+                const stats = data.stats || {};
+                years = data.years || [];
+
+                updateStats(stats);
+                updateYearSelect(years);
+                updateUniversityTags();
+
+                if (exams.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">请点击上方"上传试卷"添加高中模拟题</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = exams.map((exam, index) => `
+                    <div class="exam-card">
+                        <div class="exam-card-header">
+                            <div class="exam-icon">🎓</div>
+                            <div class="exam-title">
+                                <div class="exam-name">${exam.year || ''}年 ${exam.region || ''} ${exam.exam_type || '模拟题'}</div>
+                            </div>
+                        </div>
+                        <div class="exam-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">🏫</span>
+                                <span class="meta-value">${exam.region || '未知高校'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📄</span>
+                                <span class="meta-value">${exam.file_count || 0}份文件</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span class="meta-value">${exam.year || ''}</span>
+                            </div>
+                        </div>
+                        <div class="exam-tags">
+                            ${index < 3 ? '<span class="exam-tag tag-new">新增</span>' : ''}
+                            ${HOT_UNIVERSITIES.includes(exam.region) ? '<span class="exam-tag tag-hot">热门高中</span>' : ''}
+                        </div>
+                        <div class="exam-footer">
+                            <div class="star-rating">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">☆</span>
+                            </div>
+                            <div class="exam-actions">
+                                <button class="btn-preview" onclick="previewExam(${exam.id})">预览</button>
+                                ${exam.has_answers ? `<button class="btn-quiz" onclick="startQuiz(${exam.id})">开始练习</button>` : ''}
+                                <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">加载失败</div>
+                        <div class="empty-desc">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('加载试卷失败:', error);
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('statTotalExams').textContent = stats.total_exams || 0;
+            document.getElementById('statTotalRegions').textContent = stats.total_regions || 0;
+            document.getElementById('statYearRange').textContent = stats.year_range || '--';
+            document.getElementById('statTotalQuestions').textContent = stats.total_questions > 0 ? stats.total_questions + '+' : '0';
+        }
+
+        function updateYearSelect(yearList) {
+            const select = document.getElementById('yearSelect');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="全部">全部年份</option>';
+            yearList.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '年';
+                select.appendChild(option);
+            });
+            select.value = currentYear;
+        }
+
+        function updateUniversityTags() {
+            const container = document.getElementById('uniTags');
+            container.innerHTML = '';
+
+            // "全部高校" 标签
+            const allTag = document.createElement('span');
+            allTag.className = `region-tag ${currentUniversity === '全部' ? 'active' : ''}`;
+            allTag.textContent = '全部高中';
+            allTag.onclick = () => selectUniversity('全部');
+            container.appendChild(allTag);
+
+            // 知名高校标签
+            FAMOUS_UNIVERSITIES.forEach(uni => {
+                const tag = document.createElement('span');
+                tag.className = `region-tag ${currentUniversity === uni ? 'active' : ''}`;
+                tag.textContent = uni;
+                tag.onclick = () => selectUniversity(uni);
+                container.appendChild(tag);
+            });
+        }
+
+        function selectUniversity(university) {
+            currentUniversity = university;
+            loadExams(currentYear === '全部' ? null : currentYear, currentUniversity === '全部' ? null : currentUniversity, currentType === '全部' ? null : currentType);
+        }
+
+        function handleFilterChange() {
+            currentYear = document.getElementById('yearSelect').value;
+            currentType = document.getElementById('typeSelect').value;
+            loadExams(currentYear === '全部' ? null : currentYear, currentUniversity === '全部' ? null : currentUniversity, currentType === '全部' ? null : currentType);
+        }
+
+        function downloadFiles(encodedFiles) {
+            const files = JSON.parse(decodeURIComponent(encodedFiles));
+            if (files.length === 1) {
+                window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(files[0].path)}`, '_blank');
+            } else {
+                files.forEach(file => {
+                    setTimeout(() => {
+                        window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
+                    }, 300);
+                });
+            }
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('show');
+            document.getElementById('categoryInput').value = '';
+            clearFile();
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.remove('show');
+        }
+
+        function startQuiz(examId) {
+            window.location.href = `exam.quiz.html?exam_id=${examId}`;
+        }
+
+        async function previewExam(examId) {
+            document.getElementById('previewModal').classList.add('show');
+            const content = document.getElementById('previewContent');
+            content.innerHTML = `
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/exams/${examId}/questions`);
+                const result = await response.json();
+                
+                let questions = [];
+                if (result.code === 200 && result.data) {
+                    if (Array.isArray(result.data)) {
+                        questions = result.data;
+                    } else if (result.data.questions && Array.isArray(result.data.questions)) {
+                        questions = result.data.questions;
+                    }
+                }
+                
+                if (questions.length > 0) {
+                    const examName = result.data.exam_name || '生物高考真题';
+                    
+                    content.innerHTML = `
+                        <div class="preview-paper">
+                            <div class="preview-paper-header">
+                                <div class="preview-paper-title">${examName}</div>
+                                <div class="preview-paper-subtitle">共 ${questions.length} 道题</div>
+                            </div>
+                            ${questions.map((q, index) => {
+                                const options = parseOptions(q.options);
+                                const images = parseImages(q.images);
+                                
+                                let optionsHtml = '';
+                                if (options && options.length > 0) {
+                                    optionsHtml = `
+                                        <div class="preview-options">
+                                            ${options.map(opt => `
+                                                <div class="preview-option">
+                                                    <span class="preview-option-letter">${opt.key}.</span>
+                                                    <span class="preview-option-text">${opt.text || opt}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    `;
+                                }
+                                
+                                let imagesHtml = '';
+                                if (images && images.length > 0) {
+                                    imagesHtml = `
+                                        <div class="preview-q-images">
+                                            ${images.map(img => `<img src="http://localhost:8000${encodeURI(img)}" alt="题目图片">`).join('')}
+                                        </div>
+                                    `;
+                                }
+                                
+                                let answerHtml = '';
+                                if (q.answer) {
+                                    answerHtml = `
+                                        <div class="preview-answer">
+                                            <strong>参考答案：</strong>${q.answer}
+                                        </div>
+                                    `;
+                                }
+                                
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-number">${index + 1}</div>
+                                        <div class="preview-question-content">
+                                            <div class="preview-question-stem">${q.stem || q.content || q.question || ''}</div>
+                                            ${imagesHtml}
+                                            ${optionsHtml}
+                                            ${answerHtml}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                            <div class="preview-paper-footer">
+                                —— 试卷预览结束 ——
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="preview-no-questions">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                            <div>该试卷暂无题目</div>
+                            <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请先导入试卷文件并提取题目</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="preview-no-questions">
+                        <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                        <div>加载失败</div>
+                        <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('预览失败:', error);
+            }
+        }
+
+        function parseOptions(optionsData) {
+            if (!optionsData) return [];
+            if (typeof optionsData === 'string') {
+                try {
+                    const parsed = JSON.parse(optionsData);
+                    if (Array.isArray(parsed)) return parsed;
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        return Object.keys(parsed).map(key => ({ key, text: parsed[key] }));
+                    }
+                    return [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            if (Array.isArray(optionsData)) return optionsData;
+            if (typeof optionsData === 'object' && optionsData !== null) {
+                return Object.keys(optionsData).map(key => ({ key, text: optionsData[key] }));
+            }
+            return [];
+        }
+
+        function parseImages(imagesData) {
+            if (!imagesData) return [];
+            let images = [];
+            if (typeof imagesData === 'string') {
+                try {
+                    images = JSON.parse(imagesData);
+                } catch (e) {
+                    if (imagesData.startsWith('/')) {
+                        if (imagesData.includes(',')) {
+                            images = imagesData.split(',').map(img => img.trim()).filter(img => img);
+                        } else {
+                            images = [imagesData];
+                        }
+                    } else {
+                        return [];
+                    }
+                }
+            } else {
+                images = imagesData;
+            }
+            return images.filter(img => {
+                const ext = img.split('.').pop().toLowerCase();
+                return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp'].includes(ext);
+            });
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('show');
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function handleDrop(event) {
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('selectedFile').style.display = 'none';
+        }
+
+        async function importFromD() {
+            try {
+                const response = await fetch('http://localhost:8000/api/exams/import', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', result.msg);
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '导入失败，请确保后端服务已启动');
+                console.error('导入失败:', error);
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const category = document.getElementById('categoryInput').value.trim();
+            if (!category) {
+                showToast('error', '请输入试卷分类');
+                return;
+            }
+            
+            if (!selectedFile) {
+                showToast('error', '请选择要上传的文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('category', category);
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('http://localhost:8000/api/exams/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', '上传成功');
+                    closeUploadModal();
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '上传失败，请确保后端服务已启动');
+                console.error('上传失败:', error);
+            }
+        });
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+
+        document.getElementById('uploadModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUploadModal();
+            }
+        });
+        // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+            const navDropdown = document.getElementById('navDropdownMenu');
+            if (navDropdown && !e.target.closest('#navAvatarBtn')) {
+                navDropdown.classList.remove('show');
+            }
+        });
+        
+        // 导航栏头像下拉菜单
+        const navAvatarBtn = document.getElementById('navAvatarBtn');
+        const navDropdown = document.getElementById('navDropdownMenu');
+        if (navAvatarBtn && navDropdown) {
+            navAvatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navDropdown.classList.toggle('show');
+            });
+        }
+        
+        // 解析JWT token
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        // 获取默认头像
+        function getDefaultAvatar(username) {
+            const colors = [
+                '#4338ca',
+                '#be185d',
+                '#0369a1',
+                '#15803d',
+                '#c2410c',
+                '#7c3aed',
+                '#dc2626',
+                '#b45309'
+            ];
+            const char = (username || '用').trim()[0].toUpperCase();
+            const colorIndex = char.charCodeAt(0) % colors.length;
+            return {
+                color: colors[colorIndex],
+                char: char
+            };
+        }
+        
+        // 加载用户信息
+        async function loadUserInfo() {
+            const token = localStorage.getItem('token');
+            const navAvatarEl = document.getElementById('navAvatar');
+            if (!navAvatarEl) return;
+            
+            if (!token) {
+                navAvatarEl.innerHTML = '👤';
+                return;
+            }
+            
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    navAvatarEl.innerHTML = '👤';
+                    return;
+                }
+                
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const data = await resp.json();
+                
+                if (data.success && data.data) {
+                    const username = data.data.username || '用户';
+                    if (data.data.avatar) {
+                        navAvatarEl.innerHTML = `<img src="${data.data.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;">`;
+                    } else {
+                        const defaultAvatar = getDefaultAvatar(username);
+                        navAvatarEl.style.background = defaultAvatar.color;
+                        navAvatarEl.textContent = defaultAvatar.char;
+                    }
+                } else {
+                    navAvatarEl.innerHTML = '👤';
+                }
+            } catch (e) {
+                navAvatarEl.innerHTML = '👤';
+            }
+        }
+        
+        loadUserInfo();
+        loadExams();
+    </script>
+</body>
+</html>
