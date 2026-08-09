@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCR 虚拟实验平台 - 聚合酶链式反应</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  background: #0a0f1a;
+  color: #e0e0e0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.top-bar {
+  background: linear-gradient(135deg, #0d1b2a, #1b2838);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 2px solid #2a4a6e;
+  flex-wrap: wrap; gap: 8px;
+}
+.top-bar h1 {
+  font-size: 1.4em;
+  background: linear-gradient(90deg, #4fc3f7, #81d4fa, #29b6f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.top-bar .subtitle { font-size: 0.85em; color: #8ab4d6; }
+.main-container {
+  display: grid;
+  grid-template-columns: 380px 1fr 340px;
+  gap: 10px; padding: 10px;
+  height: calc(100vh - 100px);
+}
+@media (max-width: 1200px) {
+  .main-container { grid-template-columns: 1fr; height: auto; }
+}
+.panel {
+  background: linear-gradient(180deg, #111c2b, #162332);
+  border-radius: 12px; padding: 14px;
+  border: 1px solid #1e3a50;
+  overflow-y: auto;
+}
+.panel h3 {
+  font-size: 1em; color: #4fc3f7;
+  border-bottom: 1px solid #1e3a50;
+  padding-bottom: 8px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel h3 .icon { font-size: 1.2em; }
+
+/* 左侧 - 实验准备 */
+.form-group { margin-bottom: 10px; }
+.form-group label {
+  display: block; font-size: 0.82em; color: #8ab4d6; margin-bottom: 4px;
+  font-weight: 600;
+}
+.form-group input, .form-group select {
+  width: 100%; padding: 7px 10px;
+  background: #0d1a26; border: 1px solid #1e3a50; border-radius: 6px;
+  color: #e0e0e0; font-size: 0.85em;
+}
+.form-group input:focus { border-color: #4fc3f7; outline: none; }
+.form-row { display: flex; gap: 8px; }
+.form-row .form-group { flex: 1; }
+.reagent-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; background: #0d1a26; border-radius: 6px;
+  margin-bottom: 4px; font-size: 0.78em;
+}
+.reagent-item .vol { color: #4fc3f7; font-weight: 700; }
+.reagent-total {
+  display: flex; justify-content: space-between;
+  padding: 8px 10px; background: #1a3040; border-radius: 6px;
+  margin-top: 6px; font-weight: 700; font-size: 0.85em;
+  border: 1px solid #2a4a6e;
+}
+.btn {
+  width: 100%; padding: 10px; border: 1px solid #2a4a6e; border-radius: 6px;
+  font-size: 0.9em; font-weight: 600; cursor: pointer;
+  transition: all 0.25s; margin-top: 8px; letter-spacing: 1px;
+  background: #0f1c2b; color: #b0c8de;
+}
+.btn:hover {
+  border-color: #4fc3f7;
+  color: #e0e8f0;
+  box-shadow: 0 0 12px rgba(79,195,247,0.15), inset 0 0 12px rgba(79,195,247,0.04);
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled {
+  opacity: 0.35; cursor: not-allowed; transform: none !important;
+  box-shadow: none; border-color: #1e3a50; color: #5a7088;
+}
+.btn.primary { border-color: #3a7abf; }
+.btn.primary:hover { border-color: #5b9bd5; box-shadow: 0 0 14px rgba(90,156,210,0.18), inset 0 0 12px rgba(90,156,210,0.04); }
+.btn.danger { border-color: #8b4a4a; }
+.btn.danger:hover { border-color: #c06060; box-shadow: 0 0 14px rgba(200,100,100,0.15), inset 0 0 12px rgba(200,100,100,0.03); }
+.btn.accent { border-color: #5a6a8a; }
+.btn.accent:hover { border-color: #8a9ab8; box-shadow: 0 0 14px rgba(140,160,190,0.15), inset 0 0 12px rgba(140,160,190,0.03); }
+
+/* 中间 - 可视化 */
+.viz-area {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.dna-display {
+  flex: 1; background: linear-gradient(180deg, #0a141f, #0f1c2b);
+  border-radius: 12px; border: 1px solid #1e3a50;
+  position: relative; min-height: 350px; overflow: hidden;
+}
+.dna-display canvas { width: 100%; height: 100%; display: block; }
+
+.temp-indicator {
+  display: flex; gap: 10px; align-items: center;
+  background: #111c2b; border-radius: 12px; padding: 12px 16px;
+  border: 1px solid #1e3a50;
+}
+.temp-icon { font-size: 2em; }
+.temp-value {
+  font-size: 2.2em; font-weight: 700; font-family: 'Consolas', monospace;
+  transition: color 0.5s;
+}
+.temp-label { font-size: 0.8em; color: #8ab4d6; }
+.temp-stage {
+  margin-left: auto; padding: 6px 16px; border-radius: 20px;
+  font-weight: 700; font-size: 0.9em; letter-spacing: 2px;
+}
+.stage-dn { background: #b71c1c; color: #ffcdd2; }
+.stage-an { background: #0d47a1; color: #bbdefb; }
+.stage-ex { background: #1b5e20; color: #c8e6c9; }
+.stage-idle { background: #37474f; color: #b0bec5; }
+
+.cycle-info {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+}
+.cycle-stat {
+  text-align: center; padding: 8px 16px;
+  background: #111c2b; border-radius: 10px; border: 1px solid #1e3a50;
+  min-width: 80px;
+}
+.cycle-stat .num {
+  font-size: 1.6em; font-weight: 700; font-family: 'Consolas', monospace;
+}
+.cycle-stat .num.c1 { color: #4fc3f7; }
+.cycle-stat .num.c2 { color: #ffb74d; }
+.cycle-stat .label { font-size: 0.7em; color: #8ab4d6; }
+
+/* 右侧 - 信息面板 */
+.info-section { margin-bottom: 12px; }
+.info-section h4 {
+  font-size: 0.85em; color: #81d4fa; margin-bottom: 6px;
+}
+.info-text { font-size: 0.78em; line-height: 1.6; color: #b0bec5; }
+.step-indicator {
+  display: flex; gap: 4px; margin: 10px 0;
+}
+.step-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #1e3a50; transition: all 0.3s;
+}
+.step-dot.active { background: #4fc3f7; box-shadow: 0 0 8px #4fc3f7; }
+.step-list { font-size: 0.78em; }
+.step-list .step { padding: 6px 10px; margin: 3px 0; border-radius: 6px; background: #0d1a26; border-left: 3px solid transparent; transition: all 0.3s; }
+.step-list .step.current { border-left-color: #4fc3f7; background: #142536; }
+
+.log-area {
+  max-height: 150px; overflow-y: auto;
+  background: #0a1119; border-radius: 8px; padding: 8px;
+  font-size: 0.75em; font-family: 'Consolas', monospace;
+}
+.log-area .log-item { padding: 2px 4px; border-bottom: 1px solid #111; }
+.log-area .log-item.info { color: #81d4fa; }
+.log-area .log-item.success { color: #66bb6a; }
+.log-area .log-item.warn { color: #ffb74d; }
+
+/* 底部 */
+.bottom-bar {
+  padding: 8px 24px; background: #111c2b;
+  border-top: 1px solid #1e3a50;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.75em; color: #627d98; flex-wrap: wrap; gap: 8px;
+}
+
+/* 弹窗 - 电泳 */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8); z-index: 100;
+  justify-content: center; align-items: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #162332; border-radius: 16px; padding: 24px;
+  border: 2px solid #2a4a6e; max-width: 600px; width: 90%;
+}
+.modal h2 { color: #4fc3f7; margin-bottom: 16px; }
+.gel-visual {
+  width: 100%; height: 200px; background: #0a1119;
+  border-radius: 12px; position: relative; overflow: hidden;
+  border: 2px solid #1e3a50;
+}
+.gel-lane {
+  position: absolute; width: 6px; background: #4fc3f7;
+  border-radius: 3px; opacity: 0.9;
+  box-shadow: 0 0 10px rgba(79,195,247,0.5);
+}
+.gel-label { position: absolute; bottom: 5px; font-size: 0.65em; color: #8ab4d6; }
+.close-btn {
+  position: absolute; top: 8px; right: 12px;
+  background: none; border: none; color: #8ab4d6;
+  font-size: 1.5em; cursor: pointer;
+}
+
+/* tooltip */
+.tooltip {
+  position: absolute; background: #1a3040; border: 1px solid #4fc3f7;
+  padding: 6px 10px; border-radius: 6px; font-size: 0.75em;
+  pointer-events: none; z-index: 10; white-space: nowrap;
+  color: #e0e0e0;
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="main5.html" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border:1px solid #2a4a6e;border-radius:6px;color:#8ab4d6;text-decoration:none;font-size:0.85em;font-weight:600;transition:all 0.25s;white-space:nowrap;" onmouseover="this.style.borderColor='#4fc3f7';this.style.color='#e0e8f0';this.style.boxShadow='0 0 10px rgba(79,195,247,0.12)'" onmouseout="this.style.borderColor='#2a4a6e';this.style.color='#8ab4d6';this.style.boxShadow='none'">←</a>
+    <div>
+      <h1>🧬 PCR 虚拟实验平台</h1>
+      <span class="subtitle">聚合酶链式反应 · Polymerase Chain Reaction</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn danger" onclick="resetAll()" style="width:auto;margin-top:0;padding:8px 16px;">重新开始</button>
+    <button class="btn accent" onclick="openGelModal()" style="width:auto;margin-top:0;padding:8px 16px;">电泳鉴定</button>
+  </div>
+</div>
+
+<div class="main-container">
+  <!-- 左侧：实验准备区 -->
+  <div class="panel" id="leftPanel">
+    <h3><span class="icon">🧪</span>实验准备区 — PCR反应体系配制</h3>
+
+    <div class="form-group">
+      <label>📋 10× 扩增缓冲液 (含Mg²⁺)</label>
+      <div class="reagent-item"><span>10× Buffer</span><span class="vol">5.0 μL</span></div>
+    </div>
+
+    <div class="form-group">
+      <label>🧱 4种脱氧核苷酸 (dNTPs, 20 mmol/L)</label>
+      <div class="reagent-item"><span>dATP · dTTP · dGTP · dCTP</span><span class="vol">1.0 μL</span></div>
+    </div>
+
+    <div class="form-group">
+      <label>📍 引物 I (正向引物, 20 μmol/L)</label>
+      <input type="text" id="primer1" value="5'-ATGCGTACGTAGCTAGCTAG-3'" style="font-size:0.75em;font-family:Consolas,monospace;">
+      <span style="font-size:0.7em;color:#627d98;">实际实验中需根据目的基因设计</span>
+    </div>
+
+    <div class="form-group">
+      <label>📍 引物 II (反向引物, 20 μmol/L)</label>
+      <input type="text" id="primer2" value="5'-CTAGCTAGCTACGTACGCAT-3'" style="font-size:0.75em;font-family:Consolas,monospace;">
+    </div>
+
+    <div class="form-group">
+      <label>🧬 模板DNA</label>
+      <select id="templateDna">
+        <option value="5">微量模板 (5 μL)</option>
+        <option value="8" selected>适量模板 (8 μL)</option>
+        <option value="10">充足模板 (10 μL)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>🔧 Taq DNA聚合酶 (1-5 U/μL)</label>
+      <select id="taqAmount">
+        <option value="1">1 U (最低用量)</option>
+        <option value="1.5" selected>1.5 U (推荐)</option>
+        <option value="2">2 U</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>💧 无菌水 (ddH₂O)</label>
+      <div class="reagent-item"><span>补至总体积 50 μL</span><span class="vol" id="waterVol">30.0 μL</span></div>
+    </div>
+
+    <div class="reagent-total">
+      <span>🔴 反应总体系</span>
+      <span id="totalVol">50.0 μL</span>
+    </div>
+
+    <button class="btn primary" onclick="addToTube()">依次加入微量离心管</button>
+
+    <div style="margin-top:10px;padding:10px;background:#0d1a26;border-radius:8px;" id="tubeStatus">
+      <div style="font-size:0.8em;color:#8ab4d6;">⚪ 离心管状态：空管</div>
+      <div id="tubeContents" style="font-size:0.72em;color:#627d98;margin-top:4px;">
+        等待加入反应组分...
+      </div>
+      <div style="margin-top:6px;height:6px;background:#1e3a50;border-radius:3px;overflow:hidden;">
+        <div id="tubeFill" style="height:100%;width:0%;background:linear-gradient(90deg,#4fc3f7,#81d4fa);border-radius:3px;transition:width 0.5s;"></div>
+      </div>
+    </div>
+
+    <button class="btn primary" onclick="centrifuge()" id="btnCentrifuge" disabled>离心混匀 (~10秒)</button>
+    <button class="btn danger" onclick="loadPCRMachine()" id="btnLoadPCR" disabled>放入PCR仪，开始反应</button>
+
+    <div style="margin-top:8px;padding:8px;background:#1a1020;border-radius:8px;border:1px solid #3a1a50;">
+      <div style="font-size:0.75em;color:#ce93d8;">⚠️ 注意事项</div>
+      <div style="font-size:0.68em;color:#8e8e9e;margin-top:4px;">
+        · 微量离心管、枪头和蒸馏水已高压蒸汽灭菌<br>
+        · 操作时请佩戴一次性手套<br>
+        · 每加入一种试剂后更换枪头<br>
+        · 试剂在-20℃保存，使用前在冰上缓慢融化
+      </div>
+    </div>
+  </div>
+
+  <!-- 中间：可视化区 -->
+  <div class="viz-area">
+    <div class="dna-display" id="dnaDisplay">
+      <canvas id="dnaCanvas"></canvas>
+    </div>
+
+    <div class="temp-indicator">
+      <span class="temp-icon">🌡️</span>
+      <div>
+        <div class="temp-value" id="tempDisplay">25.0</div>
+        <div class="temp-label">℃</div>
+      </div>
+      <div style="margin-left:20px;">
+        <div class="temp-label">设定温度</div>
+        <div style="font-size:1em;font-weight:700;color:#8ab4d6;" id="targetTemp">--</div>
+      </div>
+      <div class="temp-stage stage-idle" id="stageTag">准备中</div>
+    </div>
+
+    <div class="cycle-info">
+      <div class="cycle-stat">
+        <div class="num c1" id="cycleCount">0</div>
+        <div class="label">当前循环数</div>
+      </div>
+      <div class="cycle-stat">
+        <div class="num c2" id="dnaCount">1</div>
+        <div class="label">DNA分子数 (≈2ⁿ)</div>
+      </div>
+      <div class="cycle-stat">
+        <div class="num" style="color:#66bb6a;" id="timeElapsed">00:00</div>
+        <div class="label">运行时间</div>
+      </div>
+      <div class="cycle-stat">
+        <div class="num" style="color:#ef5350;" id="currentStep">--</div>
+        <div class="label">当前步骤</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧：过程信息 -->
+  <div class="panel" id="rightPanel">
+    <h3><span class="icon">📖</span>PCR原理与实时状态</h3>
+
+    <div class="info-section">
+      <h4>📌 PCR三步反应 (图3-5)</h4>
+      <div class="step-list">
+        <div class="step" id="stepIdx1">🔥 <b>变性</b> — 温度超过90℃，双链DNA解聚为单链</div>
+        <div class="step" id="stepIdx2">❄️ <b>复性</b> — 温度降至50℃左右，引物通过碱基互补配对与单链DNA结合</div>
+        <div class="step" id="stepIdx3">🧬 <b>延伸</b> — 温度升至72℃左右，Taq DNA聚合酶催化合成新DNA链</div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h4>📊 循环程序 (教材表)</h4>
+      <table style="width:100%;font-size:0.7em;border-collapse:collapse;">
+        <tr style="color:#4fc3f7;">
+          <th style="padding:4px;border-bottom:1px solid #1e3a50;">程序</th>
+          <th style="padding:4px;border-bottom:1px solid #1e3a50;">变性</th>
+          <th style="padding:4px;border-bottom:1px solid #1e3a50;">复性</th>
+          <th style="padding:4px;border-bottom:1px solid #1e3a50;">延伸</th>
+        </tr>
+        <tr style="text-align:center;">
+          <td style="padding:4px;">预变性</td>
+          <td>94℃, 5min</td><td>—</td><td>—</td>
+        </tr>
+        <tr style="text-align:center;">
+          <td style="padding:4px;">30次循环</td>
+          <td>94℃, 30s</td><td>55℃, 30s</td><td>72℃, 1min</td>
+        </tr>
+        <tr style="text-align:center;">
+          <td style="padding:4px;">最后延伸</td>
+          <td>94℃, 1min</td><td>55℃, 30s</td><td>72℃, 10min</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="info-section">
+      <h4>📝 实验日志</h4>
+      <div class="log-area" id="logArea">
+        <div class="log-item info">[系统] PCR虚拟实验平台就绪</div>
+        <div class="log-item info">[系统] 请先在左侧配制PCR反应体系</div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h4>⏱️ 反应控制</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn primary" onclick="startPCR()" id="btnStart" disabled style="flex:1;">启动PCR</button>
+        <button class="btn" onclick="pausePCR()" id="btnPause" disabled style="flex:1;">暂停</button>
+        <button class="btn accent" onclick="stepByStep()" id="btnStep" style="flex:1;">逐步演示</button>
+      </div>
+      <div style="margin-top:8px;">
+        <label style="font-size:0.78em;color:#8ab4d6;">模拟速度</label>
+        <input type="range" id="speedSlider" min="1" max="10" value="3" style="width:100%;" oninput="updateSpeed()">
+        <div style="display:flex;justify-content:space-between;font-size:0.65em;color:#627d98;">
+          <span>慢速(真实)</span><span>中速</span><span>快速</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <span>📚 参考：《普通高中教科书·生物学选择性必修3 生物技术与工程》第3章 基因工程</span>
+  <span>💡 PCR = 聚合酶链式反应 | 穆里斯 (K. Mullis) 1985年发明 | 1993年诺贝尔化学奖</span>
+</div>
+
+<!-- 电泳鉴定弹窗 -->
+<div class="modal-overlay" id="gelModal">
+  <div class="modal">
+    <h2>🔬 琼脂糖凝胶电泳鉴定</h2>
+    <button class="close-btn" onclick="closeGelModal()">✕</button>
+    <div class="gel-visual" id="gelVisual">
+      <canvas id="gelCanvas" style="width:100%;height:100%;"></canvas>
+    </div>
+    <div style="margin-top:12px;font-size:0.8em;color:#8ab4d6;">
+      <div>⚡ 电压：<span id="gelVoltage">5 V/cm</span></div>
+      <div>🧬 琼脂糖浓度：<span id="gelConc">1.0%</span></div>
+      <div>📏 指示剂迁移：<span id="gelProgress">未开始</span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn primary" onclick="runGel()" id="btnRunGel">开始电泳</button>
+      <button class="btn accent" onclick="viewGelUV()" id="btnViewUV" disabled>紫外灯观察</button>
+    </div>
+    <div id="gelResult" style="margin-top:8px;font-size:0.78em;color:#b0bec5;"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// PCR 虚拟实验平台 - 核心引擎
+// 严格参照教材：选择性必修3 生物技术与工程 P86-94
+// ============================================================
+
+// --- 状态管理 ---
+const STATE = {
+  // 反应体系
+  tubePrepared: false,
+  centrifuged: false,
+  reagentsAdded: 0,
+  totalReagents: 8,
+
+  // PCR 状态
+  running: false,
+  paused: false,
+  cycle: 0,
+  maxCycles: 30,
+  temperature: 25.0,
+  targetTemp: null,
+  currentStage: 'idle', // 'pre-dn' | 'dn' | 'an' | 'ex' | 'final-ex' | 'done'
+  subStep: 0, // 0=等待, 1=变性, 2=复性, 3=延伸
+
+  // 预变性阶段
+  preDenatureDone: false,
+
+  // DNA 计数
+  dnaMolecules: 1,
+
+  // 计时
+  elapsedSeconds: 0,
+  stageTimer: 0,
+
+  // 动画
+  animFrame: null,
+  speedMultiplier: 3,
+
+  // DNA 可视化
+  strands: [],
+  particles: [],
+  primers: [],
+  polymerase: null,
+
+  // 电泳
+  gelRun: false,
+  gelProgress: 0,
+};
+
+// --- Canvas 初始化 ---
+const canvas = document.getElementById('dnaCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resizeCanvas() {
+  const container = document.getElementById('dnaDisplay');
+  W = container.clientWidth;
+  H = container.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+}
+window.addEventListener('resize', () => { resizeCanvas(); drawDNA(); });
+resizeCanvas();
+
+// --- 日志 ---
+function log(msg, type = 'info') {
+  const area = document.getElementById('logArea');
+  const div = document.createElement('div');
+  div.className = `log-item ${type}`;
+  const time = new Date().toLocaleTimeString();
+  div.textContent = `[${time}] ${msg}`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+// --- 反应体系配制 ---
+function updateWaterVol() {
+  const template = parseInt(document.getElementById('templateDna').value);
+  const water = (50 - 5 - 1 - 2.5 - 2.5 - template - 1.5).toFixed(1);
+  document.getElementById('waterVol').textContent = water + ' μL';
+  document.getElementById('totalVol').textContent = '50.0 μL';
+}
+document.getElementById('templateDna').addEventListener('change', updateWaterVol);
+
+let addedReagents = [];
+const reagentList = [
+  { name: '10× 扩增缓冲液 (含Mg²⁺)', vol: '5.0 μL', color: '#81d4fa' },
+  { name: 'dNTPs混合液 (20 mmol/L)', vol: '1.0 μL', color: '#a5d6a7' },
+  { name: '引物 I (正向)', vol: '2.5 μL', color: '#ffcc80' },
+  { name: '引物 II (反向)', vol: '2.5 μL', color: '#ffcc80' },
+  { name: '无菌水 (ddH₂O)', vol: '~30 μL', color: '#90caf9' },
+  { name: 'Taq DNA聚合酶', vol: '1.5 U', color: '#ef9a9a' },
+  { name: '模板DNA', vol: '8 μL', color: '#ce93d8' },
+];
+
+function addToTube() {
+  if (addedReagents.length >= reagentList.length) {
+    log('所有组分已加入，请离心混匀', 'warn');
+    return;
+  }
+  const r = reagentList[addedReagents.length];
+  addedReagents.push(r);
+
+  const contents = document.getElementById('tubeContents');
+  contents.innerHTML = addedReagents.map((a, i) =>
+    `<div style="color:${a.color};">✓ ${a.name} — ${a.vol}</div>`
+  ).join('');
+
+  const fill = (addedReagents.length / reagentList.length) * 100;
+  document.getElementById('tubeFill').style.width = fill + '%';
+
+  const statusDiv = document.querySelector('#tubeStatus div:first-child');
+  if (addedReagents.length >= reagentList.length) {
+    statusDiv.textContent = '🟢 离心管状态：所有组分已加入 (总体积 50 μL)';
+    STATE.tubePrepared = true;
+    document.getElementById('btnCentrifuge').disabled = false;
+    log('所有反应组分已加入微量离心管，请离心混匀', 'success');
+  } else {
+    statusDiv.textContent = `🟡 离心管状态：已加入 ${addedReagents.length}/${reagentList.length} 种组分`;
+    log(`已加入：${r.name}（已更换枪头）`, 'info');
+  }
+  STATE.reagentsAdded = addedReagents.length;
+}
+
+function centrifuge() {
+  if (!STATE.tubePrepared) return;
+  const btn = document.getElementById('btnCentrifuge');
+  btn.disabled = true;
+  btn.textContent = '离心中...';
+
+  log('离心机启动，离心约10秒，使反应液集中在管底', 'info');
+
+  setTimeout(() => {
+    btn.textContent = '离心完成';
+    STATE.centrifuged = true;
+    document.getElementById('btnLoadPCR').disabled = false;
+    log('离心完成，反应液已集中在管底，可放入PCR仪', 'success');
+  }, 2000);
+}
+
+function loadPCRMachine() {
+  if (!STATE.centrifuged) return;
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStep').disabled = false;
+  document.getElementById('btnLoadPCR').disabled = true;
+  document.getElementById('btnLoadPCR').textContent = '已放入PCR仪';
+  document.getElementById('btnLoadPCR').style.background = '#37474f';
+  document.getElementById('stageTag').textContent = '待启动';
+  document.getElementById('stageTag').className = 'temp-stage stage-idle';
+  document.getElementById('targetTemp').textContent = '94℃ (预变性)';
+  log('PCR管已放入PCR扩增仪，请设置循环程序并启动', 'success');
+  initDNAStrands();
+  drawDNA();
+}
+
+// --- PCR 循环程序参数 (教材P93) ---
+const PCR_PROGRAM = {
+  preDenature: { temp: 94, time: 300 }, // 预变性: 94℃, 5min (加速后按比例缩短)
+  denature: { temp: 94, time: 30 },
+  anneal: { temp: 55, time: 30 },
+  extend: { temp: 72, time: 60 },
+  finalExtend: { temp: 72, time: 600 },
+  cycles: 30,
+};
+
+// --- 初始化 DNA 链 ---
+function initDNAStrands() {
+  STATE.strands = [];
+  STATE.primers = [];
+  STATE.particles = [];
+  STATE.polymerase = null;
+
+  // 模板DNA双链 - 用彩色珠子表示
+  const startX = W * 0.1;
+  const startY = H * 0.45;
+  const length = W * 0.7;
+
+  // 上链（模板链）
+  const topStrand = {
+    y: startY - 20,
+    x: startX,
+    length: length,
+    bases: generateBases(40),
+    color: '#e57373',
+    complement: true,
+  };
+  // 下链（互补链）
+  const bottomStrand = {
+    y: startY + 20,
+    x: startX,
+    length: length,
+    bases: generateBases(40),
+    color: '#64b5f6',
+    complement: false,
+  };
+  STATE.strands = [topStrand, bottomStrand];
+
+  // 引物
+  STATE.primers = [
+    { x: startX + 60, y: startY - 20, length: 30, color: '#ffb74d', label: '引物Ⅰ', strand: 0 },
+    { x: startX + length - 90, y: startY + 20, length: 30, color: '#ffb74d', label: '引物Ⅱ', strand: 1 },
+  ];
+}
+
+function generateBases(n) {
+  const bases = ['A', 'T', 'G', 'C'];
+  const arr = [];
+  for (let i = 0; i < n; i++) {
+    arr.push(bases[Math.floor(Math.random() * 4)]);
+  }
+  return arr;
+}
+
+// --- Canvas 绘制 ---
+function drawDNA() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 背景网格
+  ctx.strokeStyle = 'rgba(30,60,80,0.3)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += 30) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += 30) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  if (STATE.strands.length === 0) {
+    // 未开始时的提示
+    ctx.fillStyle = '#4a6078';
+    ctx.font = '16px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('请先配制PCR反应体系并放入PCR仪', W / 2, H / 2 - 40);
+    ctx.fillText('随后启动反应，DNA扩增过程将在此动态展示', W / 2, H / 2);
+    return;
+  }
+
+  // 温度背景效果
+  const alpha = STATE.running ? 0.15 : 0;
+  if (STATE.currentStage === 'dn' || STATE.currentStage === 'pre-dn') {
+    ctx.fillStyle = `rgba(183,28,28,${alpha + 0.05})`;
+    ctx.fillRect(0, 0, W, H);
+  } else if (STATE.currentStage === 'an') {
+    ctx.fillStyle = `rgba(13,71,161,${alpha + 0.05})`;
+    ctx.fillRect(0, 0, W, H);
+  } else if (STATE.currentStage === 'ex' || STATE.currentStage === 'final-ex') {
+    ctx.fillStyle = `rgba(27,94,32,${alpha + 0.05})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  const stage = STATE.currentStage;
+
+  // 绘制DNA链
+  STATE.strands.forEach((strand, idx) => {
+    drawStrand(strand, idx, stage);
+  });
+
+  // 解链动画：变性时两条链分开
+  if (stage === 'dn' || stage === 'pre-dn') {
+    STATE.strands[0].y = H * 0.3;
+    STATE.strands[1].y = H * 0.65;
+  } else {
+    STATE.strands[0].y = H * 0.45;
+    STATE.strands[1].y = H * 0.55;
+  }
+
+  // 绘制引物
+  if (stage === 'an' || stage === 'ex' || stage === 'final-ex') {
+    STATE.primers.forEach(p => {
+      const strand = STATE.strands[p.strand];
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + p.length, p.y);
+      ctx.stroke();
+      // 引物标签
+      ctx.fillStyle = '#fff';
+      ctx.font = '11px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.label, p.x + p.length / 2, p.y - 10);
+    });
+  }
+
+  // 延伸阶段：绘制新合成的链
+  if (stage === 'ex' || stage === 'final-ex') {
+    ctx.strokeStyle = 'rgba(102,187,106,0.7)';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([8, 4]);
+    STATE.primers.forEach(p => {
+      const strand = STATE.strands[p.strand];
+      ctx.beginPath();
+      const extX = p.strand === 0 ? p.x + p.length : p.x - 60;
+      ctx.moveTo(p.x + (p.strand === 0 ? p.length : 0), p.y + (p.strand === 0 ? 18 : -18));
+      ctx.lineTo(p.x + (p.strand === 0 ? p.length + 60 : p.length - 60), p.y + (p.strand === 0 ? 18 : -18));
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+  }
+
+  // DNA聚合酶粒子
+  if (stage === 'ex' || stage === 'final-ex') {
+    const t = (Date.now() / 1000) % 2;
+    STATE.primers.forEach((p, i) => {
+      const px = p.x + p.length + (i === 0 ? t * 30 : -t * 30);
+      const py = p.y + (i === 0 ? 18 : -18);
+      ctx.fillStyle = '#ef9a9a';
+      ctx.beginPath();
+      ctx.arc(px, py, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = '8px "Microsoft YaHei"';
+      ctx.textAlign = 'center';
+      ctx.fillText('Taq', px, py + 3);
+    });
+  }
+
+  // 温度显示
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 24px "Microsoft YaHei"';
+  ctx.textAlign = 'right';
+  let tempColor = '#fff';
+  if (STATE.temperature >= 85) tempColor = '#ef5350';
+  else if (STATE.temperature >= 65) tempColor = '#66bb6a';
+  else if (STATE.temperature >= 45) tempColor = '#42a5f5';
+  ctx.fillStyle = tempColor;
+  ctx.fillText(STATE.temperature.toFixed(1) + ' ℃', W - 20, 35);
+
+  // 阶段文字
+  const stageNames = {
+    'idle': '等待启动', 'pre-dn': '预变性 (94℃)', 'dn': '变性 (94℃)',
+    'an': '复性 (55℃)', 'ex': '延伸 (72℃)', 'final-ex': '最后延伸 (72℃)',
+    'done': '反应完成',
+  };
+  ctx.fillStyle = '#e0e0e0';
+  ctx.font = 'bold 16px "Microsoft YaHei"';
+  ctx.textAlign = 'left';
+  ctx.fillText(stageNames[stage] || '', 15, 35);
+
+  // 请求下一帧
+  if (STATE.running || STATE.paused) {
+    STATE.animFrame = requestAnimationFrame(drawDNA);
+  }
+}
+
+function drawStrand(strand, idx, stage) {
+  const numBases = strand.bases.length;
+  const spacing = strand.length / numBases;
+
+  // 主链
+  ctx.strokeStyle = strand.color;
+  ctx.lineWidth = 4;
+  ctx.shadowColor = strand.color;
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.moveTo(strand.x, strand.y);
+  ctx.lineTo(strand.x + strand.length, strand.y);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // 碱基
+  for (let i = 0; i < numBases; i++) {
+    const x = strand.x + i * spacing;
+    const y = strand.y;
+    ctx.fillStyle = getBaseColor(strand.bases[i]);
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 碱基字母
+    ctx.fillStyle = '#fff';
+    ctx.font = '9px Consolas';
+    ctx.textAlign = 'center';
+    ctx.fillText(strand.bases[i], x, y + 3);
+  }
+
+  // 氢键连接（仅在非变性阶段显示）
+  if (stage !== 'dn' && stage !== 'pre-dn' && idx === 0 && STATE.strands.length > 1) {
+    const bottomStrand = STATE.strands[1];
+    for (let i = 0; i < Math.min(numBases, bottomStrand.bases.length); i++) {
+      const x1 = strand.x + i * spacing;
+      const y1 = strand.y + 8;
+      const x2 = bottomStrand.x + i * (bottomStrand.length / bottomStrand.bases.length);
+      const y2 = bottomStrand.y - 8;
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([3, 6]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+}
+
+function getBaseColor(base) {
+  return { 'A': '#4caf50', 'T': '#f44336', 'G': '#ff9800', 'C': '#2196f3' }[base] || '#fff';
+}
+
+// --- PCR 核心引擎 ---
+let pcrInterval = null;
+let tempInterval = null;
+
+function startPCR() {
+  if (STATE.running && STATE.paused) {
+    // 恢复
+    STATE.paused = false;
+    STATE.running = true;
+    document.getElementById('btnPause').textContent = '暂停';
+    document.getElementById('btnStart').textContent = '已启动';
+    document.getElementById('btnStart').disabled = true;
+    resumePCR();
+    return;
+  }
+
+  if (STATE.running) return;
+  if (!STATE.centrifuged) {
+    log('请先完成反应体系配制和离心', 'warn');
+    return;
+  }
+
+  STATE.running = true;
+  STATE.paused = false;
+  STATE.cycle = 0;
+  STATE.dnaMolecules = 1;
+  STATE.elapsedSeconds = 0;
+  STATE.preDenatureDone = false;
+
+  document.getElementById('btnStart').textContent = '运行中...';
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnPause').disabled = false;
+  document.getElementById('btnStep').disabled = true;
+
+  log('PCR仪启动！开始预变性阶段：94℃，5分钟', 'info');
+  updateStepHighlight('dn');
+
+  beginPreDenature();
+  STATE.animFrame = requestAnimationFrame(drawDNA);
+  startTimer();
+}
+
+function beginPreDenature() {
+  STATE.currentStage = 'pre-dn';
+  STATE.targetTemp = 94;
+  STATE.subStep = 0;
+  updateUIStage('预变性', 'stage-dn');
+  document.getElementById('targetTemp').textContent = '94℃ (预变性 5min)';
+  animateTemperature(25, 94, 1500, () => {
+    // 保持94℃ (模拟5分钟，加速后约5秒)
+    const preDenatureTime = Math.max(2000, PCR_PROGRAM.preDenature.time * 1000 / STATE.speedMultiplier / 10);
+    setTimeout(() => {
+      STATE.preDenatureDone = true;
+      log('预变性完成，开始30次循环扩增', 'success');
+      runCycle();
+    }, preDenatureTime);
+  });
+}
+
+function runCycle() {
+  if (STATE.cycle >= STATE.maxCycles || STATE.paused) {
+    if (STATE.cycle >= STATE.maxCycles) {
+      finalExtension();
+    }
+    return;
+  }
+
+  STATE.cycle++;
+  STATE.subStep = 1;
+  updateCycleDisplay();
+
+  // 步骤1: 变性 94℃, 30s
+  STATE.currentStage = 'dn';
+  STATE.targetTemp = 94;
+  updateUIStage('变性', 'stage-dn');
+  document.getElementById('targetTemp').textContent = '94℃ (变性 30s)';
+  updateStepHighlight('dn');
+
+  const dnTime = Math.max(800, PCR_PROGRAM.denature.time * 1000 / STATE.speedMultiplier / 10);
+  animateTemperature(STATE.temperature, 94, 800, () => {
+    log(`第${STATE.cycle}轮 · 变性：94℃，双链DNA解聚为单链`, 'info');
+    setTimeout(() => {
+      if (STATE.paused) return;
+      // 步骤2: 复性 55℃, 30s
+      STATE.subStep = 2;
+      STATE.currentStage = 'an';
+      STATE.targetTemp = 55;
+      updateUIStage('复性', 'stage-an');
+      document.getElementById('targetTemp').textContent = '55℃ (复性 30s)';
+      updateStepHighlight('an');
+
+      const anTime = Math.max(800, PCR_PROGRAM.anneal.time * 1000 / STATE.speedMultiplier / 10);
+      animateTemperature(94, 55, 1200, () => {
+        log(`第${STATE.cycle}轮 · 复性：55℃，引物通过碱基互补配对与单链DNA结合`, 'info');
+        setTimeout(() => {
+          if (STATE.paused) return;
+          // 步骤3: 延伸 72℃, 1min
+          STATE.subStep = 3;
+          STATE.currentStage = 'ex';
+          STATE.targetTemp = 72;
+          updateUIStage('延伸', 'stage-ex');
+          document.getElementById('targetTemp').textContent = '72℃ (延伸 1min)';
+          updateStepHighlight('ex');
+
+          const exTime = Math.max(1000, PCR_PROGRAM.extend.time * 1000 / STATE.speedMultiplier / 10);
+          animateTemperature(55, 72, 800, () => {
+            log(`第${STATE.cycle}轮 · 延伸：72℃，Taq DNA聚合酶催化合成新DNA链 (从引物3'端)`, 'success');
+            STATE.dnaMolecules = Math.pow(2, STATE.cycle);
+            document.getElementById('dnaCount').textContent = STATE.dnaMolecules;
+
+            setTimeout(() => {
+              if (!STATE.paused) runCycle();
+            }, exTime);
+          });
+        }, anTime);
+      });
+    }, dnTime);
+  });
+}
+
+function finalExtension() {
+  STATE.currentStage = 'final-ex';
+  STATE.targetTemp = 72;
+  updateUIStage('最后延伸', 'stage-ex');
+  document.getElementById('targetTemp').textContent = '72℃ (最后延伸 10min)';
+  updateStepHighlight('ex');
+  log('30次循环完成，最后延伸：72℃，10分钟', 'info');
+
+  const finalTime = Math.max(3000, PCR_PROGRAM.finalExtend.time * 1000 / STATE.speedMultiplier / 15);
+  animateTemperature(STATE.temperature, 72, 800, () => {
+    setTimeout(() => {
+      STATE.currentStage = 'done';
+      STATE.running = false;
+      document.getElementById('stageTag').textContent = '完成';
+      document.getElementById('stageTag').className = 'temp-stage stage-idle';
+      document.getElementById('btnStart').textContent = '反应完成';
+      document.getElementById('btnStart').disabled = true;
+      document.getElementById('btnPause').disabled = true;
+      updateStepHighlight(null);
+      document.getElementById('currentStep').textContent = '完成';
+      document.getElementById('targetTemp').textContent = '反应结束';
+      document.getElementById('btnViewUV').disabled = false;
+      log(`PCR扩增完成！共${STATE.maxCycles}次循环，理论DNA分子数：2^${STATE.maxCycles} ≈ ${STATE.dnaMolecules.toExponential(2)}`, 'success');
+      log('请使用琼脂糖凝胶电泳鉴定PCR产物', 'success');
+    }, finalTime);
+  });
+}
+
+function pausePCR() {
+  if (!STATE.running) return;
+  STATE.paused = true;
+  STATE.running = false;
+  document.getElementById('btnPause').textContent = '继续';
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStart').textContent = '继续反应';
+  log('PCR已暂停', 'warn');
+}
+
+function resumePCR() {
+  STATE.running = true;
+  STATE.paused = false;
+  document.getElementById('btnPause').textContent = '暂停';
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStart').textContent = '运行中...';
+  log('PCR继续运行', 'info');
+
+  // 继续当前步骤
+  if (!STATE.preDenatureDone) {
+    beginPreDenature();
+  } else if (STATE.currentStage === 'final-ex' || STATE.currentStage === 'done') {
+    finalExtension();
+  } else {
+    runCycle();
+  }
+  STATE.animFrame = requestAnimationFrame(drawDNA);
+}
+
+function stepByStep() {
+  if (STATE.running) {
+    log('请先暂停或等待当前反应完成', 'warn');
+    return;
+  }
+  if (!STATE.centrifuged) {
+    log('请先完成反应体系配制并放入PCR仪', 'warn');
+    return;
+  }
+
+  // 手动逐步演示 - 初始化到第一步
+  if (STATE.currentStage === 'done') {
+    resetPCRState();
+  }
+
+  if (!STATE.preDenatureDone) {
+    STATE.running = true;
+    STATE.preDenatureDone = true;
+    STATE.currentStage = 'pre-dn';
+    STATE.targetTemp = 94;
+    STATE.temperature = 94;
+    updateUIStage('预变性', 'stage-dn');
+    updateStepHighlight('dn');
+    document.getElementById('targetTemp').textContent = '94℃ (预变性)';
+    document.getElementById('tempDisplay').textContent = '94.0';
+    document.getElementById('btnStep').textContent = '下一步：变性';
+    log('预变性：94℃，双链DNA充分解链，为后续循环做准备', 'info');
+    drawDNA();
+    return;
+  }
+
+  if (STATE.cycle >= STATE.maxCycles) {
+    finalExtension();
+    document.getElementById('btnStep').disabled = true;
+    return;
+  }
+
+  // 按子步骤推进
+  if (STATE.subStep === 0 || STATE.subStep === 3) {
+    STATE.cycle++;
+    STATE.subStep = 1;
+    STATE.currentStage = 'dn';
+    STATE.targetTemp = 94;
+    STATE.temperature = 94;
+    updateUIStage('变性', 'stage-dn');
+    updateStepHighlight('dn');
+    document.getElementById('targetTemp').textContent = '94℃';
+    document.getElementById('tempDisplay').textContent = '94.0';
+    document.getElementById('btnStep').textContent = '下一步：复性';
+    updateCycleDisplay();
+    log(`第${STATE.cycle}轮 · 变性：温度超过90℃，双链DNA解聚为单链`, 'info');
+  } else if (STATE.subStep === 1) {
+    STATE.subStep = 2;
+    STATE.currentStage = 'an';
+    STATE.targetTemp = 55;
+    STATE.temperature = 55;
+    updateUIStage('复性', 'stage-an');
+    updateStepHighlight('an');
+    document.getElementById('targetTemp').textContent = '55℃';
+    document.getElementById('tempDisplay').textContent = '55.0';
+    document.getElementById('btnStep').textContent = '下一步：延伸';
+    log(`第${STATE.cycle}轮 · 复性：温度降至50℃左右，引物通过碱基互补配对与单链DNA结合`, 'info');
+  } else if (STATE.subStep === 2) {
+    STATE.subStep = 3;
+    STATE.currentStage = 'ex';
+    STATE.targetTemp = 72;
+    STATE.temperature = 72;
+    updateUIStage('延伸', 'stage-ex');
+    updateStepHighlight('ex');
+    document.getElementById('targetTemp').textContent = '72℃';
+    document.getElementById('tempDisplay').textContent = '72.0';
+    STATE.dnaMolecules = Math.pow(2, STATE.cycle);
+    document.getElementById('dnaCount').textContent = STATE.dnaMolecules;
+    document.getElementById('btnStep').textContent = '下一轮循环';
+    log(`第${STATE.cycle}轮 · 延伸：72℃，Taq DNA聚合酶催化合成新DNA链 (从引物3'端开始)`, 'success');
+  }
+
+  drawDNA();
+}
+
+function resetPCRState() {
+  STATE.running = false;
+  STATE.paused = false;
+  STATE.cycle = 0;
+  STATE.dnaMolecules = 1;
+  STATE.elapsedSeconds = 0;
+  STATE.currentStage = 'idle';
+  STATE.subStep = 0;
+  STATE.preDenatureDone = false;
+  STATE.temperature = 25;
+  STATE.targetTemp = null;
+  document.getElementById('dnaCount').textContent = '1';
+  document.getElementById('cycleCount').textContent = '0';
+  document.getElementById('timeElapsed').textContent = '00:00';
+  document.getElementById('btnStep').textContent = '逐步演示';
+  document.getElementById('btnStep').disabled = false;
+}
+
+// --- 辅助函数 ---
+function animateTemperature(from, to, duration, callback) {
+  const start = performance.now();
+  function animate(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    // easeInOut
+    const t = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+    STATE.temperature = from + (to - from) * t;
+    document.getElementById('tempDisplay').textContent = STATE.temperature.toFixed(1);
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      STATE.temperature = to;
+      document.getElementById('tempDisplay').textContent = STATE.temperature.toFixed(1);
+      if (callback) callback();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function updateUIStage(name, cssClass) {
+  document.getElementById('stageTag').textContent = name;
+  document.getElementById('stageTag').className = 'temp-stage ' + cssClass;
+  document.getElementById('currentStep').textContent = name;
+}
+
+function updateStepHighlight(stage) {
+  const steps = ['dn', 'an', 'ex'];
+  steps.forEach(s => {
+    const el = document.getElementById('stepIdx' + (steps.indexOf(s) + 1));
+    if (s === stage) {
+      el.classList.add('current');
+    } else {
+      el.classList.remove('current');
+    }
+  });
+}
+
+function updateCycleDisplay() {
+  document.getElementById('cycleCount').textContent = STATE.cycle;
+}
+
+function startTimer() {
+  if (STATE._timerInterval) clearInterval(STATE._timerInterval);
+  STATE._timerInterval = setInterval(() => {
+    if (STATE.running) {
+      STATE.elapsedSeconds++;
+      const mins = Math.floor(STATE.elapsedSeconds / 60);
+      const secs = STATE.elapsedSeconds % 60;
+      document.getElementById('timeElapsed').textContent =
+        String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    }
+  }, 1000);
+}
+
+function updateSpeed() {
+  STATE.speedMultiplier = parseInt(document.getElementById('speedSlider').value);
+}
+
+function resetAll() {
+  if (STATE.running) {
+    STATE.running = false;
+    STATE.paused = false;
+  }
+  if (STATE._timerInterval) clearInterval(STATE._timerInterval);
+  if (STATE.animFrame) cancelAnimationFrame(STATE.animFrame);
+
+  STATE.tubePrepared = false;
+  STATE.centrifuged = false;
+  STATE.reagentsAdded = 0;
+  STATE.cycle = 0;
+  STATE.dnaMolecules = 1;
+  STATE.elapsedSeconds = 0;
+  STATE.currentStage = 'idle';
+  STATE.subStep = 0;
+  STATE.preDenatureDone = false;
+  STATE.temperature = 25;
+  STATE.targetTemp = null;
+  STATE.strands = [];
+  STATE.primers = [];
+  STATE.particles = [];
+  addedReagents = [];
+
+  document.getElementById('tubeContents').innerHTML = '等待加入反应组分...';
+  document.getElementById('tubeFill').style.width = '0%';
+  document.querySelector('#tubeStatus div:first-child').textContent = '⚪ 离心管状态：空管';
+  document.getElementById('btnCentrifuge').disabled = true;
+  document.getElementById('btnLoadPCR').disabled = true;
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnPause').disabled = true;
+  document.getElementById('btnStep').disabled = false;
+  document.getElementById('btnStart').textContent = '启动PCR';
+  document.getElementById('btnPause').textContent = '暂停';
+  document.getElementById('btnLoadPCR').textContent = '放入PCR仪，开始反应';
+  document.getElementById('btnLoadPCR').disabled = true;
+  document.getElementById('btnCentrifuge').textContent = '离心混匀 (~10秒)';
+  document.getElementById('stageTag').textContent = '准备中';
+  document.getElementById('stageTag').className = 'temp-stage stage-idle';
+  document.getElementById('stageTag').style.background = '';
+  document.getElementById('targetTemp').textContent = '--';
+  document.getElementById('tempDisplay').textContent = '25.0';
+  document.getElementById('cycleCount').textContent = '0';
+  document.getElementById('dnaCount').textContent = '1';
+  document.getElementById('timeElapsed').textContent = '00:00';
+  document.getElementById('currentStep').textContent = '--';
+  document.getElementById('btnStep').textContent = '逐步演示';
+  document.getElementById('btnViewUV').disabled = true;
+  updateStepHighlight(null);
+
+  document.getElementById('logArea').innerHTML =
+    '<div class="log-item info">[系统] 已重置，请重新开始实验</div>';
+
+  ctx.clearRect(0, 0, W, H);
+  resizeCanvas();
+  log('实验平台已重置，请重新配制反应体系', 'info');
+}
+
+// --- 琼脂糖凝胶电泳 ---
+function openGelModal() {
+  document.getElementById('gelModal').classList.add('show');
+  if (STATE.currentStage === 'done') {
+    document.getElementById('btnRunGel').disabled = false;
+  } else {
+    document.getElementById('btnRunGel').disabled = true;
+    document.getElementById('gelResult').textContent = '⚠️ 请先完成PCR反应再进行电泳鉴定';
+  }
+  drawGel();
+}
+
+function closeGelModal() {
+  document.getElementById('gelModal').classList.remove('show');
+}
+
+function drawGel() {
+  const gelCanvas = document.getElementById('gelCanvas');
+  const gctx = gelCanvas.getContext('2d');
+  const container = document.getElementById('gelVisual');
+  gelCanvas.width = container.clientWidth;
+  gelCanvas.height = container.clientHeight;
+  const GW = gelCanvas.width;
+  const GH = gelCanvas.height;
+
+  gctx.clearRect(0, 0, GW, GH);
+
+  // 凝胶背景
+  gctx.fillStyle = '#1a2a3a';
+  gctx.fillRect(0, 0, GW, GH);
+
+  // 凝胶纹理
+  for (let y = 0; y < GH; y += 8) {
+    gctx.fillStyle = `rgba(255,255,255,${0.02 + Math.sin(y * 0.5) * 0.01})`;
+    gctx.fillRect(0, y, GW, 6);
+  }
+
+  // 加样孔
+  const wells = [
+    { x: GW * 0.1, label: 'Marker' },
+    { x: GW * 0.3, label: 'PCR产物' },
+    { x: GW * 0.5, label: '阳性对照' },
+    { x: GW * 0.7, label: '阴性对照' },
+  ];
+
+  wells.forEach(w => {
+    gctx.fillStyle = '#0a141f';
+    gctx.fillRect(w.x - 12, 15, 24, 25);
+    gctx.strokeStyle = '#4a6a8a';
+    gctx.lineWidth = 1;
+    gctx.strokeRect(w.x - 12, 15, 24, 25);
+    gctx.fillStyle = '#8ab4d6';
+    gctx.font = '10px "Microsoft YaHei"';
+    gctx.textAlign = 'center';
+    gctx.fillText(w.label, w.x, 60);
+  });
+
+  // 如果有电泳结果
+  if (STATE.gelRun && STATE.gelProgress > 0) {
+    const progress = Math.min(STATE.gelProgress / 100, 1);
+
+    // Marker ladder
+    const markerBands = [0.15, 0.25, 0.35, 0.48, 0.55, 0.68, 0.75];
+    markerBands.forEach(pos => {
+      const y = 70 + pos * (GH - 140);
+      gctx.fillStyle = '#4fc3f7';
+      gctx.fillRect(wells[0].x - 20, y, 40, 3);
+      gctx.shadowColor = '#4fc3f7';
+      gctx.shadowBlur = 8;
+      gctx.fillRect(wells[0].x - 20, y, 40, 3);
+      gctx.shadowBlur = 0;
+    });
+
+    // PCR产物条带 (目标带)
+    if (STATE.currentStage === 'done') {
+      const bandY = 70 + 0.4 * (GH - 140);
+      gctx.fillStyle = '#66bb6a';
+      gctx.shadowColor = '#66bb6a';
+      gctx.shadowBlur = 12;
+      gctx.fillRect(wells[1].x - 25, bandY, 50, 4);
+      gctx.shadowBlur = 0;
+
+      // 引物二聚体 (如果有)
+      const dimerY = 70 + 0.85 * (GH - 140);
+      gctx.fillStyle = 'rgba(255,183,77,0.6)';
+      gctx.fillRect(wells[1].x - 10, dimerY, 20, 2);
+    }
+
+    // 阳性对照条带
+    const posY = 70 + 0.41 * (GH - 140);
+    gctx.fillStyle = '#4fc3f7';
+    gctx.fillRect(wells[2].x - 20, posY, 40, 3);
+
+    // 阴性对照无明显条带
+  }
+
+  // 如果没有运行过电泳，显示起始状态
+  if (!STATE.gelRun) {
+    wells.forEach(w => {
+      gctx.fillStyle = 'rgba(79,195,247,0.3)';
+      gctx.fillRect(w.x - 3, 70, 6, 8);
+    });
+    gctx.fillStyle = '#627d98';
+    gctx.font = '12px "Microsoft YaHei"';
+    gctx.textAlign = 'center';
+    gctx.fillText('← 加样孔 (样品尚未电泳)', GW / 2, GH - 15);
+    gctx.fillText('➕', GW / 2, 105);
+    gctx.fillText('➖', GW / 2, GH - 30);
+  }
+}
+
+function runGel() {
+  if (STATE.gelRun) return;
+  STATE.gelRun = true;
+  STATE.gelProgress = 0;
+  document.getElementById('btnRunGel').disabled = true;
+  document.getElementById('btnRunGel').textContent = '电泳中...';
+  document.getElementById('gelProgress').textContent = '正在电泳...';
+  log('琼脂糖凝胶电泳开始：电压 5 V/cm', 'info');
+
+  const gelInterval = setInterval(() => {
+    STATE.gelProgress += 2;
+    document.getElementById('gelProgress').textContent = `电泳进度 ${STATE.gelProgress}%`;
+
+    if (STATE.gelProgress >= 100) {
+      clearInterval(gelInterval);
+      STATE.gelProgress = 100;
+      document.getElementById('gelProgress').textContent = '电泳完成';
+      document.getElementById('btnViewUV').disabled = false;
+      document.getElementById('btnRunGel').textContent = '电泳完成';
+      log('电泳完成，指示剂已迁移接近凝胶边缘，可在紫外灯下观察', 'success');
+      document.getElementById('gelResult').textContent =
+        '电泳完成！请点击"紫外灯观察"查看结果 (需在300nm紫外灯下)';
+    }
+    drawGel();
+  }, 300);
+}
+
+function viewGelUV() {
+  if (STATE.gelProgress < 100) {
+    document.getElementById('gelResult').textContent = '⚠️ 请等待电泳完成后再观察';
+    return;
+  }
+
+  // 模拟紫外灯下的观察效果
+  const gelCanvas = document.getElementById('gelCanvas');
+  const gctx = gelCanvas.getContext('2d');
+  const container = document.getElementById('gelVisual');
+  const GW = gelCanvas.width;
+  const GH = gelCanvas.height;
+
+  // 紫外光效果
+  gctx.fillStyle = 'rgba(75,0,130,0.3)';
+  gctx.fillRect(0, 0, GW, GH);
+
+  // 荧光条带更亮
+  if (STATE.currentStage === 'done') {
+    const bandY = 70 + 0.4 * (GH - 140);
+    gctx.fillStyle = '#00ff88';
+    gctx.shadowColor = '#00ff88';
+    gctx.shadowBlur = 20;
+    gctx.fillRect(GW * 0.3 - 30, bandY, 60, 5);
+    gctx.shadowBlur = 0;
+  }
+
+  document.getElementById('gelResult').innerHTML = `
+    <div style="color:#66bb6a;font-weight:700;">🔦 紫外灯(300nm)下观察结果：</div>
+    <div style="margin-top:6px;font-size:0.78em;">
+      ✓ 在PCR产物泳道观察到预期大小的DNA条带<br>
+      ✓ 阳性对照泳道有条带（实验体系正常）<br>
+      ✓ 阴性对照泳道无条带（无污染）<br>
+      <b style="color:#4fc3f7;">结论：PCR扩增成功！目的基因得到特异性扩增。</b><br>
+      <span style="font-size:0.7em;color:#627d98;">
+        注：DNA分子在凝胶中的迁移速率与凝胶浓度、DNA分子大小和构象有关。
+      </span>
+    </div>
+  `;
+  log('紫外灯下观察到预期DNA条带——PCR扩增成功！', 'success');
+  document.getElementById('btnViewUV').disabled = true;
+}
+
+// --- 初始化 ---
+updateWaterVol();
+resizeCanvas();
+drawDNA();
+
+// 初始状态绘制
+ctx.fillStyle = '#4a6078';
+ctx.font = '16px "Microsoft YaHei"';
+ctx.textAlign = 'center';
+ctx.fillText('欢迎使用PCR虚拟实验平台', W / 2, H / 2 - 70);
+ctx.fillText('请先在左侧配制PCR反应体系', W / 2, H / 2 - 25);
+ctx.fillText('然后启动反应观察DNA扩增过程', W / 2, H / 2 + 20);
+</script>
+</body>
+</html>
