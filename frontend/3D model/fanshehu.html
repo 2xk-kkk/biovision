@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>反射弧 — 神经调节的基本方式</title>
+<style>
+  :root {
+    --bg: #f5f7fa; --card: #fff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+    --gold: #f59e0b; --blue: #3b82f6; --orange: #f97316;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+
+  .topbar {
+    background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+    height: 56px; padding: 0 20px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .back-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid #cbd5e1; background: #fff;
+    color: #475569; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.2s; flex-shrink: 0;
+  }
+  .back-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: #1e293b; }
+
+  .main-container {
+    max-width: 1200px; margin: 0 auto; padding: 24px;
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+
+  /* Canvas 面板 */
+  .chart-panel {
+    flex: 2.2; min-width: 660px;
+    background: var(--card); border-radius: 16px;
+    border: 1px solid var(--border); padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .chart-panel h2 { font-size: 16px; color: #1e293b; margin-bottom: 8px; align-self: flex-start; }
+  canvas { display: block; border-radius: 8px; max-width: 100%; height: auto; }
+
+  /* 侧面板 */
+  .side-panel {
+    flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .card {
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); padding: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card h3 { font-size: 14px; color: #1e293b; margin-bottom: 10px; }
+
+  /* 图例 */
+  .lg-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 12px; color: #475569; }
+  .lg-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+  /* 反射类型切换 */
+  .reflex-options { display: flex; gap: 6px; }
+  .reflex-btn {
+    flex: 1; padding: 10px 8px; border-radius: 10px;
+    border: 1px solid var(--border); background: #fff;
+    color: #475569; font-size: 13px; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.4;
+  }
+  .reflex-btn:hover { background: #f1f5f9; }
+  .reflex-btn.sel {
+    background: #eff6ff; border-color: #3b82f6; color: #2563eb;
+    font-weight: 600; box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .reflex-btn .rf-sub { font-size: 11px; color: #94a3b8; font-weight: 400; display: block; }
+  .reflex-btn.sel .rf-sub { color: #60a5fa; }
+
+  /* 刺激按钮 */
+  .stimulus-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 14px; border-radius: 30px;
+    border: none; background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff; font-size: 16px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: all 0.3s;
+    box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+  }
+  .stimulus-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(245,158,11,0.4); }
+  .stimulus-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .stimulus-btn.flash { animation: btnPulse 0.3s ease-out; }
+  @keyframes btnPulse {
+    0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.7); }
+    100% { box-shadow: 0 0 0 20px rgba(245,158,11,0); }
+  }
+
+  /* 阶段提示 */
+  .phase-info {
+    padding: 12px; border-radius: 8px; font-size: 13px; color: #fff;
+    text-align: center; font-weight: 600; min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: #94a3b8; transition: all 0.3s;
+  }
+  .phase-info.active { background: #f59e0b; }
+  .phase-info.done { background: #16a34a; }
+
+  /* 关键要点 */
+  .key-point {
+    padding: 8px 10px; border-radius: 6px; font-size: 12px; color: #475569;
+    background: #f8fafc; margin-bottom: 6px;
+    border-left: 3px solid #f59e0b; line-height: 1.5;
+  }
+  .key-point b { color: #1e293b; }
+
+  .hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+  @media (max-width: 900px) {
+    .main-container { flex-direction: column; }
+    .chart-panel { min-width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main3.html" class="back-btn" title="返回">←</a>
+  <h1>反射弧 · 神经调节的基本方式</h1>
+</div>
+
+<div class="main-container">
+  <!-- Canvas 主面板 -->
+  <div class="chart-panel">
+    <h2>⚡ 反射弧通路图解</h2>
+    <canvas id="chart" width="1000" height="560"></canvas>
+    <div class="hint">💡 点击 <b>「刺激感受器」</b> 观察信号传导动画 &nbsp;|&nbsp; 可切换缩手反射 / 膝跳反射</div>
+  </div>
+
+  <!-- 右侧面板 -->
+  <div class="side-panel">
+    <!-- 图例 -->
+    <div class="card">
+      <h3>📋 图例</h3>
+      <div class="lg-row"><div class="lg-swatch" style="background:#f59e0b"></div> 传入神经（感觉神经）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#3b82f6"></div> 传出神经（运动神经）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#f97316"></div> 中间神经元（联络神经元）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#d6d3d1;border:1px solid #a8a29e"></div> 脊髓灰质</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#fef3c7;border:1px solid #fde68a"></div> 脊髓白质</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#fff;border:1.5px solid #f59e0b;border-radius:50%"></div> 突触位置</div>
+    </div>
+
+    <!-- 反射类型切换 -->
+    <div class="card">
+      <h3>⚙ 反射类型</h3>
+      <div class="reflex-options" id="reflexGroup">
+        <button class="reflex-btn sel" data-type="hand" onclick="switchReflex('hand')">
+          缩手反射<span class="rf-sub">多突触反射</span>
+        </button>
+        <button class="reflex-btn" data-type="knee" onclick="switchReflex('knee')">
+          膝跳反射<span class="rf-sub">单突触反射（二元反射弧）</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 刺激按钮 -->
+    <div class="card">
+      <h3>🎮 控制</h3>
+      <button class="stimulus-btn" id="stimulusBtn" onclick="startStimulus()">
+        ⚡ 刺激感受器
+      </button>
+      <div class="phase-info" id="phaseInfo">等待刺激…</div>
+    </div>
+
+    <!-- 关键要点 -->
+    <div class="card">
+      <h3>📌 关键知识点</h3>
+      <div class="key-point"><b>反射弧五环节：</b>感受器 → 传入神经 → 神经中枢 → 传出神经 → 效应器</div>
+      <div class="key-point"><b>膝跳反射（单突触）：</b>仅含 2 个神经元，<b>无</b>中间神经元，是最简单的反射弧</div>
+      <div class="key-point"><b>缩手反射（多突触）：</b>含中间神经元，信号经过 ≥3 次突触传递</div>
+      <div class="key-point"><b>脊神经节：</b>位于后根，是传入神经元<b>细胞体</b>聚集处</div>
+      <div class="key-point" id="keySynapseNote"><b>突触传递：</b>神经递质从突触前膜释放，经突触间隙，与突触后膜受体结合</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== Canvas 初始化 ====================
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const canvas = document.getElementById('chart');
+const W = 1000, H = 560;
+canvas.width = W * DPR; canvas.height = H * DPR;
+const ctx = canvas.getContext('2d');
+ctx.scale(DPR, DPR);
+
+canvas.style.width = '100%';
+canvas.style.height = 'auto';
+
+// ==================== 状态变量 ====================
+let reflexType = 'hand';    // 'hand' | 'knee'
+let animState = 'idle';     // 'idle' | 'animating' | 'done'
+let animStartTime = 0;
+const ANIM_DURATION = 4200; // ms
+
+// ==================== 坐标常量 ====================
+// 神经中枢（简化）
+const CNS_X = 430, CNS_Y = 300, CNS_W = 160, CNS_H = 180;
+const CNS_LEFT = CNS_X - CNS_W / 2;   // 350
+const CNS_RIGHT = CNS_X + CNS_W / 2;  // 510
+const CNS_TOP = CNS_Y - CNS_H / 2;    // 210
+const CNS_BOT = CNS_Y + CNS_H / 2;    // 390
+// 感受器
+const REC_X = 90, REC_Y = 260;
+// 脊神经节
+const DRG_X = 280, DRG_Y = 250;
+// 效应器
+const EFF_X = 910, EFF_Y = 350;
+
+// ==================== 路径点（信号脉冲途经） ====================
+function getSignalPath(type) {
+  if (type === 'hand') {
+    return [
+      { x: REC_X, y: REC_Y },           // 0: 感受器
+      { x: 180, y: REC_Y - 5 },
+      { x: DRG_X, y: DRG_Y },            // 2: 脊神经节
+      { x: 330, y: DRG_Y + 5 },
+      { x: CNS_LEFT, y: 265 },           // 4: 入神经中枢 · 突触①
+      { x: 390, y: 280 },
+      { x: CNS_X, y: 290 },              // 6: 中间神经元
+      { x: 470, y: 310 },
+      { x: CNS_RIGHT, y: 325 },          // 8: 出神经中枢 · 突触②
+      { x: 600, y: 338 },
+      { x: 720, y: 348 },
+      { x: 820, y: 350 },
+      { x: EFF_X, y: EFF_Y },            // 12: 效应器 · 突触③
+    ];
+  } else {
+    return [
+      { x: REC_X, y: REC_Y },           // 0: 感受器
+      { x: 180, y: REC_Y - 5 },
+      { x: DRG_X, y: DRG_Y },            // 2: 脊神经节
+      { x: 330, y: DRG_Y + 5 },
+      { x: CNS_LEFT, y: 275 },           // 4: 入神经中枢
+      { x: CNS_X, y: 298 },              // 5: 突触①（单突触：传入→传出直接）
+      { x: CNS_RIGHT, y: 325 },          // 6: 出神经中枢
+      { x: 600, y: 338 },
+      { x: 720, y: 348 },
+      { x: 820, y: 350 },
+      { x: EFF_X, y: EFF_Y },            // 10: 效应器 · 突触②
+    ];
+  }
+}
+
+// 突触位置信息（用于动画暂停 + 递质释放绘制）
+function getSynapses(type) {
+  if (type === 'hand') {
+    return [
+      { idx: 4, label: '①', desc: '传入→中间神经元\n（神经中枢内）' },
+      { idx: 8, label: '②', desc: '中间→传出神经元\n（神经中枢内）' },
+      { idx: 12, label: '③', desc: '传出→效应器\n（神经肌肉接头）' },
+    ];
+  } else {
+    return [
+      { idx: 5, label: '①', desc: '传入→传出神经元\n（直接突触，单突触反射）' },
+      { idx: 10, label: '②', desc: '传出→效应器\n（神经肌肉接头）' },
+    ];
+  }
+}
+
+// ==================== 绘制函数 ====================
+
+// 绘制神经中枢（简化圆角矩形）
+function drawNerveCenter() {
+  // 主体
+  ctx.fillStyle = '#fefce8';
+  ctx.strokeStyle = '#d97706';
+  ctx.lineWidth = 2.5;
+  roundRect(CNS_LEFT, CNS_TOP, CNS_W, CNS_H, 16);
+  ctx.fill();
+  ctx.stroke();
+
+  // 标题
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '600 16px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('神经中枢', CNS_X, CNS_Y - 40);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('（脊髓灰质）', CNS_X, CNS_Y - 22);
+
+  // 传入/传出标注
+  ctx.fillStyle = '#92400e';
+  ctx.font = '600 11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('传入', CNS_LEFT - 8, 256);
+  ctx.textAlign = 'left';
+  ctx.fillText('传出', CNS_RIGHT + 8, 338);
+}
+
+// 辅助：圆角矩形
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// 绘制传入通路
+function drawAfferentPath(type) {
+  const recLabel = type === 'hand' ? '皮肤痛觉感受器' : '肌梭（本体感受器）';
+  const recSub = type === 'hand' ? '（手指）' : '（股四头肌内）';
+  const recEmoji = type === 'hand' ? '🖐' : '🦵';
+
+  // 感受器节点
+  drawNode(REC_X, REC_Y, 24, '#f59e0b', recEmoji);
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '600 14px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(recLabel, REC_X, REC_Y - 36);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText(recSub, REC_X, REC_Y - 22);
+
+  // 传入神经纤维：感受器→脊神经节
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 4.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(REC_X + 24, REC_Y);
+  ctx.bezierCurveTo(140, REC_Y - 15, 220, REC_Y - 20, DRG_X - 16, DRG_Y);
+  ctx.stroke();
+  ctx.strokeStyle = '#fef3c7';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(REC_X + 24, REC_Y);
+  ctx.bezierCurveTo(140, REC_Y - 15, 220, REC_Y - 20, DRG_X - 16, DRG_Y);
+  ctx.stroke();
+
+  // 脊神经节
+  drawDorsalRootGanglion(DRG_X, DRG_Y);
+
+  // 脊神经节→神经中枢
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 4.5;
+  ctx.beginPath();
+  ctx.moveTo(DRG_X + 16, DRG_Y);
+  ctx.bezierCurveTo(320, DRG_Y - 5, 330, 260, CNS_LEFT, 265);
+  ctx.stroke();
+  ctx.strokeStyle = '#fef3c7';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(DRG_X + 16, DRG_Y);
+  ctx.bezierCurveTo(320, DRG_Y - 5, 330, 260, CNS_LEFT, 265);
+  ctx.stroke();
+
+  // 方向箭头
+  drawArrow(165, REC_Y - 8, 1, '#d97706');
+  drawArrow(295, DRG_Y - 5, 1, '#d97706');
+
+  // 传入神经标注
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('传入神经', 195, REC_Y + 38);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('（有神经节）', 195, REC_Y + 52);
+}
+
+// 绘制传出通路
+function drawEfferentPath(type) {
+  const effLabel = type === 'hand' ? '肱二头肌' : '股四头肌';
+  const effSub = type === 'hand' ? '（上臂屈肌）' : '（大腿伸肌）';
+
+  // 神经中枢→效应器
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 4.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(CNS_RIGHT, 325);
+  ctx.bezierCurveTo(580, 330, 660, 345, 780, 348);
+  ctx.lineTo(EFF_X - 24, EFF_Y);
+  ctx.stroke();
+  ctx.strokeStyle = '#bfdbfe';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(CNS_RIGHT, 325);
+  ctx.bezierCurveTo(580, 330, 660, 345, 780, 348);
+  ctx.lineTo(EFF_X - 24, EFF_Y);
+  ctx.stroke();
+
+  // 方向箭头（蓝色）
+  drawArrow(600, 335, 1, '#2563eb');
+  drawArrow(750, 346, 1, '#2563eb');
+
+  // 效应器节点
+  drawNode(EFF_X, EFF_Y, 24, '#3b82f6', '💪');
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '600 14px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(effLabel, EFF_X, EFF_Y - 36);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText(effSub, EFF_X, EFF_Y - 22);
+  ctx.fillText('（效应器）', EFF_X, EFF_Y + 40);
+
+  // 传出神经标注
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('传出神经', 680, 370);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('（无神经节）', 680, 384);
+}
+
+// 绘制中间神经元（仅缩手反射）
+function drawInterneuron() {
+  if (reflexType !== 'hand') return;
+
+  const ix = CNS_X - 20, iy = CNS_Y - 10;
+  const iGrad = ctx.createRadialGradient(ix - 2, iy - 2, 2, ix, iy, 14);
+  iGrad.addColorStop(0, '#fff');
+  iGrad.addColorStop(0.4, '#f97316');
+  iGrad.addColorStop(1, '#c2410c');
+  ctx.fillStyle = iGrad;
+  ctx.beginPath();
+  ctx.arc(ix, iy, 14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#9a3412';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // 高光
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath();
+  ctx.arc(ix - 2, iy - 2, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 连接线
+  ctx.strokeStyle = '#f97316';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([5, 3]);
+  ctx.beginPath();
+  ctx.moveTo(CNS_LEFT + 5, 265);
+  ctx.quadraticCurveTo(ix - 5, iy - 18, ix, iy - 12);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(ix, iy + 12);
+  ctx.quadraticCurveTo(ix + 5, CNS_Y + 25, CNS_RIGHT - 5, 325);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 标签
+  ctx.fillStyle = '#c2410c';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('中间神经元', ix + 18, iy + 4);
+  ctx.fillText('（联络神经元）', ix + 18, iy + 18);
+}
+
+// 绘制脊神经节
+function drawDorsalRootGanglion(x, y) {
+  ctx.fillStyle = 'rgba(245,158,11,0.15)';
+  ctx.beginPath();
+  ctx.arc(x, y, 22, 0, Math.PI * 2);
+  ctx.fill();
+
+  const grad = ctx.createRadialGradient(x - 3, y - 3, 2, x, y, 16);
+  grad.addColorStop(0, '#fef3c7');
+  grad.addColorStop(0.5, '#f59e0b');
+  grad.addColorStop(1, '#b45309');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#b45309';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath();
+  ctx.arc(x - 3, y - 3, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('脊神经节', x, y - 24);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('（传入神经元', x, y + 28);
+  ctx.fillText('  细胞体聚集处）', x, y + 42);
+}
+
+// 通用节点
+function drawNode(x, y, r, color, emoji) {
+  ctx.fillStyle = color + '26';
+  ctx.beginPath();
+  ctx.arc(x, y, r + 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  const grad = ctx.createRadialGradient(x - 3, y - 3, 3, x, y, r);
+  grad.addColorStop(0, '#fff');
+  grad.addColorStop(0.45, color);
+  grad.addColorStop(1, '#1e293b');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#fff';
+  ctx.font = `${r}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, x, y);
+  ctx.textBaseline = 'alphabetic';
+}
+
+// 方向箭头
+function drawArrow(x, y, dir, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x + dir * 10, y);
+  ctx.lineTo(x - dir * 4, y - 6);
+  ctx.lineTo(x - dir * 4, y + 6);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// 突触标记
+function drawSynapseMarkers(type) {
+  const synapses = getSynapses(type);
+  const path = getSignalPath(type);
+
+  synapses.forEach(syn => {
+    const pt = path[syn.idx];
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(syn.label, pt.x + 14, pt.y + 4);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+    const lines = syn.desc.split('\n');
+    lines.forEach((line, li) => {
+      ctx.fillText(line, pt.x + 14, pt.y + 18 + li * 14);
+    });
+  });
+}
+
+// ==================== 动画绘制 ====================
+
+// 绘制信号脉冲
+function drawSignalPulse(x, y, alpha) {
+  if (alpha <= 0) return;
+
+  // 外辉光
+  const glowR = 14;
+  const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+  glowGrad.addColorStop(0, `rgba(255,255,200,${alpha})`);
+  glowGrad.addColorStop(0.4, `rgba(255,200,50,${alpha * 0.6})`);
+  glowGrad.addColorStop(1, `rgba(255,150,0,0)`);
+  ctx.fillStyle = glowGrad;
+  ctx.beginPath();
+  ctx.arc(x, y, glowR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 核心
+  const coreGrad = ctx.createRadialGradient(x, y, 0, x, y, 6);
+  coreGrad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+  coreGrad.addColorStop(0.5, `rgba(255,240,100,${alpha * 0.9})`);
+  coreGrad.addColorStop(1, `rgba(255,180,0,${alpha * 0.3})`);
+  ctx.fillStyle = coreGrad;
+  ctx.beginPath();
+  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// 绘制突触递质释放动画
+function drawSynapseAnim(x, y, phase) {
+  // phase 0→1: 突触前小泡聚集→释放→递质扩散→后膜受体激活
+
+  if (phase < 0.3) {
+    // 阶段1: 突触小泡向突触前膜移动
+    const vesicleProgress = phase / 0.3;
+    for (let i = 0; i < 4; i++) {
+      const vy = y - 8 + vesicleProgress * 10;
+      const vx = x - 6 + i * 5;
+      ctx.fillStyle = `rgba(147,51,234,${0.4 + vesicleProgress * 0.6})`;
+      ctx.beginPath();
+      ctx.arc(vx, vy, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(107,33,168,${0.5})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+  } else if (phase < 0.7) {
+    // 阶段2: 递质扩散
+    const diffPhase = (phase - 0.3) / 0.4;
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2 + diffPhase * 2;
+      const dist = 5 + diffPhase * 15;
+      const dx = x + Math.cos(angle) * dist;
+      const dy = y + Math.sin(angle) * dist;
+      ctx.fillStyle = `rgba(147,51,234,${0.6 - diffPhase * 0.5})`;
+      ctx.beginPath();
+      ctx.arc(dx, dy, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+  } else {
+    // 阶段3: 后膜受体激活
+    const actPhase = (phase - 0.7) / 0.3;
+    const flicker = 0.5 + 0.5 * Math.sin(actPhase * Math.PI * 6);
+    ctx.fillStyle = `rgba(34,197,94,${0.4 + flicker * 0.6})`;
+    ctx.beginPath();
+    ctx.arc(x, y + 12, 8 * (0.6 + actPhase * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+
+    // 受体蛋白标记
+    for (let i = -1; i <= 1; i += 2) {
+      ctx.fillStyle = `rgba(34,197,94,${0.3 + flicker * 0.7})`;
+      ctx.beginPath();
+      ctx.arc(x + i * 8, y + 12, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+// 高亮组件
+function highlightComponent(x, y, r, alpha) {
+  ctx.strokeStyle = `rgba(255,200,50,${alpha})`;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+// ==================== 主绘制循环 ====================
+function draw(now) {
+  ctx.clearRect(0, 0, W, H);
+
+  // --- 静态基底 ---
+  drawNerveCenter();
+  drawAfferentPath(reflexType);
+  drawEfferentPath(reflexType);
+  drawInterneuron();
+  drawSynapseMarkers(reflexType);
+
+  // --- 底部说明 ---
+  ctx.fillStyle = '#64748b';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  const processText = reflexType === 'hand'
+    ? '刺激 → 感受器 → 传入神经（有神经节）→ 神经中枢（脊髓灰质）→ 传出神经（无神经节）→ 效应器 → 产生反应'
+    : '刺激 → 感受器 → 传入神经（有神经节）→ 神经中枢（脊髓灰质，单突触）→ 传出神经（无神经节）→ 效应器 → 产生反应';
+  ctx.fillText(processText, W / 2, H - 10);
+
+  // --- 动画叠加层 ---
+  if (animState === 'animating' || animState === 'done') {
+    const elapsed = animState === 'done' ? ANIM_DURATION : now - animStartTime;
+    const progress = Math.min(elapsed / ANIM_DURATION, 1);
+    const path = getSignalPath(reflexType);
+    const synapses = getSynapses(reflexType);
+
+    // 计算当前信号位置
+    const totalPoints = path.length - 1;
+    const rawIdx = progress * totalPoints;
+    const segIdx = Math.min(Math.floor(rawIdx), totalPoints - 1);
+    const segFrac = rawIdx - segIdx;
+    const p0 = path[segIdx];
+    const p1 = path[Math.min(segIdx + 1, totalPoints)];
+    const sigX = p0.x + (p1.x - p0.x) * segFrac;
+    const sigY = p0.y + (p1.y - p0.y) * segFrac;
+
+    // 绘制信号脉冲
+    drawSignalPulse(sigX, sigY, 0.9);
+
+    // 绘制路径上已走过的辉光痕迹
+    const trailLen = 5;
+    for (let t = 0; t < trailLen; t++) {
+      const trailFrac = t / trailLen;
+      const idx = Math.max(rawIdx - trailFrac * 0.8, 0);
+      const tSeg = Math.min(Math.floor(idx), totalPoints - 1);
+      const tFrac = idx - tSeg;
+      const tp0 = path[tSeg];
+      const tp1 = path[Math.min(tSeg + 1, totalPoints)];
+      const tx = tp0.x + (tp1.x - tp0.x) * tFrac;
+      const ty = tp0.y + (tp1.y - tp0.y) * tFrac;
+      drawSignalPulse(tx, ty, 0.25 * (1 - t / trailLen));
+    }
+
+    // 突触递质释放动画
+    synapses.forEach(syn => {
+      const synPointIdx = syn.idx;
+      const synProgress = synPointIdx / totalPoints;
+      const synPhase = (progress - synProgress) / (1.5 / totalPoints); // 局部相位
+      if (synPhase >= 0 && synPhase <= 1) {
+        drawSynapseAnim(path[synPointIdx].x, path[synPointIdx].y, synPhase);
+        // 突触高亮
+        highlightComponent(path[synPointIdx].x, path[synPointIdx].y, 10, 0.5);
+      }
+    });
+
+    // 高亮当前经过的组件
+    if (rawIdx >= 0 && rawIdx < 3) highlightComponent(REC_X, REC_Y, 24, 0.4);
+    if (rawIdx >= 3 && rawIdx < 5) highlightComponent(DRG_X, DRG_Y, 16, 0.4);
+    if (rawIdx >= totalPoints - 2) highlightComponent(EFF_X, EFF_Y, 24, 0.4);
+  }
+
+  // 动画完成后更新UI
+  if (animState === 'animating' && now - animStartTime >= ANIM_DURATION) {
+    animState = 'done';
+    updatePhaseUI('done');
+  }
+}
+
+// ==================== 阶段UI更新 ====================
+function updatePhaseUI(state) {
+  const info = document.getElementById('phaseInfo');
+  const btn = document.getElementById('stimulusBtn');
+
+  if (state === 'idle') {
+    info.textContent = '等待刺激…';
+    info.className = 'phase-info';
+    btn.textContent = '⚡ 刺激感受器';
+    btn.disabled = false;
+  } else if (state === 'animating') {
+    info.textContent = '🔬 信号传导中…';
+    info.className = 'phase-info active';
+    btn.textContent = '⏳ 传导中…';
+    btn.disabled = true;
+  } else if (state === 'done') {
+    const name = reflexType === 'hand' ? '缩手反射' : '膝跳反射';
+    info.textContent = '✅ 传导完成 — ' + name + '已发生';
+    info.className = 'phase-info done';
+    btn.textContent = '🔄 重新刺激';
+    btn.disabled = false;
+  }
+}
+
+// ==================== 事件处理 ====================
+function switchReflex(type) {
+  if (animState === 'animating') return;
+
+  reflexType = type;
+  animState = 'idle';
+  updatePhaseUI('idle');
+
+  // 更新按钮样式
+  document.querySelectorAll('.reflex-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector(`[data-type="${type}"]`).classList.add('sel');
+
+  // 更新突触知识点
+  document.getElementById('keySynapseNote').innerHTML =
+    type === 'hand'
+      ? '<b>突触传递：</b>缩手反射经过 <b>3</b> 个突触 — 后角(传入→中间)、前角(中间→传出)、神经肌肉接头'
+      : '<b>突触传递：</b>膝跳反射仅 <b>2</b> 个突触 — 前角(传入<b>直接</b>→传出，单突触！)、神经肌肉接头';
+}
+
+function startStimulus() {
+  if (animState === 'animating') return;
+
+  animState = 'animating';
+  animStartTime = performance.now();
+  updatePhaseUI('animating');
+
+  // 按钮闪烁效果
+  const btn = document.getElementById('stimulusBtn');
+  btn.classList.remove('flash');
+  void btn.offsetWidth; // reflow
+  btn.classList.add('flash');
+}
+
+// ==================== 动画循环 ====================
+function animLoop(timestamp) {
+  draw(timestamp);
+  requestAnimationFrame(animLoop);
+}
+
+// ==================== 初始绘制 ====================
+updatePhaseUI('idle');
+requestAnimationFrame(animLoop);
+
+// 响应式调整
+window.addEventListener('resize', () => {
+  // Canvas CSS width:100% 自动处理
+});
+</script>
+</body>
+</html>

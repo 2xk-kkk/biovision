@@ -93,6 +93,154 @@
   .key-point b { color: #1e293b; }
 
   .hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+  /* ===== 公式区 ===== */
+  .section-title {
+    font-size: 20px; font-weight: 700; color: #0f172a;
+    margin-bottom: 16px; padding-left: 14px;
+    border-left: 4px solid #22c55e;
+  }
+  .formulas-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px; margin-bottom: 32px;
+  }
+  .formula-card {
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: all 0.3s;
+  }
+  .formula-card:hover { border-color: #22c55e; box-shadow: 0 4px 16px rgba(34,197,94,0.08); }
+  .formula-card .fc-title {
+    font-size: 14px; font-weight: 700; color: #16a34a; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .formula-card .fc-title .fc-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #f0fdf4; display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .formula-box {
+    background: linear-gradient(135deg, #f0fdf4 0%, #fefce8 100%);
+    border: 1px solid #bbf7d0; border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 8px;
+    font-size: 14px; font-weight: 600; color: #1e293b;
+    text-align: center; letter-spacing: 0.5px;
+  }
+  .formula-desc {
+    font-size: 12px; color: #64748b; line-height: 1.6;
+  }
+  .formula-desc b { color: #16a34a; }
+  .sub-formula {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 12px; margin-top: 6px; font-size: 13px;
+    color: #475569; text-align: center; font-weight: 500;
+  }
+
+  /* ===== 练习题区 ===== */
+  .practice-section {
+    max-width: 1100px; margin: 0 auto; padding: 24px;
+  }
+  .practice-wrapper {
+    background: var(--card); border-radius: 16px;
+    border: 1px solid var(--border); padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .start-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px; border-radius: 30px;
+    border: none; background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; font-size: 16px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: all 0.3s;
+    box-shadow: 0 4px 14px rgba(34,197,94,0.3);
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(34,197,94,0.4); }
+  .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .start-btn-box { text-align: center; padding: 20px 0; }
+
+  .question-card {
+    background: #f9fafb; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 24px; margin-bottom: 18px;
+    transition: all 0.3s;
+  }
+  .question-card.correct { border-color: #22c55e; background: #f0fdf4; }
+  .question-card.wrong { border-color: #ef4444; background: #fef2f2; }
+  .q-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .q-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .q-title { font-weight: 700; font-size: 16px; color: #0f172a; }
+  .q-stem {
+    font-size: 14px; color: #334155; line-height: 1.8;
+    margin-bottom: 18px; padding: 12px 16px;
+    background: #fff; border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .q-stem b { color: #16a34a; }
+  .q-sub {
+    margin-bottom: 14px; padding-left: 8px;
+    border-left: 3px solid #e2e8f0; padding-left: 14px;
+  }
+  .q-sub p { font-size: 13px; color: #475569; margin-bottom: 8px; }
+  .q-sub input {
+    width: 180px; padding: 8px 12px; border: 1.5px solid #d1d5db;
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+    outline: none; transition: border-color 0.2s;
+    background: #fff;
+  }
+  .q-sub input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+  .q-sub input.correct-input { border-color: #22c55e; background: #f0fdf4; }
+  .q-sub input.wrong-input { border-color: #ef4444; background: #fef2f2; }
+  .answer-feedback {
+    display: none; font-size: 13px; margin-top: 4px; font-weight: 500;
+  }
+  .answer-feedback.show { display: block; }
+  .answer-feedback.right { color: #16a34a; }
+  .answer-feedback.miss { color: #dc2626; }
+  .unit-label { font-size: 13px; color: #64748b; margin-left: 4px; }
+
+  .submit-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; border-radius: 30px;
+    border: 2px solid #22c55e; background: #fff;
+    color: #16a34a; font-size: 15px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: all 0.3s;
+    margin-top: 12px;
+  }
+  .submit-btn:hover { background: #f0fdf4; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .submit-btn-box { text-align: center; }
+
+  .score-box {
+    text-align: center; padding: 16px 0; display: none;
+  }
+  .score-box.show { display: block; }
+  .score-number {
+    font-size: 40px; font-weight: 800;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .score-text { font-size: 14px; color: #64748b; }
+
+  .solution-box {
+    margin-top: 16px; padding: 16px; background: #fffbeb;
+    border: 1px solid #fde68a; border-radius: 10px;
+    display: none;
+  }
+  .solution-box.show { display: block; }
+  .solution-box h4 { font-size: 14px; color: #92400e; margin-bottom: 8px; }
+  .solution-box ol { font-size: 12px; color: #78716c; padding-left: 20px; line-height: 1.8; }
+
+  @media (max-width: 640px) {
+    .formulas-grid { grid-template-columns: 1fr; }
+    .q-sub input { width: 120px; }
+  }
 </style>
 </head>
 <body>
@@ -138,6 +286,135 @@
       <div class="key-point"><b>逐级递减：</b>每一营养级约80%~90%能量以热能形式散失</div>
       <div class="key-point"><b>金字塔形：</b>营养级越高，获得的能量越少</div>
       <div class="key-point"><b>传递效率：</b>一般为 10%~20%（林德曼效率）</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 核心公式区 ==================== -->
+<div style="max-width:1100px;margin:0 auto;padding:0 24px 24px;">
+  <div class="section-title">📐 能量流动核心公式</div>
+  <div class="formulas-grid">
+    <!-- 公式1：同化量 = 摄入量 - 粪便量 -->
+    <div class="formula-card">
+      <div class="fc-title"><span class="fc-icon">①</span> 同化量基础公式</div>
+      <div class="formula-box">同化量 = 摄入量 − 粪便量</div>
+      <div class="formula-desc">
+        <b>关键：</b>粪便中的能量<b>不属于</b>该营养级同化的能量，它属于<b>上一营养级</b>同化后流向分解者的部分。计算时务必先减去粪便量再代入其他公式。
+      </div>
+    </div>
+
+    <!-- 公式2：同化量的去向 -->
+    <div class="formula-card">
+      <div class="fc-title"><span class="fc-icon">②</span> 同化量的去向</div>
+      <div class="formula-box">同化量 = 呼吸散失 + 用于生长、发育、繁殖的能量</div>
+      <div class="sub-formula">用于生长、发育、繁殖 = 流向下一营养级 + 流向分解者 + 未被利用</div>
+      <div class="formula-desc" style="margin-top:8px;">
+        <b>说明：</b>最高营养级<b>没有</b>"流向下一营养级"这一去向。
+      </div>
+    </div>
+
+    <!-- 公式3：能量传递效率 -->
+    <div class="formula-card">
+      <div class="fc-title"><span class="fc-icon">③</span> 能量传递效率（林德曼效率）</div>
+      <div class="formula-box">传递效率 = （某营养级同化量 / 上一营养级同化量）× 100%</div>
+      <div class="formula-desc">
+        <b>取值范围：</b>一般在 <b>10% ~ 20%</b> 之间。这是生态系统固有规律，解题时若无特殊说明，求<b>最大值</b>按 <b>20%</b> 算，求<b>最小值</b>按 <b>10%</b> 算。
+      </div>
+    </div>
+
+    <!-- 公式4：各营养级能量等量关系 -->
+    <div class="formula-card">
+      <div class="fc-title"><span class="fc-icon">④</span> 营养级能量等量关系</div>
+      <div class="formula-box">某营养级同化量 = 呼吸散失 + 下一营养级同化量 + 分解者利用 + 未被利用</div>
+      <div class="formula-desc">
+        <b>最值速算口诀：</b>"最多获能选 <b>20%</b>，最少获能选 <b>10%</b>"；<br>
+        "至少消耗选 <b>20%</b>，最多消耗选 <b>10%</b>"。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 练习题区 ==================== -->
+<div class="practice-section">
+  <div class="practice-wrapper" id="practiceWrapper">
+    <div class="section-title">✏️ 能量流动 — 专项练习题</div>
+
+    <!-- —— 开始做题按钮 —— -->
+    <div class="start-btn-box" id="startBtnBox">
+      <button class="start-btn" id="startBtn" onclick="startPractice()">
+        📝 开始做题
+      </button>
+      <p style="margin-top:10px;font-size:13px;color:#94a3b8;">基于公式出题，共 2 道 · 包含填空</p>
+    </div>
+
+    <!-- —— 题目区域（初始隐藏） —— -->
+    <div id="questionsArea" style="display:none;">
+
+      <!-- 第1题：基础计算 -->
+      <div class="question-card" id="q1Card">
+        <div class="q-header">
+          <div class="q-num">1</div>
+          <div class="q-title">同化量与传递效率基础计算</div>
+        </div>
+        <div class="q-stem">
+          某草原生态系统中，<b>初级消费者（植食动物）</b>摄入食物中的能量为 <b>500 kJ</b>，其中以粪便形式排出的能量为 <b>120 kJ</b>。该营养级呼吸作用消耗的能量为 <b>200 kJ</b>，流向分解者的能量为 <b>50 kJ</b>。（假设未被利用的能量忽略不计）
+        </div>
+        <div class="q-sub">
+          <p>(1) 初级消费者的<b>同化量</b>是多少 kJ？</p>
+          <input type="number" id="q1a" placeholder="请输入数值" oninput="clearFeedback('q1a')">
+          <span class="unit-label">kJ</span>
+          <div class="answer-feedback" id="fb_q1a"></div>
+        </div>
+        <div class="q-sub">
+          <p>(2) 初级消费者<b>用于生长、发育、繁殖的能量</b>是多少 kJ？</p>
+          <input type="number" id="q1b" placeholder="请输入数值" oninput="clearFeedback('q1b')">
+          <span class="unit-label">kJ</span>
+          <div class="answer-feedback" id="fb_q1b"></div>
+        </div>
+      </div>
+
+      <!-- 第2题：最值计算 -->
+      <div class="question-card" id="q2Card">
+        <div class="q-header">
+          <div class="q-num">2</div>
+          <div class="q-title">能量传递效率最值计算</div>
+        </div>
+        <div class="q-stem">
+          某池塘生态系统中，生产者（浮游植物）固定的太阳能总量为 <b>20000 kJ</b>。能量沿食物链 <b>浮游植物 → 浮游动物 → 小型鱼类 → 大型鱼类</b> 单向流动。请根据传递效率的最值规律计算：
+        </div>
+        <div class="q-sub">
+          <p>(1) <b>大型鱼类（第四营养级）最多</b>能获得多少能量？ <span style="color:#94a3b8;">（提示：按20%传递效率）</span></p>
+          <input type="number" id="q2a" placeholder="请输入数值" oninput="clearFeedback('q2a')">
+          <span class="unit-label">kJ</span>
+          <div class="answer-feedback" id="fb_q2a"></div>
+        </div>
+        <div class="q-sub">
+          <p>(2) 若要使<b>小型鱼类（第三营养级）至少</b>获得 100 kJ 的能量，<b>生产者最少</b>需要固定多少能量？ <span style="color:#94a3b8;">（提示：按20%传递效率）</span></p>
+          <input type="number" id="q2b" placeholder="请输入数值" oninput="clearFeedback('q2b')">
+          <span class="unit-label">kJ</span>
+          <div class="answer-feedback" id="fb_q2b"></div>
+        </div>
+      </div>
+
+      <!-- 提交按钮 -->
+      <div class="submit-btn-box">
+        <button class="submit-btn" id="submitBtn" onclick="submitAnswers()">
+          ✅ 提交答案
+        </button>
+      </div>
+
+      <!-- 成绩反馈 -->
+      <div class="score-box" id="scoreBox">
+        <div class="score-number" id="scoreNumber">0/4</div>
+        <div class="score-text" id="scoreText"></div>
+      </div>
+
+      <!-- 解题思路 -->
+      <div class="solution-box" id="solutionBox">
+        <h4>💡 解题思路</h4>
+        <div id="solutionContent"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -365,6 +642,113 @@ window.addEventListener('resize', () => {
   canvas.style.width = w + 'px';
   canvas.style.height = Math.round(520 * ratio) + 'px';
 });
+
+// ==================== 练习题逻辑 ====================
+let practiceSubmitted = false;
+
+// 正确答案
+const ANSWERS = {
+  q1a: 380,   // 500 - 120 = 380 kJ
+  q1b: 180,   // 380 - 200 = 180 kJ (用于生长、发育、繁殖 = 同化量 - 呼吸散失)
+  q2a: 160,   // 20000 × 0.2 × 0.2 × 0.2 = 160 kJ
+  q2b: 2500,  // 100 / (0.2 × 0.2) = 100 / 0.04 = 2500 kJ
+};
+
+// 解析思路
+const SOLUTIONS = {
+  q1a: '同化量 = 摄入量 − 粪便量 = 500 − 120 = <b>380 kJ</b>',
+  q1b: '用于生长、发育、繁殖 = 同化量 − 呼吸散失 = 380 − 200 = <b>180 kJ</b>（其中流向分解者 50 kJ，流向下一营养级 130 kJ）',
+  q2a: '生产者(20000 kJ) → 浮游动物(×20%) → 小型鱼类(×20%) → 大型鱼类(×20%)<br>最多 = 20000 × 20% × 20% × 20% = 20000 × 0.008 = <b>160 kJ</b>',
+  q2b: '生产者 →(×20%)→ 浮游动物 →(×20%)→ 小型鱼类(≥100 kJ)<br>设生产者至少 = X，则 X × 20% × 20% ≥ 100<br>X × 0.04 ≥ 100 → X ≥ 100 / 0.04 = <b>2500 kJ</b>',
+};
+
+function startPractice() {
+  document.getElementById('startBtnBox').style.display = 'none';
+  document.getElementById('questionsArea').style.display = 'block';
+  // 滚动到练习题区
+  document.getElementById('practiceWrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function clearFeedback(inputId) {
+  if (practiceSubmitted) return;
+  const inp = document.getElementById(inputId);
+  const fb = document.getElementById('fb_' + inputId);
+  inp.classList.remove('correct-input', 'wrong-input');
+  fb.classList.remove('show', 'right', 'miss');
+}
+
+function submitAnswers() {
+  if (practiceSubmitted) return; // 防止重复提交
+
+  let correctCount = 0;
+  const totalFields = Object.keys(ANSWERS).length;
+
+  for (const [id, correctVal] of Object.entries(ANSWERS)) {
+    const inp = document.getElementById(id);
+    const fb = document.getElementById('fb_' + id);
+    const userVal = parseFloat(inp.value);
+
+    if (!isNaN(userVal) && Math.abs(userVal - correctVal) < 0.01) {
+      // 正确
+      inp.classList.add('correct-input');
+      inp.classList.remove('wrong-input');
+      fb.textContent = '✅ 正确！' + SOLUTIONS[id];
+      fb.className = 'answer-feedback show right';
+      correctCount++;
+    } else {
+      // 错误
+      inp.classList.add('wrong-input');
+      inp.classList.remove('correct-input');
+      fb.innerHTML = '❌ 正确答案：<b>' + correctVal + ' kJ</b> — ' + SOLUTIONS[id];
+      fb.className = 'answer-feedback show miss';
+    }
+
+    // 标记题目卡片
+    const qCard = inp.closest('.question-card');
+    if (qCard) {
+      if (!isNaN(userVal) && Math.abs(userVal - correctVal) < 0.01) {
+        qCard.classList.add('correct');
+        qCard.classList.remove('wrong');
+      } else {
+        qCard.classList.add('wrong');
+        qCard.classList.remove('correct');
+      }
+    }
+  }
+
+  // 显示成绩
+  practiceSubmitted = true;
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = '✅ 已提交';
+
+  const scoreBox = document.getElementById('scoreBox');
+  scoreBox.classList.add('show');
+  document.getElementById('scoreNumber').textContent = correctCount + ' / ' + totalFields;
+
+  let scoreMsg = '';
+  if (correctCount === totalFields) {
+    scoreMsg = '🎉 太棒了！全部正确，你对能量流动的公式理解非常扎实！';
+  } else if (correctCount >= totalFields / 2) {
+    scoreMsg = '👍 不错！还有提升空间，建议回顾上方核心公式，特别是最值速算口诀。';
+  } else {
+    scoreMsg = '📚 需要加油哦！建议逐条阅读上方公式卡片，理解"同化量"与"摄入量"的区别后再做一遍。';
+  }
+  document.getElementById('scoreText').textContent = scoreMsg;
+
+  // 显示解题思路
+  const solutionBox = document.getElementById('solutionBox');
+  solutionBox.classList.add('show');
+  let solutionHTML = '<ol>';
+  solutionHTML += '<li><b>第1题(1)：</b>同化量 = 摄入量 - 粪便量。粪便中的能量属于上一营养级（生产者），不属于初级消费者。</li>';
+  solutionHTML += '<li><b>第1题(2)：</b>同化量的去向中，用于生长、发育、繁殖 = 同化量 − 呼吸散失 = 380 − 200 = <b>180 kJ</b>。这180 kJ 进一步分为：流向分解者 50 kJ + 流向下一营养级 130 kJ（未利用忽略不计）。</li>';
+  solutionHTML += '<li><b>第2题(1)：</b>"最多"获能 → 传递效率取20%。大型鱼类是第四营养级，需要经过3次传递 → 20000 × 20%³ = 160 kJ。</li>';
+  solutionHTML += '<li><b>第2题(2)：</b>"最少"消耗 → 传递效率取20%（效率越高，消耗越少）。小型鱼类是第三营养级，需要经过2次传递 → 100 / (20% × 20%) = 2500 kJ。</li>';
+  solutionHTML += '</ol>';
+  document.getElementById('solutionContent').innerHTML = solutionHTML;
+
+  // 滚动到结果区
+  scoreBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 </script>
 </body>
 </html>
