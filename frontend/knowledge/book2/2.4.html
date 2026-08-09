@@ -336,6 +336,23 @@
   </div>
 </div>
 
+<!-- 中心法则图解 -->
+<div class="section fade-in">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+    <h2>🌐 中心法则图解 — 教材原图</h2>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="diagram-box">
+      <h4 style="margin-bottom:8px;">遗传信息的传递规律（中心法则）</h4>
+      <canvas id="dogmaCanvas" width="800" height="340"></canvas>
+      <p style="font-size:0.82em;color:var(--text-light);margin-top:8px;">
+        实线表示普遍存在的遗传信息流向；虚线表示少数RNA病毒中存在的特殊流向（逆转录、RNA复制）
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- 易错辨析 -->
 <div class="section fade-in">
   <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -431,6 +448,261 @@ function loadCheckState() {
   updateProgress();
 }
 loadCheckState();
+
+// Central Dogma animation (textbook-style)
+const dogmaCanvas = document.getElementById('dogmaCanvas');
+const dCtx = dogmaCanvas.getContext('2d');
+let dTime = 0;
+
+function drawDogma() {
+  const w = dogmaCanvas.width;
+  const h = dogmaCanvas.height;
+  dCtx.clearRect(0, 0, w, h);
+  dCtx.fillStyle = '#fafbfc';
+  dCtx.fillRect(0, 0, w, h);
+  dTime += 0.018;
+
+  // Layout constants
+  const dnaX = 170, dnaY = 155;
+  const rnaX = 460, rnaY = 155;
+  const protX = 720, protY = 155;
+
+  // Colors
+  const dnaColor = '#1565c0';
+  const rnaColor = '#e65100';
+  const protColor = '#2e7d32';
+  const arrowColor = '#546e7a';
+  const reverseColor = '#7b1fa2';
+
+  // === Helper: draw self-loop circular arrow ===
+  function drawSelfLoop(cx, cy, radius, color, time, label) {
+    const rx = radius, ry = radius * 0.55;
+
+    // Background ring (faint)
+    dCtx.strokeStyle = color;
+    dCtx.lineWidth = 2;
+    dCtx.globalAlpha = 0.18;
+    dCtx.setLineDash([]);
+    dCtx.beginPath();
+    dCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    dCtx.stroke();
+    dCtx.globalAlpha = 1;
+
+    // Rotating dashes
+    dCtx.strokeStyle = color;
+    dCtx.lineWidth = 3;
+    dCtx.setLineDash([14, 22]);
+    dCtx.lineDashOffset = -time * 60;
+    dCtx.beginPath();
+    dCtx.ellipse(cx, cy, rx + 1, ry + 1, 0, 0, Math.PI * 2);
+    dCtx.stroke();
+    dCtx.setLineDash([]);
+
+    // Arrowhead at top-right of the loop
+    const arrowAngle = -0.45;
+    const ax = cx + rx * Math.cos(arrowAngle);
+    const ay = cy + ry * Math.sin(arrowAngle);
+    // Tangent direction (clockwise at that point on ellipse)
+    const tx = -rx * Math.sin(arrowAngle);
+    const ty = ry * Math.cos(arrowAngle);
+    const tLen = Math.sqrt(tx * tx + ty * ty);
+    const txn = tx / tLen, tyn = ty / tLen;
+
+    dCtx.fillStyle = color;
+    dCtx.beginPath();
+    dCtx.moveTo(ax + txn * 8, ay + tyn * 8);
+    dCtx.lineTo(ax - txn * 6 + tyn * 5, ay - tyn * 6 - txn * 5);
+    dCtx.lineTo(ax - txn * 6 - tyn * 5, ay - tyn * 6 + txn * 5);
+    dCtx.closePath();
+    dCtx.fill();
+
+    // Label inside the loop
+    dCtx.fillStyle = color;
+    dCtx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    dCtx.textAlign = 'center';
+    dCtx.textBaseline = 'middle';
+    dCtx.fillText(label, cx, cy);
+  }
+
+  // === Helper: draw straight arrow between two points ===
+  function drawStraightArrow(x1, y1, x2, y2, color, label, dashed) {
+    dCtx.strokeStyle = color;
+    dCtx.lineWidth = 3;
+    if (dashed) dCtx.setLineDash([8, 5]);
+    else dCtx.setLineDash([]);
+    dCtx.beginPath();
+    dCtx.moveTo(x1, y1);
+    dCtx.lineTo(x2, y2);
+    dCtx.stroke();
+    dCtx.setLineDash([]);
+
+    // Arrowhead
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const arrowLen = 13;
+    dCtx.fillStyle = color;
+    dCtx.beginPath();
+    dCtx.moveTo(x2, y2);
+    dCtx.lineTo(x2 - arrowLen * Math.cos(angle - 0.45), y2 - arrowLen * Math.sin(angle - 0.45));
+    dCtx.lineTo(x2 - arrowLen * Math.cos(angle + 0.45), y2 - arrowLen * Math.sin(angle + 0.45));
+    dCtx.closePath();
+    dCtx.fill();
+
+    // Label above
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    dCtx.fillStyle = color;
+    dCtx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+    dCtx.textAlign = 'center';
+    dCtx.textBaseline = 'bottom';
+    dCtx.fillText(label, mx, my - 10);
+  }
+
+  // === Helper: draw DNA double helix icon ===
+  function drawDNAIcon(cx, cy) {
+    const s = 1;
+    // Two intertwined strands
+    for (let strand = 0; strand < 2; strand++) {
+      dCtx.strokeStyle = strand === 0 ? '#1976d2' : '#42a5f5';
+      dCtx.lineWidth = 3;
+      dCtx.beginPath();
+      for (let y = cy - 38 * s; y <= cy + 38 * s; y += 2) {
+        const xOff = Math.sin(y * 0.13 + strand * Math.PI) * 10 * s;
+        if (y === cy - 38 * s) dCtx.moveTo(cx + xOff, y);
+        else dCtx.lineTo(cx + xOff, y);
+      }
+      dCtx.stroke();
+    }
+    // Base pair rungs
+    dCtx.strokeStyle = 'rgba(21,101,192,0.2)';
+    dCtx.lineWidth = 1;
+    for (let y = cy - 33 * s; y < cy + 38 * s; y += 7) {
+      const x1 = cx + Math.sin(y * 0.13) * 10 * s;
+      const x2 = cx + Math.sin(y * 0.13 + Math.PI) * 10 * s;
+      dCtx.beginPath();
+      dCtx.moveTo(x1, y);
+      dCtx.lineTo(x2, y);
+      dCtx.stroke();
+    }
+    // Label
+    dCtx.fillStyle = dnaColor;
+    dCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+    dCtx.textAlign = 'center';
+    dCtx.fillText('DNA', cx, cy + 55 * s);
+  }
+
+  // === Helper: draw RNA single strand icon ===
+  function drawRNAIcon(cx, cy) {
+    dCtx.strokeStyle = '#e65100';
+    dCtx.lineWidth = 3.5;
+    dCtx.beginPath();
+    for (let x = cx - 45; x <= cx + 45; x += 2) {
+      const yOff = Math.sin(x * 0.14) * 8;
+      if (x === cx - 45) dCtx.moveTo(x, cy + yOff);
+      else dCtx.lineTo(x, cy + yOff);
+    }
+    dCtx.stroke();
+    // Base dots
+    dCtx.fillStyle = '#e65100';
+    for (let x = cx - 38; x <= cx + 38; x += 13) {
+      const yOff = Math.sin(x * 0.14) * 8;
+      dCtx.beginPath();
+      dCtx.arc(x, cy + yOff, 2.5, 0, Math.PI * 2);
+      dCtx.fill();
+    }
+    dCtx.fillStyle = rnaColor;
+    dCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+    dCtx.textAlign = 'center';
+    dCtx.fillText('RNA', cx, cy + 55);
+  }
+
+  // === Helper: draw Protein icon ===
+  function drawProteinIcon(cx, cy) {
+    const colors = ['#e53935','#43a047','#fb8c00','#1e88e5','#8e24aa','#00acc1','#f4511e','#3949ab'];
+    const positions = [
+      [cx, cy-24],[cx-16, cy-10],[cx-20, cy+8],[cx-6, cy+22],
+      [cx+14, cy+24],[cx+26, cy+8],[cx+20, cy-8],[cx+4, cy-20]
+    ];
+    // Chain line
+    dCtx.strokeStyle = 'rgba(46,125,50,0.3)';
+    dCtx.lineWidth = 1.5;
+    dCtx.beginPath();
+    dCtx.moveTo(positions[0][0], positions[0][1]);
+    for (let i = 1; i < positions.length; i++) dCtx.lineTo(positions[i][0], positions[i][1]);
+    dCtx.stroke();
+    // Amino acid beads
+    positions.forEach(([px, py], i) => {
+      dCtx.fillStyle = colors[i];
+      dCtx.beginPath();
+      dCtx.arc(px, py, 8, 0, Math.PI * 2);
+      dCtx.fill();
+      dCtx.strokeStyle = 'rgba(0,0,0,0.15)';
+      dCtx.lineWidth = 1;
+      dCtx.stroke();
+    });
+    dCtx.fillStyle = protColor;
+    dCtx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+    dCtx.textAlign = 'center';
+    dCtx.fillText('蛋白质', cx, cy + 50);
+  }
+
+  // === DRAW THE DIAGRAM ===
+
+  // DNA node
+  drawDNAIcon(dnaX, dnaY);
+  // DNA self-loop (replication)
+  drawSelfLoop(dnaX - 58, dnaY, 32, dnaColor, dTime, '复制');
+
+  // RNA node
+  drawRNAIcon(rnaX, rnaY);
+  // RNA self-loop (RNA replication)
+  drawSelfLoop(rnaX + 58, rnaY, 32, rnaColor, dTime, '复制');
+
+  // Protein node
+  drawProteinIcon(protX, protY);
+
+  // DNA → RNA (transcription)
+  drawStraightArrow(dnaX + 55, dnaY - 8, rnaX - 55, rnaY - 8, '#1565c0', '转录', false);
+
+  // RNA → Protein (translation)
+  drawStraightArrow(rnaX + 55, rnaY - 8, protX - 40, protY - 8, '#e65100', '翻译', false);
+
+  // RNA → DNA (reverse transcription, dashed curved arrow below)
+  dCtx.strokeStyle = reverseColor;
+  dCtx.lineWidth = 2.5;
+  dCtx.setLineDash([8, 5]);
+  dCtx.beginPath();
+  const revStartX = rnaX - 3, revStartY = dnaY + 72;
+  const revEndX = dnaX + 3, revEndY = dnaY + 72;
+  const revCtrlX = (revStartX + revEndX) / 2;
+  const revCtrlY = revStartY + 55;
+  dCtx.moveTo(revStartX, revStartY);
+  dCtx.quadraticCurveTo(revCtrlX, revCtrlY, revEndX, revEndY);
+  dCtx.stroke();
+  dCtx.setLineDash([]);
+  // Arrowhead for reverse transcription
+  const revAngle = Math.atan2(revEndY - revCtrlY, revEndX - revCtrlX);
+  dCtx.fillStyle = reverseColor;
+  dCtx.beginPath();
+  const rvx = revEndX, rvy = revEndY;
+  dCtx.moveTo(rvx, rvy);
+  dCtx.lineTo(rvx - 12 * Math.cos(revAngle - 0.45), rvy - 12 * Math.sin(revAngle - 0.45));
+  dCtx.lineTo(rvx - 12 * Math.cos(revAngle + 0.45), rvy - 12 * Math.sin(revAngle + 0.45));
+  dCtx.closePath();
+  dCtx.fill();
+  // Reverse transcription label
+  dCtx.fillStyle = reverseColor;
+  dCtx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  dCtx.textAlign = 'center';
+  dCtx.fillText('逆转录', revCtrlX, revCtrlY + 5);
+
+  // Legend at bottom
+  dCtx.fillStyle = '#546e7a';
+  dCtx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  dCtx.textAlign = 'center';
+  dCtx.fillText('实线：普遍存在  |  虚线：少数RNA病毒（逆转录、RNA复制）', w / 2, h - 15);
+
+  requestAnimationFrame(drawDogma);
+}
+drawDogma();
 
 // Translation animation
 const transCanvas = document.getElementById('translCanvas');
