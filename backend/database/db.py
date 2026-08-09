@@ -61,6 +61,9 @@ def init_db():
     # 迁移：为帖子表添加标签字段
     add_column_if_not_exists(conn, 'posts', 'tags', 'TEXT')
 
+    # 迁移：为题目表添加知识点标签字段
+    add_column_if_not_exists(conn, 'questions', 'knowledge_tags', 'TEXT DEFAULT "[]"')
+
     # 用户在线状态表（新增！用于登录时记录 last_active）
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_online (
@@ -183,6 +186,29 @@ def init_db():
             FOREIGN KEY(exam_id) REFERENCES exams(id) ON DELETE CASCADE,
             UNIQUE(exam_id, number)
         )
+    ''')
+
+    # 知识点表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS knowledge_points (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chapter_key TEXT NOT NULL,
+            book TEXT NOT NULL,
+            chapter TEXT NOT NULL,
+            section TEXT,
+            section_name TEXT,
+            label_text TEXT NOT NULL,
+            category TEXT NOT NULL,
+            key_terms TEXT NOT NULL,
+            data_id INTEGER,
+            file_path TEXT
+        )
+    ''')
+
+    # 创建索引：按章节键查询知识点
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_kp_chapter_key
+        ON knowledge_points(chapter_key)
     ''')
 
     # 用户答题记录表

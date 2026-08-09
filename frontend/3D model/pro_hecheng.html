@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>蛋白质合成 - 交互式动画 (高中生物)</title>
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e2d4a;
+    --text: #c8d6e5;
+    --text-dim: #8899b4;
+    --accent: #00d4aa;
+    --accent2: #4da6ff;
+    --accent3: #ff6b9d;
+    --mrna: #00e5c3;
+    --trna: #ff9f43;
+    --rrna: #54a0ff;
+    --warning: #feca57;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .container {
+    width: 1100px;
+    max-width: 98vw;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+  }
+  header .subtitle {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* Canvas */
+  .canvas-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,212,170,0.06);
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: default;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.25s;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tab:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    box-shadow: 0 0 20px rgba(0,212,170,0.08);
+  }
+  .tab.active {
+    border-color: var(--accent);
+    color: #fff;
+    background: var(--surface2);
+    box-shadow: 0 0 24px rgba(0,212,170,0.12);
+  }
+  .tab .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+  .tab .dot.mrna-dot { background: var(--mrna); box-shadow: 0 0 6px var(--mrna); }
+  .tab .dot.trna-dot { background: var(--trna); box-shadow: 0 0 6px var(--trna); }
+  .tab .dot.rrna-dot { background: var(--rrna); box-shadow: 0 0 6px var(--rrna); }
+  .tab .dot.all-dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn:hover {
+    border-color: var(--accent2);
+    box-shadow: 0 0 12px rgba(77,166,255,0.15);
+  }
+  .btn.play-btn {
+    background: var(--accent);
+    color: #0a0f1e;
+    border-color: var(--accent);
+    font-weight: 700;
+    min-width: 80px;
+  }
+  .btn.play-btn:hover { box-shadow: 0 0 20px rgba(0,212,170,0.3); }
+  .btn.play-btn.paused { background: var(--accent3); border-color: var(--accent3); }
+  .speed-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+  .speed-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .speed-btn.active { background: var(--surface2); color: var(--accent2); border-color: var(--accent2); }
+
+  /* Info panel */
+  .info-panel {
+    margin-top: 12px;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    min-height: 80px;
+    display: none;
+  }
+  .info-panel.visible { display: block; }
+  .info-panel h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .info-panel p {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .info-panel .highlight { color: var(--accent); font-weight: 600; }
+  .info-panel .highlight2 { color: var(--accent2); font-weight: 600; }
+  .info-panel .highlight3 { color: var(--trna); font-weight: 600; }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend .swatch {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* Back button */
+  .back-btn {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.25s;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .back-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 16px rgba(0,212,170,0.15);
+  }
+  .back-btn .arrow {
+    font-size: 1.1rem;
+    transition: transform 0.2s;
+  }
+  .back-btn:hover .arrow {
+    transform: translateX(-3px);
+  }
+
+  /* Video link button */
+  .video-btn {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--accent3);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.25s;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .video-btn:hover {
+    border-color: var(--accent3);
+    box-shadow: 0 0 16px rgba(255,107,157,0.2);
+  }
+</style>
+</head>
+<body>
+<a href="main2.html" class="back-btn"><span class="arrow">&larr;</span> 回退</a>
+<a href="https://www.bilibili.com/video/BV1kL411j77e/?spm_id_from=333.337.search-card.all.click&vd_source=c048e7ba7c5062e0208051838d1f1f46" target="_blank" class="video-btn">B站演示视频</a>
+<div class="container">
+  <header>
+    <h1>基因的表达 · 转录与翻译</h1>
+    <div class="subtitle">转录 (DNA→mRNA) → 翻译 (mRNA→蛋白质) | 高中生物必修2复习</div>
+  </header>
+
+  <div class="canvas-wrap">
+    <canvas id="mainCanvas"></canvas>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="0">
+      <span class="dot all-dot"></span>转录
+    </div>
+    <div class="tab" data-tab="1">
+      <span class="dot all-dot"></span>翻译全程
+    </div>
+    <div class="tab" data-tab="2">
+      <span class="dot mrna-dot"></span>mRNA · 信使RNA
+    </div>
+    <div class="tab" data-tab="3">
+      <span class="dot trna-dot"></span>tRNA · 转运RNA
+    </div>
+    <div class="tab" data-tab="4">
+      <span class="dot rrna-dot"></span>rRNA · 核糖体RNA
+    </div>
+    <div class="tab" data-tab="5">
+      <span class="dot all-dot"></span>中心法则
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn play-btn" id="playBtn">▶ 播放</button>
+    <button class="btn" id="resetBtn">↺ 重置</button>
+    <div class="speed-group">
+      速度
+      <button class="speed-btn" data-speed="0.5">0.5x</button>
+      <button class="speed-btn active" data-speed="1">1x</button>
+      <button class="speed-btn" data-speed="2">2x</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--mrna)"></i> mRNA 信使RNA</span>
+    <span><i class="swatch" style="background:var(--trna)"></i> tRNA 转运RNA</span>
+    <span><i class="swatch" style="background:var(--rrna)"></i> rRNA / 核糖体</span>
+    <span><i class="swatch" style="background:var(--accent3)"></i> 氨基酸 / 多肽链</span>
+  </div>
+
+  <div class="info-panel visible" id="infoPanel"></div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('mainCanvas');
+  const ctx = canvas.getContext('2d');
+  const playBtn = document.getElementById('playBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const infoPanel = document.getElementById('infoPanel');
+
+  // --- DPI scaling ---
+  const CSS_W = 1060, CSS_H = 500;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = CSS_W * DPR;
+  canvas.height = CSS_H * DPR;
+  canvas.style.width = CSS_W + 'px';
+  canvas.style.height = CSS_H + 'px';
+  ctx.scale(DPR, DPR);
+
+  // --- State ---
+  let activeTab = 0;
+  let isPlaying = false;
+  let speed = 1;
+  let mrnaOffset = 0;
+  let time = 0;
+
+  // mRNA data
+  const codons = ['AUG','UUU','CUU','UCU','GGU','GCA','GUU','AAG','UAA','AUG','UUU','CUU','UCU','GGU','GCA','GUU','AAG','UAA'];
+  const aminoLabels = ['Met','Phe','Leu','Ser','Gly','Ala','Val','Lys','STOP','Met','Phe','Leu','Ser','Gly','Ala','Val','Lys','STOP'];
+  const anticodons = ['UAC','AAA','GAA','AGA','CCA','CGU','CAA','UUC','AUU','UAC','AAA','GAA','AGA','CCA','CGU','CAA','UUC','AUU'];
+  const aminoColors = ['#ff6b6b','#4ecdc4','#a29bfe','#fd79a8','#fdcb6e','#00b894','#e17055','#74b9ff','#636e72','#ff6b6b','#4ecdc4','#a29bfe','#fd79a8','#fdcb6e','#00b894','#e17055','#74b9ff','#636e72'];
+
+  // Ribosome position
+  const RIBO_X = 530, RIBO_Y = 230;
+  const RIBO_W = 200, RIBO_H = 130;
+  const A_SITE_X = RIBO_X + 58;
+  const P_SITE_X = RIBO_X;
+  const E_SITE_X = RIBO_X - 58;
+  const SITE_Y = RIBO_Y + RIBO_H/2 - 8;
+  const CODON_W = 32;
+
+  // tRNA tracking
+  let activeTrnas = []; // { codonIdx, x, y, targetX, targetY, color, aminoLabel, state: 'approach'|'A'|'P'|'E'|'leaving' }
+  let peptideChain = []; // { aminoLabel, color, x, y }
+  let elongationPhase = 'feeding'; // 'feeding' | 'trna_entry' | 'bond' | 'translocate' | 'exit'
+  let phaseTimer = 0;
+  let fedCodons = 0;
+
+  // Polypeptide anchor (where the chain starts, above P site)
+  const CHAIN_START_X = P_SITE_X;
+  const CHAIN_START_Y = RIBO_Y - 20;
+
+  // --- Transcription state ---
+  let txPhase = 'binding'; // binding | unwinding | elongation | termination | reset
+  let txPhaseTimer = 0;
+  let txPolPos = 0; // 0=at promoter (right), 1=at terminator (left)
+  let txBubbleOpen = 0; // 0=closed, 1=fully open
+  let txMrnaLength = 0; // how many bases of mRNA synthesized
+  let txMrnaBases = []; // the growing mRNA base sequence
+
+  // DNA and mRNA sequences for transcription
+  const dnaTemplate = ['T','A','C','A','A','A','G','A','A','A','G','A','C','C','A','C','G','T','C','A','A','T','T','C','A','T','T'];
+  const dnaCoding =   ['A','T','G','T','T','T','C','T','T','T','C','T','G','G','T','G','C','A','G','T','T','A','A','G','T','A','A'];
+  const mrnaBases =   ['A','U','G','U','U','U','C','U','U','U','C','U','G','G','U','G','C','A','G','U','U','A','A','G','U','A','A'];
+  // Transcription coordinates
+  const TX_DNA_Y = 340; // DNA center y
+  const TX_DNA_LEFT = 80;
+  const TX_DNA_RIGHT = 980;
+  const TX_DNA_SPAN = TX_DNA_RIGHT - TX_DNA_LEFT;
+  const TX_PROMOTER_X = 780; // promoter position (RNA pol starts here)
+  const TX_TERMINATOR_X = 250; // terminator position
+  const TX_BASE_SPACING = (TX_PROMOTER_X - TX_TERMINATOR_X) / dnaTemplate.length;
+
+  function resetState() {
+    mrnaOffset = 0;
+    activeTrnas = [];
+    peptideChain = [];
+    elongationPhase = 'feeding';
+    phaseTimer = 0;
+    fedCodons = 0;
+    time = 0;
+    // Transcription reset
+    txPhase = 'binding';
+    txPhaseTimer = 0;
+    txPolPos = 0;
+    txBubbleOpen = 0;
+    txMrnaLength = 0;
+    txMrnaBases = [];
+  }
+
+  // --- Info texts ---
+  const infoTexts = {
+    0: `<h3 style="color:var(--accent)">🧬 转录 — DNA指导mRNA的合成</h3>
+        <p><b>场所:</b> 细胞核 (真核生物) / 拟核 (原核生物)<br>
+        <b>模板:</b> DNA的<span class="highlight">一条链</span> (模板链, 3'→5'方向阅读)<br>
+        <b>原料:</b> 4种核糖核苷酸 (A, U, G, C)<br>
+        <b>酶:</b> <span class="highlight2">RNA聚合酶</span> — 识别启动子,解开DNA双螺旋,催化RNA合成<br>
+        <b>产物:</b> mRNA (与模板链互补,与编码链相同仅T→U)<br>
+        <b>方向:</b> mRNA从 <b>5'→3'</b> 合成</p>`,
+    1: `<h3 style="color:var(--accent)">🔄 翻译全过程 — 三种RNA协同工作</h3>
+        <p><span class="highlight">mRNA</span> 携带遗传密码(密码子)从细胞核来到核糖体。<br>
+        <span class="highlight3">tRNA</span> 一端携带特定氨基酸,另一端有<span class="highlight">反密码子</span>与mRNA密码子碱基互补配对。<br>
+        <span class="highlight2">rRNA</span> 与蛋白质共同构成<span class="highlight2">核糖体</span>,是翻译的"工作台",催化肽键形成。<br>
+        翻译方向: 核糖体沿mRNA从 <b>5'→3'</b> 移动,多肽链从 <b>N端→C端</b> 合成。</p>`,
+    2: `<h3 style="color:var(--mrna)">📨 mRNA (信使RNA)</h3>
+        <p><b>形状:</b> 单链线性分子,由DNA转录而来。<br>
+        <b>作用:</b> 携带遗传信息 — 每3个相邻碱基组成一个<span class="highlight">密码子</span>,决定一种氨基酸。<br>
+        起始密码子: <span class="highlight">AUG</span> (甲硫氨酸) &nbsp;|&nbsp; 终止密码子: UAA / UAG / UGA<br>
+        mRNA在核糖体上以 <b>5'→3'</b> 方向被"阅读",完成蛋白质的翻译。</p>`,
+    3: `<h3 style="color:var(--trna)">🧬 tRNA (转运RNA)</h3>
+        <p><b>形状:</b> <span class="highlight3">三叶草形</span> (二级结构),一端为氨基酸结合位点(3'端CCA),另一端为<span class="highlight3">反密码子</span>。<br>
+        <b>作用:</b> "翻译官" — 识别mRNA上的密码子,将对应的氨基酸转运到核糖体上。<br>
+        反密码子与密码子遵循<span class="highlight">碱基互补配对</span>原则 (A-U, G-C),确保氨基酸准确加入。<br>
+        每种tRNA只能携带<b>一种</b>特定氨基酸。</p>`,
+    4: `<h3 style="color:var(--rrna)">⚙️ rRNA (核糖体RNA)</h3>
+        <p><b>形状:</b> 与核糖体蛋白共同构成<span class="highlight2">核糖体</span> (大亚基 + 小亚基)。<br>
+        <b>作用:</b> ① 提供mRNA结合位点 ② 提供tRNA结合位点(A位、P位、E位) ③ <span class="highlight2">催化肽键形成</span> (肽酰转移酶活性)。<br>
+        核糖体是翻译的<b>"分子机器"</b>,让mRNA和tRNA在正确的位置上完成蛋白质合成。</p>`,
+    5: `<h3 style="color:var(--accent)">🌐 中心法则 — 遗传信息的流动</h3>
+        <p>中心法则描述了遗传信息在生物体内的传递方向:<br>
+        <b>DNA</b> —<span class="highlight">转录</span>→ <b>RNA</b> —<span class="highlight2">翻译</span>→ <b>蛋白质</b><br>
+        ① <span class="highlight">转录</span>: 以DNA一条链为模板合成mRNA (细胞核)<br>
+        ② <span class="highlight2">翻译</span>: 以mRNA为模板合成蛋白质 (核糖体)<br>
+        ③ <b>DNA复制</b>: DNA→DNA (细胞分裂间期)<br>
+        ④ <b>逆转录</b>: RNA→DNA (某些病毒,如HIV)<br>
+        ⑤ <b>RNA复制</b>: RNA→RNA (某些病毒)</p>`
+  };
+
+  function updateInfoPanel() {
+    infoPanel.innerHTML = infoTexts[activeTab];
+    infoPanel.classList.add('visible');
+  }
+  updateInfoPanel();
+
+  // --- Drawing helpers ---
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
+
+  function drawGlow(x, y, r, color) {
+    const grad = ctx.createRadialGradient(x, y, r*0.3, x, y, r*2);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(x, y, r*2, 0, Math.PI*2); ctx.fill();
+  }
+
+  // --- Draw mRNA strand ---
+  function drawMRNAStrand(offsetY) {
+    const y = offsetY || SITE_Y;
+    // mRNA backbone line
+    ctx.strokeStyle = '#1a3350';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(30, y);
+    ctx.lineTo(CSS_W - 30, y);
+    ctx.stroke();
+
+    // Draw nucleotides as a continuous band
+    const visibleStart = Math.floor(mrnaOffset / CODON_W) - 1;
+    const visibleEnd = visibleStart + Math.ceil(CSS_W / CODON_W) + 3;
+
+    for (let i = visibleStart; i < visibleEnd; i++) {
+      const ci = ((i % codons.length) + codons.length) % codons.length;
+      const codon = codons[ci];
+      const x = i * CODON_W - mrnaOffset + 100;
+      if (x < -40 || x > CSS_W + 40) continue;
+
+      const isStart = codon === 'AUG';
+      const isStop = codon === 'UAA' || codon === 'UAG' || codon === 'UGA';
+
+      // Codon block
+      const w = CODON_W - 2;
+      const h = 18;
+      const cy = y - h/2;
+
+      if (isStart) {
+        ctx.fillStyle = 'rgba(0,212,170,0.25)';
+        roundRect(x, cy, w, h, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#00d4aa';
+        ctx.stroke();
+      } else if (isStop) {
+        ctx.fillStyle = 'rgba(255,107,107,0.2)';
+        roundRect(x, cy, w, h, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#ff6b6b';
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = 'rgba(0,229,195,0.12)';
+        roundRect(x, cy, w, h, 3);
+        ctx.fill();
+      }
+
+      // Codon text
+      ctx.fillStyle = isStart ? '#00d4aa' : isStop ? '#ff6b6b' : '#8ecfc4';
+      ctx.font = 'bold 11px "Consolas", "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(codon, x + w/2, y);
+    }
+
+    // 5' and 3' labels
+    ctx.fillStyle = '#8899b4';
+    ctx.font = 'italic bold 13px "Segoe UI", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText("5'", 50, y - 22);
+    ctx.textAlign = 'right';
+    ctx.fillText("3'", CSS_W - 40, y - 22);
+  }
+
+  // --- Draw ribosome ---
+  function drawRibosome(showLabels = true) {
+    const cx = RIBO_X, cy = RIBO_Y;
+
+    // Glow behind ribosome
+    drawGlow(cx, cy, 100, 'rgba(84,160,255,0.08)');
+
+    // Large subunit (top)
+    const lsGrad = ctx.createLinearGradient(cx, cy - 70, cx, cy + 5);
+    lsGrad.addColorStop(0, '#3a5068');
+    lsGrad.addColorStop(0.5, '#4a6480');
+    lsGrad.addColorStop(1, '#354860');
+    ctx.fillStyle = lsGrad;
+    roundRect(cx - 100, cy - 68, 200, 73, 18);
+    ctx.fill();
+    ctx.strokeStyle = '#5a7498';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Large subunit texture lines
+    ctx.strokeStyle = 'rgba(90,116,152,0.15)';
+    ctx.lineWidth = 1;
+    for (let i = -2; i <= 2; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx - 80, cy - 40 + i*12);
+      ctx.lineTo(cx + 80, cy - 40 + i*12);
+      ctx.stroke();
+    }
+
+    // Small subunit (bottom)
+    const ssGrad = ctx.createLinearGradient(cx, cy + 3, cx, cy + 68);
+    ssGrad.addColorStop(0, '#4a5e78');
+    ssGrad.addColorStop(1, '#3a4e65');
+    ctx.fillStyle = ssGrad;
+    roundRect(cx - 85, cy + 3, 170, 65, 14);
+    ctx.fill();
+    ctx.strokeStyle = '#5a7498';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // mRNA channel line
+    ctx.strokeStyle = 'rgba(0,229,195,0.25)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 8]);
+    ctx.beginPath();
+    ctx.moveTo(cx - 105, cy);
+    ctx.lineTo(cx + 105, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // A, P, E site markers
+    const sites = [
+      { x: A_SITE_X, label: 'A位', desc: '氨基酰位' },
+      { x: P_SITE_X, label: 'P位', desc: '肽酰位' },
+      { x: E_SITE_X, label: 'E位', desc: '出口位' },
+    ];
+
+    sites.forEach(s => {
+      // Site indicator on ribosome
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.arc(s.x, cy, 16, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = s.label === 'A位' ? 'rgba(255,159,67,0.5)' : s.label === 'P位' ? 'rgba(0,212,170,0.5)' : 'rgba(84,160,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      if (showLabels) {
+        ctx.fillStyle = '#8899b4';
+        ctx.font = 'bold 10px "PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(s.label, s.x, cy - 36);
+        ctx.fillText(s.desc, s.x, cy + 48);
+      }
+    });
+
+    // rRNA label
+    ctx.fillStyle = '#54a0ff';
+    ctx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('rRNA + 核糖体蛋白', cx, cy - 82);
+
+    // Size label
+    ctx.fillStyle = '#8899b4';
+    ctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('大亚基', cx + 112, cy - 30);
+    ctx.fillText('小亚基', cx + 100, cy + 42);
+  }
+
+  // --- Draw tRNA shape ---
+  function drawTRNAShape(x, y, color, anticodon, aminoLabel, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // Simplified T/clover shape
+    const s = 0.7;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Main path
+    ctx.beginPath();
+    // Top stem
+    ctx.moveTo(x, y - 28*s);
+    ctx.lineTo(x, y - 8*s);
+    // Left arm (D loop side)
+    ctx.lineTo(x - 14*s, y - 2*s);
+    ctx.lineTo(x - 18*s, y + 6*s);
+    ctx.lineTo(x - 10*s, y + 10*s);
+    ctx.lineTo(x - 4*s, y + 6*s);
+    // Anticodon loop bottom
+    ctx.lineTo(x, y + 6*s);
+    ctx.lineTo(x, y + 20*s);
+    ctx.arc(x, y + 20*s, 8*s, Math.PI, 0);
+    ctx.lineTo(x + 4*s, y + 6*s);
+    // Right arm (TΨC loop)
+    ctx.lineTo(x + 10*s, y + 10*s);
+    ctx.lineTo(x + 18*s, y + 6*s);
+    ctx.lineTo(x + 15*s, y - 2*s);
+    ctx.lineTo(x, y - 8*s);
+    ctx.stroke();
+
+    // Fill the tRNA body
+    ctx.fillStyle = color.replace(')', ',0.12)').replace('rgb', 'rgba');
+    if (color.startsWith('#')) {
+      const r = parseInt(color.slice(1,3), 16);
+      const g = parseInt(color.slice(3,5), 16);
+      const b = parseInt(color.slice(5,7), 16);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.12)`;
+    }
+    ctx.fill();
+
+    // Anticodon text at bottom
+    ctx.fillStyle = color;
+    ctx.font = 'bold 9px "Consolas", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(anticodon, x, y + 21*s);
+
+    // Amino acid circle on top
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y - 32*s, 8*s, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Amino label
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 7px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(aminoLabel, x, y - 31*s);
+
+    ctx.restore();
+  }
+
+  // --- Draw polypeptide chain ---
+  function drawPeptideChain() {
+    if (peptideChain.length === 0) return;
+
+    // Chain backbone
+    ctx.strokeStyle = 'rgba(255,107,157,0.4)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(CHAIN_START_X, CHAIN_START_Y);
+    for (let i = 0; i < peptideChain.length; i++) {
+      ctx.lineTo(peptideChain[i].x, peptideChain[i].y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Amino acid beads
+    peptideChain.forEach((aa, i) => {
+      drawGlow(aa.x, aa.y, 10, aa.color);
+      ctx.fillStyle = aa.color;
+      ctx.beginPath();
+      ctx.arc(aa.x, aa.y, 8, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Label
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 8px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(aa.aminoLabel, aa.x, aa.y);
+    });
+
+    // N-terminus label
+    if (peptideChain.length > 0) {
+      ctx.fillStyle = '#8899b4';
+      ctx.font = 'italic 10px "Segoe UI",sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('N端', CHAIN_START_X - 14, CHAIN_START_Y);
+    }
+  }
+
+  // --- Draw detailed views ---
+  function drawMRNADetailView() {
+    const w = CSS_W, h = CSS_H;
+    // 5' cap
+    ctx.fillStyle = '#4ecdc4';
+    ctx.beginPath(); ctx.arc(80, h/2, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px "Segoe UI",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText("5'", 80, h/2+3);
+
+    // mRNA backbone
+    ctx.strokeStyle = '#00e5c3';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(100, h/2);
+    ctx.lineTo(w-100, h/2);
+    ctx.stroke();
+
+    // Codon boxes
+    const seqStart = 120;
+    const seqY = h/2;
+    const codonW = 55;
+    const codonH = 24;
+    const demoCodons = [
+      { seq: 'AUG', type: 'start' },
+      { seq: 'UUU', type: 'normal' },
+      { seq: 'CUU', type: 'normal' },
+      { seq: 'UCU', type: 'normal' },
+      { seq: 'GGU', type: 'normal' },
+      { seq: 'GCA', type: 'normal' },
+      { seq: 'GUU', type: 'normal' },
+      { seq: 'AAG', type: 'normal' },
+      { seq: 'UAA', type: 'stop' },
+    ];
+
+    demoCodons.forEach((c, i) => {
+      const cx = seqStart + i * (codonW + 4);
+      const cy = seqY - codonH/2;
+      const isStart = c.type === 'start';
+      const isStop = c.type === 'stop';
+
+      ctx.fillStyle = isStart ? 'rgba(0,212,170,0.2)' : isStop ? 'rgba(255,107,107,0.2)' : 'rgba(0,229,195,0.08)';
+      roundRect(cx, cy, codonW, codonH, 5);
+      ctx.fill();
+      ctx.strokeStyle = isStart ? '#00d4aa' : isStop ? '#ff6b6b' : 'rgba(0,229,195,0.3)';
+      ctx.lineWidth = isStart || isStop ? 2 : 1;
+      ctx.stroke();
+
+      ctx.fillStyle = isStart ? '#00d4aa' : isStop ? '#ff6b6b' : '#c8d6e5';
+      ctx.font = 'bold 12px "Consolas",monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(c.seq, cx + codonW/2, seqY);
+
+      if (isStart) {
+        ctx.fillStyle = '#00d4aa';
+        ctx.font = 'bold 10px "PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillText('起始密码子', cx + codonW/2, cy - 16);
+      }
+      if (isStop) {
+        ctx.fillStyle = '#ff6b6b';
+        ctx.font = 'bold 10px "PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillText('终止密码子', cx + codonW/2, cy - 16);
+      }
+    });
+
+    // 3' end
+    ctx.fillStyle = '#4ecdc4';
+    ctx.beginPath(); ctx.arc(w-80, h/2, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px "Segoe UI",sans-serif';
+    ctx.fillText("3'", w-80, h/2+3);
+
+    // Annotation
+    ctx.fillStyle = '#8899b4';
+    ctx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('每 3 个相邻碱基 = 1 个密码子 → 决定 1 种氨基酸', w/2, h/2 + 50);
+
+    // 碱基互补配对提示
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('密码子与tRNA反密码子互补配对: A—U  G—C', w/2, h/2 + 72);
+  }
+
+  function drawStemLadder(x1, y1, x2, y2, x3, y3, x4, y4, rungCount) {
+    // Draw two parallel strands with base-pair rungs
+    ctx.strokeStyle = '#ff9f43';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x3, y3); ctx.lineTo(x4, y4); ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,159,67,0.3)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= rungCount; i++) {
+      const t = i / rungCount;
+      const sx = x1 + (x2 - x1) * t, sy = y1 + (y2 - y1) * t;
+      const ex = x3 + (x4 - x3) * t, ey = y3 + (y4 - y3) * t;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+    }
+  }
+
+  function drawLoop(cx, cy, rx, ry, fillColor) {
+    ctx.strokeStyle = '#ff9f43';
+    ctx.lineWidth = 2.5;
+    ctx.fillStyle = fillColor || 'rgba(255,159,67,0.07)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function drawTRNADetailView() {
+    const cx = 530, cy = 245;
+
+    // ========== STEMS (arms with base-paired strands) ==========
+
+    // 1. Acceptor stem (氨基酸臂) — top, vertical
+    //    Left strand = 5' half, Right strand = 3' half
+    const accTop = cy - 125, accBot = cy - 58;
+    drawStemLadder(cx - 8, accTop, cx - 8, accBot, cx + 8, accTop, cx + 8, accBot, 7);
+
+    // 2. D stem — left, slightly diagonal
+    const dLeft = cx - 92;
+    drawStemLadder(cx - 8, cy - 48, dLeft, cy - 35, dLeft, cy + 5, cx - 8, cy - 20, 4);
+
+    // 3. Anticodon stem — bottom, vertical
+    const antiBot = cy + 68;
+    drawStemLadder(cx - 7, cy - 14, cx - 7, antiBot, cx + 7, cy - 10, cx + 7, antiBot, 5);
+
+    // 4. TΨC arm — right, slightly diagonal
+    const tRight = cx + 92;
+    drawStemLadder(cx + 8, cy - 44, tRight, cy - 35, tRight, cy + 5, cx + 8, cy - 18, 4);
+
+    // ========== LOOPS (unpaired single-stranded regions) ==========
+
+    // D loop (left)
+    drawLoop(dLeft, cy - 15, 22, 20);
+
+    // Anticodon loop (bottom)
+    drawLoop(cx, antiBot + 20, 22, 20);
+
+    // TΨC loop (right)
+    drawLoop(tRight, cy - 15, 20, 18);
+
+    // Variable loop (small bulge between anticodon and TΨC, right side)
+    drawLoop(cx + 24, cy + 22, 12, 9, 'rgba(255,159,67,0.12)');
+
+    // ========== BACKBONE PATH (5'→3' continuous strand) ==========
+    ctx.strokeStyle = 'rgba(255,180,100,0.5)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 5]);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    // 5' start → down acceptor stem left side
+    ctx.moveTo(cx - 8, accTop);
+    ctx.lineTo(cx - 8, accBot);
+    // → D stem top strand (center → left)
+    ctx.lineTo(dLeft, cy - 35);
+    // → D loop arc (enter top-right, around left side, exit bottom-right)
+    ctx.ellipse(dLeft, cy - 15, 22, 20, 0, Math.PI * 1.7, Math.PI * 0.3, true);
+    // → D stem bottom strand (left → center, returning)
+    ctx.lineTo(cx - 8, cy - 20);
+    // → anticodon stem left strand (down to anticodon loop)
+    ctx.lineTo(cx - 7, cy - 14);
+    ctx.lineTo(cx - 7, antiBot);
+    // → anticodon loop (through bottom arc)
+    ctx.ellipse(cx, antiBot + 20, 22, 20, 0, Math.PI * 1.15, Math.PI * 1.85, true);
+    // → anticodon stem right strand (back up)
+    ctx.lineTo(cx + 7, antiBot);
+    ctx.lineTo(cx + 7, cy - 10);
+    // → variable loop as a smooth outward bulge connecting to TΨC stem
+    ctx.quadraticCurveTo(cx + 42, cy + 24, cx + 8, cy - 18);
+    // → TΨC stem bottom strand (center → right, toward TΨC loop)
+    ctx.lineTo(tRight, cy + 5);
+    // → TΨC loop (enter bottom-right, around right side, exit top-right)
+    ctx.ellipse(tRight, cy - 15, 20, 18, 0, Math.PI * 0.55, Math.PI * 1.55, true);
+    // → TΨC stem top strand (right → center, returning)
+    ctx.lineTo(cx + 8, cy - 44);
+    // → acceptor stem right strand (up to 3' end)
+    ctx.lineTo(cx + 8, accBot);
+    ctx.lineTo(cx + 8, accTop);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // ========== 5' AND 3' END MARKERS ==========
+
+    // 5' end — top left
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px "Segoe UI", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText("5'", cx - 16, accTop - 14);
+    ctx.fillText('P', cx - 16, accTop + 4);
+
+    // 3' end — top right, CCA overhang
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px "Segoe UI", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText("3'", cx + 16, accTop - 14);
+
+    // CCA-OH label
+    ctx.fillStyle = '#ffcc80';
+    ctx.font = 'bold 11px "Consolas", monospace';
+    ctx.fillText('CCA-OH', cx + 18, accTop + 12);
+
+    // ========== AMINO ACID (attached at 3' end) ==========
+    const aaX = cx + 55, aaY = accTop - 18;
+    // Connecting line
+    ctx.strokeStyle = '#ff9f43';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(cx + 8, accTop);
+    ctx.quadraticCurveTo(cx + 35, accTop - 22, aaX, aaY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Amino acid blob
+    ctx.fillStyle = '#ff6b9d';
+    ctx.beginPath();
+    ctx.arc(aaX, aaY, 13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('AA', aaX, aaY);
+
+    // ========== ANTICODON BASES ==========
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px "Consolas", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAA', cx, antiBot + 20);
+
+    // ========== LABELS ==========
+    ctx.textBaseline = 'alphabetic';
+
+    // Acceptor stem label
+    ctx.fillStyle = '#ff9f43';
+    ctx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('氨基酸臂', cx - 18, accTop + accBot / 2 - accTop / 2);
+    ctx.textAlign = 'right';
+    ctx.fillText('(7对碱基)', cx - 18, accTop + accBot / 2 - accTop / 2 + 18);
+
+    // D loop label
+    ctx.fillStyle = '#ff9f43';
+    ctx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('D环', dLeft - 28, cy - 24);
+    ctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('(二氢尿嘧啶环)', dLeft - 28, cy - 9);
+
+    // TΨC loop label
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('TΨC环', tRight + 28, cy - 24);
+    ctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('(假尿苷环)', tRight + 28, cy - 9);
+
+    // Anticodon loop label
+    ctx.fillStyle = '#ff9f43';
+    ctx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('反密码子环', cx, antiBot + 50);
+    ctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('(含反密码子,与mRNA密码子配对)', cx, antiBot + 66);
+
+    // Variable loop label
+    ctx.fillStyle = '#ffb366';
+    ctx.font = '9px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('额外环', cx + 40, cy + 24);
+
+    // ========== TITLE ==========
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.font = 'bold 24px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('tRNA 二级结构 — 三叶草形', CSS_W - 40, 40);
+
+    // Bottom description
+    ctx.fillStyle = '#8899b4';
+    ctx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('tRNA为单链RNA,局部碱基互补配对形成"四环四臂"的三叶草形二级结构', cx, CSS_H - 25);
+  }
+
+  function drawRRNADetailView() {
+    const cx = CSS_W/2, cy = CSS_H/2 - 10;
+
+    // Background glow
+    drawGlow(cx, cy, 160, 'rgba(84,160,255,0.07)');
+
+    // Large subunit
+    const lsGrad = ctx.createLinearGradient(cx, cy-90, cx, cy);
+    lsGrad.addColorStop(0, '#3a5068');
+    lsGrad.addColorStop(1, '#4a6480');
+    ctx.fillStyle = lsGrad;
+    roundRect(cx-130, cy-95, 260, 95, 22);
+    ctx.fill();
+    ctx.strokeStyle = '#5a8ab8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Texture
+    ctx.strokeStyle = 'rgba(90,138,184,0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx-110, cy-60 + i*15);
+      ctx.lineTo(cx+110, cy-60 + i*15);
+      ctx.stroke();
+    }
+
+    // Small subunit
+    const ssGrad = ctx.createLinearGradient(cx, cy+2, cx, cy+85);
+    ssGrad.addColorStop(0, '#4a5e78');
+    ssGrad.addColorStop(1, '#3a4e65');
+    ctx.fillStyle = ssGrad;
+    roundRect(cx-115, cy+2, 230, 83, 18);
+    ctx.fill();
+    ctx.strokeStyle = '#5a8ab8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // mRNA channel
+    ctx.strokeStyle = 'rgba(0,229,195,0.3)';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([5, 10]);
+    ctx.beginPath();
+    ctx.moveTo(cx-140, cy);
+    ctx.lineTo(cx+140, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // mRNA label
+    ctx.fillStyle = '#00e5c3';
+    ctx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('mRNA 结合通道', cx, cy - 8);
+
+    // tRNA sites in ribosome
+    const sites = [
+      { x: cx + 70, label: 'A位', sub: '氨基酰-tRNA\n进入位点', color: '#ff9f43' },
+      { x: cx, label: 'P位', sub: '肽酰-tRNA\n结合位点', color: '#00d4aa' },
+      { x: cx - 70, label: 'E位', sub: 'tRNA\n退出位点', color: '#54a0ff' },
+    ];
+
+    sites.forEach(s => {
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.beginPath();
+      ctx.arc(s.x, cy, 20, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = s.color;
+      ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(s.label, s.x, cy - 30);
+      ctx.fillStyle = '#8899b4';
+      ctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
+      const lines = s.sub.split('\n');
+      lines.forEach((l, i) => ctx.fillText(l, s.x, cy + 36 + i*14));
+    });
+
+    // Peptide exit tunnel
+    ctx.strokeStyle = 'rgba(255,107,157,0.3)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy-98);
+    ctx.lineTo(cx, cy-140);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#ff6b9d';
+    ctx.font = 'bold 11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('多肽出口通道', cx, cy - 148);
+
+    // Subunit labels
+    ctx.fillStyle = '#54a0ff';
+    ctx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('大亚基 (含rRNA)', cx + 150, cy - 45);
+    ctx.fillText('小亚基 (含rRNA)', cx + 142, cy + 50);
+
+    // rRNA function note
+    ctx.fillStyle = '#8899b4';
+    ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('rRNA占核糖体质量约60%  |  大亚基rRNA催化肽键形成(肽酰转移酶)', cx, cy + 110);
+  }
+
+  // --- Transcription drawing ---
+  function drawTranscriptionView() {
+    const w = CSS_W, h = CSS_H;
+
+    // Title
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.font = 'bold 32px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('转录 · Transcription', w - 30, 40);
+
+    const polX = TX_PROMOTER_X - txPolPos * (TX_PROMOTER_X - TX_TERMINATOR_X);
+    const bubbleHalf = txBubbleOpen * 35;
+    const dnaY = TX_DNA_Y;
+
+    // === Draw DNA coding strand (top, 5'→3') ===
+    // Before bubble: normal paired region
+    ctx.strokeStyle = '#5dade2';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    // Right of bubble (downstream of promoter)
+    ctx.moveTo(w - 40, dnaY - 8);
+    for (let x = w - 40; x > polX + bubbleHalf; x -= 6) {
+      const waveY = dnaY - 8 + Math.sin(x * 0.06) * 3;
+      ctx.lineTo(x, waveY);
+    }
+    ctx.stroke();
+
+    // Bubble region — coding strand lifts up
+    ctx.strokeStyle = '#5dade2';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(polX + bubbleHalf, dnaY - 8 + Math.sin((polX + bubbleHalf) * 0.06) * 3);
+    ctx.quadraticCurveTo(polX + bubbleHalf/2, dnaY - 28, polX - bubbleHalf, dnaY - 22);
+    ctx.stroke();
+
+    // Left of bubble
+    ctx.beginPath();
+    ctx.moveTo(polX - bubbleHalf, dnaY - 22);
+    for (let x = polX - bubbleHalf; x > 40; x -= 6) {
+      ctx.lineTo(x, dnaY - 8 + Math.sin(x * 0.06) * 3);
+    }
+    ctx.stroke();
+
+    // === Draw DNA template strand (bottom, 3'→5') ===
+    // Right of bubble
+    ctx.strokeStyle = '#2980b9';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(w - 40, dnaY + 8);
+    for (let x = w - 40; x > polX + bubbleHalf; x -= 6) {
+      const waveY = dnaY + 8 - Math.sin(x * 0.06) * 3;
+      ctx.lineTo(x, waveY);
+    }
+    ctx.stroke();
+
+    // Bubble region — template strand drops down
+    ctx.beginPath();
+    ctx.moveTo(polX + bubbleHalf, dnaY + 8 - Math.sin((polX + bubbleHalf) * 0.06) * 3);
+    ctx.quadraticCurveTo(polX + bubbleHalf/2, dnaY + 32, polX - bubbleHalf, dnaY + 26);
+    ctx.stroke();
+
+    // Left of bubble
+    ctx.beginPath();
+    ctx.moveTo(polX - bubbleHalf, dnaY + 26);
+    for (let x = polX - bubbleHalf; x > 40; x -= 6) {
+      ctx.lineTo(x, dnaY + 8 - Math.sin(x * 0.06) * 3);
+    }
+    ctx.stroke();
+
+    // === DNA base pair rungs (outside bubble only) ===
+    ctx.strokeStyle = 'rgba(93,173,226,0.2)';
+    ctx.lineWidth = 0.8;
+    for (let x = 44; x < w - 40; x += 12) {
+      const distFromPol = Math.abs(x - polX);
+      if (distFromPol < bubbleHalf + 6) continue; // skip in bubble
+      const topY = dnaY - 8 + Math.sin(x * 0.06) * 3;
+      const botY = dnaY + 8 - Math.sin(x * 0.06) * 3;
+      ctx.beginPath();
+      ctx.moveTo(x, topY);
+      ctx.lineTo(x, botY);
+      ctx.stroke();
+    }
+
+    // === Label DNA strands ===
+    ctx.fillStyle = '#5dade2';
+    ctx.font = 'bold 11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText("编码链 (5'→3')", w - 180, dnaY - 24);
+    ctx.fillStyle = '#2980b9';
+    ctx.fillText("模板链 (3'→5')", w - 180, dnaY + 44);
+
+    // === Template strand bases in bubble ===
+    const basesShown = Math.floor(txMrnaLength);
+    for (let i = 0; i < Math.min(basesShown, dnaTemplate.length); i++) {
+      const bx = TX_PROMOTER_X - i * TX_BASE_SPACING;
+      if (bx > polX + bubbleHalf || bx < polX - bubbleHalf) continue;
+      const by = dnaY + 30; // in the exposed template strand region
+
+      // Template base background
+      ctx.fillStyle = 'rgba(41,128,185,0.25)';
+      ctx.fillRect(bx - 7, by - 8, 14, 16);
+
+      // Template base
+      ctx.fillStyle = '#aed6f1';
+      ctx.font = 'bold 10px "Consolas", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(dnaTemplate[i], bx, by);
+
+      // Paired mRNA base (above template)
+      if (i < txMrnaBases.length) {
+        const mrnaY = by - 24;
+        ctx.fillStyle = 'rgba(0,229,195,0.2)';
+        ctx.fillRect(bx - 7, mrnaY - 8, 14, 16);
+        ctx.fillStyle = '#00e5c3';
+        ctx.fillText(txMrnaBases[i], bx, mrnaY);
+
+        // Base pair line
+        ctx.strokeStyle = 'rgba(0,229,195,0.3)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.moveTo(bx, by - 10);
+        ctx.lineTo(bx, mrnaY + 10);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // === RNA Polymerase ===
+    const polGrad = ctx.createLinearGradient(polX, dnaY - 45, polX, dnaY + 5);
+    polGrad.addColorStop(0, '#5b7ea0');
+    polGrad.addColorStop(0.5, '#6d92b8');
+    polGrad.addColorStop(1, '#4a6d8c');
+    ctx.fillStyle = polGrad;
+    roundRect(polX - 28, dnaY - 30, 56, 42, 12);
+    ctx.fill();
+    ctx.strokeStyle = '#8ab4d8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Polymerase label
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('RNA聚合酶', polX, dnaY - 16);
+    ctx.fillText('RNA Pol', polX, dnaY + 2);
+
+    // === Growing mRNA strand ===
+    if (basesShown > 0) {
+      ctx.strokeStyle = '#00e5c3';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      const mrnaStartX = polX;
+      const mrnaStartY = dnaY - 35;
+      ctx.moveTo(mrnaStartX, mrnaStartY);
+
+      for (let i = 0; i < basesShown; i++) {
+        const mx = TX_PROMOTER_X - i * TX_BASE_SPACING;
+        const my = dnaY + 30 - 24 - 25 - i * 2;
+        // Curve mRNA up and left
+        const t = Math.min(i / basesShown, 1);
+        const cx = mrnaStartX + (mx - mrnaStartX) * t * 0.9;
+        const cy = mrnaStartY - i * 4;
+        ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+
+      // mRNA label
+      ctx.fillStyle = '#00e5c3';
+      ctx.font = 'bold 12px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.textAlign = 'left';
+      const lastMx = TX_PROMOTER_X - (basesShown - 1) * TX_BASE_SPACING;
+      ctx.fillText("mRNA (5'→3')", lastMx - 20, dnaY + 6 - basesShown * 4 - 20);
+    }
+
+    // === 5' and 3' labels on DNA ===
+    ctx.fillStyle = '#5dade2';
+    ctx.font = 'italic bold 13px "Segoe UI", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText("5'", 44, dnaY - 22);
+    ctx.textAlign = 'right';
+    ctx.fillText("3'", w - 44, dnaY - 22);
+
+    ctx.fillStyle = '#2980b9';
+    ctx.textAlign = 'left';
+    ctx.fillText("3'", 44, dnaY + 52);
+    ctx.textAlign = 'right';
+    ctx.fillText("5'", w - 44, dnaY + 52);
+
+    // === Promoter and Terminator markers ===
+    // Promoter
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(TX_PROMOTER_X, dnaY - 50);
+    ctx.lineTo(TX_PROMOTER_X, dnaY + 55);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ffcc80';
+    ctx.font = 'bold 10px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('启动子', TX_PROMOTER_X, dnaY - 54);
+
+    // Terminator
+    ctx.strokeStyle = 'rgba(255,107,107,0.35)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(TX_TERMINATOR_X, dnaY - 50);
+    ctx.lineTo(TX_TERMINATOR_X, dnaY + 55);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ff6b6b';
+    ctx.fillText('终止子', TX_TERMINATOR_X, dnaY - 54);
+
+    // === Step indicator ===
+    const txStepNames = {
+      'binding': 'RNA聚合酶识别并结合启动子',
+      'unwinding': 'DNA双链局部解旋',
+      'elongation': '以模板链为模板合成mRNA (5\'→3\')',
+      'termination': '到达终止子,mRNA释放',
+      'reset': '',
+    };
+    ctx.fillStyle = '#8899b4';
+    ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('当前步骤: ' + (txStepNames[txPhase] || ''), 30, h - 20);
+    ctx.textAlign = 'right';
+    ctx.fillText('已合成: ' + txMrnaBases.length + ' 个核糖核苷酸', w - 30, h - 20);
+
+    // === Annotation ===
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('碱基互补配对: A—U  T—A  G—C  C—G  (RNA中用U替代T)', w/2, h - 20);
+  }
+
+  // --- Transcription update ---
+  function updateTranscription(dt) {
+    if (!isPlaying) return;
+
+    const edt = dt * speed;
+    txPhaseTimer += edt;
+
+    switch (txPhase) {
+      case 'binding':
+        txPolPos = 0;
+        txBubbleOpen = Math.min(1, txBubbleOpen + edt * 0.8);
+        txMrnaLength = 0;
+        txMrnaBases = [];
+        if (txPhaseTimer > 1.8) {
+          txPhase = 'unwinding';
+          txPhaseTimer = 0;
+        }
+        break;
+
+      case 'unwinding':
+        txBubbleOpen = Math.min(1, txBubbleOpen + edt * 1.5);
+        if (txPhaseTimer > 1.2) {
+          txPhase = 'elongation';
+          txPhaseTimer = 0;
+        }
+        break;
+
+      case 'elongation':
+        txBubbleOpen = 1;
+        txPolPos += edt * 0.15;
+        if (txPolPos > 1) txPolPos = 1;
+
+        // Add mRNA bases as polymerase moves
+        const targetBases = Math.floor(txPolPos * dnaTemplate.length);
+        while (txMrnaBases.length < targetBases && txMrnaBases.length < mrnaBases.length) {
+          txMrnaBases.push(mrnaBases[txMrnaBases.length]);
+        }
+        txMrnaLength = txPolPos * dnaTemplate.length;
+
+        if (txPolPos >= 1 && txMrnaBases.length >= mrnaBases.length) {
+          txPhase = 'termination';
+          txPhaseTimer = 0;
+        }
+        break;
+
+      case 'termination':
+        txBubbleOpen = Math.max(0, txBubbleOpen - edt * 1.5);
+        if (txPhaseTimer > 2.0) {
+          txPhase = 'reset';
+          txPhaseTimer = 0;
+        }
+        break;
+
+      case 'reset':
+        txPolPos = Math.max(0, txPolPos - edt * 0.5);
+        if (txPolPos <= 0) {
+          txPolPos = 0;
+          txBubbleOpen = 0;
+          txMrnaLength = 0;
+          txMrnaBases = [];
+          txPhase = 'binding';
+          txPhaseTimer = 0;
+        }
+        break;
+    }
+  }
+
+  // --- Central Dogma view ---
+  function drawCentralDogmaView() {
+    const w = CSS_W, h = CSS_H;
+    const cx = w / 2, cy = h / 2;
+
+    // Title
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.font = 'bold 32px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('中心法则 · Central Dogma', w - 30, 40);
+
+    // === Three main nodes ===
+    const nodeY = cy + 10;
+    const dnaX = 160, rnaX = cx, protX = w - 160;
+
+    // DNA node
+    drawGlow(dnaX, nodeY, 70, 'rgba(93,173,226,0.1)');
+    // DNA double helix icon
+    ctx.strokeStyle = '#5dade2';
+    ctx.lineWidth = 3;
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      for (let y = nodeY - 45; y <= nodeY + 45; y += 3) {
+        const xOff = Math.sin(y * 0.15) * 8 + i * 3;
+        if (y === nodeY - 45) ctx.moveTo(dnaX + xOff, y);
+        else ctx.lineTo(dnaX + xOff, y);
+      }
+      ctx.stroke();
+    }
+    // DNA base pair rungs
+    ctx.strokeStyle = 'rgba(93,173,226,0.25)';
+    ctx.lineWidth = 1;
+    for (let y = nodeY - 38; y < nodeY + 45; y += 9) {
+      const x1 = dnaX + Math.sin(y * 0.15) * 8 - 4;
+      const x2 = dnaX + Math.sin(y * 0.15) * 8 + 4;
+      ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+    }
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('DNA', dnaX, nodeY + 65);
+
+    // RNA node
+    drawGlow(rnaX, nodeY, 60, 'rgba(0,229,195,0.1)');
+    // mRNA — single wavy strand
+    ctx.strokeStyle = '#00e5c3';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    for (let x = rnaX - 55; x <= rnaX + 55; x += 3) {
+      const yOff = Math.sin(x * 0.12) * 7;
+      if (x === rnaX - 55) ctx.moveTo(x, nodeY + yOff);
+      else ctx.lineTo(x, nodeY + yOff);
+    }
+    ctx.stroke();
+    // RNA dots (bases)
+    ctx.fillStyle = '#00e5c3';
+    for (let x = rnaX - 50; x <= rnaX + 50; x += 15) {
+      const yOff = Math.sin(x * 0.12) * 7;
+      ctx.beginPath(); ctx.arc(x, nodeY + yOff, 2.5, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('mRNA', rnaX, nodeY + 65);
+
+    // Protein node
+    drawGlow(protX, nodeY, 65, 'rgba(255,107,157,0.1)');
+    // Protein — folded chain of colored spheres
+    const protColors = ['#ff6b6b','#4ecdc4','#a29bfe','#fd79a8','#fdcb6e','#00b894','#e17055','#74b9ff','#ff6b6b','#4ecdc4'];
+    const protCoords = [
+      [protX, nodeY-30],[protX-15, nodeY-15],[protX-22, nodeY+5],[protX-8, nodeY+22],
+      [protX+12, nodeY+28],[protX+24, nodeY+12],[protX+20, nodeY-8],[protX+5, nodeY-20],
+      [protX+10, nodeY-32]
+    ];
+    protCoords.forEach(([px, py], i) => {
+      ctx.fillStyle = protColors[i % protColors.length];
+      ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+    });
+    // Chain line connecting them
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(protCoords[0][0], protCoords[0][1]);
+    for (let i = 1; i < protCoords.length; i++) ctx.lineTo(protCoords[i][0], protCoords[i][1]);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('蛋白质', protX, nodeY + 65);
+
+    // === Arrows between nodes ===
+    function drawArrow(x1, y1, x2, y2, color, label) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      // Arrowhead
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const arrowLen = 14;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - arrowLen * Math.cos(angle - 0.5), y2 - arrowLen * Math.sin(angle - 0.5));
+      ctx.lineTo(x2 - arrowLen * Math.cos(angle + 0.5), y2 - arrowLen * Math.sin(angle + 0.5));
+      ctx.closePath();
+      ctx.fill();
+      // Label
+      ctx.fillStyle = color;
+      ctx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, (x1 + x2) / 2, y1 - 18);
+    }
+
+    drawArrow(dnaX + 45, nodeY - 8, rnaX - 50, nodeY - 8, '#00d4aa', '转录');
+    drawArrow(rnaX + 50, nodeY - 8, protX - 35, nodeY - 8, '#54a0ff', '翻译');
+
+    // === Additional flow lines (replication, reverse transcription, RNA replication) ===
+    // DNA replication (curved arrow below DNA)
+    ctx.strokeStyle = 'rgba(93,173,226,0.45)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(dnaX - 17, nodeY + 52);
+    ctx.quadraticCurveTo(dnaX, nodeY + 95, dnaX + 17, nodeY + 52);
+    ctx.stroke();
+    // Arrowhead
+    const repAngle = Math.atan2(-2, 34);
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(93,173,226,0.6)';
+    ctx.beginPath();
+    const ax = dnaX + 17, ay = nodeY + 52;
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - 10 * Math.cos(repAngle - 0.6), ay - 10 * Math.sin(repAngle - 0.6));
+    ctx.lineTo(ax - 10 * Math.cos(repAngle + 0.6), ay - 10 * Math.sin(repAngle + 0.6));
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#5dade2';
+    ctx.font = 'bold 11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('DNA复制', dnaX, nodeY + 108);
+
+    // Reverse transcription (dashed arrow from RNA to DNA, curved below)
+    ctx.strokeStyle = 'rgba(255,159,67,0.5)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(rnaX - 15, nodeY + 42);
+    ctx.quadraticCurveTo((dnaX + rnaX) / 2, nodeY + 100, dnaX + 10, nodeY + 70);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,159,67,0.6)';
+    const revAngle = Math.atan2(nodeY + 70 - nodeY - 42, dnaX + 10 - (rnaX - 15)) + Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(dnaX + 10, nodeY + 70);
+    ctx.lineTo(dnaX + 10-10*Math.cos(revAngle-0.6), nodeY+70-10*Math.sin(revAngle-0.6));
+    ctx.lineTo(dnaX + 10-10*Math.cos(revAngle+0.6), nodeY+70-10*Math.sin(revAngle+0.6));
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ff9f43';
+    ctx.fillText('逆转录', (dnaX + rnaX) / 2, nodeY + 114);
+
+    // === Bottom description ===
+    ctx.fillStyle = '#8899b4';
+    ctx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('中心法则: 遗传信息从DNA流向RNA,再从RNA流向蛋白质 — 这是所有细胞生物共有的规律', cx, h - 20);
+  }
+
+  // --- Mini central dogma (corner overlay for transcription/translation views) ---
+  function drawMiniCentralDogma() {
+    const baseX = 24, baseY = 30;
+
+    // Background
+    ctx.fillStyle = 'rgba(10,15,30,0.65)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    roundRect(baseX - 10, baseY - 20, 168, 85, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    // Title
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = 'bold 9px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('中心法则', baseX + 74, baseY - 6);
+
+    // Mini DNA
+    const dy = baseY + 10;
+    ctx.strokeStyle = '#5dade2';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(baseX + 8, dy - 10); ctx.lineTo(baseX + 8, dy + 10);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(baseX + 16, dy - 8); ctx.lineTo(baseX + 16, dy + 8);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 7px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('DNA', baseX + 12, dy + 25);
+
+    // Arrow DNA→RNA
+    ctx.fillStyle = '#00d4aa';
+    ctx.font = 'bold 8px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('转录→', baseX + 38, dy);
+
+    // Mini RNA
+    ctx.strokeStyle = '#00e5c3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = baseX + 70; x <= baseX + 110; x += 3) {
+      const yOff = Math.sin(x * 0.2) * 5;
+      if (x === baseX + 70) ctx.moveTo(x, dy + yOff);
+      else ctx.lineTo(x, dy + yOff);
+    }
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.fillText('mRNA', baseX + 90, dy + 25);
+
+    // Arrow RNA→Protein
+    ctx.fillStyle = '#54a0ff';
+    ctx.fillText('翻译→', baseX + 112, dy);
+
+    // Mini Protein
+    const pcolors = ['#ff6b6b','#4ecdc4','#fdcb6e','#ff6b6b'];
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = pcolors[i];
+      ctx.beginPath();
+      ctx.arc(baseX + 148, dy - 8 + i * 9, 4, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#fff';
+    ctx.fillText('蛋白质', baseX + 148, dy + 25);
+  }
+
+  // --- Main drawing ---
+  function draw(timestamp) {
+    const w = CSS_W, h = CSS_H;
+    ctx.clearRect(0, 0, w, h);
+
+    // Subtle grid bg
+    ctx.fillStyle = 'rgba(30,45,74,0.15)';
+    for (let gx = 0; gx < w; gx += 40) {
+      for (let gy = 0; gy < h; gy += 40) {
+        ctx.fillRect(gx, gy, 1, 1);
+      }
+    }
+
+    if (activeTab === 0) {
+      drawTranscriptionView();
+    } else if (activeTab === 1) {
+      drawTranslationView();
+    } else if (activeTab === 2) {
+      drawMRNADetailView();
+    } else if (activeTab === 3) {
+      drawTRNADetailView();
+    } else if (activeTab === 4) {
+      drawRRNADetailView();
+    } else if (activeTab === 5) {
+      drawCentralDogmaView();
+    }
+
+    // Draw mini central dogma in corner for transcription/translation views
+    if (activeTab === 0 || activeTab === 1) {
+      drawMiniCentralDogma();
+    }
+  }
+
+  function drawTranslationView() {
+    const w = CSS_W, h = CSS_H;
+
+    // Title in canvas
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.font = 'bold 32px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('翻译 · Translation', w - 30, 40);
+
+    // Draw mRNA
+    drawMRNAStrand(SITE_Y);
+
+    // Draw ribosome
+    drawRibosome(true);
+
+    // Draw active tRNAs
+    activeTrnas.forEach(trna => {
+      drawTRNAShape(trna.x, trna.y, trna.color, trna.anticodon, trna.aminoLabel, trna.alpha || 1);
+    });
+
+    // Draw peptide chain
+    drawPeptideChain();
+
+    // Direction arrow on mRNA
+    ctx.strokeStyle = '#00d4aa';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(80, SITE_Y - 35);
+    ctx.lineTo(140, SITE_Y - 35);
+    ctx.moveTo(135, SITE_Y - 40);
+    ctx.lineTo(140, SITE_Y - 35);
+    ctx.lineTo(135, SITE_Y - 30);
+    ctx.stroke();
+    ctx.fillStyle = '#00d4aa';
+    ctx.font = 'italic 11px "Segoe UI",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('核糖体移动方向 5\'→3\'', 220, SITE_Y - 36);
+
+    // Polypeptide direction arrow
+    if (peptideChain.length >= 2) {
+      const last = peptideChain[peptideChain.length - 1];
+      ctx.strokeStyle = '#ff6b9d';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(last.x + 20, last.y);
+      ctx.lineTo(last.x + 20, last.y - 25);
+      ctx.moveTo(last.x + 16, last.y - 20);
+      ctx.lineTo(last.x + 20, last.y - 25);
+      ctx.lineTo(last.x + 24, last.y - 20);
+      ctx.stroke();
+      ctx.fillStyle = '#ff6b9d';
+      ctx.font = 'italic 11px "Segoe UI",sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('多肽链 N→C', last.x + 26, last.y - 16);
+    }
+
+    // Step indicator
+    const stepNames = {
+      'feeding': 'mRNA进入核糖体',
+      'trna_entry': 'tRNA进入A位',
+      'bond': '肽键形成',
+      'translocate': '核糖体移位',
+      'exit': 'tRNA从E位离开',
+    };
+    ctx.fillStyle = '#8899b4';
+    ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('当前步骤: ' + (stepNames[elongationPhase] || ''), 30, h - 20);
+
+    // Step count
+    ctx.textAlign = 'right';
+    ctx.fillText('已合成: ' + peptideChain.length + ' 个氨基酸', w - 30, h - 20);
+  }
+
+  // --- Animation update ---
+  function updateTranslation(dt) {
+    if (!isPlaying) return;
+
+    const effectiveDt = dt * speed;
+    phaseTimer += effectiveDt;
+
+    switch (elongationPhase) {
+      case 'feeding': {
+        // Scroll mRNA until next codon is at A site
+        const targetOffset = fedCodons * CODON_W;
+        mrnaOffset += effectiveDt * 40;
+        if (mrnaOffset >= targetOffset) {
+          mrnaOffset = targetOffset;
+          elongationPhase = 'trna_entry';
+          phaseTimer = 0;
+        }
+        break;
+      }
+      case 'trna_entry': {
+        // Create new tRNA entering A site
+        if (activeTrnas.filter(t => t.state === 'approach').length === 0) {
+          const ci = fedCodons % codons.length;
+          if (codons[ci] !== 'UAA' && codons[ci] !== 'UAG' && codons[ci] !== 'UGA') {
+            activeTrnas.push({
+              codonIdx: ci,
+              x: A_SITE_X + 40,
+              y: SITE_Y - 80,
+              targetX: A_SITE_X,
+              targetY: SITE_Y - 24,
+              color: aminoColors[ci],
+              aminoLabel: aminoLabels[ci],
+              anticodon: anticodons[ci],
+              state: 'approach',
+              alpha: 1,
+            });
+          } else {
+            // Stop codon - skip to termination
+            elongationPhase = 'feeding';
+            fedCodons++;
+            phaseTimer = 0;
+            break;
+          }
+        }
+
+        // Animate tRNA entering
+        const entering = activeTrnas.find(t => t.state === 'approach');
+        if (entering) {
+          entering.x += (entering.targetX - entering.x) * 3 * effectiveDt;
+          entering.y += (entering.targetY - entering.y) * 3 * effectiveDt;
+          if (Math.abs(entering.x - entering.targetX) < 1) {
+            entering.x = entering.targetX;
+            entering.y = entering.targetY;
+            entering.state = 'A';
+            elongationPhase = 'bond';
+            phaseTimer = 0;
+          }
+        }
+        break;
+      }
+      case 'bond': {
+        // Peptide bond formation - add amino acid to chain
+        if (phaseTimer > 0.8 / speed) {
+          const aSiteTrna = activeTrnas.find(t => t.state === 'A');
+          if (aSiteTrna) {
+            const chainY = CHAIN_START_Y - peptideChain.length * 22;
+            peptideChain.push({
+              aminoLabel: aSiteTrna.aminoLabel,
+              color: aSiteTrna.color,
+              x: P_SITE_X,
+              y: chainY,
+            });
+            aSiteTrna.state = 'A_bonded';
+          }
+          elongationPhase = 'translocate';
+          phaseTimer = 0;
+        }
+        break;
+      }
+      case 'translocate': {
+        // Shift tRNAs: P→E, A→P
+        activeTrnas.forEach(t => {
+          if (t.state === 'P') t.state = 'moving_to_E';
+          if (t.state === 'A_bonded') t.state = 'moving_to_P';
+        });
+
+        // Animate translocation
+        const moveSpeed = 80 * effectiveDt;
+        let allDone = true;
+
+        activeTrnas.forEach(t => {
+          if (t.state === 'moving_to_E') {
+            t.x -= moveSpeed;
+            if (t.x <= E_SITE_X) { t.x = E_SITE_X; t.state = 'E'; }
+            else allDone = false;
+          }
+          if (t.state === 'moving_to_P') {
+            t.x -= moveSpeed;
+            if (t.x <= P_SITE_X) { t.x = P_SITE_X; t.state = 'P'; }
+            else allDone = false;
+          }
+        });
+
+        // Also scroll mRNA
+        const transTarget = (fedCodons + 1) * CODON_W;
+        mrnaOffset += moveSpeed * 0.8;
+        if (mrnaOffset >= transTarget) mrnaOffset = transTarget;
+
+        if (allDone && mrnaOffset >= transTarget - 2) {
+          mrnaOffset = transTarget;
+          elongationPhase = 'exit';
+          phaseTimer = 0;
+        }
+        break;
+      }
+      case 'exit': {
+        // Remove tRNA at E site
+        const eTrna = activeTrnas.find(t => t.state === 'E');
+        if (eTrna) {
+          eTrna.y -= 50 * effectiveDt;
+          eTrna.alpha = Math.max(0, eTrna.alpha - 2 * effectiveDt);
+          if (eTrna.y <= SITE_Y - 100 || eTrna.alpha <= 0) {
+            activeTrnas = activeTrnas.filter(t => t !== eTrna);
+            fedCodons++;
+            elongationPhase = 'feeding';
+            phaseTimer = 0;
+          }
+        } else {
+          fedCodons++;
+          elongationPhase = 'feeding';
+          phaseTimer = 0;
+        }
+        break;
+      }
+    }
+
+    // Limit chain display
+    if (peptideChain.length > 12) {
+      peptideChain.shift();
+      // Shift remaining down
+      peptideChain.forEach((aa, i) => {
+        aa.y = CHAIN_START_Y - (i + 1) * 22;
+      });
+    }
+  }
+
+  // --- Main loop ---
+  let lastTimestamp = 0;
+  function loop(timestamp) {
+    if (lastTimestamp === 0) lastTimestamp = timestamp;
+    let dt = (timestamp - lastTimestamp) / 1000;
+    if (dt > 0.1) dt = 0.1;
+    lastTimestamp = timestamp;
+
+    if (activeTab === 0) {
+      updateTranscription(dt);
+    } else if (activeTab === 1) {
+      updateTranslation(dt);
+    }
+
+    draw(timestamp);
+    requestAnimationFrame(loop);
+  }
+
+  // --- Event handlers ---
+  playBtn.addEventListener('click', () => {
+    if (activeTab !== 0 && activeTab !== 1) {
+      // Auto-switch to transcription view (first animated tab)
+      activeTab = 0;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('[data-tab="0"]').classList.add('active');
+      updateInfoPanel();
+    }
+    isPlaying = !isPlaying;
+    updatePlayBtn();
+  });
+
+  function updatePlayBtn() {
+    if (isPlaying) {
+      playBtn.textContent = '⏸ 暂停';
+      playBtn.classList.add('paused');
+    } else {
+      playBtn.textContent = '▶ 播放';
+      playBtn.classList.remove('paused');
+    }
+  }
+
+  resetBtn.addEventListener('click', () => {
+    resetState();
+    isPlaying = false;
+    updatePlayBtn();
+  });
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTab = parseInt(tab.dataset.tab);
+      updateInfoPanel();
+      if (activeTab !== 0) {
+        isPlaying = false;
+        updatePlayBtn();
+      }
+    });
+  });
+
+  document.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      speed = parseFloat(btn.dataset.speed);
+    });
+  });
+
+  // --- Init ---
+  updatePlayBtn();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

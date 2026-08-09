@@ -1,5 +1,7 @@
 from database.db import get_db_connection
 from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure, get_textbook_progress, get_textbook_chapter_progress, add_to_wrong_book, get_related_questions_by_knowledge, get_question_by_id
+from model.knowledge_point import get_knowledge_points_by_ids, get_knowledge_point_by_id
+from service.knowledge_tagging import run_auto_tagging
 from utils.response import ApiResponse
 import json
 import os
@@ -302,7 +304,7 @@ def add_to_wrong_book_service(user_id, question_id, user_answer=None):
 
 
 def get_related_questions_service(user_id, question_id, limit=5):
-    """根据题目知识点推荐相关题目"""
+    """根据题目知识点推荐相关题目，返回结果带知识点上下文"""
     db = get_db_connection()
     try:
         cursor = db.cursor()
@@ -310,8 +312,30 @@ def get_related_questions_service(user_id, question_id, limit=5):
         question = cursor.fetchone()
         if not question:
             return ApiResponse.error(msg="题目不存在")
-        
+
         related = get_related_questions_by_knowledge(db, user_id, question_id, limit)
+
+        # 为每道推荐题添加知识点上下文
+        for r in related:
+            shared_kp_ids = r.pop('_shared_kp_ids', [])
+            if shared_kp_ids:
+                kp_map = get_knowledge_points_by_ids(db, shared_kp_ids)
+                # 取前3个匹配的知识点作为上下文展示
+                kp_context = []
+                for kp_id in shared_kp_ids[:3]:
+                    if kp_id in kp_map:
+                        kp = kp_map[kp_id]
+                        kp_context.append({
+                            'id': kp['id'],
+                            'label': kp['label_text'],
+                            'category': kp['category'],
+                        })
+                r['knowledge_context'] = kp_context
+                r['tag_category'] = kp_context[0]['category'] if kp_context else ''
+            else:
+                r['knowledge_context'] = []
+                r['tag_category'] = ''
+
         return ApiResponse.success(data=related)
     except Exception as e:
         return ApiResponse.error(msg=f"获取推荐题目失败: {str(e)}")
@@ -329,5 +353,17 @@ def get_single_question_service(question_id):
         return ApiResponse.success(data=question)
     except Exception as e:
         return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
+    finally:
+        db.close()
+
+
+def run_knowledge_tagging_service():
+    """管理员触发：重新为所有题目自动打标"""
+    db = get_db_connection()
+    try:
+        result = run_auto_tagging(db=db)
+        return ApiResponse.success(data=result, msg=f"已为 {result['tagged']}/{result['total']} 道题打标")
+    except Exception as e:
+        return ApiResponse.error(msg=f"自动打标失败: {str(e)}")
     finally:
         db.close()
