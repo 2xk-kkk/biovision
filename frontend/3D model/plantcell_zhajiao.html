@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>植物体细胞杂交 — 交互式实验平台</title>
+<style>
+  :root {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #111827;
+    --bg-card: #161e2b;
+    --bg-card-hover: #1c2636;
+    --border: #1e3048;
+    --border-active: #2563eb;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59,130,246,0.3);
+    --accent-light: #60a5fa;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --gradient-1: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #6366f1 100%);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .header {
+    position: relative; z-index: 1;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+    padding: 0 24px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 4px;
+    height: 36px; padding: 0 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text-secondary); font-size: 14px;
+    cursor: pointer; transition: all 0.2s; text-decoration: none;
+    margin-right: 8px; flex-shrink: 0;
+  }
+  .back-btn:hover {
+    background: var(--bg-card-hover); color: var(--accent-light);
+    border-color: var(--border-active);
+  }
+
+  .header .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 16px; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .header .logo .dot {
+    width: 9px; height: 9px;
+    background: var(--accent); border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+  .header .meta {
+    font-size: 12px; color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .app { position: relative; z-index: 1; display: flex; height: calc(100vh - 56px); }
+
+  .sidebar {
+    width: 280px; min-width: 280px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .sidebar .section-title {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted);
+    margin: 12px 0 4px 12px;
+  }
+  .step-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    border: 1px solid transparent; background: transparent;
+    color: var(--text-secondary); font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+    text-align: left; font-family: inherit; width: 100%;
+  }
+  .step-btn:hover {
+    background: var(--bg-card); color: var(--text-primary);
+    border-color: var(--border);
+  }
+  .step-btn.active {
+    background: var(--bg-card); color: var(--accent-light);
+    border-color: var(--border-active);
+    box-shadow: 0 0 12px rgba(59,130,246,0.12);
+  }
+  .step-btn.done { color: var(--success); }
+  .step-btn .step-index {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; font-family: var(--font-mono);
+    background: var(--bg-card); border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .step-btn.active .step-index {
+    background: var(--accent); border-color: var(--accent);
+    color: #fff; box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .step-btn.done .step-index {
+    background: var(--success); border-color: var(--success); color: #fff;
+  }
+  .step-btn .step-label { line-height: 1.3; }
+  .step-btn .step-label small {
+    display: block; font-size: 11px; color: var(--text-muted); font-weight: 400;
+  }
+
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .main-header {
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,14,23,0.8); backdrop-filter: blur(8px);
+  }
+  .main-header h2 {
+    font-size: 20px; font-weight: 600;
+    background: var(--gradient-1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .main-header .subtitle {
+    font-size: 12px; color: var(--text-muted); margin-top: 2px;
+  }
+
+  .canvas-area {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 24px; position: relative; overflow: hidden;
+  }
+  svg.anim-svg { max-width: 100%; max-height: 100%; }
+
+  .info-panel {
+    width: 320px; min-width: 320px;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    padding: 20px 16px; overflow-y: auto;
+  }
+  .info-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px;
+  }
+  .info-card h4 {
+    font-size: 13px; font-weight: 600;
+    color: var(--accent-light); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .info-card h4 .indicator {
+    width: 6px; height: 6px; background: var(--accent);
+    border-radius: 50%; box-shadow: 0 0 8px var(--accent-glow);
+  }
+  .info-card p, .info-card li {
+    font-size: 12.5px; line-height: 1.7; color: var(--text-secondary);
+  }
+  .info-card ul { padding-left: 16px; }
+  .info-card li { margin-bottom: 4px; }
+  .highlight { color: var(--accent-light); font-weight: 500; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 3px;
+    font-size: 11px; font-weight: 500; font-family: var(--font-mono);
+    background: rgba(59,130,246,0.12); color: var(--accent-light);
+    border: 1px solid rgba(59,130,246,0.2); margin: 2px;
+  }
+  .tag.green {
+    background: rgba(16,185,129,0.12); color: var(--success);
+    border-color: rgba(16,185,129,0.2);
+  }
+
+  .controls {
+    padding: 12px 24px; border-top: 1px solid var(--border);
+    background: var(--bg-secondary);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .btn {
+    padding: 8px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text-primary); transition: all 0.2s;
+    font-family: inherit; white-space: nowrap;
+  }
+  .btn:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary {
+    background: var(--accent); border-color: var(--accent);
+    color: #fff; font-weight: 600; letter-spacing: 0.03em;
+  }
+  .btn.primary:hover { background: #2563eb; box-shadow: 0 0 16px var(--accent-glow); }
+  .btn.success { background: var(--success); border-color: var(--success); color: #fff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+  .progress-wrap {
+    flex: 1; display: flex; align-items: center; gap: 10px; padding: 0 8px;
+  }
+  .progress-bar {
+    flex: 1; height: 4px; background: var(--border);
+    border-radius: 2px; overflow: hidden;
+  }
+  .progress-bar .fill {
+    height: 100%; background: var(--gradient-1);
+    border-radius: 2px; transition: width 0.5s ease;
+  }
+  .progress-wrap .progress-text {
+    font-size: 12px; color: var(--text-muted);
+    font-family: var(--font-mono); white-space: nowrap;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.5; }
+  }
+  @keyframes dash { to { stroke-dashoffset: -40; } }
+  @keyframes glowPulse {
+    0%,100% { filter: drop-shadow(0 0 4px rgba(59,130,246,0.4)); }
+    50% { filter: drop-shadow(0 0 14px rgba(59,130,246,0.8)); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .anim-pulse { animation: pulse 2s ease-in-out infinite; }
+  .anim-dash { animation: dash 1.5s linear infinite; }
+  .anim-glow { animation: glowPulse 2s ease-in-out infinite; }
+  .anim-fade { animation: fadeInUp 0.5s ease forwards; }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  .quiz-option {
+    display: block; width: 100%; padding: 10px 14px; margin: 6px 0;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text-secondary);
+    font-size: 13px; cursor: pointer; text-align: left;
+    font-family: inherit; transition: all 0.2s;
+  }
+  .quiz-option:hover { border-color: var(--border-active); color: var(--text-primary); }
+  .quiz-option.correct { border-color: var(--success); background: rgba(16,185,129,0.1); color: var(--success); }
+  .quiz-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); color: #ef4444; }
+
+  @media (max-width: 1200px) {
+    .info-panel { width: 260px; min-width: 260px; }
+    .sidebar { width: 240px; min-width: 240px; }
+  }
+  @media (max-width: 900px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: 100%; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 10px; }
+    .sidebar .section-title { display: none; }
+    .step-btn { flex: 1; min-width: 120px; font-size: 11px; }
+    .info-panel { width: 100%; min-width: 100%; }
+    .canvas-area { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="main5.html" class="back-btn" title="返回">&larr; 返回</a>
+  <div class="logo">
+    <span class="dot"></span>
+    植物体细胞杂交 · 交互实验
+  </div>
+  <div class="meta">选择性必修3 &nbsp;|&nbsp; 第2章 细胞工程 &nbsp;|&nbsp; 第1节</div>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="section-title">实验流程</div>
+    <button class="step-btn active" data-step="0" onclick="goToStep(0)">
+      <span class="step-index">0</span>
+      <span class="step-label">实验背景<small>生殖隔离与体细胞杂交概念</small></span>
+    </button>
+    <button class="step-btn" data-step="1" onclick="goToStep(1)">
+      <span class="step-index">1</span>
+      <span class="step-label">获取原生质体<small>纤维素酶 + 果胶酶处理</small></span>
+    </button>
+    <button class="step-btn" data-step="2" onclick="goToStep(2)">
+      <span class="step-index">2</span>
+      <span class="step-label">原生质体融合<small>PEG / 电融合诱导</small></span>
+    </button>
+    <button class="step-btn" data-step="3" onclick="goToStep(3)">
+      <span class="step-index">3</span>
+      <span class="step-label">杂种细胞形成<small>再生细胞壁与筛选</small></span>
+    </button>
+    <button class="step-btn" data-step="4" onclick="goToStep(4)">
+      <span class="step-index">4</span>
+      <span class="step-label">脱分化 · 愈伤组织<small>愈伤组织诱导与培养</small></span>
+    </button>
+    <button class="step-btn" data-step="5" onclick="goToStep(5)">
+      <span class="step-index">5</span>
+      <span class="step-label">再分化 · 杂种植株<small>生芽 / 生根 / 完整植株</small></span>
+    </button>
+    <button class="step-btn" data-step="6" onclick="goToStep(6)">
+      <span class="step-index">6</span>
+      <span class="step-label">总结与练习<small>知识梳理 + 概念检测</small></span>
+    </button>
+  </div>
+
+  <div class="main">
+    <div class="main-header">
+      <h2 id="stageTitle">实验背景</h2>
+      <div class="subtitle" id="stageSubtitle">为什么需要植物体细胞杂交技术？</div>
+    </div>
+
+    <div class="canvas-area" id="canvasArea"></div>
+
+    <div class="controls">
+      <button class="btn" id="btnPrev" onclick="prevStep()">上一步</button>
+      <button class="btn primary" id="btnNext" onclick="nextStep()">下一步</button>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+        <span class="progress-text" id="progressText">0 / 7</span>
+      </div>
+      <button class="btn" id="btnAuto" onclick="toggleAutoPlay()">自动演示</button>
+      <button class="btn" id="btnReset" onclick="resetAll()">重置</button>
+    </div>
+  </div>
+
+  <div class="info-panel" id="infoPanel"></div>
+</div>
+
+<script>
+const svgNS = 'http://www.w3.org/2000/svg';
+
+let currentStep = 0;
+let autoPlayInterval = null;
+let isAutoPlaying = false;
+
+function goToStep(idx) {
+  if (idx < 0 || idx >= 7) return;
+  currentStep = idx;
+  updateUI();
+}
+function nextStep() {
+  if (currentStep < 6) { currentStep++; updateUI(); }
+}
+function prevStep() {
+  if (currentStep > 0) { currentStep--; updateUI(); }
+}
+
+function updateUI() {
+  const steps = [
+    { title:'实验背景', sub:'生殖隔离与体细胞杂交的提出' },
+    { title:'步骤一：获取原生质体', sub:'纤维素酶 + 果胶酶 去除细胞壁' },
+    { title:'步骤二：原生质体融合', sub:'PEG融合法 / 电融合法 诱导融合' },
+    { title:'步骤三：杂种细胞形成', sub:'融合后再生细胞壁，形成杂种细胞' },
+    { title:'步骤四：脱分化 · 形成愈伤组织', sub:'杂种细胞脱分化 → 愈伤组织' },
+    { title:'步骤五：再分化 · 形成杂种植株', sub:'愈伤组织 → 生芽 → 生根 → 完整植株' },
+    { title:'总结与练习', sub:'知识梳理与概念检测' }
+  ];
+  document.getElementById('stageTitle').textContent = steps[currentStep].title;
+  document.getElementById('stageSubtitle').textContent = steps[currentStep].sub;
+
+  document.querySelectorAll('.step-btn').forEach((btn,i) => {
+    btn.classList.remove('active','done');
+    if(i===currentStep) btn.classList.add('active');
+    else if(i<currentStep) btn.classList.add('done');
+  });
+
+  const pct = Math.round((currentStep/6)*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = currentStep+' / 6';
+  document.getElementById('btnPrev').disabled = (currentStep===0);
+  document.getElementById('btnNext').disabled = (currentStep===6);
+
+  renderCanvas(currentStep);
+  renderInfo(currentStep);
+}
+
+// ==================== SVG HELPERS ====================
+function mkSVG(w,h){
+  const s=document.createElementNS(svgNS,'svg');
+  s.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  s.setAttribute('width','100%'); s.setAttribute('height','100%');
+  s.setAttribute('class','anim-svg'); s.style.maxWidth='900px';
+  return s;
+}
+function addT(svg,x,y,t,opts={}){
+  const e=document.createElementNS(svgNS,'text');
+  e.setAttribute('x',x); e.setAttribute('y',y);
+  e.setAttribute('fill',opts.f||'#94a3b8');
+  e.setAttribute('font-size',opts.s||12);
+  e.setAttribute('font-weight',opts.w||400);
+  e.setAttribute('text-anchor',opts.a||'middle');
+  if(opts.fm) e.setAttribute('font-family',opts.fm);
+  e.textContent=t; svg.appendChild(e); return e;
+}
+function addR(svg,x,y,w,h,opts={}){
+  const r=document.createElementNS(svgNS,'rect');
+  r.setAttribute('x',x); r.setAttribute('y',y);
+  r.setAttribute('width',w); r.setAttribute('height',h);
+  r.setAttribute('rx',opts.rx||4); r.setAttribute('fill',opts.f||'none');
+  r.setAttribute('stroke',opts.st||'#1e3048'); r.setAttribute('stroke-width',opts.sw||1.5);
+  if(opts.da) r.setAttribute('stroke-dasharray',opts.da);
+  if(opts.op!=null) r.setAttribute('opacity',opts.op);
+  if(opts.cl) r.classList.add(opts.cl);
+  svg.appendChild(r); return r;
+}
+function addC(svg,cx,cy,r,opts={}){
+  const c=document.createElementNS(svgNS,'circle');
+  c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
+  c.setAttribute('fill',opts.f||'none'); c.setAttribute('stroke',opts.st||'#1e3048');
+  c.setAttribute('stroke-width',opts.sw||1.5);
+  if(opts.da) c.setAttribute('stroke-dasharray',opts.da);
+  if(opts.op!=null) c.setAttribute('opacity',opts.op);
+  if(opts.cl) c.classList.add(opts.cl);
+  svg.appendChild(c); return c;
+}
+function addL(svg,x1,y1,x2,y2,opts={}){
+  const l=document.createElementNS(svgNS,'line');
+  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+  l.setAttribute('stroke',opts.st||'#475569'); l.setAttribute('stroke-width',opts.sw||1.5);
+  if(opts.da) l.setAttribute('stroke-dasharray',opts.da);
+  if(opts.mk) l.setAttribute('marker-end',`url(#${opts.mk})`);
+  if(opts.cl) l.classList.add(opts.cl);
+  svg.appendChild(l); return l;
+}
+function addDefs(svg){
+  const d=document.createElementNS(svgNS,'defs');
+  const mk=document.createElementNS(svgNS,'marker');
+  mk.setAttribute('id','arrow'); mk.setAttribute('viewBox','0 0 10 10');
+  mk.setAttribute('refX',9); mk.setAttribute('refY',5);
+  mk.setAttribute('markerWidth',7); mk.setAttribute('markerHeight',7);
+  mk.setAttribute('orient','auto');
+  const ap=document.createElementNS(svgNS,'path');
+  ap.setAttribute('d','M0,0 L10,5 L0,10 Z'); ap.setAttribute('fill','#475569');
+  mk.appendChild(ap); d.appendChild(mk);
+
+  ['A','B','H'].forEach((t,i)=>{
+    const g=document.createElementNS(svgNS,'radialGradient');
+    g.setAttribute('id','g'+t);
+    const cols = i===0?['#3b82f6','#1d4ed8']:i===1?['#f59e0b','#b45309']:['#10b981','#047857'];
+    [0,100].forEach((off,j)=>{
+      const s=document.createElementNS(svgNS,'stop');
+      s.setAttribute('offset',off+'%'); s.setAttribute('stop-color',cols[j]);
+      s.setAttribute('stop-opacity',j===0?'0.22':'0.07'); g.appendChild(s);
+    });
+    d.appendChild(g);
+  });
+  svg.appendChild(d);
+}
+
+function drawCell(svg,cx,cy,r,type){
+  const isProto=type.includes('proto'), isHybrid=type==='hybrid';
+  let mc,wc,nc,gg;
+  if(type==='A'||type==='protoA'){ mc='#3b82f6'; wc='#64748b'; nc='#60a5fa'; gg='url(#gA)'; }
+  else if(type==='B'||type==='protoB'){ mc='#f59e0b'; wc='#64748b'; nc='#fbbf24'; gg='url(#gB)'; }
+  else { mc='#10b981'; wc='#475569'; nc='#6ee7b7'; gg='url(#gH)'; }
+  addC(svg,cx,cy,r,{f:gg,st:'none',sw:0});
+  if(!isProto) addC(svg,cx,cy,r,{f:'none',st:wc,sw:3,da:isHybrid?'6,3':'none',cl:isHybrid?'anim-dash':''});
+  const mr=isProto?r:r-4;
+  addC(svg,cx,cy,mr,{f:'none',st:mc,sw:2,op:0.8});
+  const nr=r*0.28;
+  addC(svg,cx,cy,nr,{f:nc,st:'none',sw:0,op:0.5,cl:'anim-glow'});
+  addC(svg,cx,cy,nr*0.6,{f:nc,st:'none',sw:0,op:0.7});
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2+0.3;
+    addC(svg,cx+Math.cos(a)*r*0.55,cy+Math.sin(a)*r*0.55,2.5,{f:mc,st:'none',sw:0,op:0.35});
+  }
+}
+
+function renderCanvas(idx){
+  const ca=document.getElementById('canvasArea'); ca.innerHTML='';
+  const svg=mkSVG(800,440); addDefs(svg);
+  const cA='#3b82f6',cB='#f59e0b',cH='#10b981',cCa='#a78bfa',cSh='#22c55e';
+
+  if(idx===0){ // Background
+    addR(svg,60,20,680,40,{f:'rgba(59,130,246,0.06)',st:'rgba(59,130,246,0.15)',rx:8});
+    addT(svg,400,46,'植物体细胞杂交技术 · 完整流程',{s:15,w:600,f:'#cbd5e1'});
+
+    addR(svg,90,100,140,60,{f:'rgba(59,130,246,0.06)',st:'rgba(59,130,246,0.25)',rx:8});
+    addT(svg,160,125,'甲植物细胞',{s:13,w:600,f:'#60a5fa'});
+    addT(svg,160,145,'Plant A Cell',{s:10,f:'#64748b',fm:'monospace'});
+    drawCell(svg,160,210,28,'A');
+
+    addR(svg,570,100,140,60,{f:'rgba(245,158,11,0.06)',st:'rgba(245,158,11,0.25)',rx:8});
+    addT(svg,640,125,'乙植物细胞',{s:13,w:600,f:'#fbbf24'});
+    addT(svg,640,145,'Plant B Cell',{s:10,f:'#64748b',fm:'monospace'});
+    drawCell(svg,640,210,28,'B');
+
+    addL(svg,160,245,160,290,{st:'#475569',sw:2,mk:'arrow'});
+    addL(svg,640,245,640,290,{st:'#475569',sw:2,mk:'arrow'});
+
+    addT(svg,160,310,'甲原生质体',{s:11,f:'#60a5fa',w:500}); drawCell(svg,160,345,24,'protoA');
+    addT(svg,640,310,'乙原生质体',{s:11,f:'#fbbf24',w:500}); drawCell(svg,640,345,24,'protoB');
+
+    addT(svg,260,280,'纤维素酶 + 果胶酶',{s:10,f:'#64748b',fm:'monospace'});
+    addL(svg,260,285,200,310,{st:'#64748b',sw:1,da:'3,3'});
+    addT(svg,540,280,'纤维素酶 + 果胶酶',{s:10,f:'#64748b',fm:'monospace'});
+    addL(svg,540,285,600,310,{st:'#64748b',sw:1,da:'3,3'});
+
+    addL(svg,200,360,380,360,{st:'#475569',sw:1.5,mk:'arrow',da:'4,2',cl:'anim-dash'});
+    addL(svg,600,360,420,360,{st:'#475569',sw:1.5,mk:'arrow',da:'4,2',cl:'anim-dash'});
+    addT(svg,400,378,'PEG融合 / 电融合',{s:10,f:'#64748b',fm:'monospace'});
+
+    drawCell(svg,400,395,24,'hybrid');
+    addT(svg,400,432,'杂种细胞 (再生细胞壁)',{s:11,f:'#6ee7b7',w:500});
+
+    addL(svg,400,440,400,465,{st:'#475569',sw:1.5,mk:'arrow'});
+    addR(svg,120,470,560,40,{f:'rgba(16,185,129,0.04)',st:'rgba(16,185,129,0.15)',rx:6,da:'5,3'});
+    addT(svg,400,488,'脱分化 → 愈伤组织 → 再分化（生芽 → 生根） → 杂种植株',{s:11,f:'#64748b'});
+    addT(svg,400,503,'以上各步骤将在后续分步详细展示',{s:10,f:'#64748b',fm:'monospace'});
+  }
+  else if(idx===1){ // Protoplast
+    addT(svg,160,35,'处理前：完整植物细胞',{s:13,w:600,f:'#cbd5e1'});
+    addR(svg,60,50,200,170,{f:'rgba(59,130,246,0.03)',st:'rgba(59,130,246,0.15)',rx:8});
+    drawCell(svg,110,155,45,'A');
+    addL(svg,140,130,215,100,{st:'#64748b',sw:1,da:'2,2'});
+    addT(svg,310,100,'细胞壁 (cell wall)',{s:10,f:'#64748b',a:'start',fm:'monospace'});
+    addL(svg,135,155,215,155,{st:'#3b82f6',sw:1,da:'2,2'});
+    addT(svg,310,155,'细胞膜 (cell membrane)',{s:10,f:'#3b82f6',a:'start',fm:'monospace'});
+    addL(svg,120,170,215,195,{st:'#60a5fa',sw:1,da:'2,2'});
+    addT(svg,310,198,'细胞核 (nucleus)',{s:10,f:'#60a5fa',a:'start',fm:'monospace'});
+
+    addT(svg,350,145,'纤维素酶 + 果胶酶',{s:11,w:600,f:'#f59e0b',fm:'monospace'});
+    addL(svg,300,155,440,155,{st:'#f59e0b',sw:2,mk:'arrow',cl:'anim-dash'});
+    addT(svg,380,172,'温和酶解去除细胞壁',{s:10,f:'#64748b'});
+
+    addT(svg,580,35,'处理后：原生质体',{s:13,w:600,f:'#cbd5e1'});
+    addR(svg,460,50,250,170,{f:'rgba(245,158,11,0.03)',st:'rgba(245,158,11,0.15)',rx:8});
+    drawCell(svg,530,155,38,'protoA');
+    addT(svg,610,155,'球形，无细胞壁\n仅由细胞膜包裹',{s:10,f:'#94a3b8',a:'start'});
+
+    addR(svg,60,260,650,50,{f:'rgba(245,158,11,0.05)',st:'rgba(245,158,11,0.2)',rx:6});
+    addT(svg,80,283,'关键点',{s:12,w:600,f:'#fbbf24',a:'start'});
+    addT(svg,80,303,'纤维素酶分解细胞壁中的纤维素，果胶酶分解中层的果胶。两者协同温和去壁，获得有活力的原生质体。',{s:11,f:'#94a3b8',a:'start'});
+
+    addR(svg,60,340,140,50,{f:'rgba(59,130,246,0.06)',st:'rgba(59,130,246,0.2)',rx:6});
+    addT(svg,130,360,'甲植物原生质体',{s:11,f:'#60a5fa',w:500});
+    addT(svg,130,380,'Plant A Protoplast',{s:9,f:'#64748b',fm:'monospace'});
+    addR(svg,600,340,140,50,{f:'rgba(245,158,11,0.06)',st:'rgba(245,158,11,0.2)',rx:6});
+    addT(svg,670,360,'乙植物原生质体',{s:11,f:'#fbbf24',w:500});
+    addT(svg,670,380,'Plant B Protoplast',{s:9,f:'#64748b',fm:'monospace'});
+    addT(svg,400,380,'→  下一步：融合  ←',{s:11,f:'#64748b',fm:'monospace'});
+  }
+  else if(idx===2){ // Fusion
+    addT(svg,400,30,'原生质体融合过程',{s:14,w:600,f:'#cbd5e1'});
+    const stages=[{x:130,l:'接近',aOff:-35,bOff:35,op:0.3},{x:310,l:'接触',aOff:-18,bOff:18,op:0.6},{x:490,l:'膜融合',aOff:-5,bOff:5,op:0.9},{x:670,l:'完成融合',aOff:0,bOff:0,op:1}];
+    stages.forEach(st=>{
+      addT(svg,st.x,370,st.l,{s:10,f:st.l==='完成融合'?cH:'#64748b'});
+      const cx=st.x,cy=210,cr=28;
+      addC(svg,cx+st.aOff-12,cy,cr,{f:'url(#gA)',st:cA,sw:2,op:st.op});
+      addC(svg,cx+st.aOff-12,cy,cr*0.28,{f:'#60a5fa',st:'none',sw:0,op:st.op*0.5});
+      addC(svg,cx+st.bOff+12,cy,cr,{f:'url(#gB)',st:cB,sw:2,op:st.op});
+      addC(svg,cx+st.bOff+12,cy,cr*0.28,{f:'#fbbf24',st:'none',sw:0,op:st.op*0.5});
+      if(st.l==='完成融合'){
+        addC(svg,cx,cy,cr*1.3,{f:'url(#gH)',st:cH,sw:2.5,cl:'anim-glow'});
+        addC(svg,cx-8,cy-5,cr*0.3,{f:'#6ee7b7',st:'none',sw:0,op:0.5});
+        addC(svg,cx+8,cy+5,cr*0.28,{f:'#6ee7b7',st:'none',sw:0,op:0.5});
+      }
+    });
+
+    addR(svg,240,120,320,40,{f:'rgba(245,158,11,0.06)',st:'rgba(245,158,11,0.2)',rx:6});
+    addT(svg,400,140,'PEG (聚乙二醇) 促融剂',{s:12,w:600,f:'#fbbf24',fm:'monospace'});
+    addT(svg,400,155,'降低膜表面电位，促进细胞膜相互靠近并融合',{s:10,f:'#94a3b8'});
+
+    addR(svg,60,280,320,85,{f:'rgba(59,130,246,0.04)',st:'rgba(59,130,246,0.15)',rx:6});
+    addT(svg,220,302,'物理法',{s:12,w:600,f:'#60a5fa'});
+    addT(svg,220,322,'电融合法 · 离心法',{s:11,f:'#94a3b8',fm:'monospace'});
+    addT(svg,220,345,'通过电场或离心力促使原生质体接触融合',{s:10,f:'#64748b'});
+
+    addR(svg,420,280,320,85,{f:'rgba(16,185,129,0.04)',st:'rgba(16,185,129,0.15)',rx:6});
+    addT(svg,580,302,'化学法',{s:12,w:600,f:'#6ee7b7'});
+    addT(svg,580,322,'PEG融合法 · 高Ca²⁺-高pH融合法',{s:11,f:'#94a3b8',fm:'monospace'});
+    addT(svg,580,345,'化学试剂促融，操作简便，最常用',{s:10,f:'#64748b'});
+  }
+  else if(idx===3){ // Hybrid cell
+    addT(svg,400,30,'杂种细胞的形成与筛选',{s:14,w:600,f:'#cbd5e1'});
+    const cx=280,cy=190,r=55;
+    addC(svg,cx,cy,r,{f:'url(#gH)',st:cH,sw:3,cl:'anim-glow'});
+    addC(svg,cx,cy,r-5,{f:'none',st:cH,sw:1.5,op:0.5});
+    addC(svg,cx-18,cy-10,r*0.25,{f:'#60a5fa',st:'none',sw:0,op:0.5});
+    addC(svg,cx-18,cy-10,r*0.15,{f:'#93c5fd',st:'none',sw:0,op:0.7});
+    addC(svg,cx+18,cy+10,r*0.23,{f:'#fbbf24',st:'none',sw:0,op:0.5});
+    addC(svg,cx+18,cy+10,r*0.14,{f:'#fde68a',st:'none',sw:0,op:0.7});
+
+    addL(svg,cx+r-5,cy-30,cx+r+60,cy-70,{st:'#64748b',sw:1,da:'2,2'});
+    addT(svg,cx+r+160,cy-72,'再生细胞壁',{s:11,f:'#64748b',a:'start',fm:'monospace'});
+    addT(svg,cx+r+160,cy-55,'细胞壁重新合成',{s:10,f:'#64748b',a:'start'});
+
+    addL(svg,cx-30,cy-45,cx-140,cy-90,{st:'#60a5fa',sw:1,da:'2,2'});
+    addT(svg,cx-140,cy-95,'来自甲植物的遗传物质(蓝色)',{s:10,f:'#60a5fa',a:'end',fm:'monospace'});
+    addL(svg,cx+30,cy+40,cx+140,cy+90,{st:'#fbbf24',sw:1,da:'2,2'});
+    addT(svg,cx+140,cy+85,'来自乙植物的遗传物质(橙色)',{s:10,f:'#fbbf24',a:'start',fm:'monospace'});
+
+    addR(svg,480,100,270,220,{f:'rgba(16,185,129,0.03)',st:'rgba(16,185,129,0.18)',rx:8});
+    addT(svg,615,125,'选择培养基筛选',{s:13,w:600,f:'#6ee7b7'});
+    addT(svg,615,145,'含0.6%钠盐的固体培养基',{s:10,f:'#64748b',fm:'monospace'});
+
+    addT(svg,500,175,'未融合原生质体',{s:11,f:'#ef4444',a:'start',w:500,fm:'monospace'});
+    addT(svg,615,190,'无法分裂 → 淘汰',{s:10,f:'#ef4444',fm:'monospace'});
+    addT(svg,500,220,'同核融合细胞',{s:11,f:'#f59e0b',a:'start',w:500,fm:'monospace'});
+    addT(svg,615,235,'不耐盐 → 淘汰',{s:10,f:'#ef4444',fm:'monospace'});
+    addT(svg,500,265,'杂种细胞 (异核融合)',{s:11,f:cH,a:'start',w:500,fm:'monospace'});
+    addT(svg,615,280,'耐盐 + 可分裂 → 存活',{s:10,f:cH,fm:'monospace'});
+
+    addL(svg,400,360,400,400,{st:cH,sw:1.5,mk:'arrow'});
+    addT(svg,400,420,'下一步：脱分化形成愈伤组织',{s:10,f:'#64748b',fm:'monospace'});
+  }
+  else if(idx===4){ // Callus
+    addT(svg,400,30,'脱分化：杂种细胞 → 愈伤组织',{s:14,w:600,f:'#cbd5e1'});
+    drawCell(svg,150,140,30,'hybrid');
+    addT(svg,150,185,'杂种细胞',{s:10,f:'#6ee7b7',w:500});
+    addL(svg,190,140,260,140,{st:'#475569',sw:2,mk:'arrow'});
+    addT(svg,325,125,'脱分化',{s:13,w:600,f:'#c084fc',fm:'monospace'});
+    addT(svg,325,145,'失去原有结构 → 未分化状态',{s:10,f:'#64748b'});
+    addT(svg,325,160,'避光 · 18-22°C · 诱导培养基',{s:10,f:'#64748b',fm:'monospace'});
+
+    const ccx=520,ccy=140;
+    const pts=[[0,-25],[20,-18],[30,0],[22,18],[5,28],[-18,22],[-30,8],[-25,-12],[-10,-28]];
+    const bp=document.createElementNS(svgNS,'path');
+    bp.setAttribute('d',pts.map(([dx,dy],i)=>`${i===0?'M':'L'} ${ccx+dx} ${ccy+dy}`).join(' ')+' Z');
+    bp.setAttribute('fill','rgba(167,139,250,0.1)');
+    bp.setAttribute('stroke','#a78bfa'); bp.setAttribute('stroke-width','2.5');
+    bp.setAttribute('stroke-dasharray','6,3'); bp.classList.add('anim-dash');
+    svg.appendChild(bp);
+    for(let i=0;i<12;i++){
+      const a=(i/12)*Math.PI*2+0.5;
+      const d=14+Math.random()*14;
+      addC(svg,ccx+Math.cos(a)*d,ccy+Math.sin(a)*d,3+Math.random()*3,{f:'#a78bfa',st:'none',sw:0,op:0.25+Math.random()*0.3});
+    }
+    addC(svg,ccx,ccy,18,{f:'rgba(167,139,250,0.15)',st:'none',sw:0});
+    addT(svg,ccx,ccy+60,'愈伤组织',{s:12,w:600,f:'#c084fc'});
+    addT(svg,ccx,ccy+78,'未分化的薄壁细胞团',{s:10,f:'#64748b'});
+
+    addR(svg,80,260,640,75,{f:'rgba(167,139,250,0.04)',st:'rgba(167,139,250,0.15)',rx:8});
+    addT(svg,400,285,'愈伤组织特征',{s:12,w:600,f:'#c084fc'});
+    addT(svg,400,308,'形态：不规则疏松团块  |  颜色：淡黄色至近白色  |  细胞：薄壁、液泡化、未分化',{s:10.5,f:'#94a3b8'});
+    addT(svg,400,328,'关键性质：具有细胞全能性 —— 保留分化为完整植株的潜能',{s:10.5,f:'#94a3b8'});
+    addL(svg,400,355,400,385,{st:'#475569',sw:1.5,mk:'arrow'});
+    addT(svg,400,405,'下一步：再分化 → 杂种植株',{s:10,f:'#64748b',fm:'monospace'});
+  }
+  else if(idx===5){ // Rediff
+    addT(svg,400,28,'再分化：愈伤组织 → 完整杂种植株',{s:14,w:600,f:'#cbd5e1'});
+
+    // Callus icon
+    const cpts=[[0,-12],[8,-9],[12,2],[9,10],[2,14],[-9,11],[-14,4],[-11,-7]];
+    const cbp=document.createElementNS(svgNS,'path');
+    cbp.setAttribute('d',cpts.map(([dx,dy],i)=>`${i===0?'M':'L'} ${130+dx} ${120+dy}`).join(' ')+' Z');
+    cbp.setAttribute('fill','rgba(167,139,250,0.12)');
+    cbp.setAttribute('stroke','#a78bfa'); cbp.setAttribute('stroke-width','2');
+    cbp.setAttribute('stroke-dasharray','4,3'); cbp.classList.add('anim-dash');
+    svg.appendChild(cbp);
+    addT(svg,130,155,'愈伤组织',{s:10,f:'#c084fc',w:500});
+
+    addL(svg,158,120,220,120,{st:'#475569',sw:1.5,mk:'arrow'});
+    addT(svg,275,105,'生芽培养基',{s:11,w:600,f:'#22c55e',fm:'monospace'});
+    addT(svg,275,122,'细胞分裂素/生长素 > 1',{s:9,f:'#64748b',fm:'monospace'});
+    addT(svg,275,137,'需光照',{s:9,f:'#64748b',fm:'monospace'});
+
+    // Shoot icon
+    addL(svg,285,120,285,100,{st:'#22c55e',sw:2.5});
+    addL(svg,285,105,275,95,{st:'#22c55e',sw:2});
+    addL(svg,285,110,295,100,{st:'#22c55e',sw:2});
+    addC(svg,275,95,3,{f:'#22c55e',st:'none',sw:0,op:0.6});
+    addC(svg,295,100,3,{f:'#22c55e',st:'none',sw:0,op:0.6});
+    addT(svg,285,145,'生芽',{s:10,f:'#22c55e',w:500});
+
+    addL(svg,310,120,370,120,{st:'#475569',sw:1.5,mk:'arrow'});
+    addT(svg,425,105,'生根培养基',{s:11,w:600,f:'#22c55e',fm:'monospace'});
+    addT(svg,425,122,'生长素/细胞分裂素 > 1',{s:9,f:'#64748b',fm:'monospace'});
+
+    // Root icon
+    addL(svg,435,120,435,95,{st:'#22c55e',sw:2.5});
+    addL(svg,435,100,427,89,{st:'#22c55e',sw:1.8});
+    addL(svg,435,100,443,89,{st:'#22c55e',sw:1.8});
+    addL(svg,435,120,429,130,{st:'#92400e',sw:1.5});
+    addL(svg,435,120,441,130,{st:'#92400e',sw:1.5});
+    addL(svg,435,120,435,131,{st:'#92400e',sw:1.5});
+    addT(svg,435,148,'生根',{s:10,f:'#22c55e',w:500});
+
+    addL(svg,460,120,520,120,{st:'#475569',sw:1.5,mk:'arrow'});
+    addT(svg,590,105,'移栽入土',{s:11,w:600,f:cH,fm:'monospace'});
+    addT(svg,590,122,'炼苗 → 蛭石 → 土壤',{s:9,f:'#64748b',fm:'monospace'});
+
+    // Mature plant
+    addL(svg,590,120,590,90,{st:cH,sw:3});
+    addC(svg,590,78,14,{f:'rgba(34,197,94,0.15)',st:'#22c55e',sw:1.5});
+    addC(svg,585,82,8,{f:'rgba(34,197,94,0.12)',st:'none',sw:0});
+    addL(svg,590,120,582,132,{st:'#92400e',sw:1.8});
+    addL(svg,590,120,595,133,{st:'#92400e',sw:1.8});
+    addL(svg,590,120,600,130,{st:'#92400e',sw:1.5});
+    addT(svg,590,152,'杂种植株',{s:11,w:600,f:cH});
+
+    addR(svg,60,185,680,180,{f:'rgba(34,197,94,0.03)',st:'rgba(34,197,94,0.12)',rx:8});
+    addT(svg,400,210,'激素调控机制',{s:12,w:600,f:'#4ade80'});
+    [{x:160,l:'诱导生芽',r:'细胞分裂素/生长素 > 1',d:'促进芽原基分化'},
+     {x:400,l:'维持愈伤',r:'细胞分裂素/生长素 ≈ 1',d:'保持未分化增殖状态'},
+     {x:640,l:'诱导生根',r:'生长素/细胞分裂素 > 1',d:'促进根原基分化'}].forEach(h=>{
+      addR(svg,h.x-85,222,170,65,{f:'rgba(34,197,94,0.04)',st:'rgba(34,197,94,0.12)',rx:6});
+      addT(svg,h.x,242,h.l,{s:11,w:600,f:'#4ade80'});
+      addT(svg,h.x,262,h.r,{s:9,f:'#94a3b8',fm:'monospace'});
+      addT(svg,h.x,279,h.d,{s:9,f:'#64748b'});
+    });
+    addL(svg,400,375,400,395,{st:'#475569',sw:1.5,mk:'arrow'});
+    addT(svg,400,412,'移栽后获得完整杂种植株',{s:10,f:'#64748b'});
+  }
+  else if(idx===6){ // Summary
+    addT(svg,400,30,'植物体细胞杂交技术 · 完整流程',{s:15,w:600,f:'#cbd5e1'});
+    addR(svg,60,55,680,330,{f:'rgba(59,130,246,0.02)',st:'rgba(59,130,246,0.12)',rx:10});
+
+    const boxes=[
+      [100,85,100,48,'甲植物细胞','Plant A',cA],
+      [100,305,100,48,'甲原生质体','Protoplast A',cA],
+      [600,85,100,48,'乙植物细胞','Plant B',cB],
+      [600,305,100,48,'乙原生质体','Protoplast B',cB],
+      [350,185,100,40,'原生质体融合','PEG/电融合',cB],
+      [350,305,100,48,'杂种细胞','再生细胞壁',cH],
+      [350,390,100,40,'愈伤组织','脱分化','#a78bfa'],
+      [520,360,100,60,'杂种植株','再分化·移栽','#22c55e']
+    ];
+    boxes.forEach(([x,y,w,h,l,sb,c])=>{
+      addR(svg,x,y,w,h,{f:'rgba(30,41,59,0.6)',st:c,sw:1.5,rx:6,op:0.85});
+      addT(svg,x+w/2,y+18,l,{s:11,w:600,f:c});
+      addT(svg,x+w/2,y+h-8,sb,{s:8,f:'#64748b',fm:'monospace'});
+    });
+
+    addL(svg,160,133,160,300,{st:'#475569',sw:1.5,mk:'arrow'});
+    addT(svg,212,224,'酶解\n去壁',{s:9,f:'#64748b',fm:'monospace'});
+    addL(svg,660,133,660,300,{st:'#475569',sw:1.5,mk:'arrow'});
+    addT(svg,592,224,'酶解\n去壁',{s:9,f:'#64748b',fm:'monospace'});
+
+    addL(svg,200,330,345,330,{st:'#475569',sw:1.5,mk:'arrow',da:'4,2',cl:'anim-dash'});
+    addL(svg,600,330,455,330,{st:'#475569',sw:1.5,mk:'arrow',da:'4,2',cl:'anim-dash'});
+    addL(svg,400,225,400,300,{st:'#475569',sw:1.5,mk:'arrow'});
+    addL(svg,400,353,400,385,{st:'#475569',sw:1.5,mk:'arrow'});
+    addL(svg,450,410,515,395,{st:'#475569',sw:1.5,mk:'arrow'});
+
+    addR(svg,60,405,680,35,{f:'rgba(59,130,246,0.04)',st:'rgba(59,130,246,0.12)',rx:6});
+    addT(svg,400,428,'应用成果：白菜—甘蓝 | 普通小麦—长穗偃麦草 | 柑橘属种间杂种 | 打破生殖隔离，实现远缘杂交育种',{s:10.5,f:'#94a3b8'});
+  }
+  ca.appendChild(svg);
+}
+
+function renderInfo(idx){
+  const panel=document.getElementById('infoPanel');
+  const cards=[
+    { // 0
+      title:'背景知识',
+      body:'<p>20世纪60年代，科学家尝试将<b class="highlight">番茄</b>和<b class="highlight">马铃薯</b>进行杂交，希望培育出"地上结番茄、地下长马铃薯"的超级作物。</p><br><p>然而两者之间存在<span class="highlight">天然的生殖隔离</span>，传统有性杂交方法<u>无法</u>获得杂种后代。</p><br><p>科学家采用<b>体细胞杂交</b>方法绕过有性生殖障碍，成功获得杂种植株。</p>',
+      tags:['生殖隔离','有性杂交局限','远缘杂交'],
+      defTitle:'核心定义',
+      defBody:'<p><b class="highlight">植物体细胞杂交</b>（Plant Somatic Hybridization）是指将不同来源的植物体细胞，在一定条件下融合成杂种细胞，并把杂种细胞培育成新植物体的技术。</p>',
+      defTags:['植物细胞工程','体细胞杂交']
+    },
+    { // 1
+      title:'操作要点',
+      body:'<p>植物细胞外面有一层<b class="highlight">细胞壁</b>，阻碍着细胞间的融合杂交。</p><br><p>必须先用<span class="highlight">纤维素酶</span>和<span class="highlight">果胶酶</span>分解细胞壁，获得<b>原生质体</b>（没有细胞壁的植物细胞）。</p>',
+      tags:['纤维素酶','果胶酶','原生质体','去壁'],
+      defTitle:'酶的作用',
+      defBody:'<ul><li><span class="highlight">纤维素酶</span> — 分解细胞壁中的纤维素</li><li><span class="highlight">果胶酶</span> — 分解细胞壁中层的果胶</li><li>两者协同，温和去除细胞壁</li><li>去壁原生质体呈球形</li></ul>',
+      defTags:['酶解去壁','原生质体球形']
+    },
+    { // 2
+      title:'融合方法',
+      body:'<p>人工诱导原生质体融合的方法分为两大类：</p><br><p><b class="highlight">物理法</b>：电融合法、离心法等</p><p><b class="highlight">化学法</b>：PEG融合法、高Ca²⁺—高pH融合法等</p><br><p>融合过程中<span class="highlight">细胞膜</span>首先融合，然后细胞质混合。</p>',
+      tags:['PEG','电融合','高Ca²⁺高pH','膜流动性'],
+      defTitle:'PEG的作用原理',
+      defBody:'<p>聚乙二醇（PEG）作为<span class="highlight">促融剂</span>，使原生质体表面膜电位降低，促进相互靠近融合。</p><br><p>融合后需及时洗去PEG，避免对细胞毒害。</p>',
+      defTags:['PEG促融','膜融合','洗脱']
+    },
+    { // 3
+      title:'杂种细胞',
+      body:'<p>融合后原生质体<b class="highlight">再生出细胞壁</b>，形成完整杂种细胞。</p><br><p>含来自<b>两个亲本</b>的全部遗传物质，染色体数为两亲本之和。</p><br><p>需在<span class="highlight">选择培养基</span>上筛选，淘汰未融合亲本及同核融合细胞。</p>',
+      tags:['再生细胞壁','双亲遗传物质','选择培养基'],
+      defTitle:'筛选原理',
+      defBody:'<p>使用含<span class="highlight">0.6%钠盐</span>的固体培养基筛选：</p><ul><li>未融合原生质体 — 无法分裂</li><li>同核融合细胞 — 不耐盐</li><li><span class="highlight">杂种细胞</span> — 兼具耐盐与分裂能力</li></ul>',
+      defTags:['0.6%钠盐','选择培养','杂种筛选']
+    },
+    { // 4
+      title:'脱分化过程',
+      body:'<p>杂种细胞在<b class="highlight">诱导培养基</b>上<b>脱分化</b>，失去原有结构和功能，转变为未分化的薄壁细胞团——<b class="highlight">愈伤组织</b>。</p><br><p>此阶段一般<u>不需要光照</u>，温度控制在18–22°C。</p>',
+      tags:['脱分化','愈伤组织','避光培养','18-22°C'],
+      defTitle:'愈伤组织特征',
+      defBody:'<ul><li>形态：不规则团块状，疏松</li><li>颜色：淡黄色或近白色</li><li>细胞：薄壁、液泡化、未分化</li><li>具有<b class="highlight">全能性</b> — 可分化为完整植株</li></ul>',
+      defTags:['薄壁细胞','全能性','未分化']
+    },
+    { // 5
+      title:'再分化与植株再生',
+      body:'<p>将愈伤组织转接到<b class="highlight">诱导生芽培养基</b>，细胞分裂素/生长素比值较高，促进芽分化。</p><br><p>长出芽后转接到<b class="highlight">诱导生根培养基</b>，生长素/细胞分裂素比值较高。</p><br><p>此阶段每日需<b>适当时间和强度的光照</b>。</p>',
+      tags:['生芽','生根','激素调控','光照'],
+      defTitle:'激素调控',
+      defBody:'<p>激素比例决定分化方向：</p><ul><li>细胞分裂素/生长素 > 1 — 诱导生芽</li><li>生长素/细胞分裂素 > 1 — 诱导生根</li><li>两者比例 ≈ 1 — 维持愈伤状态</li></ul>',
+      defTags:['细胞分裂素','生长素','比例调控']
+    },
+    { // 6
+      title:'技术优势与应用',
+      body:'<p>植物体细胞杂交技术的优势：</p><ul><li><span class="highlight">打破生殖隔离</span> — 实现远缘杂交育种</li><li>培育植物新品种 — 白菜—甘蓝、小麦—偃麦草等</li><li>柑橘属不同种间杂种植株的培育</li></ul>',
+      tags:['打破生殖隔离','远缘杂交','新品种'],
+      quiz:true
+    }
+  ];
+  const card=cards[idx];
+  let html='';
+  html+=`<div class="info-card anim-fade"><h4><span class="indicator"></span>${card.title}</h4>${card.body}<div style="margin-top:10px">${(card.tags||[]).map(t=>`<span class="tag">${t}</span>`).join(' ')}</div></div>`;
+  if(card.quiz){
+    html+=`<div class="info-card anim-fade"><h4><span class="indicator"></span>选择题</h4>
+      <p style="margin-bottom:8px">下图是利用甲、乙两种植物通过细胞工程技术培育高产、耐盐杂种植株的实验流程图。下列叙述<u>错误</u>的是（  ）</p>
+      <button class="quiz-option" data-qid="1" data-correct="true">A. 进行a处理时能用胰蛋白酶</button>
+      <button class="quiz-option" data-qid="1" data-correct="false">B. b是诱导融合后得到的杂种细胞</button>
+      <button class="quiz-option" data-qid="1" data-correct="false">C. c是培养后得到的具有耐盐性状的幼苗</button>
+      <button class="quiz-option" data-qid="1" data-correct="false">D. 进行d选择时要将植株种在高盐环境中</button>
+      <p id="quizFeedback" style="display:none;margin-top:8px;font-size:12px;color:var(--success);">
+      解析：a处理是去除细胞壁，应使用<b>纤维素酶和果胶酶</b>，不能用胰蛋白酶（胰蛋白酶用于动物细胞培养中分散细胞）。因此A项错误，为本题答案。
+      </p></div>
+      <div class="info-card anim-fade"><h4><span class="indicator"></span>思考题</h4>
+      <p style="margin-bottom:8px">"番茄—马铃薯"杂种植株没有如科学家所想象的那样，地上结番茄、地下长马铃薯，这是为什么？</p>
+      <p style="font-size:12px;color:var(--text-muted);padding:10px;background:rgba(16,185,129,0.04);border-radius:6px;border:1px solid rgba(16,185,129,0.1)">
+      思路：杂种植株中两套基因组的表达并非简单叠加，而是发生了复杂的互作。某些基因可能被抑制（基因沉默），或不同物种间基因表达调控机制不兼容，导致期望的性状未能同时表达。
+      </p></div>`;
+  }else if(card.defTitle){
+    html+=`<div class="info-card anim-fade"><h4><span class="indicator"></span>${card.defTitle}</h4>${card.defBody}<div style="margin-top:10px">${(card.defTags||[]).map(t=>`<span class="tag green">${t}</span>`).join(' ')}</div></div>`;
+  }
+  if(idx<6 && !card.quiz){
+    html+=`<div class="info-card anim-fade" style="border-color:rgba(59,130,246,0.2);"><p style="font-size:12px;color:var(--text-muted);text-align:center;">点击 <b style="color:var(--accent-light)">"下一步"</b> 继续，或按键盘 → / ← / 空格键导航</p></div>`;
+  }
+  panel.innerHTML=html;
+
+  // quiz listeners
+  document.querySelectorAll('.quiz-option').forEach(opt=>{
+    opt.addEventListener('click',function(){
+      if(this.dataset.answered==='true') return;
+      const qid=this.dataset.qid;
+      const isCorrect=this.dataset.correct==='true';
+      this.dataset.answered='true';
+      this.classList.add(isCorrect?'correct':'wrong');
+      document.querySelectorAll(`.quiz-option[data-qid="${qid}"]`).forEach(o=>{
+        o.style.pointerEvents='none';
+        if(o.dataset.correct==='true') o.classList.add('correct');
+      });
+      if(!isCorrect){ const fb=document.getElementById('quizFeedback'); if(fb) fb.style.display='block'; }
+    });
+  });
+}
+
+function toggleAutoPlay(){
+  const btn=document.getElementById('btnAuto');
+  if(isAutoPlaying){ stopAutoPlay(); btn.textContent='自动演示'; btn.classList.remove('success'); }
+  else { startAutoPlay(); btn.textContent='停止演示'; btn.classList.add('success'); }
+}
+function startAutoPlay(){
+  isAutoPlaying=true;
+  autoPlayInterval=setInterval(()=>{
+    if(currentStep<6){ currentStep++; updateUI(); }
+    else { stopAutoPlay(); document.getElementById('btnAuto').textContent='自动演示'; document.getElementById('btnAuto').classList.remove('success'); }
+  },3500);
+}
+function stopAutoPlay(){
+  isAutoPlaying=false;
+  if(autoPlayInterval){ clearInterval(autoPlayInterval); autoPlayInterval=null; }
+}
+function resetAll(){
+  stopAutoPlay();
+  document.getElementById('btnAuto').textContent='自动演示';
+  document.getElementById('btnAuto').classList.remove('success');
+  currentStep=0; updateUI();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){ e.preventDefault(); nextStep(); }
+  else if(e.key==='ArrowLeft'){ e.preventDefault(); prevStep(); }
+  else if(e.key==='r'||e.key==='R'){ e.preventDefault(); resetAll(); }
+  else if(e.key==='a'||e.key==='A'){ e.preventDefault(); toggleAutoPlay(); }
+});
+
+updateUI();
+</script>
+</body>
+</html>
