@@ -44,6 +44,20 @@ CHAPTER_ORDER = {
 }
 
 
+def _fix_chapter_name(chapter_raw: str) -> str:
+    """修正章节名中的错误章节号，使用 CHAPTER_ORDER 映射的正确序号。"""
+    # 提取章节名称部分（去除"第N章"前缀和后面的emoji/标注）
+    name_part = re.sub(r'^第\d+章\s*', '', chapter_raw).strip()
+    # 去除末尾的标注如"⭐ 核心章节"、"⭐ 最重要章节"
+    name_part = re.sub(r'[⭐🔥📝🎯⚡]+.*$', '', name_part).strip()
+    # 在 CHAPTER_ORDER 中查找正确的章节号
+    for keyword, order in CHAPTER_ORDER.items():
+        if keyword in name_part:
+            return f"第{order}章 {keyword}"
+    # 如果没找到映射，返回原名
+    return chapter_raw
+
+
 def _extract_chapter_number(chapter_name: str) -> int:
     """从章节名中提取章节序号用于排序。优先使用关键词映射。"""
     # 优先使用关键词映射（修正数据库中章节号错误的问题）
@@ -168,7 +182,7 @@ def _build_mindmap_data():
                 sections_list.sort(key=lambda s: (-len(s["points"]), s["name"]))
 
                 chapters_list.append({
-                    "name": ch_key,
+                    "name": _fix_chapter_name(ch_key),
                     "sections": sections_list,
                 })
 
