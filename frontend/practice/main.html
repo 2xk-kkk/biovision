@@ -1823,22 +1823,46 @@
         });
         
         // Beta功能卡片点击效果
-        document.querySelectorAll('.beta-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const name = this.querySelector('.beta-name').textContent;
-                if (name === '真题大观') {
-                    window.location.href = 'exams.html';
-                } else if (name === '试卷练习') {
-                    window.location.href = 'exam-practice.html';
-                } else if (name === '错题集') {
-                    window.location.href = 'wrong-answers.html';
-                } else if (name === '教材溯源') {
-                    window.location.href = 'textbook-trace.html';
-                } else {
-                    alert(`即将打开: ${name}`);
+        (function initBetaClicks() {
+            try {
+                var betaItems = document.querySelectorAll('.beta-item');
+                for (var i = 0; i < betaItems.length; i++) {
+                    (function(item) {
+                        item.addEventListener('click', function() {
+                            var nameEl = this.querySelector('.beta-name');
+                            if (!nameEl) return;
+                            var name = nameEl.textContent;
+                            switch (name) {
+                                case '真题大观':
+                                    window.location.href = 'exams.html';
+                                    break;
+                                case '试卷练习':
+                                    window.location.href = 'exam-practice.html';
+                                    break;
+                                case '错题集':
+                                    window.location.href = 'wrong-answers.html';
+                                    break;
+                                case '教材溯源':
+                                    window.location.href = 'textbook-trace.html';
+                                    break;
+                                case '导图Agent':
+                                    window.location.href = '../mindmap.html';
+                                    break;
+                                case '院校PK':
+                                    alert('院校PK功能正在开发中，敬请期待！');
+                                    break;
+                                default:
+                                    alert('即将打开: ' + name);
+                            }
+                        });
+                        // 添加鼠标指针样式，提示可点击
+                        item.style.cursor = 'pointer';
+                    })(betaItems[i]);
                 }
-            });
-        });
+            } catch (e) {
+                console.error('初始化Beta功能点击事件失败:', e);
+            }
+        })();
         
         // 公告项点击效果
         document.querySelectorAll('.announcement-item').forEach(item => {

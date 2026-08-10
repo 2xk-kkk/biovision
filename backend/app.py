@@ -7,7 +7,7 @@ from database.db import init_db
 import os
 from fastapi.staticfiles import StaticFiles
 from service.chart import get_forum_stats
-from routers import chart
+from routers import chart, mindmap
 from PPT.generator import OUTPUT_DIR as PPT_OUTPUT_DIR, ASSET_DIR as PPT_ASSET_DIR  
 
 init_db()
@@ -38,9 +38,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # 挂载静态文件服务
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# 挂载前端静态文件目录
+# 挂载前端静态文件目录（必须在API路由之前，使用root_path避免覆盖API）
 FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 #注册路由
 app.include_router(user.router, prefix="/api", tags=["用户"])
@@ -49,6 +48,7 @@ app.include_router(chart.router, prefix="/api", tags=["统计"])
 app.include_router(exam.router, prefix="/api", tags=["试卷"])
 app.include_router(question.router, prefix="/api", tags=["题目"])
 app.include_router(ppt.router, prefix="/api", tags=["PPT生成"])
+app.include_router(mindmap.router, prefix="/api", tags=["思维导图"])
 
 # 挂载 PPT 输出文件和资源文件（需要挂载两个路径，因为 HTML 内相对路径 ../assets/ 会解析到 /api/ppt/decks/assets/）
 os.makedirs(PPT_OUTPUT_DIR, exist_ok=True)
@@ -56,12 +56,14 @@ os.makedirs(PPT_ASSET_DIR, exist_ok=True)
 app.mount("/api/ppt/assets", StaticFiles(directory=str(PPT_ASSET_DIR)), name="ppt_assets")
 app.mount("/api/ppt/decks/assets", StaticFiles(directory=str(PPT_ASSET_DIR)), name="ppt_decks_assets")
 
-#根路径 - 提供前端页面
-@app.get("/")
-def root():
-    from fastapi.responses import FileResponse
-    index_path = os.path.join(FRONTEND_DIR, "index.html")
-    return FileResponse(index_path)
+# favicon 支持：用 logo.png 作为站点图标
+from fastapi.responses import FileResponse
+@app.get("/favicon.ico")
+def favicon():
+    return FileResponse(os.path.join(FRONTEND_DIR, "images", "logo.png"))
+
+# 前端静态文件挂载在根路径，API路由优先匹配
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 @app.get("/health")
 def health():
