@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>突触 — 兴奋在神经元之间的传递</title>
+<style>
+  :root {
+    --bg: #f5f7fa; --card: #fff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+    --gold: #f59e0b; --purple: #8b5cf6; --green: #10b981; --blue: #3b82f6; --orange: #f97316;
+    --red: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+
+  .topbar {
+    background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+    height: 56px; padding: 0 20px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .back-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid #cbd5e1; background: #fff;
+    color: #475569; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.2s; flex-shrink: 0;
+  }
+  .back-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: #1e293b; }
+  .topbar .subtitle { font-size: 12px; color: var(--muted); margin-left: 4px; }
+
+  .main-container {
+    max-width: 1200px; margin: 0 auto; padding: 24px;
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+
+  /* Canvas 面板 */
+  .chart-panel {
+    flex: 2.2; min-width: 660px;
+    background: var(--card); border-radius: 16px;
+    border: 1px solid var(--border); padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .chart-panel h2 { font-size: 16px; color: #1e293b; margin-bottom: 8px; align-self: flex-start; }
+  canvas { display: block; border-radius: 8px; max-width: 100%; height: auto; }
+
+  /* 口诀条 */
+  .mnemonic-bar {
+    margin-top: 10px; padding: 8px 16px;
+    background: linear-gradient(135deg, #fef3c7, #fef9c3);
+    border: 1.5px solid #fde68a; border-radius: 10px;
+    font-size: 13px; color: #92400e; font-weight: 600;
+    text-align: center; letter-spacing: 1px; align-self: stretch;
+  }
+  .mnemonic-bar em { color: var(--orange); font-style: normal; }
+
+  /* 侧面板 */
+  .side-panel {
+    flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .card {
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); padding: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card h3 { font-size: 14px; color: #1e293b; margin-bottom: 10px; }
+
+  /* 图例 */
+  .lg-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 12px; color: #475569; }
+  .lg-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  .lg-swatch.circle { border-radius: 50%; }
+
+  /* 控制按钮 */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ctrl-btn {
+    flex: 1; min-width: 80px; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: #fff;
+    color: #475569; font-size: 13px; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .ctrl-btn:hover { background: #f1f5f9; }
+  .ctrl-btn.primary {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: #fff; border: none; font-weight: 600;
+    box-shadow: 0 4px 14px rgba(139,92,246,0.3);
+  }
+  .ctrl-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(139,92,246,0.4); }
+  .ctrl-btn.primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .ctrl-btn.sel {
+    background: #eff6ff; border-color: #3b82f6; color: #2563eb;
+    font-weight: 600; box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+
+  /* 阶段提示 */
+  .phase-info {
+    padding: 12px; border-radius: 8px; font-size: 13px; color: #fff;
+    text-align: center; font-weight: 600; min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: #94a3b8; transition: all 0.3s;
+  }
+  .phase-info.active { background: #8b5cf6; }
+  .phase-info.done { background: #10b981; }
+
+  /* 关键要点 */
+  .key-point {
+    padding: 8px 10px; border-radius: 6px; font-size: 12px; color: #475569;
+    background: #f8fafc; margin-bottom: 6px;
+    border-left: 3px solid #8b5cf6; line-height: 1.5;
+  }
+  .key-point b { color: #1e293b; }
+  .key-point.mnemonic-point {
+    border-left-color: #f59e0b; background: #fffdf5;
+  }
+
+  .hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+  @media (max-width: 900px) {
+    .main-container { flex-direction: column; }
+    .chart-panel { min-width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main3.html" class="back-btn" title="返回">←</a>
+  <h1>突触</h1>
+  <span class="subtitle">— 兴奋在神经元之间的传递</span>
+</div>
+
+<div class="main-container">
+  <!-- Canvas 主面板 -->
+  <div class="chart-panel">
+    <h2>🔬 突触结构 & 神经递质释放过程</h2>
+    <canvas id="chart" width="1000" height="560"></canvas>
+    <div class="mnemonic-bar">
+      📐 画图口诀：<em>前泡后受中间缝，递质结合要标清；单向箭头不能少，膜间距离别画崩</em>
+    </div>
+    <div class="hint">💡 点击 <b>「刺激神经元」</b> 观察递质释放全过程 &nbsp;|&nbsp; 可切换查看结构 / 动画</div>
+  </div>
+
+  <!-- 右侧面板 -->
+  <div class="side-panel">
+    <!-- 图例 -->
+    <div class="card">
+      <h3>📋 图例</h3>
+      <div class="lg-row"><div class="lg-swatch" style="background:#f59e0b"></div> 轴突末梢（突触小体）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#d97706;border-radius:50%"></div> 突触小泡（含神经递质）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#8b5cf6;border-radius:2px"></div> 突触前膜 / 后膜</div>
+      <div class="lg-row"><div class="lg-swatch circle" style="background:#ef4444"></div> 神经递质分子</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#10b981"></div> 受体蛋白（Y形）</div>
+      <div class="lg-row"><div class="lg-swatch" style="background:#3b82f6"></div> 突触后神经元</div>
+    </div>
+
+    <!-- 控制按钮 -->
+    <div class="card">
+      <h3>🎮 控制</h3>
+      <div class="btn-row">
+        <button class="ctrl-btn sel" id="btnStruct" onclick="switchMode('struct')">📐 结构模式</button>
+        <button class="ctrl-btn" id="btnAnim" onclick="switchMode('anim')">🎬 动画模式</button>
+      </div>
+      <div style="margin-top:10px">
+        <button class="ctrl-btn primary" id="stimulusBtn" onclick="startStimulus()" disabled>
+          ⚡ 刺激神经元
+        </button>
+      </div>
+      <div class="phase-info" id="phaseInfo">📐 结构模式 — 查看突触各部分</div>
+    </div>
+
+    <!-- 关键知识点 -->
+    <div class="card">
+      <h3>📌 关键知识点</h3>
+      <div class="key-point mnemonic-point"><b>前泡：</b>突触小泡在<b>突触前膜</b>内侧聚集，内含神经递质</div>
+      <div class="key-point mnemonic-point"><b>后受：</b>受体蛋白<b>只分布在后膜</b>上，前膜没有受体</div>
+      <div class="key-point mnemonic-point"><b>中间缝：</b>突触间隙宽度很小，信号传递有<b>单向性</b></div>
+      <div class="key-point"><b>单向传递：</b>神经递质只能由突触前膜释放→突触后膜受体，兴奋只能<b>从前往后</b>传</div>
+      <div class="key-point"><b>化学信号：</b>突触传递本质是<b>电→化学→电</b>的信号转换过程</div>
+      <div class="key-point"><b>信号延迟：</b>突触传递存在<b>突触延搁</b>（约0.5ms），是反射弧中最慢的环节</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== Canvas 初始化 ====================
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const canvas = document.getElementById('chart');
+const W = 1000, H = 560;
+canvas.width = W * DPR; canvas.height = H * DPR;
+const ctx = canvas.getContext('2d');
+ctx.scale(DPR, DPR);
+canvas.style.width = '100%';
+canvas.style.height = 'auto';
+
+// ==================== 状态变量 ====================
+let mode = 'struct';       // 'struct' | 'anim'
+let animState = 'idle';    // 'idle' | 'animating' | 'done'
+let animStartTime = 0;
+const ANIM_DURATION = 5500; // ms — 完整动画时长
+
+// ==================== 坐标系统 ====================
+// 突触小体（轴突末梢）— 倒水滴形，宽端朝右（前膜侧）
+const BOUTON_CX = 310, BOUTON_CY = 280;
+const BOUTON_LEFT = 120, BOUTON_RIGHT = 410;
+const BOUTON_TOP = 150, BOUTON_BOT = 410;
+
+// 突触间隙
+const CLEFT_START = 415, CLEFT_END = 452;
+const GAP_WIDTH = CLEFT_END - CLEFT_START; // ~37px
+
+// 前/后膜共用中心Y坐标
+const MEMB_CY = 280; // 突触膜弧线中心Y
+
+// 突触后膜
+const POST_MEMB_X = 458;
+const POST_NEURON_RIGHT = 920;
+
+// ==================== 绘制辅助函数 ====================
+
+// 圆角矩形
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// ==================== 突触小体（倒水滴形 / 茄子形） ====================
+function drawBoutonOutline() {
+  // 轴突纤维（从左进入）
+  ctx.fillStyle = '#fef3c7';
+  ctx.strokeStyle = '#d97706';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(60, 267);
+  ctx.lineTo(190, 267);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#fbbf24';
+  // 轴突上边
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(60, 293);
+  ctx.lineTo(190, 293);
+  ctx.stroke();
+
+  // 轴突填充
+  ctx.fillStyle = '#fef9c3';
+  ctx.beginPath();
+  ctx.moveTo(60, 267);
+  ctx.lineTo(190, 267);
+  ctx.lineTo(190, 293);
+  ctx.lineTo(60, 293);
+  ctx.closePath();
+  ctx.fill();
+
+  // 轴突外轮廓线
+  ctx.strokeStyle = '#d97706';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(60, 267);
+  ctx.lineTo(190, 267);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(60, 293);
+  ctx.lineTo(190, 293);
+  ctx.stroke();
+
+  // 突触小体主体 — 倒水滴形（窄端在左，宽端在右）
+  // 使用贝塞尔曲线绘制
+  const bx = 190, by = 280; // 窄端中心
+  const bw = 220, bh_top = 130, bh_bot = 130; // 宽端尺寸
+
+  ctx.fillStyle = '#fef9c3';
+  ctx.strokeStyle = '#d97706';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+
+  // 从左窄端开始，向上→右→下→左 画倒水滴形
+  // 左上：从窄端过渡到宽端，曲线向上鼓起
+  ctx.moveTo(bx, 265);
+  ctx.bezierCurveTo(bx + 60, 260, bx + 120, 160, BOUTON_RIGHT - 5, 175);
+  // 右侧上弧（前膜上半）
+  ctx.quadraticCurveTo(BOUTON_RIGHT + 8, 280, BOUTON_RIGHT - 5, 385);
+  // 右下：从宽端过渡回窄端，曲线向下鼓起
+  ctx.bezierCurveTo(bx + 120, 400, bx + 60, 300, bx, 295);
+  // 左下：窄端闭合
+  ctx.lineTo(bx, 265);
+
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // 内部微管/线粒体纹理（表现真实性）
+  ctx.strokeStyle = 'rgba(217,119,6,0.12)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 4; i++) {
+    const ly = 265 + i * 7;
+    ctx.beginPath();
+    ctx.moveTo(160, ly);
+    ctx.quadraticCurveTo(250, ly - 3, 350, ly - 5);
+    ctx.stroke();
+  }
+}
+
+// ==================== 突触小泡 ====================
+function getVesiclePositions() {
+  // 返回小泡在当前状态下的位置数组
+  // 小泡应该靠近前膜一侧（右侧）
+  return [
+    { x: 370, y: 215, r: 9 },  { x: 385, y: 235, r: 10 },
+    { x: 375, y: 255, r: 8 },  { x: 360, y: 275, r: 9 },
+    { x: 378, y: 295, r: 10 }, { x: 365, y: 315, r: 8 },
+    { x: 380, y: 335, r: 9 },  { x: 370, y: 358, r: 8 },
+    // 稍远离前膜的备用小泡
+    { x: 330, y: 225, r: 7 },  { x: 340, y: 250, r: 8 },
+    { x: 325, y: 305, r: 7 },  { x: 335, y: 340, r: 8 },
+  ];
+}
+
+function getDockedVesicles() {
+  // 与前膜接触(融合中)的小泡索引
+  return [1, 4, 6]; // 索引
+}
+
+function drawVesicles(animProgress) {
+  const positions = getVesiclePositions();
+  const docked = getDockedVesicles();
+
+  positions.forEach((v, i) => {
+    const isDocked = docked.includes(i);
+    let vx = v.x, vy = v.y, vr = v.r, valpha = 1;
+
+    // 动画阶段：小泡向前膜移动
+    if (animProgress > 0.15 && animProgress < 0.45 && isDocked) {
+      const p = (animProgress - 0.15) / 0.3; // 0→1
+      vx = v.x + p * 28; // 向右移动到前膜
+      vr = v.r * (1 - p * 0.2); // 轻微压缩
+    }
+    // 动画阶段：小泡融合消失
+    if (animProgress >= 0.45 && isDocked) {
+      const p = (animProgress - 0.45) / 0.15; // 0→1
+      valpha = 1 - p;
+      vr = v.r * (1 + p * 0.5); // 膨胀再消失
+    }
+    if (valpha <= 0.02) return;
+
+    // 绘制小泡
+    ctx.save();
+    ctx.globalAlpha = valpha;
+
+    // 小泡外圈
+    const grad = ctx.createRadialGradient(vx - 1, vy - 1, vr * 0.2, vx, vy, vr);
+    grad.addColorStop(0, 'rgba(255,255,255,0.7)');
+    grad.addColorStop(0.4, '#fcd34d');
+    grad.addColorStop(1, '#d97706');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(vx, vy, vr, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#b45309';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 小泡内部递质分子（小黑点/小三角）
+    ctx.fillStyle = '#7c2d12';
+    for (let d = 0; d < 3; d++) {
+      const dx = vx + (d - 1) * vr * 0.45;
+      const dy = vy + (d % 2 - 0.5) * vr * 0.4;
+      ctx.beginPath();
+      ctx.arc(dx, dy, vr * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  });
+}
+
+// ==================== 线粒体 ====================
+function drawMitochondria() {
+  // 在小体内部画两个线粒体（供能结构）
+  const mitos = [
+    { cx: 240, cy: 235, rx: 22, ry: 10, angle: -0.2 },
+    { cx: 245, cy: 325, rx: 20, ry: 9, angle: 0.15 },
+  ];
+  mitos.forEach(m => {
+    ctx.save();
+    ctx.translate(m.cx, m.cy);
+    ctx.rotate(m.angle);
+    ctx.fillStyle = '#fef3c7';
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, m.rx, m.ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    // 嵴（内部褶皱线）
+    ctx.strokeStyle = 'rgba(180,83,9,0.3)';
+    ctx.lineWidth = 0.7;
+    for (let c = -1; c <= 1; c++) {
+      ctx.beginPath();
+      ctx.moveTo(c * m.rx * 0.5, -m.ry * 0.7);
+      ctx.quadraticCurveTo(c * m.rx * 0.3, 0, c * m.rx * 0.4, m.ry * 0.7);
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+}
+
+// ==================== 突触前膜 & 后膜 ====================
+function drawMembranes(animProgress) {
+  // 膜厚度
+  const memThick = 7;
+  // 前膜位置（曲线）
+  const preX1 = CLEFT_START;
+  const preYtop = 172, preYbot = 388;
+
+  // --- 前膜 ---
+  // 膜主体
+  const preGrad = ctx.createLinearGradient(preX1 - memThick, 0, preX1 + memThick, 0);
+  preGrad.addColorStop(0, '#c4b5fd');
+  preGrad.addColorStop(0.35, '#8b5cf6');
+  preGrad.addColorStop(0.5, '#7c3aed');
+  preGrad.addColorStop(0.65, '#8b5cf6');
+  preGrad.addColorStop(1, '#c4b5fd');
+
+  ctx.strokeStyle = preGrad;
+  ctx.lineWidth = memThick + 2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(preX1, preYtop);
+  ctx.quadraticCurveTo(preX1 + 3, MEMB_CY, preX1, preYbot);
+  ctx.stroke();
+
+  // 前膜内外边线
+  ctx.strokeStyle = '#6d28d9';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(preX1 - memThick/2 - 1, preYtop);
+  ctx.quadraticCurveTo(preX1 + 3 - memThick/2, MEMB_CY, preX1 - memThick/2 - 1, preYbot);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(preX1 + memThick/2 + 1, preYtop);
+  ctx.quadraticCurveTo(preX1 + 3 + memThick/2, MEMB_CY, preX1 + memThick/2 + 1, preYbot);
+  ctx.stroke();
+
+  // Ca²⁺ 通道标记（前膜上的小门）
+  const caChannels = [195, 235, 280, 325, 365];
+  caChannels.forEach(cy => {
+    const cx = preX1;
+    ctx.fillStyle = animProgress > 0.05 && animProgress < 0.35 ? '#ef4444' : '#a78bfa';
+    ctx.strokeStyle = '#6d28d9';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    // 通道开放动画
+    if (animProgress > 0.05 && animProgress < 0.35) {
+      const ap = (animProgress - 0.05) / 0.3;
+      ctx.strokeStyle = `rgba(239,68,68,${0.6 * (1 - ap)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 6 * ap);
+      ctx.lineTo(cx, cy + 6 * ap);
+      ctx.stroke();
+    }
+  });
+
+  // --- 突触间隙标注 ---
+  // 间隙填充（半透明紫色，表示间隙区域）
+  ctx.fillStyle = 'rgba(139,92,246,0.06)';
+  ctx.beginPath();
+  ctx.moveTo(CLEFT_START + 3, preYtop + 5);
+  ctx.quadraticCurveTo(CLEFT_START + 20, MEMB_CY, CLEFT_START + 3, preYbot - 5);
+  ctx.lineTo(CLEFT_END - 3, preYbot - 5);
+  ctx.quadraticCurveTo(CLEFT_END - 20, MEMB_CY, CLEFT_END - 3, preYtop + 5);
+  ctx.closePath();
+  ctx.fill();
+
+  // 间隙标注线
+  ctx.strokeStyle = 'rgba(139,92,246,0.2)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(CLEFT_START + 1, preYtop + 3);
+  ctx.quadraticCurveTo(CLEFT_START + 20, MEMB_CY, CLEFT_START + 1, preYbot - 3);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(CLEFT_END - 1, preYtop + 3);
+  ctx.quadraticCurveTo(CLEFT_END - 20, MEMB_CY, CLEFT_END - 1, preYbot - 3);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // --- 后膜 ---
+  const postGrad = ctx.createLinearGradient(POST_MEMB_X - memThick, 0, POST_MEMB_X + memThick, 0);
+  postGrad.addColorStop(0, '#bfdbfe');
+  postGrad.addColorStop(0.35, '#3b82f6');
+  postGrad.addColorStop(0.5, '#2563eb');
+  postGrad.addColorStop(0.65, '#3b82f6');
+  postGrad.addColorStop(1, '#bfdbfe');
+
+  ctx.strokeStyle = postGrad;
+  ctx.lineWidth = memThick + 2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(POST_MEMB_X, preYtop);
+  ctx.quadraticCurveTo(POST_MEMB_X - 3, MEMB_CY, POST_MEMB_X, preYbot);
+  ctx.stroke();
+
+  // 后膜内外边线
+  ctx.strokeStyle = '#1d4ed8';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(POST_MEMB_X - memThick/2 - 1, preYtop);
+  ctx.quadraticCurveTo(POST_MEMB_X - 3 - memThick/2, MEMB_CY, POST_MEMB_X - memThick/2 - 1, preYbot);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(POST_MEMB_X + memThick/2 + 1, preYtop);
+  ctx.quadraticCurveTo(POST_MEMB_X - 3 + memThick/2, MEMB_CY, POST_MEMB_X + memThick/2 + 1, preYbot);
+  ctx.stroke();
+}
+
+// ==================== 受体蛋白（Y形 / 倒T形） ====================
+function getReceptorPositions() {
+  return [
+    { y: 200 }, { y: 235 }, { y: 265 },
+    { y: 295 }, { y: 325 }, { y: 360 },
+  ];
+}
+
+function drawReceptors(animProgress) {
+  const positions = getReceptorPositions();
+  const baseX = POST_MEMB_X + 2;
+
+  positions.forEach((r, i) => {
+    const ry = r.y;
+    const rx = baseX;
+
+    // 受体茎（竖线）
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(rx, ry);
+    ctx.lineTo(rx, ry - 16);
+    ctx.stroke();
+
+    // Y形分叉
+    ctx.beginPath();
+    ctx.moveTo(rx, ry - 16);
+    ctx.lineTo(rx - 7, ry - 24);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(rx, ry - 16);
+    ctx.lineTo(rx + 7, ry - 24);
+    ctx.stroke();
+
+    // 受体顶部小球
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.arc(rx - 7, ry - 24, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(rx + 7, ry - 24, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 受体激活高亮（递质结合时）
+    if (animProgress > 0.65) {
+      const bp = Math.min((animProgress - 0.65) / 0.15, 1);
+      const flicker = 0.4 + 0.6 * Math.sin(animProgress * 60 + i);
+      ctx.fillStyle = `rgba(52,211,153,${bp * flicker * 0.7})`;
+      ctx.beginPath();
+      ctx.arc(rx - 7, ry - 24, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(rx + 7, ry - 24, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+}
+
+// ==================== 神经递质 & 箭头 ====================
+function getNTStartPositions() {
+  // 与前膜融合小泡对应的递质释放位置
+  return [
+    { x: CLEFT_START + 10, y: 235 },
+    { x: CLEFT_START + 10, y: 295 },
+    { x: CLEFT_START + 10, y: 335 },
+  ];
+}
+
+function drawNeurotransmitters(animProgress) {
+  if (animProgress < 0.42) return; // 还没释放
+
+  const ntPositions = getNTStartPositions();
+  const receptors = getReceptorPositions();
+
+  ntPositions.forEach((nt, i) => {
+    // 递质扩散：从间隙左侧移动到右侧受体
+    const releasePhase = (animProgress - 0.42) / 0.3; // 0→1 in release phase
+    const bindPhase = (animProgress - 0.65) / 0.15;   // 0→1 in binding phase
+
+    // 递质扩散路径
+    const startX = nt.x;
+    const startY = nt.y;
+    const endX = POST_MEMB_X - 8;
+    const endY = receptors[i + 1] ? receptors[i + 1].y - 24 : nt.y - 24;
+
+    // 发散：每个释放点对应多个递质分子向不同受体扩散
+    const spreadCount = 4; // 每个释放点4个递质分子
+    for (let s = 0; s < spreadCount; s++) {
+      const spreadAngle = (s / spreadCount) * 0.8 - 0.4; // 扩散角
+      const targetRx = endX + s * 6 - 9;
+      const targetRy = endY + spreadAngle * 50;
+
+      // 递质分子位置（沿路径移动）
+      let px, py, alpha;
+      if (releasePhase < 1) {
+        // 扩散阶段
+        px = startX + (targetRx - startX) * releasePhase;
+        py = startY + (targetRy - startY) * releasePhase;
+        alpha = Math.min(releasePhase * 2, 1);
+      } else if (bindPhase < 1) {
+        // 结合阶段
+        px = targetRx;
+        py = targetRy;
+        alpha = 1 - bindPhase * 0.5;
+      } else {
+        // 结合完成
+        px = targetRx;
+        py = targetRy;
+        alpha = 0.5;
+      }
+
+      // 递质分子（小圆点+小三角）
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // 圆点
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#991b1b';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // 小三角标记（递质形状）
+      if (releasePhase > 0.3) {
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.moveTo(px, py - 4);
+        ctx.lineTo(px - 3, py + 2);
+        ctx.lineTo(px + 3, py + 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    // 扩散阶段画单向箭头
+    if (releasePhase < 1 && releasePhase > 0.05) {
+      const arrowMidX = startX + (endX - startX) * Math.min(releasePhase + 0.15, 0.85);
+      const arrowMidY = startY;
+      drawSmallArrow(arrowMidX, arrowMidY, Math.min(releasePhase, 1));
+    }
+  });
+
+  // 静态/结构模式下的说明性递质
+  if (animProgress < 0.05) {
+    // 不画递质（结构模式显示空缺）
+  }
+}
+
+function drawSmallArrow(x, y, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.8;
+  ctx.fillStyle = '#ef4444';
+  ctx.strokeStyle = '#991b1b';
+  ctx.lineWidth = 1;
+  // 箭头指向右侧
+  ctx.beginPath();
+  ctx.moveTo(x + 8, y);
+  ctx.lineTo(x - 2, y - 5);
+  ctx.lineTo(x - 2, y + 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ==================== 突触后神经元 ====================
+function drawPostsynapticNeuron() {
+  const startX = POST_MEMB_X + 5;
+  const topY = 185, botY = 375;
+
+  // 后神经元树突
+  ctx.fillStyle = '#eff6ff';
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(startX, topY);
+  ctx.quadraticCurveTo(startX - 15, 280, startX, botY);
+  ctx.lineTo(920, botY);
+  ctx.quadraticCurveTo(940, 280, 920, topY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // 神经元内部纹理
+  ctx.strokeStyle = 'rgba(59,130,246,0.08)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 5; i++) {
+    const ly = topY + i * 32;
+    ctx.beginPath();
+    ctx.moveTo(startX + 20, ly);
+    ctx.quadraticCurveTo(600, ly + 5, 900, ly);
+    ctx.stroke();
+  }
+}
+
+// ==================== 标注文字 ====================
+function drawLabels(animProgress) {
+  ctx.textAlign = 'center';
+
+  // 轴突标注
+  ctx.fillStyle = '#92400e';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('轴突', 125, 252);
+
+  // 突触小体标注
+  ctx.fillStyle = '#b45309';
+  ctx.font = '600 14px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('突触小体', BOUTON_CX - 20, BOUTON_TOP - 18);
+  ctx.fillText('（轴突末梢）', BOUTON_CX - 20, BOUTON_TOP - 2);
+
+  // 突触小泡标注
+  ctx.fillStyle = '#d97706';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('突触小泡', 396, 210);
+  ctx.fillText('（含神经递质）', 396, 226);
+  ctx.textAlign = 'center';
+
+  // 线粒体标注
+  ctx.fillStyle = '#b45309';
+  ctx.font = '11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('线粒体', 270, 232);
+  ctx.fillText('（供能）', 270, 246);
+  ctx.textAlign = 'center';
+
+  // 前膜标注
+  ctx.fillStyle = '#6d28d9';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('突触', CLEFT_START - 12, MEMB_CY - 15);
+  ctx.fillText('前膜', CLEFT_START - 12, MEMB_CY);
+  ctx.textAlign = 'center';
+
+  // 间隙标注
+  const gapCX = (CLEFT_START + CLEFT_END) / 2;
+  ctx.fillStyle = '#7c3aed';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('突触间隙', gapCX, MEMB_CY - 105);
+
+  // 后膜标注
+  ctx.fillStyle = '#1d4ed8';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('突触', POST_MEMB_X + 12, MEMB_CY - 15);
+  ctx.fillText('后膜', POST_MEMB_X + 12, MEMB_CY);
+  ctx.textAlign = 'center';
+
+  // 受体标注
+  ctx.fillStyle = '#059669';
+  ctx.font = '600 11px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('受体蛋白', POST_MEMB_X + 20, 195);
+  ctx.textAlign = 'center';
+
+  // 后神经元标注
+  ctx.fillStyle = '#1d4ed8';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('突触后神经元', 700, 395);
+  ctx.fillText('（树突膜 / 胞体膜）', 700, 411);
+
+  // 单向传递大箭头
+  if (animProgress < 0.05) {
+    const arrowY = BOUTON_CY + 80;
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillText('单向传递 ➤', gapCX, arrowY);
+  }
+
+  // 间隙宽度标注
+  const gapAnnotY = MEMB_CY - 70;
+  ctx.strokeStyle = '#7c3aed';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([2, 3]);
+  ctx.beginPath();
+  ctx.moveTo(CLEFT_START, gapAnnotY);
+  ctx.lineTo(CLEFT_END, gapAnnotY);
+  ctx.stroke();
+  // 小箭头两端
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#7c3aed';
+  ctx.beginPath();
+  ctx.moveTo(CLEFT_START + 8, gapAnnotY);
+  ctx.lineTo(CLEFT_START, gapAnnotY - 4);
+  ctx.lineTo(CLEFT_START, gapAnnotY + 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(CLEFT_END - 8, gapAnnotY);
+  ctx.lineTo(CLEFT_END, gapAnnotY - 4);
+  ctx.lineTo(CLEFT_END, gapAnnotY + 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#6d28d9';
+  ctx.font = '10px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillText('约 2-3 倍膜厚', gapCX, gapAnnotY - 8);
+}
+
+// ==================== 动画特效 ====================
+function drawActionPotentialPulse(animProgress) {
+  if (animProgress < 0.03 || animProgress > 0.18) return;
+  const p = (animProgress - 0.03) / 0.15; // 0→1→0
+  const alpha = p < 0.5 ? p * 2 : (1 - p) * 2;
+
+  // 电信号沿轴突传入
+  const pulseX = 80 + p * 380;
+  const pulseY = 280;
+
+  // 闪电效果
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const pg = ctx.createRadialGradient(pulseX, pulseY, 0, pulseX, pulseY, 18);
+  pg.addColorStop(0, 'rgba(255,255,200,0.9)');
+  pg.addColorStop(0.4, 'rgba(255,220,50,0.5)');
+  pg.addColorStop(1, 'rgba(255,150,0,0)');
+  ctx.fillStyle = pg;
+  ctx.beginPath();
+  ctx.arc(pulseX, pulseY, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 闪电符号
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚡', pulseX, pulseY + 6);
+  ctx.restore();
+}
+
+function drawCaInflux(animProgress) {
+  if (animProgress < 0.08 || animProgress > 0.32) return;
+  const p = (animProgress - 0.08) / 0.24;
+
+  // Ca²⁺ 从间隙进入前膜内侧
+  const caY = 280;
+  const caX = CLEFT_START + 5;
+  for (let i = -2; i <= 2; i++) {
+    const cy = caY + i * 45;
+    const alpha = Math.max(0, 1 - Math.abs(p - 0.5) * 3);
+    ctx.fillStyle = `rgba(239,68,68,${alpha})`;
+    ctx.font = '10px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'center';
+    const cp = Math.min(p * 2, 1);
+    const cpx = caX - 5 + cp * 20;
+    ctx.fillText('Ca²⁺', cpx, cy);
+  }
+}
+
+function drawPostsynapticResponse(animProgress) {
+  if (animProgress < 0.78) return;
+  const p = (animProgress - 0.78) / 0.22; // 0→1
+
+  // 后膜内侧电位变化视觉
+  const respX = POST_MEMB_X + 30;
+  const respY = 280;
+
+  ctx.save();
+  ctx.globalAlpha = p * 0.8;
+  const rg = ctx.createRadialGradient(respX, respY, 5, respX, respY, 40);
+  rg.addColorStop(0, 'rgba(16,185,129,0.7)');
+  rg.addColorStop(0.6, 'rgba(16,185,129,0.2)');
+  rg.addColorStop(1, 'rgba(16,185,129,0)');
+  ctx.fillStyle = rg;
+  ctx.beginPath();
+  ctx.arc(respX, respY, 40, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 兴奋传导箭头（向右传播）
+  ctx.fillStyle = '#10b981';
+  ctx.font = '600 12px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('→ 兴奋传导', respX + 45, respY + 4);
+  ctx.restore();
+}
+
+// ==================== 主绘制函数 ====================
+function draw(timestamp) {
+  ctx.clearRect(0, 0, W, H);
+
+  // 背景底色
+  ctx.fillStyle = '#fdfdfd';
+  ctx.fillRect(0, 0, W, H);
+
+  // 动画进度
+  let animProgress = 0;
+  if (animState === 'animating') {
+    const elapsed = timestamp - animStartTime;
+    animProgress = Math.min(elapsed / ANIM_DURATION, 1);
+    if (animProgress >= 1) {
+      animState = 'done';
+      updatePhaseUI('done');
+    }
+  } else if (animState === 'done') {
+    animProgress = 1;
+  }
+
+  // --- 绘制各结构 ---
+  drawPostsynapticNeuron();
+  drawBoutonOutline();
+  drawMitochondria();
+  drawVesicles(animProgress);
+  drawMembranes(animProgress);
+  drawReceptors(animProgress);
+  drawNeurotransmitters(animProgress);
+  drawLabels(animProgress);
+
+  // --- 动画特效层 ---
+  if (mode === 'anim' && animProgress > 0) {
+    drawActionPotentialPulse(animProgress);
+    drawCaInflux(animProgress);
+    drawPostsynapticResponse(animProgress);
+
+    // 递质释放后画单向传递大箭头
+    if (animProgress > 0.5 && animProgress < 0.95) {
+      const gapCX = (CLEFT_START + CLEFT_END) / 2;
+      const arrowY = BOUTON_CY + 80;
+      const ap = animProgress > 0.5 ? Math.min((animProgress - 0.5) / 0.2, 1) : 0;
+      ctx.save();
+      ctx.globalAlpha = ap * 0.9;
+
+      // 大箭头
+      ctx.fillStyle = '#ef4444';
+      ctx.strokeStyle = '#991b1b';
+      ctx.lineWidth = 2;
+      const ax = gapCX;
+      const ay = arrowY + Math.sin(animProgress * 8) * 3;
+      ctx.beginPath();
+      ctx.moveTo(ax + 30, ay);
+      ctx.lineTo(ax - 10, ay - 12);
+      ctx.lineTo(ax - 10, ay - 5);
+      ctx.lineTo(ax - 30, ay - 5);
+      ctx.lineTo(ax - 30, ay + 5);
+      ctx.lineTo(ax - 10, ay + 5);
+      ctx.lineTo(ax - 10, ay + 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ef4444';
+      ctx.font = '600 14px "Microsoft YaHei","PingFang SC",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('单向传递', ax, ay + 28);
+      ctx.restore();
+    }
+
+    // 动画阶段说明文字
+    drawPhaseAnnotation(animProgress);
+  }
+
+  // --- 底部图注 ---
+  ctx.fillStyle = '#64748b';
+  ctx.font = '600 13px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('突触的结构组成：突触前膜 · 突触间隙 · 突触后膜  —— 信号传递：电信号 → 化学信号 → 电信号', W / 2, H - 10);
+}
+
+function drawPhaseAnnotation(animProgress) {
+  let phaseText = '';
+  if (animProgress < 0.08) phaseText = '① 动作电位到达突触小体';
+  else if (animProgress < 0.15) phaseText = '② Ca²⁺ 内流，触发小泡移动';
+  else if (animProgress < 0.42) phaseText = '③ 突触小泡向前膜移动';
+  else if (animProgress < 0.55) phaseText = '④ 小泡与前膜融合，递质释放（胞吐）';
+  else if (animProgress < 0.75) phaseText = '⑤ 神经递质扩散穿过突触间隙';
+  else if (animProgress < 0.85) phaseText = '⑥ 递质与后膜受体结合';
+  else phaseText = '⑦ 后膜离子通道开放，产生兴奋或抑制';
+
+  if (phaseText) {
+    const gapCX = (CLEFT_START + CLEFT_END) / 2;
+    ctx.fillStyle = '#8b5cf6';
+    ctx.font = '600 14px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(phaseText, gapCX, H - 50);
+  }
+}
+
+// ==================== 阶段UI更新 ====================
+function updatePhaseUI(state) {
+  const info = document.getElementById('phaseInfo');
+  const btn = document.getElementById('stimulusBtn');
+
+  if (state === 'idle') {
+    info.textContent = '🎬 动画模式 — 点击下方按钮观看传递过程';
+    info.className = 'phase-info';
+    btn.textContent = '⚡ 刺激神经元';
+    btn.disabled = false;
+  } else if (state === 'animating') {
+    info.textContent = '🔬 递质释放 & 信号传导中…';
+    info.className = 'phase-info active';
+    btn.textContent = '⏳ 传导中…';
+    btn.disabled = true;
+  } else if (state === 'done') {
+    info.textContent = '✅ 传递完成 — 兴奋已传至突触后神经元';
+    info.className = 'phase-info done';
+    btn.textContent = '🔄 重新刺激';
+    btn.disabled = false;
+  } else if (state === 'struct') {
+    info.textContent = '📐 结构模式 — 查看突触各部分结构';
+    info.className = 'phase-info';
+    btn.textContent = '⚡ 刺激神经元';
+    btn.disabled = true;
+  }
+}
+
+// ==================== 事件处理 ====================
+function switchMode(newMode) {
+  if (animState === 'animating') return;
+
+  mode = newMode;
+  animState = 'idle';
+
+  document.getElementById('btnStruct').classList.toggle('sel', mode === 'struct');
+  document.getElementById('btnAnim').classList.toggle('sel', mode === 'anim');
+  document.getElementById('stimulusBtn').disabled = (mode === 'struct');
+
+  updatePhaseUI(mode === 'struct' ? 'struct' : 'idle');
+}
+
+function startStimulus() {
+  if (mode !== 'anim' || animState === 'animating') return;
+
+  animState = 'animating';
+  animStartTime = performance.now();
+  updatePhaseUI('animating');
+}
+
+// ==================== 动画循环 ====================
+function animLoop(timestamp) {
+  draw(timestamp);
+  requestAnimationFrame(animLoop);
+}
+
+// ==================== 初始化 ====================
+updatePhaseUI('struct');
+requestAnimationFrame(animLoop);
+
+// 响应式调整
+window.addEventListener('resize', () => {
+  // Canvas CSS width:100% 自适应
+});
+</script>
+</body>
+</html>
