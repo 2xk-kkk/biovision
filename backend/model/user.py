@@ -169,6 +169,50 @@ def get_following(db, user_id):
     cursor.execute("select u.id, u.username, u.avatar from user_follow f join users u on f.following_id = u.id where f.follower_id=?",(user_id,))
     return cursor.fetchall()
 
+#获取用户练习统计数据（从user_answers表）
+def get_user_practice_stats(db, user_id):
+    cursor = db.cursor()
+    cursor.execute('SELECT COUNT(*) FROM user_answers WHERE user_id = ?', (user_id,))
+    total_questions = cursor.fetchone()[0] or 0
+
+    cursor.execute('SELECT COUNT(*) FROM user_answers WHERE user_id = ? AND is_correct = 1', (user_id,))
+    correct_count = cursor.fetchone()[0] or 0
+
+    cursor.execute("SELECT COUNT(*) FROM user_answers WHERE user_id = ? AND is_correct = 0 AND answer IS NOT NULL AND answer != ''", (user_id,))
+    wrong_count = cursor.fetchone()[0] or 0
+
+    judged = correct_count + wrong_count
+    correct_rate = round(correct_count / judged * 100, 1) if judged > 0 else 0
+    error_rate = round(wrong_count / judged * 100, 1) if judged > 0 else 0
+
+    cursor.execute('SELECT COUNT(DISTINCT DATE(create_at)) FROM user_answers WHERE user_id = ?', (user_id,))
+    active_days = cursor.fetchone()[0] or 0
+
+    cursor.execute('SELECT DISTINCT DATE(create_at) AS d FROM user_answers WHERE user_id = ? ORDER BY d DESC', (user_id,))
+    dates = [row[0] for row in cursor.fetchall()]
+    streak = 0
+    from datetime import date, timedelta
+    today = date.today()
+    for i in range(len(dates)):
+        expected = (today - timedelta(days=i)).isoformat()
+        if expected in dates:
+            streak += 1
+        else:
+            break
+
+    estimated_study_minutes = total_questions * 2
+
+    return {
+        'total_questions': total_questions,
+        'correct_count': correct_count,
+        'wrong_count': wrong_count,
+        'correct_rate': correct_rate,
+        'error_rate': error_rate,
+        'active_days': active_days,
+        'streak_days': streak,
+        'estimated_study_minutes': estimated_study_minutes
+    }
+
 #获取给用户帖子点赞的用户列表
 def get_post_likers(db, user_id):
     cursor = db.cursor()

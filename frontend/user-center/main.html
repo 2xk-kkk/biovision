@@ -1946,31 +1946,12 @@
                     </div>
                 </div>
 
-                <!-- 错题本：建议后续接题目详情页或错题统计 -->
+                <!-- 错题本：展示用户真实错题记录 -->
                 <div class="content-box" id="wrong">
-                    <div class="summary-list">
-                        <div class="summary-item">
-                            <div>
-                                <strong>2026-05-19 · 细胞膜运输</strong>
-                                <small>错因：主动运输与协助扩散混淆</small>
-                            </div>
-                            <span class="badge">待复习</span>
-                        </div>
-                        <div class="summary-item">
-                            <div>
-                                <strong>2026-05-18 · DNA 复制</strong>
-                                <small>错因：半保留复制概念不清</small>
-                            </div>
-                            <span class="badge">已标记</span>
-                        </div>
-                        <div class="summary-item">
-                            <div>
-                                <strong>2026-05-17 · 生态系统能量流动</strong>
-                                <small>错因：能量传递效率计算错误</small>
-                            </div>
-                            <span class="badge">待巩固</span>
-                        </div>
+                    <div class="summary-list" id="wrongBookList">
+                        <div style="text-align: center; padding: 40px; color: #64748b;">加载中...</div>
                     </div>
+                    <div id="wrongBookPagination" style="display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 20px 20px;"></div>
                 </div>
             </div>
 
@@ -2854,6 +2835,7 @@
                 await loadUserStats(userId);
                 await loadUserPosts(userId);
                 await loadUserCollects(userId);
+                await loadWrongBook(userId);
             } else {
                 console.log('未登录：API调用失败或返回错误');
                 localStorage.removeItem('token');
@@ -2912,67 +2894,83 @@
         }
 
         function updateStudyData(user) {
-            // 更新学习时长
+            // 更新学习时长（从user_answers表真实数据）
             const studyHoursValue = document.getElementById('studyHoursValue');
             const studyHoursBar = document.getElementById('studyHoursBar');
             const studyHoursDesc = document.getElementById('studyHoursDesc');
-            
-            const studyHours = parseFloat(user.study_hours) || 0;
-            const studyGoal = 8; // 每周目标8小时
-            const hoursRate = studyGoal ? Math.min((studyHours / studyGoal) * 100, 100) : 0;
-            
+
+            const realMinutes = parseInt(user.real_study_minutes) || 0;
+            const realHours = Math.floor(realMinutes / 60);
+            const remainMin = realMinutes % 60;
+            const studyGoal = 480; // 每周目标8小时 = 480分钟
+            const hoursRate = studyGoal ? Math.min((realMinutes / studyGoal) * 100, 100) : 0;
+
             if (studyHoursValue) {
-                studyHoursValue.textContent = `${studyHours} 小时`;
+                if (realMinutes > 0) {
+                    studyHoursValue.textContent = realHours > 0 ? `${realHours}h${remainMin}m` : `${remainMin}min`;
+                } else {
+                    studyHoursValue.textContent = '暂无数据';
+                }
             }
             if (studyHoursBar) {
                 studyHoursBar.style.width = `${hoursRate}%`;
             }
             if (studyHoursDesc) {
-                studyHoursDesc.textContent = `已完成 ${studyHours} 小时 / 目标 ${studyGoal} 小时`;
+                if (realMinutes > 0) {
+                    const goalHours = Math.floor(studyGoal / 60);
+                    studyHoursDesc.textContent = `累计学习 ${realHours}h${remainMin}m / 目标 ${goalHours}h`;
+                } else {
+                    studyHoursDesc.textContent = '还没有学习记录，开始做题吧';
+                }
             }
-            
-            // 更新做题数量
+
+            // 更新做题数量（从user_answers表真实数据）
             const questionCountValue = document.getElementById('questionCountValue');
             const questionCountBar = document.getElementById('questionCountBar');
             const questionCountDesc = document.getElementById('questionCountDesc');
-            
-            const questionCount = parseInt(user.question_count) || 0;
+
+            const realQuestionCount = parseInt(user.real_question_count) || 0;
             const questionGoal = 100; // 每周目标100题
-            const questionRate = questionGoal ? Math.min((questionCount / questionGoal) * 100, 100) : 0;
-            
+            const questionRate = questionGoal ? Math.min((realQuestionCount / questionGoal) * 100, 100) : 0;
+
             if (questionCountValue) {
-                questionCountValue.textContent = `${questionCount} 题`;
+                questionCountValue.textContent = `${realQuestionCount} 题`;
             }
             if (questionCountBar) {
                 questionCountBar.style.width = `${questionRate}%`;
             }
             if (questionCountDesc) {
-                questionCountDesc.textContent = `已完成 ${questionCount} 题 / 目标 ${questionGoal} 题`;
+                if (realQuestionCount > 0) {
+                    questionCountDesc.textContent = `已做 ${realQuestionCount} 题 / 目标 ${questionGoal} 题`;
+                } else {
+                    questionCountDesc.textContent = '还没有做题记录，去刷题吧';
+                }
             }
-            
-            // 更新错题比
-            const wrongRateValue = document.querySelector('.data-card .data-value:last-child');
+
+            // 更新错题比（从user_answers表真实数据）
+            const wrongRateValue = document.querySelector('.data-stack .data-card:last-child .data-value');
             const wrongRing = document.querySelector('.ring');
             const wrongRingLabel = document.querySelector('.ring-label');
-            const wrongDesc = document.querySelector('.ring-wrap + p');
-            
-            const wrongCount = parseInt(user.wrong_count) || 0;
-            const wrongRate = questionCount > 0 ? Math.round((wrongCount / questionCount) * 100) : 18;
-            
+            const wrongDesc = document.querySelector('.ring-wrap .data-desc');
+
+            const realErrorRate = parseFloat(user.real_error_rate) || 0;
+
             if (wrongRateValue) {
-                wrongRateValue.textContent = `${wrongRate}%`;
+                wrongRateValue.textContent = `${realErrorRate}%`;
             }
             if (wrongRing) {
-                wrongRing.style.setProperty('--value', `${wrongRate}%`);
+                wrongRing.style.setProperty('--value', `${realErrorRate}%`);
             }
             if (wrongRingLabel) {
-                wrongRingLabel.textContent = `${wrongRate}%`;
+                wrongRingLabel.textContent = `${realErrorRate}%`;
             }
             if (wrongDesc) {
                 let advice = '';
-                if (wrongRate < 20) {
+                if (realErrorRate === 0 && realQuestionCount === 0) {
+                    advice = '还没有做题数据，快去练习吧！';
+                } else if (realErrorRate < 20) {
                     advice = '错题占比较低，继续保持，建议优先复习最近一周错题。';
-                } else if (wrongRate < 40) {
+                } else if (realErrorRate < 40) {
                     advice = '错题比例适中，建议加强薄弱知识点的复习。';
                 } else {
                     advice = '错题占比较高，建议系统性地复习错题，找出薄弱环节。';
@@ -3295,6 +3293,90 @@
         }
 
         /* =========================
+           错题本 - 加载真实错题数据
+        ========================= */
+        let wrongBookPage = 1;
+        const wrongBookPageSize = 10;
+
+        async function loadWrongBook(userId, page = 1) {
+            const container = document.getElementById('wrongBookList');
+            const paginationEl = document.getElementById('wrongBookPagination');
+
+            if (!container) return;
+            wrongBookPage = page;
+
+            const token = getTokenFromStorage();
+            if (!token) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;">请先登录</div>';
+                if (paginationEl) paginationEl.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;">加载中...</div>';
+
+            try {
+                const resp = await fetch(
+                    `${API_BASE_URL}/wrong-answers?page=${page}&page_size=${wrongBookPageSize}`,
+                    { headers: { 'token': token } }
+                );
+                const result = await resp.json();
+
+                if (!result.success || !result.data || !result.data.items || result.data.items.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">🎉</div>
+                            <h3 style="color: #374151; margin-bottom: 8px;">还没有错题记录</h3>
+                            <p style="color: #64748b;">继续保持，或者去练习巩固知识！</p>
+                            <a href="../practice/main.html" class="btn btn-primary" style="margin-top: 20px;">去练习</a>
+                        </div>`;
+                    if (paginationEl) paginationEl.innerHTML = '';
+                    return;
+                }
+
+                const { items, total, total_pages } = result.data;
+
+                container.innerHTML = items.map(item => {
+                    const dateStr = item.last_answer_time ? item.last_answer_time.split(' ')[0] : '未知日期';
+                    const stemText = item.stem ? item.stem.replace(/<[^>]*>/g, '').substring(0, 40) : '无题目';
+                    const stemDisplay = stemText + (item.stem && item.stem.replace(/<[^>]*>/g, '').length > 40 ? '...' : '');
+                    const userAns = item.user_answer || '未作答';
+                    const isMastered = item.mastered === 1;
+                    const badgeClass = isMastered ? 'badge' : 'badge2';
+                    const badgeText = isMastered ? '已掌握' : (item.wrong_count > 1 ? `错${item.wrong_count}次` : '待复习');
+
+                    return `
+                    <div class="summary-item" style="cursor: pointer;" onclick="window.open('../practice/quiz.html?question_id=${item.question_id}', '_blank')">
+                        <div style="flex: 1; min-width: 0;">
+                            <strong>${dateStr} · ${stemDisplay}</strong>
+                            <small>你的答案: ${userAns} → 正确答案: ${item.correct_answer}</small>
+                        </div>
+                        <span class="${badgeClass}">${badgeText}</span>
+                    </div>`;
+                }).join('');
+
+                // 分页
+                if (paginationEl) {
+                    if (total_pages > 1) {
+                        paginationEl.innerHTML = `
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" ${page <= 1 ? 'disabled' : ''} id="wrongBookPrevBtn">上一页</button>
+                            <span style="color: #64748b; font-size: 0.85rem;">${page} / ${total_pages} (共${total}题)</span>
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" ${page >= total_pages ? 'disabled' : ''} id="wrongBookNextBtn">下一页</button>`;
+                        const prevBtn = document.getElementById('wrongBookPrevBtn');
+                        const nextBtn = document.getElementById('wrongBookNextBtn');
+                        if (prevBtn) prevBtn.addEventListener('click', () => loadWrongBook(userId, page - 1));
+                        if (nextBtn) nextBtn.addEventListener('click', () => loadWrongBook(userId, page + 1));
+                    } else {
+                        paginationEl.innerHTML = '<span style="color: #64748b; font-size: 0.85rem;">共 ' + total + ' 道错题</span>';
+                    }
+                }
+            } catch (error) {
+                console.error('加载错题本失败:', error);
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;">加载失败，请重试</div>';
+                if (paginationEl) paginationEl.innerHTML = '';
+            }
+        }
+
+        /* =========================
            图片裁剪功能
         ========================= */
         let cropImageSrc = '';
@@ -3519,6 +3601,10 @@
                 const button = event.target.closest('.mini-nav-item');
                 if (!button) return;
                 activateTab(button.dataset.target);
+                // 切换到错题本时重新加载
+                if (button.dataset.target === 'wrong' && currentUser && currentUser.id) {
+                    loadWrongBook(currentUser.id);
+                }
             });
         }
 

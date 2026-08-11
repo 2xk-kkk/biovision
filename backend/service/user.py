@@ -1,6 +1,6 @@
 #用户功能业务逻辑
 from utils.crypto import verify_password
-from model.user import register, get_user_by_username, delete_user, change_password, user_exists, update_username, update_avatar, get_user_by_id, update_introduction, get_user_stats, follow_user, unfollow_user, is_following, increment_view_count, increment_like_count, increment_follower_count, decrement_follower_count, increment_following_count, decrement_following_count, get_followers, get_following, get_post_likers 
+from model.user import register, get_user_by_username, delete_user, change_password, user_exists, update_username, update_avatar, get_user_by_id, update_introduction, get_user_stats, get_user_practice_stats, follow_user, unfollow_user, is_following, increment_view_count, increment_like_count, increment_follower_count, decrement_follower_count, increment_following_count, decrement_following_count, get_followers, get_following, get_post_likers
 from database.db import get_db_connection
 from utils.jwt_utils import generate_jwt
 from utils.response import ApiResponse
@@ -195,6 +195,19 @@ def get_user_profile(user_id):
             idx += 1
         if "wrong_count" in cols:
             data["wrong_count"] = user[idx] if user[idx] else 0
+
+        # 注入真实练习统计数据（从user_answers表）
+        try:
+            ps = get_user_practice_stats(db, user_id)
+            data['real_study_minutes'] = ps['estimated_study_minutes']
+            data['real_question_count'] = ps['total_questions']
+            data['real_wrong_count'] = ps['wrong_count']
+            data['real_correct_rate'] = ps['correct_rate']
+            data['real_error_rate'] = ps['error_rate']
+            data['real_active_days'] = ps['active_days']
+            data['real_streak_days'] = ps['streak_days']
+        except Exception:
+            pass
 
         return ApiResponse.success(data=data, msg="获取成功")
 
