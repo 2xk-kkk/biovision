@@ -99,16 +99,45 @@ def join_room(room_code: str = Body(..., embed=True), player_name: str = Body(..
 
 @router.get("/pk/{room_code}")
 def get_room_status(room_code: str):
-    """获取房间状态"""
+    """获取房间状态（自动超时推进）"""
     room = rooms.get(room_code)
     if not room:
         return ApiResponse.error(msg="房间不存在")
+
+    # 自动超时推进
+    if room["status"] == "playing" and room["q_start_time"]:
+        elapsed = time.time() - room["q_start_time"]
+        idx = room["current_q"]
+        if elapsed >= TIME_PER_QUESTION and idx < len(room["questions"]):
+            for p in room["players"]:
+                if not any(a["q_index"] == idx for a in p["answers"]):
+                    p["answers"].append({
+                        "q_index": idx,
+                        "answer": "",
+                        "correct": False,
+                        "score": 0,
+                    })
+            room["current_q"] += 1
+            room["q_start_time"] = time.time()
+            if room["current_q"] >= len(room["questions"]):
+                room["status"] = "finished"
+
+    idx = room["current_q"]
     return ApiResponse.success({
         "room_code": room_code,
         "host": room["host"],
         "status": room["status"],
-        "players": [{"name": p["name"], "score": p["score"], "answered": len(p["answers"])} for p in room["players"]],
-        "current_q": room["current_q"],
+        "players": [
+            {
+                "name": p["name"],
+                "score": p["score"],
+                "answered": any(a["q_index"] == idx for a in p["answers"]),
+                "correct_count": sum(1 for a in p["answers"] if a["correct"]),
+                "total_answered": len(p["answers"]),
+            }
+            for p in room["players"]
+        ],
+        "current_q": idx,
         "total_q": len(room["questions"]),
         "q_start_time": room["q_start_time"],
         "time_per_q": TIME_PER_QUESTION,
@@ -138,15 +167,38 @@ def start_game(room_code: str, player_name: str = Body(..., embed=True)):
 
 @router.get("/pk/{room_code}/question")
 def get_current_question(room_code: str):
-    """获取当前题目"""
+    """获取当前题目（自动超时推进）"""
     room = rooms.get(room_code)
     if not room:
         return ApiResponse.error(msg="房间不存在")
     if room["status"] != "playing":
         return ApiResponse.error(msg="比赛未在进行中")
+
     idx = room["current_q"]
+
+    # 自动超时推进：如果本题时间已到但还没推进，强制推进
+    if room["q_start_time"]:
+        elapsed = time.time() - room["q_start_time"]
+        if elapsed >= TIME_PER_QUESTION and idx < len(room["questions"]):
+            # 给所有未答题的玩家记录超时错误
+            for p in room["players"]:
+                if not any(a["q_index"] == idx for a in p["answers"]):
+                    p["answers"].append({
+                        "q_index": idx,
+                        "answer": "",
+                        "correct": False,
+                        "score": 0,
+                    })
+            room["current_q"] += 1
+            room["q_start_time"] = time.time()
+            idx = room["current_q"]
+            if idx >= len(room["questions"]):
+                room["status"] = "finished"
+                return ApiResponse.error(msg="题目已答完")
+
     if idx >= len(room["questions"]):
         return ApiResponse.error(msg="题目已答完")
+
     q = room["questions"][idx]
     elapsed = time.time() - (room["q_start_time"] or time.time())
     remaining = max(0, TIME_PER_QUESTION - int(elapsed))
@@ -198,7 +250,6 @@ def submit_pk_answer(
     elapsed = time.time() - (room["q_start_time"] or time.time())
     remaining = max(0, TIME_PER_QUESTION - int(elapsed))
     score = 10 + remaining if is_correct else 0
-
     player["answers"].append({
         "q_index": idx,
         "answer": user_answer,
@@ -212,11 +263,8 @@ def submit_pk_answer(
         any(a["q_index"] == idx for a in p["answers"])
         for p in room["players"]
     )
-    # 或者超时自动进入下一题
-    time_up = elapsed >= TIME_PER_QUESTION
 
-    if all_answered or time_up:
-        # 进入下一题
+    if all_answered:
         room["current_q"] += 1
         room["q_start_time"] = time.time()
         if room["current_q"] >= len(room["questions"]):
@@ -227,7 +275,6 @@ def submit_pk_answer(
         "correct_answer": correct_answer,
         "score": score,
         "all_answered": all_answered,
-        "time_up": time_up,
     })
 
 

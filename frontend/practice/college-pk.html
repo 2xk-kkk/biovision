@@ -8,36 +8,42 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(145deg, #d1fae5 0%, #a7f3d0 18%, #bbf7d0 35%, #fecaca 60%, #fca5a5 80%, #fdba74 100%);
     min-height: 100vh;
     color: #333;
   }
 
   .top-bar {
-    background: linear-gradient(135deg, #4a5568, #2d3748);
-    color: white;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #065f46;
     padding: 14px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 12px rgba(5, 150, 105, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     position: sticky;
     top: 0;
     z-index: 100;
   }
   .top-bar h1 { font-size: 1.2em; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-  .back-btn { color: white; text-decoration: none; padding: 6px 14px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; font-size: 0.9em; transition: all 0.3s; }
-  .back-btn:hover { background: rgba(255,255,255,0.2); border-color: white; }
+  .back-btn { color: #065f46; text-decoration: none; padding: 6px 14px; border: 1px solid rgba(6, 95, 70, 0.4); border-radius: 20px; font-size: 0.9em; transition: all 0.3s; background: rgba(255,255,255,0.45); }
+  .back-btn:hover { background: rgba(255,255,255,0.8); border-color: #065f46; }
 
   .container { max-width: 800px; margin: 0 auto; padding: 24px; }
 
   /* ===== 大厅页面 ===== */
   .lobby-card {
-    background: white;
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
     padding: 40px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15);
     text-align: center;
+    border: 1px solid rgba(255,255,255,0.5);
   }
   .lobby-icon { font-size: 3em; margin-bottom: 12px; }
   .lobby-title { font-size: 1.8em; font-weight: 800; color: #2d3748; margin-bottom: 8px; }
@@ -102,11 +108,14 @@
 
   /* ===== 配对等待页面 ===== */
   .matching-card {
-    background: white;
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
     padding: 40px 32px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15);
     text-align: center;
+    border: 1px solid rgba(255,255,255,0.5);
   }
   .matching-avatar {
     width: 100px;
@@ -171,7 +180,7 @@
   .cancel-match-btn:hover { background: #feb2b2; transform: translateY(-1px); }
 
   /* ===== 等待房间页面 ===== */
-  .room-card { background: white; border-radius: 20px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .room-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 32px; box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15); border: 1px solid rgba(255,255,255,0.5); }
   .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
   .room-code-box { text-align: center; flex: 1; }
   .room-code-label { font-size: 0.85em; color: #718096; margin-bottom: 4px; }
@@ -201,7 +210,7 @@
   @keyframes blink { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
 
   /* ===== 答题页面 ===== */
-  .quiz-card { background: white; border-radius: 20px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .quiz-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 32px; box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15); border: 1px solid rgba(255,255,255,0.5); }
   .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .quiz-progress { font-size: 1em; font-weight: 700; color: #4a5568; }
   .quiz-timer { padding: 8px 20px; border-radius: 20px; font-size: 1.2em; font-weight: 800; color: white; background: #48bb78; transition: all 0.3s; min-width: 70px; text-align: center; }
@@ -210,8 +219,13 @@
   @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
 
   .quiz-score-bar { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-  .score-chip { padding: 6px 16px; background: #f7fafc; border-radius: 20px; font-size: 0.85em; font-weight: 600; color: #4a5568; border: 2px solid #e2e8f0; }
+  .score-chip { padding: 8px 16px; background: #f7fafc; border-radius: 20px; font-size: 0.85em; font-weight: 600; color: #4a5568; border: 2px solid #e2e8f0; display: flex; align-items: center; gap: 6px; }
   .score-chip.me { border-color: #667eea; background: #ebf4ff; color: #553c9a; }
+  .score-chip b { color: #553c9a; font-size: 1.1em; }
+  .score-chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .score-chip.answered .dot { background: #48bb78; }
+  .score-chip.waiting .dot { background: #ed8936; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
   .quiz-stem { font-size: 1.15em; line-height: 1.8; color: #2d3748; margin-bottom: 24px; padding: 20px; background: #f7fafc; border-radius: 12px; }
   .quiz-options { display: flex; flex-direction: column; gap: 12px; }
@@ -231,7 +245,7 @@
   .answer-feedback.wrong { background: #fed7d7; color: #742a2a; display: block; }
 
   /* ===== 结果页面 ===== */
-  .result-card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); text-align: center; }
+  .result-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 40px; box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15); text-align: center; border: 1px solid rgba(255,255,255,0.5); }
   .result-title { font-size: 1.8em; font-weight: 800; margin-bottom: 24px; color: #2d3748; }
   .ranking-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
   .ranking-item { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-radius: 14px; background: #f7fafc; border: 2px solid #e2e8f0; }
@@ -623,30 +637,69 @@ async function leaveRoom() {
   backToLobby();
 }
 
-// ===== 答题 =====
+// ===== 答题（服务端轮询同步模式）=====
+let serverQuestionIndex = -1;
+let quizPollTimer = null;
+let gameFinished = false;
+
 function startQuiz() {
   if (pollTimer) clearTimeout(pollTimer);
   document.getElementById('roomPage').classList.add('hidden');
   document.getElementById('quizPage').classList.remove('hidden');
-  fetchQuestion();
+  serverQuestionIndex = -1;
+  answered = false;
+  gameFinished = false;
+  startQuizPolling();
 }
 
-async function fetchQuestion() {
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/question`);
-    const result = await resp.json();
-    if (!result.success) {
-      showResult();
-      return;
+async function startQuizPolling() {
+  if (quizPollTimer) clearTimeout(quizPollTimer);
+
+  async function pollOnce() {
+    if (gameFinished) return;
+    try {
+      const resp = await fetch(`${API_BASE}/api/pk/${roomCode}`);
+      const result = await resp.json();
+      if (!result.success) { pollAgain(1500); return; }
+
+      const data = result.data;
+      renderScoreBar(data);
+
+      if (data.status === 'finished') {
+        gameFinished = true;
+        showResult();
+        return;
+      }
+
+      // 检测到新题目
+      if (data.current_q > serverQuestionIndex) {
+        serverQuestionIndex = data.current_q;
+        answered = false;
+        const qResp = await fetch(`${API_BASE}/api/pk/${roomCode}/question`);
+        const qData = await qResp.json();
+        if (qData.success) {
+          currentQuestion = qData.data;
+          renderQuestion(currentQuestion);
+          startTimer(currentQuestion.remaining);
+        } else {
+          gameFinished = true;
+          showResult();
+          return;
+        }
+      }
+
+      pollAgain(1500);
+    } catch (e) {
+      pollAgain(2000);
     }
-    currentQuestion = result.data;
-    answered = false;
-    renderQuestion(currentQuestion);
-    startTimer(currentQuestion.remaining);
-    pollScores();
-  } catch (e) {
-    console.error('获取题目失败:', e);
   }
+
+  function pollAgain(delay) {
+    if (gameFinished) return;
+    quizPollTimer = setTimeout(pollOnce, delay);
+  }
+
+  pollOnce();
 }
 
 function renderQuestion(q) {
@@ -720,48 +773,24 @@ async function submitAnswer(answer) {
         if (el.dataset.key === data.correct_answer) el.classList.add('correct');
         else if (el.dataset.key === answer && !data.correct) el.classList.add('wrong');
       });
-      setTimeout(() => { fetchNextOrResult(); }, 2500);
+      // 不再使用setTimeout获取下一题，由polling自动检测
+    } else {
+      console.error('提交失败:', result.msg);
     }
   } catch (e) {
     console.error('提交答案失败:', e);
   }
 }
 
-async function fetchNextOrResult() {
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/question`);
-    const result = await resp.json();
-    if (result.success) {
-      currentQuestion = result.data;
-      answered = false;
-      renderQuestion(currentQuestion);
-      startTimer(currentQuestion.remaining);
-    } else {
-      showResult();
-    }
-  } catch (e) {
-    showResult();
-  }
-}
-
-async function pollScores() {
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}`);
-    const result = await resp.json();
-    if (result.success) {
-      renderScoreBar(result.data.players);
-    }
-    if (result.data.status === 'playing' && !answered) {
-      setTimeout(pollScores, 3000);
-    }
-  } catch (e) {}
-}
-
-function renderScoreBar(players) {
+function renderScoreBar(roomData) {
   const bar = document.getElementById('scoreBar');
+  const players = roomData.players;
   bar.innerHTML = players.map(p => {
     const isMe = p.name === myName;
-    return `<div class="score-chip${isMe ? ' me' : ''}">${p.name}: ${p.score}分</div>`;
+    const done = p.answered;
+    const cls = `score-chip${isMe ? ' me' : ''} ${done ? 'answered' : 'waiting'}`;
+    const status = done ? '已答' : '答题中';
+    return `<div class="${cls}"><span class="dot"></span>${p.name}: <b>${p.score}</b>分 <span style="opacity:0.6;font-size:0.8em;">(${status})</span></div>`;
   }).join('');
 }
 
@@ -806,6 +835,9 @@ function backToLobby() {
   if (timerInterval) clearInterval(timerInterval);
   if (matchPollTimer) clearTimeout(matchPollTimer);
   if (matchTimerInterval) clearInterval(matchTimerInterval);
+  if (quizPollTimer) clearTimeout(quizPollTimer);
+  gameFinished = false;
+  serverQuestionIndex = -1;
   myName = "";
   roomCode = "";
   isHost = false;
