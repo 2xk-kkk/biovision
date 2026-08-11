@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>体液免疫 · 完整动画</title>
+<style>
+  :root{--bg:#060918}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg)}
+  #cv{display:block;position:fixed;inset:0}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;background:rgba(6,9,24,0.88);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.04)}
+  .back-btn{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);color:#b0b8c0;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0}
+  .back-btn:hover{background:rgba(255,255,255,0.1);border-color:#fff}
+  .topbar h1{font-size:11px;font-weight:600;background:linear-gradient(90deg,#f59e0b,#fbbf24,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .topbar-actions{margin-left:auto;display:flex;gap:4px}
+  .tb-btn{padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#b0b8c0;font-size:9px;font-family:inherit;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+  .tb-btn:hover{background:rgba(255,255,255,0.08);color:#e6edf3}
+  .tb-btn.on{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#f59e0b}
+  .legend{position:fixed;right:5px;top:50%;transform:translateY(-50%);z-index:50;background:rgba(6,9,24,0.88);border:1px solid rgba(255,255,255,0.05);border-radius:7px;padding:5px 7px;min-width:108px;backdrop-filter:blur(6px)}
+  .legend h3{font-size:10px;color:#6e7681;margin-bottom:3px;letter-spacing:1px}
+  .lg-item{display:flex;align-items:center;gap:4px;padding:0;font-size:10px;color:#b0b8c0;line-height:1.8}
+  .lg-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+  .info-popup{position:fixed;z-index:200;pointer-events:none;opacity:0;background:rgba(6,9,24,0.93);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:7px 10px;max-width:200px;backdrop-filter:blur(8px);transition:opacity 0.12s;font-size:10px;line-height:1.4}
+  .info-popup.show{opacity:1}
+  .info-popup h4{font-size:11px;margin-bottom:1px;color:#fbbf24}
+  .info-popup p{color:#8b949e}
+  .knowledge-panel{position:fixed;right:-320px;top:44px;bottom:6px;z-index:150;width:280px;background:rgba(6,9,24,0.93);border-left:1px solid rgba(255,255,255,0.05);backdrop-filter:blur(10px);box-shadow:-3px 0 18px rgba(0,0,0,0.5);transition:right 0.28s cubic-bezier(0.4,0,0.2,1);padding:12px;overflow-y:auto;border-radius:8px 0 0 8px}
+  .knowledge-panel.open{right:0}
+  .kp-close{position:absolute;top:5px;right:7px;width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#b0b8c0;cursor:pointer;font-size:10px}
+  .kp-close:hover{background:rgba(255,255,255,0.1);color:#fff}
+  .kp-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+  .knowledge-panel h3{font-size:13px;color:#e6edf3;margin-bottom:4px}
+  .kp-short{font-size:10px;color:#8b949e;line-height:1.6;margin-bottom:5px}
+  .kp-detail summary{font-size:10px;color:#f59e0b;cursor:pointer;padding:1px 0}
+  .kp-detail p{font-size:9px;color:#a0aab4;line-height:1.6;margin-top:2px;padding-left:5px;border-left:1.5px solid rgba(245,158,11,0.2)}
+  .kp-tip{background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.1);border-radius:5px;padding:4px 6px;margin-top:4px}
+  .kp-tip strong{font-size:9px;color:#f59e0b}
+  .kp-tip p{font-size:9px;color:#b0b8c0;line-height:1.4;margin-top:1px}
+  .kp-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,0.18);opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .kp-overlay.on{opacity:1;pointer-events:auto}
+  .hint{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);z-index:45;padding:3px 12px;border-radius:999px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.03);font-size:9px;color:#6e7681;backdrop-filter:blur(3px);pointer-events:none}
+  .hint em{color:#f59e0b;font-style:normal}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main3.html" class="back-btn">←</a>
+  <h1>体液免疫 · 完整流程图解</h1>
+  <div class="topbar-actions">
+    <button class="tb-btn on" id="btnLabels" onclick="toggleLabels()">标注</button>
+    <button class="tb-btn" onclick="resetAnim()">重播</button>
+    <button class="tb-btn" id="btnSpeed" onclick="toggleSpeed()">1×</button>
+  </div>
+</div>
+
+<canvas id="cv"></canvas>
+
+<div class="legend"><h3>图例</h3>
+  <div class="lg-item"><div class="lg-dot" style="background:#ef4444;box-shadow:0 0 5px #ef4444"></div>病原体</div>
+  <div class="lg-item"><div class="lg-dot" style="background:#f59e0b;box-shadow:0 0 5px #f59e0b"></div>巨噬/吞噬细胞</div>
+  <div class="lg-item"><div class="lg-dot" style="background:#10b981;box-shadow:0 0 5px #10b981"></div>辅助性T细胞</div>
+  <div class="lg-item"><div class="lg-dot" style="background:#3b82f6;box-shadow:0 0 5px #3b82f6"></div>B细胞</div>
+  <div class="lg-item"><div class="lg-dot" style="background:#f8fafc;box-shadow:0 0 8px #f8fafc"></div>浆细胞</div>
+  <div class="lg-item"><div class="lg-dot" style="background:#a855f7;box-shadow:0 0 5px #a855f7"></div>记忆B细胞</div>
+  <div class="lg-item"><div class="lg-dot" style="background:#fbbf24;box-shadow:0 0 4px #fbbf24;border-radius:2px"></div>抗体 (免疫球蛋白)</div>
+</div>
+
+<div class="info-popup" id="popup"><h4 id="popTitle"></h4><p id="popDesc"></p></div>
+<div class="kp-overlay" id="kpOverlay" onclick="closeKnowledge()"></div>
+<div class="knowledge-panel" id="kp">
+  <button class="kp-close" onclick="closeKnowledge()">✕</button>
+  <h3><span class="kp-dot" id="kpDot"></span><span id="kpTitle"></span></h3>
+  <p class="kp-short" id="kpShort"></p>
+  <details class="kp-detail"><summary>📖 详细说明</summary><p id="kpDetail"></p></details>
+  <div class="kp-tip"><strong>🎯 考点提示</strong><p id="kpTip"></p></div>
+</div>
+
+<div class="hint">🖱 点击细胞看详情 &nbsp;|&nbsp; ⌨ <em>空格</em>暂停 &nbsp;|&nbsp; ←→ 步进 &nbsp;|&nbsp; R 重播</div>
+
+<script>
+// ═══════════════════ Canvas ═══════════════════
+const DPR=Math.min(devicePixelRatio||1,2);
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+let W,H;
+function rs(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(1,0,0,1,0,0)}
+rs();addEventListener('resize',rs);
+
+// ═══════════════════ State ═══════════════════
+let t=0,spd=0.055,playing=true,lbl=1,spdMul=1;
+const C={
+  r:'#ef4444',rD:'#7f1d1d',rL:'#fca5a5',
+  m:'#f59e0b',mD:'#78350f',mL:'#fde68a',
+  th:'#10b981',thD:'#064e3b',thL:'#6ee7b7',
+  b:'#3b82f6',bD:'#1e3a5f',bL:'#93c5fd',
+  p:'#f8fafc',pD:'#64748b',pL:'#ffffff',
+  mb:'#a855f7',mbD:'#3b0764',mbL:'#c4b5fd',
+  ab:'#fbbf24',
+  cy:'#facc15',
+  arr:'#334155',dim:'#1e293b',mut:'#64748b',
+  zone1:'rgba(239,68,68,0.025)',zone2:'rgba(59,130,246,0.025)',zone3:'rgba(168,85,247,0.025)',
+};
+
+// ═══════════════════ Coordinate system (ref 1350×820) ═══════════════════
+const RX=1350,RY=820;
+function S(){return Math.min(W/RX,H/RY)}
+function X(v){return W/2+(v-675)*S()}
+function Y(v){return v*S()+Math.max(0,(H-RY*S())/2)}
+
+// ═══════════════════ Node positions ═══════════════════
+// Following user's framework: left→right timeline, top→bottom hierarchy
+const ND={
+  // 【感应阶段】x: 100~380
+  pathogen:   {x:160,y:100, r:26, type:'pathogen'},
+  macro1:     {x:290,y:100, r:40, type:'macro'},
+  thCell:     {x:450,y:100, r:32, type:'th'},        // hub between 感应→反应
+
+  // 【反应阶段】x: 380~850
+  bCell:      {x:640,y:100, r:34, type:'bcell'},
+  bProlif:    {x:640,y:250, r:30, type:'bcell'},
+  plasma1:    {x:810,y:200, r:24, type:'plasma'},
+  plasma2:    {x:850,y:240, r:21, type:'plasma'},
+  memoryB1:   {x:810,y:320, r:18, type:'memory'},
+  memoryB2:   {x:850,y:340, r:16, type:'memory'},
+
+  // 【效应阶段】x: 850~1300
+  plasma3:    {x:810,y:480, r:26, type:'plasma'},
+  abIcon:     {x:980,y:440, r:10, type:'ab'},
+  abMany:     {x:1040,y:380, r:15, type:'ab'},
+  antigen:    {x:1120,y:300, r:24, type:'pathogen'},
+  precip:     {x:1120,y:430, r:18, type:null},
+  macro2:     {x:1120,y:560, r:42, type:'macro'},
+  memoryB3:   {x:1040,y:560, r:18, type:'memory'},
+};
+
+// ═══════════════════ Timeline ═══════════════════
+const STEPS=[
+  {t:0.00,id:'pathogen',  note:'① 病原体（携带抗原）入侵机体组织'},
+  {t:0.07,id:'macro1',    note:'② 巨噬细胞伸出伪足，吞噬并处理病原体'},
+  {t:0.14,id:'thCell',    note:'③ 巨噬细胞呈递抗原 → Th细胞识别并活化（感应阶段完成）'},
+  {t:0.23,id:'bCell',     note:'④ B细胞接受双信号：第一信号（抗原直接刺激BCR）+ 第二信号（活化的Th细胞提供）'},
+  {t:0.33,id:'bProlif',   note:'⑤ 双信号满足 → B细胞增殖分化'},
+  {t:0.42,id:'plasma1',   note:'⑥ 分化产生浆细胞（效应B细胞）—— 抗体工厂'},
+  {t:0.50,id:'memoryB1',  note:'⑦ 同时分化产生记忆B细胞 —— 长期潜伏，准备二次应答'},
+  {t:0.58,id:'plasma3',   note:'⑧ 浆细胞大量合成并分泌特异性抗体（免疫球蛋白）'},
+  {t:0.66,id:'abIcon',    note:'⑨ 抗体通过体液运输到达感染部位'},
+  {t:0.74,id:'antigen',   note:'⑩ 抗体与抗原特异性结合（Fab区识别抗原决定簇）'},
+  {t:0.83,id:'precip',    note:'⑪ 抗原-抗体复合物聚集 → 形成沉淀/细胞集团'},
+  {t:0.91,id:'macro2',    note:'⑫ 吞噬细胞吞噬清除复合物 → 免疫完成 ✓'},
+];
+
+const act=new Set();
+function curStep(){for(let i=STEPS.length-1;i>=0;i--)if(t>=STEPS[i].t)return i;return -1}
+function updAct(){act.clear();const s=curStep();for(let i=0;i<=s;i++)act.add(STEPS[i].id)}
+function isOn(id){return act.has(id)}
+function alpha(id){if(!isOn(id))return 0.2;const si=STEPS.findIndex(s=>s.id===id);if(si<0)return 1;return 0.2+0.8*Math.min(1,(t-STEPS[si].t)/0.08)}
+
+// ═══════════════════ Flow paths ═══════════════════
+const FLOWS=[
+  {from:'pathogen',to:'macro1',color:C.rL,count:8, type:'invasion'},
+  {from:'macro1',to:'thCell',color:C.cy,count:16, type:'present'},
+  {from:'thCell',to:'bCell',color:C.cy,count:20, type:'signal2'},
+  {from:'bCell',to:'bProlif',color:C.bL,count:14, type:'prolif'},
+  {from:'bProlif',to:'plasma1',color:C.pL,count:10, type:'diff'},
+  {from:'bProlif',to:'plasma2',color:C.pL,count:8, type:'diff'},
+  {from:'bProlif',to:'memoryB1',color:C.mbL,count:8, type:'diff'},
+  {from:'bProlif',to:'memoryB2',color:C.mbL,count:6, type:'diff'},
+  {from:'plasma1',to:'plasma3',color:C.pL,count:10, type:'secret'},
+  {from:'plasma3',to:'abIcon',color:C.ab,count:18, type:'abflow'},
+  {from:'abIcon',to:'abMany',color:C.ab,count:14, type:'abflow'},
+  {from:'abMany',to:'antigen',color:C.ab,count:18, type:'bind'},
+  {from:'antigen',to:'precip',color:'#ff8844',count:10, type:'precip'},
+  {from:'precip',to:'macro2',color:C.mL,count:12, type:'cleanup'},
+];
+
+// ═══════════════════ Particles ═══════════════════
+let ps=[];
+function spawnP(f){
+  const a=ND[f.from],b=ND[f.to];if(!a||!b)return;
+  if(!isOn(f.from))return;
+  const inten=isOn(f.to)?1:0.3;
+  const n=Math.floor(f.count*inten);
+  const sx=X(a.x),sy=Y(a.y),ex=X(b.x),ey=Y(b.y);
+  const dx=ex-sx,dy=ey-sy,d=Math.sqrt(dx*dx+dy*dy);
+  const ux=dx/d,uy=dy/d;
+  for(let i=0;i<n;i++)ps.push({x:sx+ux*8,y:sy+uy*8,ex,ey,ux,uy,d,t:Math.random()*0.5*d,maxT:d,r:1+Math.random()*1.8,c:f.color});
+}
+function updP(dt){
+  for(let i=ps.length-1;i>=0;i--){
+    const p=ps[i];p.t+=p.maxT*0.65*dt;
+    if(p.t>=p.maxT){ps.splice(i,1);continue}
+    const f=p.t/p.maxT;p.x=p.ex-(1-f)*p.maxT*p.ux;p.y=p.ey-(1-f)*p.maxT*p.uy;
+  }
+}
+function drawP(){
+  for(const p of ps){
+    const a=0.45+0.45*Math.sin(p.t*0.06);
+    ctx.shadowColor=p.c;ctx.shadowBlur=3;
+    const h=p.c;const r=parseInt(h[1]+h[2],16),g=parseInt(h[3]+h[4],16),b=parseInt(h[5]+h[6],16);
+    ctx.fillStyle=`rgba(${r},${g},${b},${a})`;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  }
+}
+
+// ═══════════════════ Ripples ═══════════════════
+let rips=[];
+function spawnR(x,y,c){rips.push({x,y,r:3,mr:38+Math.random()*16,c,life:1,sp:55+Math.random()*35})}
+function updR(dt){for(let i=rips.length-1;i>=0;i--){const r=rips[i];r.r+=r.sp*dt;r.life=1-r.r/r.mr;if(r.life<=0)rips.splice(i,1)}}
+function drawR(){for(const r of rips){ctx.strokeStyle=r.c;ctx.globalAlpha=r.life*.45;ctx.lineWidth=1.3*(1-r.life);ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1}}
+
+// ═══════════════════ Drawing primitives ═══════════════════
+function sphere(x,y,r,base,light,dark){
+  const g=ctx.createRadialGradient(x-r*.22,y-r*.28,r*.03,x,y,r);
+  g.addColorStop(0,light);g.addColorStop(0.4,base);g.addColorStop(1,dark);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+}
+function arrow(x1,y1,x2,y2,col,wd,on){
+  col=col||C.arr;wd=wd||1.6;
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(len<2)return;
+  const ux=dx/len,uy=dy/len,mx=x2-ux*8,my=y2-uy*8;
+  ctx.globalAlpha=on?.9:.18;ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(mx,my);ctx.stroke();
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(mx-uy*3.5,my+ux*3.5);ctx.lineTo(mx+uy*3.5,my-ux*3.5);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+}
+function dashedArr(x1,y1,x2,y2,col,wd,on){
+  col=col||C.arr;wd=wd||1.2;
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(len<2)return;
+  const ux=dx/len,uy=dy/len;
+  ctx.globalAlpha=on?.82:.16;ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.setLineDash([3.5,2.5]);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-ux*5,y2-uy*5);ctx.stroke();ctx.setLineDash([]);
+  const mx=x2-ux*5,my=y2-uy*5;
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(mx-uy*3,my+ux*3);ctx.lineTo(mx+uy*3,my-ux*3);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+}
+
+// Text with background chip
+function chip(x,y,text,col,sz){
+  sz=sz||12;ctx.font=`bold ${sz}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  const m=ctx.measureText(text),pw=m.width+8,ph=sz+5;
+  ctx.fillStyle='rgba(6,9,24,0.82)';const r=4;
+  ctx.beginPath();ctx.roundRect(x-pw/2,y-ph/2,pw,ph,r);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=.8;ctx.beginPath();ctx.roundRect(x-pw/2,y-ph/2,pw,ph,r);ctx.stroke();
+  ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y);ctx.textAlign='start';ctx.textBaseline='alphabetic';
+}
+function plainText(x,y,text,col,sz,align){
+  sz=sz||11;ctx.font=`${sz}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  ctx.fillStyle=col;ctx.textAlign=align||'center';ctx.fillText(text,x,y);ctx.textAlign='start';
+}
+
+// ═══════════════════ Cell renderers ═══════════════════
+function drawPathogen(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.05*Math.sin(t*13):1,pr=r*p;
+  if(on){ctx.shadowColor=C.r;ctx.shadowBlur=9+3*Math.sin(t*9)}
+  sphere(x,y,pr,on?C.r:'#3a1010',on?C.rL:'#552222',on?C.rD:'#1a0505');ctx.shadowBlur=0;
+  for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2;ctx.strokeStyle=on?C.rD:'#2a1010';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x+Math.cos(a)*(pr+1.5),y+Math.sin(a)*(pr+1.5));ctx.lineTo(x+Math.cos(a)*(pr+pr*.26),y+Math.sin(a)*(pr+pr*.26));ctx.stroke();ctx.fillStyle=on?C.r:'#4a1111';ctx.beginPath();ctx.arc(x+Math.cos(a)*(pr+pr*.26),y+Math.sin(a)*(pr+pr*.26),1.6,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+function drawMacro(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.035*Math.sin(t*11):1,pr=r*p;
+  if(on){ctx.shadowColor=C.m;ctx.shadowBlur=7+2.5*Math.sin(t*8)}
+  const pts=38;ctx.beginPath();
+  for(let i=0;i<pts;i++){const a=(i/pts)*Math.PI*2;const w=1+.11*Math.sin(a*5+1.4+t*2.2)*Math.cos(a*3+.6);const px=x+Math.cos(a)*pr*w,py=y+Math.sin(a)*pr*w;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)}ctx.closePath();
+  const g=ctx.createRadialGradient(x-pr*.18,y-pr*.28,pr*.03,x,y,pr);
+  g.addColorStop(0,on?C.mL:'#4a3a1a');g.addColorStop(.45,on?C.m:'#3a2a10');g.addColorStop(1,on?C.mD:'#1a0a00');ctx.fillStyle=g;ctx.fill();ctx.shadowBlur=0;
+  for(let i=0;i<5;i++){const a=(i/5)*Math.PI*2+.3+t*.5;ctx.fillStyle=on?C.mD:'#2a1a08';ctx.beginPath();ctx.arc(x+Math.cos(a)*pr*1.04,y+Math.sin(a)*pr*1.04,pr*.15,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+function drawTh(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.045*Math.sin(t*12):1,pr=r*p;
+  if(on){ctx.shadowColor=C.th;ctx.shadowBlur=6+2.5*Math.sin(t*10)}
+  sphere(x,y,pr,on?C.th:'#1a2a1a',on?C.thL:'#2a4422',on?C.thD:'#0a1a0a');ctx.shadowBlur=0;
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;ctx.fillStyle=on?C.thL:'#2a4422';ctx.beginPath();ctx.arc(x+Math.cos(a)*(pr+1.5),y+Math.sin(a)*(pr+1.5),1.8+Math.sin(t*7+i)*.5,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+function drawB(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.045*Math.sin(t*11):1,pr=r*p;
+  if(on){ctx.shadowColor=C.b;ctx.shadowBlur=7+2.5*Math.sin(t*9)}
+  sphere(x,y,pr,on?C.b:'#1a2535',on?C.bL:'#2a4055',on?C.bD:'#0a1520');ctx.shadowBlur=0;
+  for(let i=0;i<10;i++){const a=(i/10)*Math.PI*2;const rx=x+Math.cos(a)*pr,ry=y+Math.sin(a)*pr;ctx.strokeStyle=on?C.bL:'#2a4055';ctx.lineWidth=.9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(rx,ry-2.5);ctx.lineTo(rx,ry+2.5);ctx.stroke();ctx.beginPath();ctx.moveTo(rx,ry+2.5);ctx.lineTo(rx-1.8,ry+5.5);ctx.stroke();ctx.beginPath();ctx.moveTo(rx,ry+2.5);ctx.lineTo(rx+1.8,ry+5.5);ctx.stroke()}ctx.globalAlpha=1;
+}
+function drawPlasma(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.06*Math.sin(t*13):1,pr=r*p;
+  if(on){ctx.shadowColor='#ffffff';ctx.shadowBlur=16+4*Math.sin(t*11)}
+  sphere(x,y,pr,on?C.p:'#333',on?C.pL:'#555',on?C.pD:'#222');ctx.shadowBlur=0;
+  if(on){const core=ctx.createRadialGradient(x,y,0,x,y,pr*.28);core.addColorStop(0,'rgba(255,255,255,.75)');core.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(x,y,pr*.28,0,Math.PI*2);ctx.fill();
+    for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2+t*2.5;const d=pr+5+Math.sin(t*9+i)*3;ctx.fillStyle=`rgba(251,191,36,${.6+Math.sin(t*7+i)*.35})`;ctx.beginPath();ctx.arc(x+Math.cos(a)*d,y+Math.sin(a)*d,1.8,0,Math.PI*2);ctx.fill()}}ctx.globalAlpha=1;
+}
+function drawMemory(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.035*Math.sin(t*10):1,pr=r*p;
+  if(on){ctx.shadowColor=C.mb;ctx.shadowBlur=5+2*Math.sin(t*8)}
+  sphere(x,y,pr,on?C.mb:'#251535',on?C.mbL:'#3a2a50',on?C.mbD:'#150825');ctx.shadowBlur=0;
+  ctx.strokeStyle=on?C.mbL:'#3a2a50';ctx.lineWidth=1.1;ctx.setLineDash([2.5,2]);ctx.beginPath();ctx.arc(x,y,pr+3.5,t*1.8,t*1.8+Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+}
+function drawAb(x,y,on,al){
+  ctx.save();ctx.translate(x,y);ctx.globalAlpha=al;
+  if(on){ctx.shadowColor=C.ab;ctx.shadowBlur=4}
+  ctx.strokeStyle=on?C.ab:'#554422';ctx.fillStyle=on?C.ab:'#554422';ctx.lineWidth=2;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(0,2.5);ctx.stroke();ctx.beginPath();ctx.arc(0,2.5,1.5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.moveTo(0,2.5);ctx.lineTo(-4,8.5);ctx.stroke();ctx.beginPath();ctx.moveTo(0,2.5);ctx.lineTo(4,8.5);ctx.stroke();
+  ctx.beginPath();ctx.arc(-4,8.5,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(4,8.5,2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.restore();
+}
+function drawPrecip(x,y,r,on){
+  if(!on)return;const a=alpha('precip');if(a<.12)return;ctx.globalAlpha=a*.55;ctx.shadowColor='#ff7722';ctx.shadowBlur=7;
+  ctx.fillStyle='rgba(170,70,30,.45)';ctx.beginPath();ctx.arc(x,y,r+7+Math.sin(t*4.5)*2.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  for(let i=0;i<10;i++){const ang=(i/10)*Math.PI*2+t*.4;const rr=(r+5)*(.45+.55*Math.sin(i*2.9));ctx.fillStyle=`rgba(150,60,25,${a*.65})`;ctx.beginPath();ctx.arc(x+Math.cos(ang)*rr,y+Math.sin(ang)*rr,2.2,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+
+// ═══════════════════ Main render ═══════════════════
+let spTimer=0,pv='';
+
+function draw(dt){
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#060918';ctx.fillRect(0,0,W,H);
+  updAct();const sc=S(),step=curStep();const now=step>=0?STEPS[step].id:'';
+
+  // Ripple on step change
+  if(now!==pv&&step>=0){const nd=ND[now];if(nd){const cl=nd.type==='pathogen'?C.r:nd.type==='macro'?C.m:nd.type==='th'?C.th:nd.type==='bcell'?C.b:nd.type==='plasma'?C.p:nd.type==='memory'?C.mb:C.ab;spawnR(X(nd.x),Y(nd.y),cl)}pv=now}
+
+  // ── Stage zone backgrounds (vertical strips) ──
+  ctx.fillStyle=C.zone1;ctx.fillRect(X(60),Y(35),X(370)-X(60),Y(785)-Y(35));
+  ctx.fillStyle=C.zone2;ctx.fillRect(X(380),Y(35),X(860)-X(380),Y(785)-Y(35));
+  ctx.fillStyle=C.zone3;ctx.fillRect(X(870),Y(35),X(1290)-X(870),Y(785)-Y(35));
+  // Dividers
+  ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;
+  [370,860].forEach(xx=>{ctx.beginPath();ctx.moveTo(X(xx),Y(35));ctx.lineTo(X(xx),Y(785));ctx.stroke()});
+
+  // ── Stage headers (large, prominent) ──
+  const hb=3+Math.sin(t*3.5)*1.8;
+  ctx.textAlign='center';
+  ctx.font=`bold ${18*sc}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  ctx.fillStyle=C.r;ctx.fillText('【感应阶段】',X(215),Y(30)-hb);
+  ctx.fillStyle=C.b;ctx.fillText('【反应阶段】',X(620),Y(30)-hb);
+  ctx.fillStyle=C.mb;ctx.fillText('【效应阶段】',X(1080),Y(30)-hb);
+  ctx.textAlign='start';
+
+  // ── Stage subtitles ──
+  ctx.font=`${10*sc}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  ctx.fillStyle=C.mut;ctx.textAlign='center';
+  ctx.fillText('吞噬 · 呈递 · Th活化',X(215),Y(50));ctx.fillText('双信号 · B细胞增殖分化',X(620),Y(50));ctx.fillText('抗体分泌 · 结合清除',X(1080),Y(50));ctx.textAlign='start';
+
+  // Background ambient
+  for(let i=0;i<45;i++){const px=X(70+Math.sin(i*71+t*.25)*18+Math.random()*1210);const py=Y(55+Math.cos(i*53+t*.18)*18+Math.random()*730);ctx.fillStyle=`rgba(70,110,150,${.04+.035*Math.sin(i*12+t*2.5)})`;ctx.beginPath();ctx.arc(px,py,.7+Math.random(),0,Math.PI*2);ctx.fill()}
+
+  const D=ND;
+
+  // ═══════════════ ROW 1: 感应阶段 — 病原体 → 巨噬细胞 → Th细胞 ═══════════════
+
+  // Pathogen (entering from left)
+  const pa=isOn('pathogen'),pal=alpha('pathogen');
+  const pxOff=pa?-5*Math.exp(-t*15)*Math.cos(t*20):15; // entry slide
+  drawPathogen(X(D.pathogen.x)+pxOff*sc,Y(D.pathogen.y),D.pathogen.r*sc,pa,pal);
+  if(lbl)chip(X(D.pathogen.x),Y(D.pathogen.y-20),'病原体（抗原）',C.r,12);
+  if(pa&&t<.1){plainText(X(D.pathogen.x+35),Y(D.pathogen.y-5),'入侵→',C.r,11,'center')}
+
+  // Arrow: pathogen → macrophage
+  const m1=isOn('macro1'),m1al=alpha('macro1');
+  arrow(X(D.pathogen.x)+D.pathogen.r*sc+2,Y(D.pathogen.y),X(D.macro1.x)-D.macro1.r*sc-2,Y(D.macro1.y),C.m,1.5,m1);
+  if(m1)plainText(X((D.pathogen.x+D.macro1.x)/2),Y(D.pathogen.y-12),'吞噬',C.m,10,'center');
+
+  // Macrophage
+  drawMacro(X(D.macro1.x),Y(D.macro1.y),D.macro1.r*sc,m1,m1al);
+  if(lbl)chip(X(D.macro1.x),Y(D.macro1.y-30),'巨噬细胞',C.m,12);
+
+  // Arrow down: macrophage processes → exposes antigen
+  if(m1){arrow(X(D.macro1.x),Y(D.macro1.y)+D.macro1.r*sc+2,X(D.macro1.x),Y(D.macro1.y)+D.macro1.r*sc+28,C.m,1.3,true);plainText(X(D.macro1.x),Y(D.macro1.y)+D.macro1.r*sc+38,'吞噬处理 → 暴露抗原决定簇',C.m,10,'center')}
+
+  // Arrow: macrophage → Th cell (antigen presentation)
+  arrow(X(D.macro1.x)+D.macro1.r*sc*.5,Y(D.macro1.y)+D.macro1.r*sc+42,X(D.thCell.x)-D.thCell.r*sc-2,Y(D.thCell.y),C.cy,1.5,m1);
+  if(m1)plainText(X((D.macro1.x+D.thCell.x)/2-15),Y(D.macro1.y)+D.macro1.r*sc+30,'呈递抗原',C.cy,10,'center');
+
+  // Th cell (CRITICAL hub — make it prominent)
+  const th1=isOn('thCell'),th1al=alpha('thCell');
+  drawTh(X(D.thCell.x),Y(D.thCell.y),D.thCell.r*sc,th1,th1al);
+  if(lbl){chip(X(D.thCell.x),Y(D.thCell.y-22),'辅助性T细胞 (Th)',C.th,12);plainText(X(D.thCell.x),Y(D.thCell.y+6),'活化·增殖分化',C.thL,10,'center')}
+
+  // ═══════════════ ROW 2: 反应阶段 — Th → B cell (DUAL SIGNALS) ═══════════════
+
+  const ba=isOn('bCell'),bal=alpha('bCell');
+
+  // Signal 1: Antigen directly stimulates B cell (dashed, from macrophage area)
+  if(ba){
+    dashedArr(X(D.macro1.x)+D.macro1.r*sc*.3,Y(D.macro1.y)+D.macro1.r*sc+60,X(D.bCell.x-D.bCell.r*sc*.5),Y(D.bCell.y-D.bCell.r*sc-4),C.r,1.1,true);
+    plainText(X(430),Y(D.bCell.y-D.bCell.r*sc-16),'第一信号：抗原直接刺激 BCR',C.r,10,'center');
+  }
+
+  // Signal 2: Th cell assists B cell (solid, bold — the KEY pathway)
+  dashedArr(X(D.thCell.x)+D.thCell.r*sc,Y(D.thCell.y)+D.thCell.r*sc*.5,X(D.bCell.x),Y(D.bCell.y-D.bCell.r*sc-4),C.cy,1.3,ba);
+  if(ba){
+    chip(X(540),Y(D.bCell.y-D.bCell.r*sc-30),'第二信号：Th表面分子(CD40L)+细胞因子',C.cy,10.5);
+  }
+
+  // B cell — convergence point of dual signals
+  drawB(X(D.bCell.x),Y(D.bCell.y),D.bCell.r*sc,ba,bal);
+  if(lbl)chip(X(D.bCell.x),Y(D.bCell.y-24),'B细胞',C.b,12);
+
+  // Arrow: signal convergence → B cell activation
+  if(ba){plainText(X(D.bCell.x+35),Y(D.bCell.y+5),'← 双信号激活',C.bL,10,'center')}
+
+  // Arrow down: B cell → proliferation
+  const bp=isOn('bProlif'),bpal=alpha('bProlif');
+  arrow(X(D.bCell.x),Y(D.bCell.y)+D.bCell.r*sc+2,X(D.bProlif.x),Y(D.bProlif.y)-D.bProlif.r*sc-2,C.bL,1.6,bp);
+  if(bp)plainText(X(D.bCell.x+30),Y((D.bCell.y+D.bProlif.y)/2),'增殖分化',C.bL,11,'center');
+
+  // B cell proliferation
+  drawB(X(D.bProlif.x),Y(D.bProlif.y),D.bProlif.r*sc,bp,bpal);
+  if(lbl&&bp)chip(X(D.bProlif.x+40),Y(D.bProlif.y),'B细胞增殖',C.b,11);
+
+  // ═══════════════ ROW 3: Branch — Plasma cells (upper right) + Memory B (lower right) ═══════════════
+  const pl=isOn('plasma1'),plal=alpha('plasma1');
+  const mb1=isOn('memoryB1'),mb1al=alpha('memoryB1');
+
+  // Branch arrows: B proliferation → plasma (right-up) + memory (right-down)
+  if(pl){
+    arrow(X(D.bProlif.x)+D.bProlif.r*sc+2,Y(D.bProlif.y)-4,X(D.plasma1.x)-D.plasma1.r*sc-2,Y(D.plasma1.y),C.p,1.3,true);
+    arrow(X(D.bProlif.x)+D.bProlif.r*sc+2,Y(D.bProlif.y)+4,X(D.plasma2.x)-D.plasma2.r*sc-2,Y(D.plasma2.y),C.p,1.1,true);
+  }
+  if(mb1){
+    arrow(X(D.bProlif.x)+D.bProlif.r*sc+2,Y(D.bProlif.y)+D.bProlif.r*sc*.5,X(D.memoryB1.x)-D.memoryB1.r*sc-2,Y(D.memoryB1.y),C.mb,1.1,true);
+    dashedArr(X(D.bProlif.x)+D.bProlif.r*sc+2,Y(D.bProlif.y)+D.bProlif.r*sc*.8,X(D.memoryB2.x)-D.memoryB2.r*sc-2,Y(D.memoryB2.y),C.mb,1,true);
+  }
+
+  // Plasma cells (upper branch)
+  drawPlasma(X(D.plasma1.x),Y(D.plasma1.y),D.plasma1.r*sc,pl,plal);
+  drawPlasma(X(D.plasma2.x),Y(D.plasma2.y),D.plasma2.r*sc,pl,plal);
+  if(lbl&&pl){
+    chip(X(D.plasma1.x),Y(D.plasma1.y-18),'浆细胞（效应B细胞）',C.p,11);
+    plainText(X(D.plasma1.x+45),Y(D.plasma1.y+4),'抗体工厂',C.pL,10,'center');
+  }
+
+  // Memory B cells (lower branch — PARALLEL to plasma, not subordinate)
+  drawMemory(X(D.memoryB1.x),Y(D.memoryB1.y),D.memoryB1.r*sc,mb1,mb1al);
+  drawMemory(X(D.memoryB2.x),Y(D.memoryB2.y),D.memoryB2.r*sc,mb1,mb1al);
+  if(lbl&&mb1){
+    chip(X(D.memoryB1.x+45),Y(D.memoryB1.y),'记忆B细胞',C.mb,11);
+    plainText(X(D.memoryB1.x+60),Y(D.memoryB1.y+12),'潜伏·长寿命',C.mbL,10,'center');
+  }
+
+  // ═══════════════ ROW 4: 效应阶段 — Plasma → Antibody → Bind → Cleanup ═══════════════
+  const pl3=isOn('plasma3'),pl3al=alpha('plasma3');
+
+  // Arrow: plasma → plasma3 (更多浆细胞)
+  if(pl3){arrow(X(D.plasma1.x),Y(D.plasma1.y)+D.plasma1.r*sc+2,X(D.plasma3.x),Y(D.plasma3.y)-D.plasma3.r*sc-2,C.p,1.3,true);plainText(X(D.plasma1.x-25),Y((D.plasma1.y+D.plasma3.y)/2),'大量产生',C.p,10,'center')}
+  drawPlasma(X(D.plasma3.x),Y(D.plasma3.y),D.plasma3.r*sc,pl3,pl3al);
+  if(lbl&&pl3)chip(X(D.plasma3.x),Y(D.plasma3.y-20),'浆细胞',C.p,11);
+
+  // Arrow: plasma → antibody secretion
+  const a1=isOn('abIcon'),a1al=alpha('abIcon');
+  if(a1){arrow(X(D.plasma3.x)+D.plasma3.r*sc+2,Y(D.plasma3.y),X(D.abIcon.x)-6,Y(D.abIcon.y),C.ab,1.5,true);plainText(X((D.plasma3.x+D.abIcon.x)/2),Y(D.plasma3.y-8),'分泌',C.ab,10,'center')}
+  drawAb(X(D.abIcon.x),Y(D.abIcon.y),a1,a1al);
+  if(lbl&&a1)chip(X(D.abIcon.x),Y(D.abIcon.y-16),'特异性抗体（Ig）',C.ab,10.5);
+
+  // Many antibodies flowing right
+  const a2=isOn('abIcon');
+  drawAb(X(D.abMany.x),Y(D.abMany.y),a2,a1al*.7);
+  for(let i=0;i<4;i++){const ax=X(D.abMany.x-10+i*12),ay=Y(D.abMany.y-8+i*6);drawAb(ax,ay,a2,a1al*.4)}
+
+  // Arrow: antibodies → antigen binding
+  const ag=isOn('antigen'),agal=alpha('antigen');
+  if(ag){arrow(X(D.abMany.x)+8,Y(D.abMany.y),X(D.antigen.x)-D.antigen.r*sc-2,Y(D.antigen.y),C.ab,1.5,true);plainText(X((D.abMany.x+D.antigen.x)/2),Y(D.abMany.y-12),'特异性结合',C.ab,10,'center')}
+
+  // Antigen
+  drawPathogen(X(D.antigen.x),Y(D.antigen.y),D.antigen.r*sc,ag,agal);
+  if(lbl&&ag)chip(X(D.antigen.x),Y(D.antigen.y-20),'抗原',C.r,11);
+
+  // Arrow: antigen → precipitate
+  const pr=isOn('precip');
+  if(pr){arrow(X(D.antigen.x),Y(D.antigen.y)+D.antigen.r*sc+2,X(D.precip.x),Y(D.precip.y)-D.precip.r*sc-2,'#ff8844',1.3,true);plainText(X(D.antigen.x),Y((D.antigen.y+D.precip.y)/2-5),'聚集沉淀',C.mut,10,'center')}
+
+  // Precipitate
+  drawPrecip(X(D.precip.x),Y(D.precip.y),D.precip.r*sc,pr);
+  if(pr)plainText(X(D.precip.x),Y(D.precip.y+20),'沉淀 / 细胞集团',C.mut,10.5,'center');
+
+  // Arrow: precipitate → macrophage cleanup
+  const m2=isOn('macro2'),m2al=alpha('macro2');
+  if(m2){arrow(X(D.precip.x),Y(D.precip.y)+D.precip.r*sc+2,X(D.macro2.x),Y(D.macro2.y)-D.macro2.r*sc-2,C.m,1.5,true)}
+
+  // Final macrophage
+  drawMacro(X(D.macro2.x),Y(D.macro2.y),D.macro2.r*sc,m2,m2al);
+  if(lbl&&m2)chip(X(D.macro2.x),Y(D.macro2.y-30),'吞噬细胞',C.m,11);
+  if(m2)plainText(X(D.macro2.x+45),Y(D.macro2.y-8),'吞噬清除',C.mL,10.5,'center');
+
+  // ═══════════════ 二次免疫分支 (记忆B → 再次遇抗原 → 迅速浆细胞) ═══════════════
+  const mb3=isOn('macro2'),mb3al=alpha('macro2')*.85;
+  drawMemory(X(D.memoryB3.x),Y(D.memoryB3.y),D.memoryB3.r*sc,mb3,mb3al);
+  if(lbl&&mb3){
+    chip(X(D.memoryB3.x+50),Y(D.memoryB3.y-5),'记忆B细胞（潜伏）',C.mb,10.5);
+    plainText(X(D.memoryB3.x+65),Y(D.memoryB3.y+10),'再次遇抗原 → 迅速增殖',C.mbL,10,'center');
+  }
+  // Link from memory B3 back to plasma area
+  if(mb3){dashedArr(X(D.memoryB3.x)+D.memoryB3.r*sc+2,Y(D.memoryB3.y),X(D.plasma3.x)+D.plasma3.r*sc+2,Y(D.plasma3.y)+10,C.mb,1,true);plainText(X(D.memoryB3.x+70),Y(D.memoryB3.y-18),'二次免疫',C.mb,9.5,'center')}
+
+  // ═══════════════ Effects ═══════════════
+  drawR();drawP();
+
+  // ═══════════════ Step annotation (prominent, bottom) ═══════════════
+  if(step>=0){
+    const nt=STEPS[step].note;
+    ctx.fillStyle='rgba(245,158,11,.1)';const nw=ctx.measureText(nt).width+24;
+    const nx=W/2-nw/2,ny=Y(770);
+    ctx.beginPath();ctx.roundRect(nx,ny-12,nw,26,6);ctx.fill();
+    ctx.strokeStyle='rgba(245,158,11,.25)';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(nx,ny-12,nw,26,6);ctx.stroke();
+    ctx.fillStyle=C.m;ctx.font=`bold ${13*sc}px "Microsoft YaHei","PingFang SC",sans-serif`;ctx.textAlign='center';
+    ctx.fillText(nt,W/2,ny+5);ctx.textAlign='start';
+  }
+
+  // ═══════════════ Progress bar ═══════════════
+  const pbw=W*.6,pbh=2,pbx=W*.2,pby=Y(795);
+  ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.roundRect(pbx,pby,pbw,pbh,1);ctx.fill();
+  const ac=STEPS.filter(s=>t>=s.t).length,pg=ac/STEPS.length;
+  const pgr=ctx.createLinearGradient(pbx,0,pbx+pbw,0);pgr.addColorStop(0,C.r);pgr.addColorStop(.4,C.th);pgr.addColorStop(1,C.mb);
+  ctx.fillStyle=pgr;ctx.beginPath();ctx.roundRect(pbx,pby,pbw*pg,pbh,1);ctx.fill();
+  ctx.fillStyle='#fff';ctx.shadowColor='#fff';ctx.shadowBlur=3;ctx.beginPath();ctx.arc(pbx+pbw*pg,pby+pbh/2,2.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+
+  // ═══════════════ Spawn particles ═══════════════
+  spTimer+=dt;if(spTimer>.055){spTimer=0;for(const f of FLOWS){if(isOn(f.from)&&isOn(f.to))spawnP(f)}}
+  updP(dt);updR(dt);
+}
+
+// ═══════════════════ Interaction ═══════════════════
+const hits=[];
+function bldH(){hits.length=0;const sc=S();for(const[n,d]of Object.entries(ND)){if(!d.type)continue;hits.push({x:X(d.x),y:Y(d.y),r:(d.r+10)*sc,type:d.type})}}
+
+cv.addEventListener('mousemove',e=>{bldH();const mx=e.clientX,my=e.clientY;let f=null;for(const h of hits){if((mx-h.x)**2+(my-h.y)**2<h.r**2){f=h;break}}const pp=document.getElementById('popup');if(f){cv.style.cursor='pointer';pp.classList.add('show');pp.style.left=(mx+12)+'px';pp.style.top=(my-12)+'px';const k=K[f.type];if(k){document.getElementById('popTitle').textContent=k.t;document.getElementById('popDesc').textContent=k.s}}else{cv.style.cursor='default';pp.classList.remove('show')}});
+
+cv.addEventListener('click',e=>{bldH();const mx=e.clientX,my=e.clientY;for(const h of hits){if((mx-h.x)**2+(my-h.y)**2<h.r**2){const k=K[h.type];if(k)openK(h.type,k);return}}});
+
+// ═══════════════════ Knowledge ═══════════════════
+const K={
+  pathogen:{c:'#ef4444',t:'病原体（抗原）',s:'侵入机体的病毒、细菌等异物，表面携带抗原决定簇，能引发特异性免疫应答。',d:'抗原是指能引起机体产生特异性免疫应答的物质，多为蛋白质。病原体表面的抗原决定簇可被免疫细胞受体特异性识别。一种抗原通常含有多个不同的抗原决定簇。',tip:'抗原≠病原体。疫苗中的灭活病毒、类毒素也属于抗原。抗原具有大分子性、异物性和特异性三大特征。'},
+  macro:{c:'#f59e0b',t:'巨噬细胞（APC）',s:'吞噬并处理病原体，暴露抗原决定簇，将抗原肽-MHC-II复合物呈递给Th细胞，同时分泌细胞因子。',d:'巨噬细胞是重要的抗原呈递细胞(APC)。吞噬后在溶酶体中降解病原体为抗原肽，与MHC-II类分子结合后呈递至细胞表面供Th细胞的TCR识别。同时分泌IL-1等细胞因子辅助Th活化。',tip:'巨噬细胞既能参与非特异性免疫（直接吞噬），又能在特异性免疫中呈递抗原。吞噬处理的目的不是消灭，而是暴露并呈递抗原决定簇。'},
+  th:{c:'#10b981',t:'辅助性T细胞（Th）',s:'识别巨噬细胞呈递的抗原肽-MHC-II复合物后活化、增殖、分化。为B细胞提供不可或缺的第二信号（表面分子CD40L + 细胞因子）。',d:'Th表面TCR特异性识别APC的抗原肽-MHC-II复合物而活化。活化后Th表达CD40L（与B细胞的CD40结合），并分泌IL-2、IL-4等细胞因子。这两个共同构成B细胞活化的"第二信号"。Th是连接非特异免疫与特异免疫、细胞免疫与体液免疫的关键枢纽。',tip:'Th在体液免疫和细胞免疫中都不可或缺。HIV攻击Th导致免疫缺陷。"B细胞活化的第二信号来源"是高考高频考点。'},
+  bcell:{c:'#3b82f6',t:'B细胞',s:'需双信号才能活化——第一信号：抗原与BCR结合；第二信号：活化的Th提供CD40L + 细胞因子。双信号满足后增殖分化为浆细胞和记忆B细胞。',d:'BCR即B细胞表面的膜抗体(IgM/IgD)，可直接识别游离抗原而无需MHC呈递，这构成第一信号。Th提供的CD40L-CD40结合+细胞因子构成第二信号。若只有第一信号而无第二信号，B细胞将进入无能(anergy)或凋亡。',tip:'双信号模型是体液免疫的核心机制——第一信号保证免疫特异性，第二信号提供安全验证，防止自身免疫。记忆B细胞再次遇抗原时可不依赖Th直接活化。'},
+  plasma:{c:'#f8fafc',t:'浆细胞（效应B细胞）',s:'由B细胞分化而来的终末分化细胞，富含粗面内质网，是"抗体工厂"。每个浆细胞每秒可分泌约2000个抗体分子。',d:'浆细胞是B细胞分化后的效应形式，不再表达BCR，寿命较短（数天至数周）。细胞质中充满粗面内质网和高尔基体以适应大规模抗体合成与分泌。',tip:'浆细胞≠记忆细胞。抗体由浆细胞（而非B细胞）产生和分泌。效应阶段的执行者是浆细胞。'},
+  memory:{c:'#a855f7',t:'记忆B细胞',s:'长期存活（数年至终身），表达高亲和力BCR。再次遇同种抗原时无需Th辅助即可迅速增殖分化为浆细胞，产生更快更强的二次免疫应答。',d:'记忆B细胞是B细胞分化后的长寿命形式。其BCR经过亲和力成熟，对同种抗原有极高亲和力。二次感染时可在1-2天内产生大量高亲和力IgG类抗体，而初次应答通常需要5-7天。这是疫苗接种保护效应的细胞学基础。',tip:'二次免疫特点：①潜伏期更短 ②抗体浓度更高 ③抗体亲和力更强 ④持续时间更长。疫苗利用的正是免疫记忆特性。'},
+  ab:{c:'#fbbf24',t:'抗体（免疫球蛋白，Ig）',s:'浆细胞分泌的Y形蛋白质。Fab区特异性识别抗原决定簇，Fc区介导效应功能。通过凝集、沉淀、中和等方式标记抗原。',d:'基本结构：两条重链(H) + 两条轻链(L) 通过二硫键连接成Y形。Fab区（可变区）负责抗原识别，Fc区（恒定区）介导与吞噬细胞Fc受体的结合。抗体本身不能直接"杀死"病原体，作用是标记和凝集抗原，便于吞噬细胞清除。',tip:'抗体本身不直接消灭病原体，而是起"标记"作用。一种抗体一般只特异性结合一种抗原决定簇。抗原-抗体结合具有高度特异性（锁-钥模型）。'},
+};
+function openK(type,k){k=k||K[type];if(!k)return;document.getElementById('kpDot').style.background=k.c;document.getElementById('kpDot').style.boxShadow=`0 0 7px ${k.c}`;document.getElementById('kpTitle').textContent=k.t;document.getElementById('kpShort').textContent=k.s;document.getElementById('kpDetail').textContent=k.d;document.getElementById('kpTip').textContent=k.tip;document.getElementById('kp').classList.add('open');document.getElementById('kpOverlay').classList.add('on')}
+function closeKnowledge(){document.getElementById('kp').classList.remove('open');document.getElementById('kpOverlay').classList.remove('on')}
+function toggleLabels(){lbl=!lbl;document.getElementById('btnLabels').classList.toggle('on',lbl)}
+function resetAnim(){t=0;playing=true;ps=[];rips=[];pv=''}
+function toggleSpeed(){spdMul=spdMul===1?2:spdMul===2?0.5:1;document.getElementById('btnSpeed').textContent=spdMul+'×'}
+
+addEventListener('keydown',e=>{
+  if(e.key===' '){e.preventDefault();playing=!playing}
+  if(e.key==='r'||e.key==='R')resetAnim()
+  if(e.key==='ArrowRight'){t=Math.min(1,t+.025);ps=[];rips=[]}
+  if(e.key==='ArrowLeft'){t=Math.max(0,t-.025);ps=[];rips=[]}
+  if(e.key==='Escape')closeKnowledge()
+});
+
+// ═══════════════════ Loop ═══════════════════
+let last=performance.now();
+function loop(ts){const dt=Math.min((ts-last)/1000,.1);last=ts;if(playing){t+=dt*spd*spdMul;if(t>=1)t=0}draw(dt);requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
