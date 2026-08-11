@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>院校PK - BioVision</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+  }
+
+  .top-bar {
+    background: linear-gradient(135deg, #4a5568, #2d3748);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-bar h1 { font-size: 1.2em; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .back-btn { color: white; text-decoration: none; padding: 6px 14px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; font-size: 0.9em; transition: all 0.3s; }
+  .back-btn:hover { background: rgba(255,255,255,0.2); border-color: white; }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 24px; }
+
+  /* ===== 大厅页面 ===== */
+  .lobby-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+  .lobby-icon { font-size: 3em; margin-bottom: 12px; }
+  .lobby-title { font-size: 1.8em; font-weight: 800; color: #2d3748; margin-bottom: 8px; }
+  .lobby-subtitle { color: #718096; margin-bottom: 32px; font-size: 0.95em; }
+
+  .mode-cards { display: flex; gap: 16px; margin-bottom: 24px; }
+  .mode-card {
+    flex: 1;
+    padding: 24px 16px;
+    border: 3px solid #e2e8f0;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: #f7fafc;
+    text-align: center;
+  }
+  .mode-card:hover { border-color: #a3bffa; background: #ebf4ff; transform: translateY(-2px); }
+  .mode-card.active { border-color: #667eea; background: #ebf4ff; box-shadow: 0 8px 24px rgba(102,126,234,0.2); }
+  .mode-card-icon { font-size: 2em; margin-bottom: 8px; }
+  .mode-card-title { font-size: 1.1em; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
+  .mode-card-desc { font-size: 0.8em; color: #718096; }
+
+  .form-group { margin-bottom: 16px; text-align: left; }
+  .form-label { display: block; font-size: 0.85em; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
+  .form-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1em;
+    transition: all 0.2s;
+  }
+  .form-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 8px;
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.4); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .rules-box {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f7fafc;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 0.85em;
+    color: #4a5568;
+    line-height: 1.8;
+  }
+  .rules-box-title { font-weight: 700; color: #2d3748; margin-bottom: 8px; }
+
+  /* ===== 配对等待页面 ===== */
+  .matching-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+  .matching-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: match-pulse 1.5s ease-in-out infinite;
+    color: white;
+    font-size: 3em;
+  }
+  @keyframes match-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102,126,234,0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(102,126,234,0); }
+  }
+  .matching-title {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+  }
+  .matching-subtitle {
+    color: #718096;
+    margin-bottom: 24px;
+  }
+  .matching-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 24px;
+  }
+  .stat-item { text-align: center; }
+  .stat-val { font-size: 1.8em; font-weight: 800; color: #553c9a; }
+  .stat-label { font-size: 0.8em; color: #718096; }
+  .matching-dots {
+    font-size: 2em;
+    letter-spacing: 4px;
+    color: #667eea;
+    margin-bottom: 24px;
+  }
+  .matching-dots span { animation: dot-blink 1.2s infinite; }
+  .matching-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .matching-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot-blink {
+    0%, 80%, 100% { opacity: 0.3; }
+    40% { opacity: 1; }
+  }
+  .cancel-match-btn {
+    padding: 12px 32px;
+    background: #fed7d7;
+    color: #c53030;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cancel-match-btn:hover { background: #feb2b2; transform: translateY(-1px); }
+
+  /* ===== 等待房间页面 ===== */
+  .room-card { background: white; border-radius: 20px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
+  .room-code-box { text-align: center; flex: 1; }
+  .room-code-label { font-size: 0.85em; color: #718096; margin-bottom: 4px; }
+  .room-code-display { font-size: 2.5em; font-weight: 800; color: #667eea; letter-spacing: 8px; }
+  .room-code-copy { margin-top: 8px; padding: 6px 16px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 0.85em; cursor: pointer; transition: all 0.2s; }
+  .room-code-copy:hover { background: #553c9a; }
+  .player-count-box { text-align: right; }
+  .player-count-label { font-size: 0.8em; color: #718096; }
+  .player-count-val { font-size: 1.5em; font-weight: 700; color: #4a5568; }
+
+  .players-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .player-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #f7fafc; border-radius: 12px; border: 2px solid #e2e8f0; }
+  .player-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1em; }
+  .player-name { font-weight: 600; color: #2d3748; }
+  .player-host { font-size: 0.75em; color: #667eea; font-weight: 700; }
+
+  .room-actions { display: flex; gap: 12px; }
+  .room-actions button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 1em; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-start { background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
+  .btn-start:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-start:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(72,187,120,0.4); }
+  .btn-leave { background: #fed7d7; color: #c53030; }
+  .btn-leave:hover { background: #feb2b2; }
+
+  .waiting-hint { text-align: center; color: #718096; margin-top: 16px; font-size: 0.9em; }
+  .waiting-hint .dot { animation: blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+
+  /* ===== 答题页面 ===== */
+  .quiz-card { background: white; border-radius: 20px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .quiz-progress { font-size: 1em; font-weight: 700; color: #4a5568; }
+  .quiz-timer { padding: 8px 20px; border-radius: 20px; font-size: 1.2em; font-weight: 800; color: white; background: #48bb78; transition: all 0.3s; min-width: 70px; text-align: center; }
+  .quiz-timer.warning { background: #ed8936; }
+  .quiz-timer.danger { background: #e53e3e; animation: pulse 0.5s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+
+  .quiz-score-bar { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .score-chip { padding: 6px 16px; background: #f7fafc; border-radius: 20px; font-size: 0.85em; font-weight: 600; color: #4a5568; border: 2px solid #e2e8f0; }
+  .score-chip.me { border-color: #667eea; background: #ebf4ff; color: #553c9a; }
+
+  .quiz-stem { font-size: 1.15em; line-height: 1.8; color: #2d3748; margin-bottom: 24px; padding: 20px; background: #f7fafc; border-radius: 12px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 12px; }
+  .quiz-option { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; font-size: 1em; transition: all 0.2s; background: white; }
+  .quiz-option:hover { border-color: #667eea; background: #ebf4ff; transform: translateX(4px); }
+  .quiz-option.selected { border-color: #667eea; background: #ebf4ff; }
+  .quiz-option.correct { border-color: #48bb78; background: #c6f6d5; }
+  .quiz-option.wrong { border-color: #f56565; background: #fed7d7; }
+  .quiz-option.disabled { cursor: not-allowed; pointer-events: none; }
+  .option-label { width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; color: #4a5568; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+  .quiz-option.selected .option-label { background: #667eea; color: white; }
+  .quiz-option.correct .option-label { background: #48bb78; color: white; }
+  .quiz-option.wrong .option-label { background: #f56565; color: white; }
+
+  .answer-feedback { text-align: center; padding: 16px; border-radius: 12px; margin-top: 16px; font-size: 1.1em; font-weight: 700; display: none; }
+  .answer-feedback.correct { background: #c6f6d5; color: #22543d; display: block; }
+  .answer-feedback.wrong { background: #fed7d7; color: #742a2a; display: block; }
+
+  /* ===== 结果页面 ===== */
+  .result-card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); text-align: center; }
+  .result-title { font-size: 1.8em; font-weight: 800; margin-bottom: 24px; color: #2d3748; }
+  .ranking-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .ranking-item { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-radius: 14px; background: #f7fafc; border: 2px solid #e2e8f0; }
+  .ranking-item.rank-1 { background: linear-gradient(135deg, #fef5e7, #fbd38d); border-color: #f6ad55; }
+  .ranking-item.rank-2 { background: linear-gradient(135deg, #f7fafc, #e2e8f0); border-color: #a0aec0; }
+  .ranking-item.rank-3 { background: linear-gradient(135deg, #fffaf0, #fbd38d); border-color: #dd6b20; }
+  .ranking-medal { font-size: 2em; width: 48px; text-align: center; }
+  .ranking-info { flex: 1; text-align: left; }
+  .ranking-name { font-size: 1.2em; font-weight: 700; color: #2d3748; }
+  .ranking-stats { font-size: 0.85em; color: #718096; }
+  .ranking-score { font-size: 1.5em; font-weight: 800; color: #553c9a; }
+  .result-actions { display: flex; gap: 12px; }
+  .result-actions button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 1em; font-weight: 700; cursor: pointer; }
+  .btn-again { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+  .btn-home { background: #e2e8f0; color: #4a5568; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 600px) {
+    .container { padding: 12px; }
+    .lobby-card, .room-card, .quiz-card, .result-card { padding: 20px; }
+    .mode-cards { flex-direction: column; }
+    .room-actions { flex-direction: column; }
+    .room-code-display { font-size: 1.8em; letter-spacing: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1><span>🏆</span>院校PK</h1>
+  <a href="main.html" class="back-btn">← 返回每日训练</a>
+</div>
+
+<div class="container">
+
+  <!-- 配对等待页面 -->
+  <div class="matching-card hidden" id="matchPage">
+    <div class="matching-avatar">🎲</div>
+    <div class="matching-title">正在寻找对手...</div>
+    <div class="matching-subtitle">预计很快匹配到同学</div>
+    <div class="matching-stats">
+      <div class="stat-item">
+        <div class="stat-val" id="queuePos">-</div>
+        <div class="stat-label">队列位置</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="queueSize">-</div>
+        <div class="stat-label">等待人数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="waitSec">0s</div>
+        <div class="stat-label">已等待</div>
+      </div>
+    </div>
+    <div class="matching-dots"><span>●</span><span>●</span><span>●</span></div>
+    <button class="cancel-match-btn" onclick="cancelMatch()">取消配对</button>
+  </div>
+
+  <!-- 大厅页面 -->
+  <div class="lobby-card" id="lobbyPage">
+    <div class="lobby-icon">⚔️</div>
+    <div class="lobby-title">答题PK</div>
+    <div class="lobby-subtitle">创建房间或加入房间，与同学比拼生物知识</div>
+
+    <div class="mode-cards">
+      <div class="mode-card active" id="modeCreate" onclick="switchMode('create')">
+        <div class="mode-card-icon">🏠</div>
+        <div class="mode-card-title">创建房间</div>
+        <div class="mode-card-desc">生成房间码邀请同学</div>
+      </div>
+      <div class="mode-card" id="modeJoin" onclick="switchMode('join')">
+        <div class="mode-card-icon">🚪</div>
+        <div class="mode-card-title">加入房间</div>
+        <div class="mode-card-desc">输入房间码加入PK</div>
+      </div>
+      <div class="mode-card" id="modeMatch" onclick="switchMode('match')">
+        <div class="mode-card-icon">🎲</div>
+        <div class="mode-card-title">随机配对</div>
+        <div class="mode-card-desc">系统自动匹配对手</div>
+      </div>
+    </div>
+
+    <div id="createSection">
+      <div class="form-group">
+        <label class="form-label">你的昵称</label>
+        <input type="text" class="form-input" id="createName" placeholder="请输入昵称（最多12个字）" maxlength="12" oninput="checkCreateBtn()">
+      </div>
+      <button class="submit-btn" id="createBtn" onclick="createRoom()" disabled>创建PK房间</button>
+    </div>
+
+    <div id="joinSection" class="hidden">
+      <div class="form-group">
+        <label class="form-label">你的昵称</label>
+        <input type="text" class="form-input" id="joinName" placeholder="请输入昵称（最多12个字）" maxlength="12" oninput="checkJoinBtn()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">房间码</label>
+        <input type="text" class="form-input" id="joinCode" placeholder="请输入4位房间码" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'');checkJoinBtn()" style="letter-spacing:4px;font-size:1.3em;text-align:center;">
+      </div>
+      <button class="submit-btn" id="joinBtn" onclick="joinRoom()" disabled>加入房间</button>
+    </div>
+
+    <div id="matchSection" class="hidden">
+      <div class="form-group">
+        <label class="form-label">你的昵称</label>
+        <input type="text" class="form-input" id="matchName" placeholder="请输入昵称（最多12个字）" maxlength="12" oninput="checkMatchBtn()">
+      </div>
+      <button class="submit-btn" id="matchBtn" onclick="startMatch()" disabled style="background: linear-gradient(135deg, #f093fb, #f5576c); box-shadow: 0 8px 24px rgba(245,87,108,0.3);">🎲 开始随机配对</button>
+      <div style="margin-top:12px;padding:12px;background:linear-gradient(135deg, #faf5ff, #e9d8fd);border-radius:10px;font-size:0.85em;color:#553c9a;">
+        💡 配对成功后系统会自动创建房间，2人匹配后即可开始PK
+      </div>
+    </div>
+
+    <div class="rules-box">
+      <div class="rules-box-title">📋 PK规则</div>
+      <div>• 每场PK共 <b>10道选择题</b>，从生物题库随机抽取</div>
+      <div>• 每题限时 <b>30秒</b>，答对得 <b>10分+剩余秒数</b>（越快得分越高）</div>
+      <div>• 答错或超时得 <b>0分</b>，所有玩家答完后自动进入下一题</div>
+      <div>• 至少需要 <b>2名玩家</b> 才能开始PK</div>
+    </div>
+  </div>
+
+  <!-- 等待房间页面 -->
+  <div class="room-card hidden" id="roomPage">
+    <div class="room-header">
+      <div class="room-code-box">
+        <div class="room-code-label">房间码（分享给同学加入）</div>
+        <div class="room-code-display" id="roomCodeDisplay">----</div>
+        <button class="room-code-copy" onclick="copyRoomCode()">复制房间码</button>
+      </div>
+      <div class="player-count-box">
+        <div class="player-count-label">玩家数</div>
+        <div class="player-count-val"><span id="playerCount">1</span>/6</div>
+      </div>
+    </div>
+
+    <div class="players-list" id="playersList"></div>
+
+    <div class="room-actions">
+      <button class="btn-start" id="startBtn" onclick="startGame()" disabled>等待玩家加入...</button>
+      <button class="btn-leave" onclick="leaveRoom()">离开房间</button>
+    </div>
+
+    <div class="waiting-hint" id="waitingHint">
+      等待其他同学加入<span class="dot">...</span>
+    </div>
+  </div>
+
+  <!-- 答题页面 -->
+  <div class="quiz-card hidden" id="quizPage">
+    <div class="quiz-header">
+      <div class="quiz-progress" id="quizProgress">第 1/10 题</div>
+      <div class="quiz-timer" id="quizTimer">30s</div>
+    </div>
+    <div class="quiz-score-bar" id="scoreBar"></div>
+    <div class="quiz-stem" id="quizStem">题目加载中...</div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="answer-feedback" id="answerFeedback"></div>
+  </div>
+
+  <!-- 结果页面 -->
+  <div class="result-card hidden" id="resultPage">
+    <div class="result-title">🎉 PK结果</div>
+    <div class="ranking-list" id="rankingList"></div>
+    <div class="result-actions">
+      <button class="btn-again" onclick="backToLobby()">再来一局</button>
+      <button class="btn-home" onclick="window.location.href='main.html'">返回训练</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000";
+let myName = "";
+let roomCode = "";
+let isHost = false;
+let pollTimer = null;
+let timerInterval = null;
+let currentQuestion = null;
+let answered = false;
+
+// ===== 大厅 =====
+function switchMode(mode) {
+  ['Create','Join','Match'].forEach(k => {
+    document.getElementById('mode'+k).classList.toggle('active', mode === k.toLowerCase());
+  });
+  document.getElementById('createSection').classList.toggle('hidden', mode !== 'create');
+  document.getElementById('joinSection').classList.toggle('hidden', mode !== 'join');
+  document.getElementById('matchSection').classList.toggle('hidden', mode !== 'match');
+}
+
+function checkCreateBtn() {
+  const name = document.getElementById('createName').value.trim();
+  document.getElementById('createBtn').disabled = name.length === 0;
+}
+
+function checkJoinBtn() {
+  const name = document.getElementById('joinName').value.trim();
+  const code = document.getElementById('joinCode').value.trim();
+  document.getElementById('joinBtn').disabled = name.length === 0 || code.length !== 4;
+}
+
+function checkMatchBtn() {
+  const name = document.getElementById('matchName').value.trim();
+  document.getElementById('matchBtn').disabled = name.length === 0;
+}
+
+async function createRoom() {
+  const name = document.getElementById('createName').value.trim();
+  if (!name) { alert('请先输入昵称'); return; }
+
+  const btn = document.getElementById('createBtn');
+  btn.disabled = true;
+  btn.textContent = '正在创建...';
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_name: name })
+    });
+    const result = await resp.json();
+    if (result.success) {
+      myName = name;
+      roomCode = result.data.room_code;
+      isHost = true;
+      showRoom();
+    } else {
+      alert(result.msg || '创建失败');
+      btn.disabled = false;
+      btn.textContent = '创建PK房间';
+    }
+  } catch (e) {
+    alert('网络错误：' + e.message);
+    btn.disabled = false;
+    btn.textContent = '创建PK房间';
+  }
+}
+
+async function joinRoom() {
+  const name = document.getElementById('joinName').value.trim();
+  const code = document.getElementById('joinCode').value.trim();
+  if (!name) { alert('请先输入昵称'); return; }
+  if (!code || code.length !== 4) { alert('请输入4位房间码'); return; }
+
+  const btn = document.getElementById('joinBtn');
+  btn.disabled = true;
+  btn.textContent = '正在加入...';
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ room_code: code, player_name: name })
+    });
+    const result = await resp.json();
+    if (result.success) {
+      myName = name;
+      roomCode = code;
+      isHost = false;
+      showRoom();
+    } else {
+      alert(result.msg || '加入失败');
+      btn.disabled = false;
+      btn.textContent = '加入房间';
+    }
+  } catch (e) {
+    alert('网络错误：' + e.message);
+    btn.disabled = false;
+    btn.textContent = '加入房间';
+  }
+}
+
+function copyRoomCode() {
+  const code = document.getElementById('roomCodeDisplay').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.querySelector('.room-code-copy');
+    const orig = btn.textContent;
+    btn.textContent = '已复制!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => {
+    // 降级方案
+    const input = document.createElement('input');
+    input.value = code;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    alert('房间码已复制: ' + code);
+  });
+}
+
+// ===== 房间等待 =====
+function showRoom() {
+  document.getElementById('lobbyPage').classList.add('hidden');
+  document.getElementById('roomPage').classList.remove('hidden');
+  document.getElementById('quizPage').classList.add('hidden');
+  document.getElementById('resultPage').classList.add('hidden');
+  document.getElementById('roomCodeDisplay').textContent = roomCode;
+
+  const startBtn = document.getElementById('startBtn');
+  startBtn.style.display = isHost ? 'block' : 'none';
+
+  pollRoomStatus();
+}
+
+async function pollRoomStatus() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}`);
+    const result = await resp.json();
+    if (!result.success) {
+      alert('房间不存在');
+      backToLobby();
+      return;
+    }
+
+    const data = result.data;
+    renderPlayers(data.players);
+
+    if (data.status === 'playing') {
+      startQuiz();
+      return;
+    }
+    if (data.status === 'finished') {
+      showResult();
+      return;
+    }
+
+    if (document.getElementById('roomPage').offsetParent !== null) {
+      pollTimer = setTimeout(pollRoomStatus, 2000);
+    }
+  } catch (e) {
+    console.error('轮询失败:', e);
+    pollTimer = setTimeout(pollRoomStatus, 3000);
+  }
+}
+
+function renderPlayers(players) {
+  const list = document.getElementById('playersList');
+  document.getElementById('playerCount').textContent = players.length;
+  list.innerHTML = players.map((p, i) => {
+    const initial = p.name.charAt(0).toUpperCase();
+    const isMe = p.name === myName;
+    return `
+      <div class="player-item">
+        <div class="player-avatar">${initial}</div>
+        <div>
+          <div class="player-name">${p.name}${isMe ? ' (我)' : ''}</div>
+          <div class="player-host">${i === 0 ? '房主' : '玩家'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const startBtn = document.getElementById('startBtn');
+  if (isHost) {
+    startBtn.disabled = players.length < 2;
+    startBtn.textContent = players.length < 2 ? '等待玩家加入...' : '开始PK';
+  }
+}
+
+async function startGame() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_name: myName })
+    });
+    const result = await resp.json();
+    if (!result.success) {
+      alert(result.msg || '开始失败');
+    }
+  } catch (e) {
+    alert('网络错误：' + e.message);
+  }
+}
+
+async function leaveRoom() {
+  if (pollTimer) clearTimeout(pollTimer);
+  try {
+    await fetch(`${API_BASE}/api/pk/${roomCode}/leave`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_name: myName })
+    });
+  } catch (e) {}
+  backToLobby();
+}
+
+// ===== 答题 =====
+function startQuiz() {
+  if (pollTimer) clearTimeout(pollTimer);
+  document.getElementById('roomPage').classList.add('hidden');
+  document.getElementById('quizPage').classList.remove('hidden');
+  fetchQuestion();
+}
+
+async function fetchQuestion() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/question`);
+    const result = await resp.json();
+    if (!result.success) {
+      showResult();
+      return;
+    }
+    currentQuestion = result.data;
+    answered = false;
+    renderQuestion(currentQuestion);
+    startTimer(currentQuestion.remaining);
+    pollScores();
+  } catch (e) {
+    console.error('获取题目失败:', e);
+  }
+}
+
+function renderQuestion(q) {
+  document.getElementById('quizProgress').textContent = `第 ${q.question_index}/${q.total} 题`;
+  document.getElementById('quizStem').textContent = q.stem;
+  const optionsHtml = ['A', 'B', 'C', 'D'].map(key => {
+    const text = q.options[key];
+    if (!text) return '';
+    return `<div class="quiz-option" data-key="${key}" onclick="selectAnswer('${key}')"><div class="option-label">${key}</div><div>${text}</div></div>`;
+  }).join('');
+  document.getElementById('quizOptions').innerHTML = optionsHtml;
+  document.getElementById('answerFeedback').className = 'answer-feedback';
+  document.getElementById('answerFeedback').textContent = '';
+}
+
+function startTimer(seconds) {
+  if (timerInterval) clearInterval(timerInterval);
+  let remaining = seconds;
+  const timerEl = document.getElementById('quizTimer');
+  function update() {
+    timerEl.textContent = remaining + 's';
+    timerEl.className = 'quiz-timer';
+    if (remaining <= 10) timerEl.classList.add('warning');
+    if (remaining <= 5) timerEl.classList.add('danger');
+    remaining--;
+    if (remaining < 0) {
+      clearInterval(timerInterval);
+      if (!answered) submitAnswer('');
+    }
+  }
+  update();
+  timerInterval = setInterval(update, 1000);
+}
+
+async function selectAnswer(key) {
+  if (answered) return;
+  answered = true;
+  document.querySelectorAll('.quiz-option').forEach(el => {
+    el.classList.add('disabled');
+    if (el.dataset.key === key) el.classList.add('selected');
+  });
+  await submitAnswer(key);
+}
+
+async function submitAnswer(answer) {
+  if (timerInterval) clearInterval(timerInterval);
+  answered = true;
+  document.querySelectorAll('.quiz-option').forEach(el => el.classList.add('disabled'));
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_name: myName, answer: answer })
+    });
+    const result = await resp.json();
+    if (result.success) {
+      const data = result.data;
+      const feedback = document.getElementById('answerFeedback');
+      if (!answer) {
+        feedback.className = 'answer-feedback wrong';
+        feedback.textContent = `超时未答题！正确答案：${data.correct_answer}`;
+      } else if (data.correct) {
+        feedback.className = 'answer-feedback correct';
+        feedback.textContent = `回答正确！+${data.score}分`;
+      } else {
+        feedback.className = 'answer-feedback wrong';
+        feedback.textContent = `回答错误！正确答案：${data.correct_answer}`;
+      }
+      document.querySelectorAll('.quiz-option').forEach(el => {
+        if (el.dataset.key === data.correct_answer) el.classList.add('correct');
+        else if (el.dataset.key === answer && !data.correct) el.classList.add('wrong');
+      });
+      setTimeout(() => { fetchNextOrResult(); }, 2500);
+    }
+  } catch (e) {
+    console.error('提交答案失败:', e);
+  }
+}
+
+async function fetchNextOrResult() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/question`);
+    const result = await resp.json();
+    if (result.success) {
+      currentQuestion = result.data;
+      answered = false;
+      renderQuestion(currentQuestion);
+      startTimer(currentQuestion.remaining);
+    } else {
+      showResult();
+    }
+  } catch (e) {
+    showResult();
+  }
+}
+
+async function pollScores() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}`);
+    const result = await resp.json();
+    if (result.success) {
+      renderScoreBar(result.data.players);
+    }
+    if (result.data.status === 'playing' && !answered) {
+      setTimeout(pollScores, 3000);
+    }
+  } catch (e) {}
+}
+
+function renderScoreBar(players) {
+  const bar = document.getElementById('scoreBar');
+  bar.innerHTML = players.map(p => {
+    const isMe = p.name === myName;
+    return `<div class="score-chip${isMe ? ' me' : ''}">${p.name}: ${p.score}分</div>`;
+  }).join('');
+}
+
+// ===== 结果 =====
+async function showResult() {
+  if (timerInterval) clearInterval(timerInterval);
+  document.getElementById('quizPage').classList.add('hidden');
+  document.getElementById('resultPage').classList.remove('hidden');
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/result`);
+    const result = await resp.json();
+    if (result.success) {
+      renderRanking(result.data.ranking, result.data.total_questions);
+    }
+  } catch (e) {
+    console.error('获取结果失败:', e);
+  }
+}
+
+function renderRanking(ranking, totalQ) {
+  const list = document.getElementById('rankingList');
+  const medals = ['🥇', '🥈', '🥉'];
+  list.innerHTML = ranking.map((p, i) => {
+    const medal = medals[i] || `#${p.rank}`;
+    const rankClass = i < 3 ? `rank-${i+1}` : '';
+    return `
+      <div class="ranking-item ${rankClass}">
+        <div class="ranking-medal">${medal}</div>
+        <div class="ranking-info">
+          <div class="ranking-name">${p.name}${p.name === myName ? ' (我)' : ''}</div>
+          <div class="ranking-stats">答对 ${p.correct}/${totalQ} 题</div>
+        </div>
+        <div class="ranking-score">${p.score}分</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== 导航 =====
+function backToLobby() {
+  if (pollTimer) clearTimeout(pollTimer);
+  if (timerInterval) clearInterval(timerInterval);
+  if (matchPollTimer) clearTimeout(matchPollTimer);
+  if (matchTimerInterval) clearInterval(matchTimerInterval);
+  myName = "";
+  roomCode = "";
+  isHost = false;
+  document.getElementById('lobbyPage').classList.remove('hidden');
+  document.getElementById('matchPage').classList.add('hidden');
+  document.getElementById('roomPage').classList.add('hidden');
+  document.getElementById('quizPage').classList.add('hidden');
+  document.getElementById('resultPage').classList.add('hidden');
+  document.getElementById('createName').value = '';
+  document.getElementById('joinName').value = '';
+  document.getElementById('matchName').value = '';
+  document.getElementById('joinCode').value = '';
+  document.getElementById('createBtn').disabled = true;
+  document.getElementById('createBtn').textContent = '创建PK房间';
+  document.getElementById('joinBtn').disabled = true;
+  document.getElementById('joinBtn').textContent = '加入房间';
+  document.getElementById('matchBtn').disabled = true;
+  document.getElementById('matchBtn').textContent = '🎲 开始随机配对';
+}
+
+// ===== 随机配对 =====
+let matchPollTimer = null;
+let matchTimerInterval = null;
+let matchStartAt = 0;
+
+async function startMatch() {
+  const name = document.getElementById('matchName').value.trim();
+  if (!name) { alert('请先输入昵称'); return; }
+
+  const btn = document.getElementById('matchBtn');
+  btn.disabled = true;
+  btn.textContent = '正在配对...';
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/pk/match/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_name: name })
+    });
+    const result = await resp.json();
+    if (result.success) {
+      myName = name;
+      matchStartAt = Date.now();
+      if (result.data.matched) {
+        // 立即匹配到了
+        roomCode = result.data.room_code;
+        isHost = result.data.opponent !== name;
+        showMatchSuccess(result.data.opponent);
+      } else {
+        // 进入等待
+        document.getElementById('lobbyPage').classList.add('hidden');
+        document.getElementById('matchPage').classList.remove('hidden');
+        document.getElementById('queuePos').textContent = result.data.position;
+        document.getElementById('queueSize').textContent = result.data.queue_size;
+        startMatchPolling();
+      }
+    } else {
+      alert(result.msg || '配对失败');
+      btn.disabled = false;
+      btn.textContent = '🎲 开始随机配对';
+    }
+  } catch (e) {
+    alert('网络错误：' + e.message);
+    btn.disabled = false;
+    btn.textContent = '🎲 开始随机配对';
+  }
+}
+
+function startMatchPolling() {
+  // 等待时间显示
+  if (matchTimerInterval) clearInterval(matchTimerInterval);
+  matchTimerInterval = setInterval(() => {
+    const sec = Math.floor((Date.now() - matchStartAt) / 1000);
+    document.getElementById('waitSec').textContent = sec + 's';
+  }, 1000);
+
+  // 轮询匹配状态
+  async function poll() {
+    try {
+      const resp = await fetch(`${API_BASE}/api/pk/match/status?player_name=${encodeURIComponent(myName)}`);
+      const result = await resp.json();
+      if (result.success && result.data.matched) {
+        roomCode = result.data.room_code;
+        // 找到对手名
+        isHost = false;
+        showMatchSuccess();
+        return;
+      }
+      if (result.success && !result.data.matched) {
+        document.getElementById('queuePos').textContent = result.data.position;
+        document.getElementById('queueSize').textContent = result.data.queue_size;
+        matchPollTimer = setTimeout(poll, 2000);
+      }
+    } catch (e) {
+      matchPollTimer = setTimeout(poll, 3000);
+    }
+  }
+  poll();
+}
+
+function showMatchSuccess(opponent) {
+  if (matchPollTimer) clearTimeout(matchPollTimer);
+  if (matchTimerInterval) clearInterval(matchTimerInterval);
+  // 先跳转到房间等待页，然后自动开始
+  document.getElementById('matchPage').classList.add('hidden');
+  isHost = true;
+  showRoom();
+  // 1.5秒后自动开始PK
+  setTimeout(() => {
+    startGame();
+  }, 1500);
+}
+
+async function cancelMatch() {
+  if (matchPollTimer) clearTimeout(matchPollTimer);
+  if (matchTimerInterval) clearInterval(matchTimerInterval);
+  try {
+    await fetch(`${API_BASE}/api/pk/match/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_name: myName })
+    });
+  } catch (e) {}
+  document.getElementById('matchPage').classList.add('hidden');
+  document.getElementById('lobbyPage').classList.remove('hidden');
+  const btn = document.getElementById('matchBtn');
+  btn.disabled = false;
+  btn.textContent = '🎲 开始随机配对';
+}
+</script>
+
+</body>
+</html>

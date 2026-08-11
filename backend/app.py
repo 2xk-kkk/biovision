@@ -7,7 +7,7 @@ from database.db import init_db
 import os
 from fastapi.staticfiles import StaticFiles
 from service.chart import get_forum_stats
-from routers import chart, mindmap
+from routers import chart, mindmap, pk
 from PPT.generator import OUTPUT_DIR as PPT_OUTPUT_DIR, ASSET_DIR as PPT_ASSET_DIR  
 
 init_db()
@@ -49,6 +49,7 @@ app.include_router(exam.router, prefix="/api", tags=["试卷"])
 app.include_router(question.router, prefix="/api", tags=["题目"])
 app.include_router(ppt.router, prefix="/api", tags=["PPT生成"])
 app.include_router(mindmap.router, prefix="/api", tags=["思维导图"])
+app.include_router(pk.router, prefix="/api", tags=["院校PK"])
 
 # 挂载 PPT 输出文件和资源文件（需要挂载两个路径，因为 HTML 内相对路径 ../assets/ 会解析到 /api/ppt/decks/assets/）
 os.makedirs(PPT_OUTPUT_DIR, exist_ok=True)

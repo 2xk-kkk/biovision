@@ -206,7 +206,7 @@
 
 <div class="top-bar">
   <h1><span>🧬</span>生物思维导图</h1>
-  <a href="index.html" class="back-btn">← 返回首页</a>
+  <a href="main.html" class="back-btn">← 返回每日训练</a>
 </div>
 
 <div class="container">
@@ -455,14 +455,12 @@ function renderMindMap(bookKey) {
 }
 
 function setupChartEvents() {
-  // 点击事件：显示详情（叶子节点）
   chart.on('click', function(params) {
     if (params.data && params.data.details) {
       showDetail(params.data.details);
     }
   });
 
-  // 滚轮缩放
   chart.getZr().on('wheel', function(params) {
     params.event.preventDefault();
     const delta = params.event.deltaY > 0 ? 0.9 : 1.1;
