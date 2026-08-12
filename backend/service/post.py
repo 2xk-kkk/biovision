@@ -30,8 +30,8 @@ from model.post import (
 )
 from model.user import get_user_stats
 
-def create_post(token, content, image_urls, tag, tags=None):
-    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}, tags={tags}")
+def create_post(token, content, image_urls, tag, tags=None, file_urls=None):
+    print(f"[DEBUG] create_post called with token={token[:20] if token else 'None'}, content={content[:50] if token else 'None'}, image_urls={image_urls}, tag={tag}, tags={tags}, file_urls={file_urls}")
     print(f"[DEBUG] image_urls type: {type(image_urls)}, value: {image_urls}")
     
     db = get_db_connection()

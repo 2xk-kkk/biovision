@@ -18,13 +18,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
-#配置 CORS（允许前端跨域调用）
+#配置 CORS（允许前端跨域调用，包括 file:// 协议的 null origin）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 #配置静态文件目录（用于上传图片）

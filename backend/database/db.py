@@ -228,6 +228,37 @@ def init_db():
         )
     ''')
 
+    # PK排行榜表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS pk_leaderboard (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            player_name TEXT NOT NULL,
+            college TEXT DEFAULT '',
+            score INTEGER DEFAULT 0,
+            win_count INTEGER DEFAULT 0,
+            total_games INTEGER DEFAULT 0,
+            correct_rate REAL DEFAULT 0,
+            period TEXT DEFAULT 'weekly',
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # PK比赛记录表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS pk_records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            room_code TEXT NOT NULL,
+            player_name TEXT NOT NULL,
+            college TEXT DEFAULT '',
+            score INTEGER DEFAULT 0,
+            correct_count INTEGER DEFAULT 0,
+            total_count INTEGER DEFAULT 10,
+            result TEXT DEFAULT '',
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     conn.commit()
     conn.close()
 

@@ -3,711 +3,939 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>院校PK - BioVision</title>
+<title>答题PK - BioVision</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: linear-gradient(145deg, #d1fae5 0%, #a7f3d0 18%, #bbf7d0 35%, #fecaca 60%, #fca5a5 80%, #fdba74 100%);
-    min-height: 100vh;
-    color: #333;
-  }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:linear-gradient(145deg,#064e3b 0%,#065f46 15%,#047857 30%,#059669 45%,#d97706 70%,#ea580c 85%,#dc2626 100%);
+  color:#1f2937;height:100vh;overflow:hidden;position:relative;
+}
+body::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 20%,rgba(16,185,129,0.3) 0%,transparent 50%),
+             radial-gradient(ellipse at 80% 80%,rgba(249,115,22,0.25) 0%,transparent 50%),
+             radial-gradient(ellipse at 60% 30%,rgba(251,191,36,0.15) 0%,transparent 40%);
+  pointer-events:none;
+}
 
-  .top-bar {
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #065f46;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 12px rgba(5, 150, 105, 0.12);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .top-bar h1 { font-size: 1.2em; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-  .back-btn { color: #065f46; text-decoration: none; padding: 6px 14px; border: 1px solid rgba(6, 95, 70, 0.4); border-radius: 20px; font-size: 0.9em; transition: all 0.3s; background: rgba(255,255,255,0.45); }
-  .back-btn:hover { background: rgba(255,255,255,0.8); border-color: #065f46; }
+.top-bar{
+  height:56px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.15);
+  position:relative;z-index:10;
+}
+.top-bar h1{font-size:1.15em;font-weight:800;color:white;display:flex;align-items:center;gap:10px;text-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.back-btn{color:white;text-decoration:none;padding:7px 18px;border:1px solid rgba(255,255,255,0.4);border-radius:24px;font-size:0.85em;transition:all 0.3s;background:rgba(255,255,255,0.1);font-weight:500}
+.back-btn:hover{background:rgba(255,255,255,0.25);transform:translateX(-2px)}
 
-  .container { max-width: 800px; margin: 0 auto; padding: 24px; }
+.main-wrap{height:calc(100vh - 56px);display:flex;flex-direction:column;position:relative;z-index:5}
 
-  /* ===== 大厅页面 ===== */
-  .lobby-card {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 40px;
-    box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15);
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.5);
-  }
-  .lobby-icon { font-size: 3em; margin-bottom: 12px; }
-  .lobby-title { font-size: 1.8em; font-weight: 800; color: #2d3748; margin-bottom: 8px; }
-  .lobby-subtitle { color: #718096; margin-bottom: 32px; font-size: 0.95em; }
+#lobbyPage{height:100%;display:flex;flex-direction:column;padding:20px 28px;gap:16px}
+.lobby-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.lobby-title-area h2{font-size:2em;font-weight:900;color:white;letter-spacing:-0.02em;text-shadow:0 4px 20px rgba(0,0,0,0.25)}
+.lobby-title-area p{color:rgba(255,255,255,0.85);margin-top:4px;font-size:0.95em}
 
-  .mode-cards { display: flex; gap: 16px; margin-bottom: 24px; }
-  .mode-card {
-    flex: 1;
-    padding: 24px 16px;
-    border: 3px solid #e2e8f0;
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.25s;
-    background: #f7fafc;
-    text-align: center;
-  }
-  .mode-card:hover { border-color: #a3bffa; background: #ebf4ff; transform: translateY(-2px); }
-  .mode-card.active { border-color: #667eea; background: #ebf4ff; box-shadow: 0 8px 24px rgba(102,126,234,0.2); }
-  .mode-card-icon { font-size: 2em; margin-bottom: 8px; }
-  .mode-card-title { font-size: 1.1em; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
-  .mode-card-desc { font-size: 0.8em; color: #718096; }
+.lobby-body{flex:1;display:grid;grid-template-columns:1fr 380px;gap:20px;min-height:0}
+.modes-section{display:flex;flex-direction:column;gap:16px;min-height:0}
+.modes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex:1;min-height:0}
 
-  .form-group { margin-bottom: 16px; text-align: left; }
-  .form-label { display: block; font-size: 0.85em; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
-  .form-input {
-    width: 100%;
-    padding: 14px 18px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 1em;
-    transition: all 0.2s;
-  }
-  .form-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+.mode-card{
+  border-radius:24px;padding:28px 24px;cursor:pointer;transition:all 0.35s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;
+  border:2px solid rgba(255,255,255,0.3);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.mode-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 30px 60px rgba(0,0,0,0.3)}
+.mode-card .mc-icon{font-size:3em;margin-bottom:12px;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))}
+.mode-card .mc-title{font-size:1.45em;font-weight:800;color:white;margin-bottom:6px}
+.mode-card .mc-desc{font-size:0.88em;color:rgba(255,255,255,0.8);line-height:1.5}
+.mode-card .mc-tag{position:absolute;top:16px;right:16px;padding:4px 12px;border-radius:12px;font-size:0.72em;font-weight:700;color:white;letter-spacing:0.5px}
+.mode-card .mc-action{margin-top:auto;padding:10px 18px;border-radius:14px;font-weight:700;font-size:0.92em;display:flex;align-items:center;gap:6px;transition:all 0.2s}
 
-  .submit-btn {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.1em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 8px;
-  }
-  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.4); }
-  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.mc-battle{background:linear-gradient(145deg,rgba(239,68,68,0.85),rgba(220,38,38,0.9));box-shadow:0 15px 35px rgba(220,38,38,0.3)}
+.mc-battle:hover{box-shadow:0 20px 50px rgba(220,38,38,0.45)}
+.mc-battle .mc-tag,.mc-battle .mc-action{background:rgba(255,255,255,0.2);color:white}
+.mc-battle .mc-action:hover{background:rgba(255,255,255,0.3)}
 
-  .rules-box {
-    margin-top: 24px;
-    padding: 16px;
-    background: #f7fafc;
-    border-radius: 12px;
-    text-align: left;
-    font-size: 0.85em;
-    color: #4a5568;
-    line-height: 1.8;
-  }
-  .rules-box-title { font-weight: 700; color: #2d3748; margin-bottom: 8px; }
+.mc-duel{background:linear-gradient(145deg,rgba(59,130,246,0.85),rgba(37,99,235,0.9));box-shadow:0 15px 35px rgba(37,99,235,0.3)}
+.mc-duel:hover{box-shadow:0 20px 50px rgba(37,99,235,0.45)}
+.mc-duel .mc-tag,.mc-duel .mc-action{background:rgba(255,255,255,0.2);color:white}
+.mc-duel .mc-action:hover{background:rgba(255,255,255,0.3)}
 
-  /* ===== 配对等待页面 ===== */
-  .matching-card {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 40px 32px;
-    box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15);
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.5);
-  }
-  .matching-avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    margin: 0 auto 20px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: match-pulse 1.5s ease-in-out infinite;
-    color: white;
-    font-size: 3em;
-  }
-  @keyframes match-pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102,126,234,0.5); }
-    50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(102,126,234,0); }
-  }
-  .matching-title {
-    font-size: 1.5em;
-    font-weight: 700;
-    color: #2d3748;
-    margin-bottom: 8px;
-  }
-  .matching-subtitle {
-    color: #718096;
-    margin-bottom: 24px;
-  }
-  .matching-stats {
-    display: flex;
-    justify-content: center;
-    gap: 32px;
-    margin-bottom: 24px;
-  }
-  .stat-item { text-align: center; }
-  .stat-val { font-size: 1.8em; font-weight: 800; color: #553c9a; }
-  .stat-label { font-size: 0.8em; color: #718096; }
-  .matching-dots {
-    font-size: 2em;
-    letter-spacing: 4px;
-    color: #667eea;
-    margin-bottom: 24px;
-  }
-  .matching-dots span { animation: dot-blink 1.2s infinite; }
-  .matching-dots span:nth-child(2) { animation-delay: 0.2s; }
-  .matching-dots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes dot-blink {
-    0%, 80%, 100% { opacity: 0.3; }
-    40% { opacity: 1; }
-  }
-  .cancel-match-btn {
-    padding: 12px 32px;
-    background: #fed7d7;
-    color: #c53030;
-    border: none;
-    border-radius: 12px;
-    font-size: 1em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .cancel-match-btn:hover { background: #feb2b2; transform: translateY(-1px); }
+.mc-college{background:linear-gradient(145deg,rgba(168,85,247,0.85),rgba(139,92,246,0.9));box-shadow:0 15px 35px rgba(139,92,246,0.3)}
+.mc-college:hover{box-shadow:0 20px 50px rgba(139,92,246,0.45)}
+.mc-college .mc-tag,.mc-college .mc-action{background:rgba(255,255,255,0.2);color:white}
+.mc-college .mc-action:hover{background:rgba(255,255,255,0.3)}
 
-  /* ===== 等待房间页面 ===== */
-  .room-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 32px; box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15); border: 1px solid rgba(255,255,255,0.5); }
-  .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
-  .room-code-box { text-align: center; flex: 1; }
-  .room-code-label { font-size: 0.85em; color: #718096; margin-bottom: 4px; }
-  .room-code-display { font-size: 2.5em; font-weight: 800; color: #667eea; letter-spacing: 8px; }
-  .room-code-copy { margin-top: 8px; padding: 6px 16px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 0.85em; cursor: pointer; transition: all 0.2s; }
-  .room-code-copy:hover { background: #553c9a; }
-  .player-count-box { text-align: right; }
-  .player-count-label { font-size: 0.8em; color: #718096; }
-  .player-count-val { font-size: 1.5em; font-weight: 700; color: #4a5568; }
+.leaderboard-panel{border-radius:24px;padding:20px;background:rgba(255,255,255,0.15);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.25);display:flex;flex-direction:column;min-height:0;box-shadow:0 20px 50px rgba(0,0,0,0.2)}
+.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0}
+.lb-title{font-size:1.1em;font-weight:800;color:white;display:flex;align-items:center;gap:8px}
+.lb-tabs{display:flex;gap:6px}
+.lb-tab{padding:5px 14px;border-radius:14px;font-size:0.8em;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);transition:all 0.2s}
+.lb-tab.active{background:rgba(255,255,255,0.35);color:white}
+.lb-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0;padding-right:4px}
+.lb-list::-webkit-scrollbar{width:4px}
+.lb-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.3);border-radius:2px}
+.lb-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.12);transition:all 0.2s;flex-shrink:0}
+.lb-item:hover{background:rgba(255,255,255,0.2);transform:translateX(4px)}
+.lb-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9em;flex-shrink:0}
+.lb-rank.gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#78350f}
+.lb-rank.silver{background:linear-gradient(135deg,#d1d5db,#9ca3af);color:#374151}
+.lb-rank.bronze{background:linear-gradient(135deg,#d97706,#b45309);color:#451a03}
+.lb-rank.normal{background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8)}
+.lb-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:0.9em;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-weight:700;color:white;font-size:0.92em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-college{font-size:0.75em;color:rgba(255,255,255,0.7);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-score{font-weight:800;color:#fde68a;font-size:1.05em;flex-shrink:0}
+.lb-stats-row{display:flex;justify-content:space-between;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.1);margin-bottom:10px;flex-shrink:0}
+.lb-stat{text-align:center}
+.lb-stat-val{font-size:1.3em;font-weight:800;color:white}
+.lb-stat-label{font-size:0.72em;color:rgba(255,255,255,0.7);margin-top:2px}
 
-  .players-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .player-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #f7fafc; border-radius: 12px; border: 2px solid #e2e8f0; }
-  .player-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1em; }
-  .player-name { font-weight: 600; color: #2d3748; }
-  .player-host { font-size: 0.75em; color: #667eea; font-weight: 700; }
+.page{height:100%;display:flex;flex-direction:column}
+.hidden{display:none!important}
 
-  .room-actions { display: flex; gap: 12px; }
-  .room-actions button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 1em; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-  .btn-start { background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
-  .btn-start:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-start:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(72,187,120,0.4); }
-  .btn-leave { background: #fed7d7; color: #c53030; }
-  .btn-leave:hover { background: #feb2b2; }
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:100;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-card{width:440px;max-width:90vw;max-height:90vh;overflow-y:auto;background:white;border-radius:24px;padding:32px;box-shadow:0 30px 80px rgba(0,0,0,0.3);animation:slideUp 0.3s cubic-bezier(.4,0,.2,1);position:relative}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-size:1.5em;font-weight:800;color:#1f2937;margin-bottom:8px}
+.modal-desc{color:#6b7280;margin-bottom:24px;font-size:0.92em}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:0.85em;font-weight:600;color:#374151;margin-bottom:6px}
+.form-input{width:100%;padding:13px 16px;border:2px solid #e5e7eb;border-radius:12px;font-size:1em;transition:all 0.2s;background:#f9fafb}
+.form-input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 4px rgba(99,102,241,0.1);background:white}
+.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;border-radius:12px;font-size:1em;font-weight:700;cursor:pointer;transition:all 0.25s;margin-top:8px}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 25px rgba(99,102,241,0.4)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-secondary{width:100%;padding:12px;background:#f3f4f6;color:#4b5563;border:none;border-radius:12px;font-size:0.95em;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:10px}
+.btn-secondary:hover{background:#e5e7eb}
+.close-modal{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:#f3f4f6;border:none;cursor:pointer;font-size:1.2em;color:#6b7280;transition:all 0.2s;z-index:2}
+.close-modal:hover{background:#e5e7eb}
+.college-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;max-height:140px;overflow-y:auto;padding:10px;background:#f9fafb;border-radius:12px;border:2px solid #e5e7eb}
+.college-chip{padding:6px 14px;border-radius:16px;background:white;border:1.5px solid #e5e7eb;font-size:0.82em;cursor:pointer;transition:all 0.2s;color:#374151;font-weight:500}
+.college-chip:hover{border-color:#8b5cf6;background:#f5f3ff}
+.college-chip.selected{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-color:transparent}
 
-  .waiting-hint { text-align: center; color: #718096; margin-top: 16px; font-size: 0.9em; }
-  .waiting-hint .dot { animation: blink 1.5s infinite; }
-  @keyframes blink { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+.rules-box{margin-top:0;padding:14px 18px;background:linear-gradient(135deg,rgba(254,243,199,0.85),rgba(253,230,138,0.85));border-radius:12px;font-size:0.85em;color:#78350f;line-height:1.7;border-left:4px solid #f59e0b}
+.rules-box b{color:#92400e}
 
-  /* ===== 答题页面 ===== */
-  .quiz-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 32px; box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15); border: 1px solid rgba(255,255,255,0.5); }
-  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .quiz-progress { font-size: 1em; font-weight: 700; color: #4a5568; }
-  .quiz-timer { padding: 8px 20px; border-radius: 20px; font-size: 1.2em; font-weight: 800; color: white; background: #48bb78; transition: all 0.3s; min-width: 70px; text-align: center; }
-  .quiz-timer.warning { background: #ed8936; }
-  .quiz-timer.danger { background: #e53e3e; animation: pulse 0.5s infinite; }
-  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+#roomPage{background:linear-gradient(135deg,#0f172a,#1e293b);padding:24px 32px}
+.room-header-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:rgba(255,255,255,0.08);border-radius:16px;border:1px solid rgba(255,255,255,0.1);margin-bottom:20px}
+.room-code-area{text-align:center;flex:1}
+.room-code-label{color:rgba(255,255,255,0.6);font-size:0.8em;margin-bottom:4px}
+.room-code-display{font-size:3em;font-weight:900;color:#fde68a;letter-spacing:12px}
+.room-code-btns{display:flex;gap:10px;justify-content:center;margin-top:6px}
+.room-code-copy{padding:6px 20px;background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:10px;font-size:0.82em;cursor:pointer;transition:all 0.2s}
+.room-code-copy:hover{background:rgba(251,191,36,0.3)}
+.room-code-share{padding:6px 20px;background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid rgba(59,130,246,0.4);border-radius:10px;font-size:0.82em;cursor:pointer;transition:all 0.2s}
+.room-code-share:hover{background:rgba(59,130,246,0.3)}
+.share-forum-modal{max-width:500px}
+.share-forum-modal .form-textarea{width:100%;min-height:120px;padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;font-family:inherit;font-size:0.9em;resize:vertical;outline:none}
+.share-forum-modal .form-textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+.share-forum-modal .tag-select{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.share-forum-modal .tag-chip{padding:4px 12px;border-radius:16px;border:1px solid #e5e7eb;cursor:pointer;font-size:0.85em;background:white;transition:all 0.2s}
+.share-forum-modal .tag-chip.active{background:#3b82f6;color:white;border-color:#3b82f6}
+.room-meta{text-align:right}
+.room-meta-label{color:rgba(255,255,255,0.6);font-size:0.8em}
+.room-meta-val{font-size:1.6em;font-weight:800;color:white}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;flex:1;overflow-y:auto;align-content:start}
+.player-card{padding:14px 16px;background:rgba(255,255,255,0.08);border-radius:14px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px;transition:all 0.2s}
+.player-card:hover{background:rgba(255,255,255,0.12)}
+.player-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:1.1em;flex-shrink:0}
+.player-details{flex:1;min-width:0}
+.player-name{font-weight:700;color:white;font-size:0.95em}
+.player-role{font-size:0.75em;color:rgba(255,255,255,0.6);margin-top:2px}
+.room-actions-bar{display:flex;gap:12px;flex-shrink:0}
+.btn-start-pk{flex:1;padding:16px;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:16px;font-size:1.1em;font-weight:800;cursor:pointer;transition:all 0.25s;box-shadow:0 8px 25px rgba(16,185,129,0.3)}
+.btn-start-pk:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 30px rgba(16,185,129,0.5)}
+.btn-start-pk:disabled{opacity:0.5;cursor:not-allowed}
+.btn-leave-room{padding:16px 24px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.2);border-radius:16px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.btn-leave-room:hover{background:rgba(255,255,255,0.15)}
 
-  .quiz-score-bar { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-  .score-chip { padding: 8px 16px; background: #f7fafc; border-radius: 20px; font-size: 0.85em; font-weight: 600; color: #4a5568; border: 2px solid #e2e8f0; display: flex; align-items: center; gap: 6px; }
-  .score-chip.me { border-color: #667eea; background: #ebf4ff; color: #553c9a; }
-  .score-chip b { color: #553c9a; font-size: 1.1em; }
-  .score-chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .score-chip.answered .dot { background: #48bb78; }
-  .score-chip.waiting .dot { background: #ed8936; animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+#quizPage{background:linear-gradient(180deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);padding:20px 32px;height:100%;display:flex;flex-direction:column}
+.quiz-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-shrink:0}
+.quiz-progress-info{display:flex;align-items:center;gap:16px}
+.quiz-q-num{font-size:1.1em;font-weight:700;color:rgba(255,255,255,0.9)}
+.quiz-q-total{color:rgba(255,255,255,0.5);font-weight:500}
+.quiz-timer-wrap{display:flex;align-items:center;gap:10px}
+.quiz-timer-bar{width:200px;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden}
+.quiz-timer-fill{height:100%;background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);border-radius:4px;transition:width 0.3s linear}
+.quiz-timer-text{padding:6px 14px;border-radius:12px;font-size:1em;font-weight:800;color:white;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);min-width:50px;text-align:center}
+.quiz-timer-text.warning{background:rgba(245,158,11,0.2);color:#fbbf24;border-color:rgba(251,191,36,0.3)}
+.quiz-timer-text.danger{background:rgba(239,68,68,0.2);color:#fca5a5;border-color:rgba(239,68,68,0.3);animation:pulse 0.5s infinite}
 
-  .quiz-stem { font-size: 1.15em; line-height: 1.8; color: #2d3748; margin-bottom: 24px; padding: 20px; background: #f7fafc; border-radius: 12px; }
-  .quiz-options { display: flex; flex-direction: column; gap: 12px; }
-  .quiz-option { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; font-size: 1em; transition: all 0.2s; background: white; }
-  .quiz-option:hover { border-color: #667eea; background: #ebf4ff; transform: translateX(4px); }
-  .quiz-option.selected { border-color: #667eea; background: #ebf4ff; }
-  .quiz-option.correct { border-color: #48bb78; background: #c6f6d5; }
-  .quiz-option.wrong { border-color: #f56565; background: #fed7d7; }
-  .quiz-option.disabled { cursor: not-allowed; pointer-events: none; }
-  .option-label { width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; color: #4a5568; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
-  .quiz-option.selected .option-label { background: #667eea; color: white; }
-  .quiz-option.correct .option-label { background: #48bb78; color: white; }
-  .quiz-option.wrong .option-label { background: #f56565; color: white; }
+.vs-bar{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:20px;flex-shrink:0;padding:14px 20px;background:rgba(255,255,255,0.06);border-radius:20px;border:1px solid rgba(255,255,255,0.1)}
+.vs-player{display:flex;align-items:center;gap:12px;flex:1;max-width:300px}
+.vs-player.right{flex-direction:row-reverse}
+.vs-avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:1.2em;flex-shrink:0;position:relative;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.vs-player-info{flex:1;min-width:0}
+.vs-player-name{font-weight:700;color:white;font-size:0.95em}
+.vs-player-stats{font-size:0.82em;color:rgba(255,255,255,0.6);margin-top:2px}
+.vs-score{font-size:1.3em;font-weight:900;color:#fde68a;text-align:center;min-width:60px}
+.vs-divider{font-size:1.3em;font-weight:900;color:rgba(255,255,255,0.5);padding:0 8px}
 
-  .answer-feedback { text-align: center; padding: 16px; border-radius: 12px; margin-top: 16px; font-size: 1.1em; font-weight: 700; display: none; }
-  .answer-feedback.correct { background: #c6f6d5; color: #22543d; display: block; }
-  .answer-feedback.wrong { background: #fed7d7; color: #742a2a; display: block; }
+.quiz-body{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;min-height:0}
+.quiz-stem{width:100%;max-width:800px;padding:28px 32px;background:rgba(255,255,255,0.08);border-radius:20px;border:1px solid rgba(255,255,255,0.1);font-size:1.18em;line-height:1.9;color:white;text-align:center;font-weight:500}
+.quiz-options{width:100%;max-width:800px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.quiz-option{display:flex;align-items:center;gap:14px;padding:18px 22px;border-radius:16px;cursor:pointer;font-size:1.02em;transition:all 0.25s;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.9);text-align:left}
+.quiz-option:hover{background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);transform:translateY(-2px)}
+.quiz-option.selected{background:rgba(99,102,241,0.3);border-color:#818cf8}
+.quiz-option.correct{background:rgba(16,185,129,0.3);border-color:#34d399}
+.quiz-option.wrong{background:rgba(239,68,68,0.3);border-color:#f87171}
+.quiz-option.disabled{cursor:not-allowed;pointer-events:none;opacity:0.7}
+.option-label{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.quiz-option.selected .option-label{background:#6366f1}
+.quiz-option.correct .option-label{background:#10b981}
+.quiz-option.wrong .option-label{background:#ef4444}
+.answer-feedback{padding:12px 28px;border-radius:14px;font-size:1.05em;font-weight:700;display:none;margin-top:4px}
+.answer-feedback.correct{background:rgba(16,185,129,0.2);color:#6ee7b7;display:block;border:1px solid rgba(16,185,129,0.3)}
+.answer-feedback.wrong{background:rgba(239,68,68,0.2);color:#fca5a5;display:block;border:1px solid rgba(239,68,68,0.3)}
 
-  /* ===== 结果页面 ===== */
-  .result-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 40px; box-shadow: 0 20px 60px rgba(5, 150, 105, 0.15); text-align: center; border: 1px solid rgba(255,255,255,0.5); }
-  .result-title { font-size: 1.8em; font-weight: 800; margin-bottom: 24px; color: #2d3748; }
-  .ranking-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-  .ranking-item { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-radius: 14px; background: #f7fafc; border: 2px solid #e2e8f0; }
-  .ranking-item.rank-1 { background: linear-gradient(135deg, #fef5e7, #fbd38d); border-color: #f6ad55; }
-  .ranking-item.rank-2 { background: linear-gradient(135deg, #f7fafc, #e2e8f0); border-color: #a0aec0; }
-  .ranking-item.rank-3 { background: linear-gradient(135deg, #fffaf0, #fbd38d); border-color: #dd6b20; }
-  .ranking-medal { font-size: 2em; width: 48px; text-align: center; }
-  .ranking-info { flex: 1; text-align: left; }
-  .ranking-name { font-size: 1.2em; font-weight: 700; color: #2d3748; }
-  .ranking-stats { font-size: 0.85em; color: #718096; }
-  .ranking-score { font-size: 1.5em; font-weight: 800; color: #553c9a; }
-  .result-actions { display: flex; gap: 12px; }
-  .result-actions button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 1em; font-weight: 700; cursor: pointer; }
-  .btn-again { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
-  .btn-home { background: #e2e8f0; color: #4a5568; }
+#matchPage{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:40px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.match-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;animation:matchPulse 1.5s ease-in-out infinite;color:white;font-size:3.5em;box-shadow:0 0 60px rgba(99,102,241,0.5)}
+@keyframes matchPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(99,102,241,0.5)}50%{transform:scale(1.05);box-shadow:0 0 0 30px rgba(99,102,241,0)}}
+.match-title{font-size:1.5em;font-weight:700;color:white}
+.match-subtitle{color:rgba(255,255,255,0.6);font-size:1em}
+.match-stats{display:flex;gap:40px}
+.match-stat{text-align:center}
+.match-stat-val{font-size:2em;font-weight:800;color:#c4b5fd}
+.match-stat-label{font-size:0.85em;color:rgba(255,255,255,0.6);margin-top:4px}
+.match-dots{font-size:2.5em;letter-spacing:8px;color:#a78bfa}
+.match-dots span{animation:dotBlink 1.2s infinite}
+.match-dots span:nth-child(2){animation-delay:0.2s}
+.match-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dotBlink{0%,80%,100%{opacity:0.3}40%{opacity:1}}
+.btn-cancel{padding:12px 36px;background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);border-radius:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.btn-cancel:hover{background:rgba(239,68,68,0.3)}
 
-  .hidden { display: none !important; }
+#resultPage{background:linear-gradient(180deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);padding:32px;display:flex;flex-direction:column;gap:20px;align-items:center;overflow-y:auto}
+.result-header{text-align:center;margin-bottom:8px}
+.result-emoji{font-size:4em;filter:drop-shadow(0 4px 20px rgba(0,0,0,0.3))}
+.result-title{font-size:2.5em;font-weight:900;background:linear-gradient(135deg,#fde68a,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.result-subtitle{color:rgba(255,255,255,0.7);margin-top:4px}
+.ranking-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:500px}
+.ranking-card{display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:20px;transition:all 0.3s;position:relative;overflow:hidden}
+.ranking-card.r1{background:linear-gradient(135deg,rgba(251,191,36,0.3),rgba(245,158,11,0.4));border:2px solid #fbbf24}
+.ranking-card.r2{background:linear-gradient(135deg,rgba(209,213,219,0.25),rgba(156,163,175,0.35));border:2px solid #d1d5db}
+.ranking-card.r3{background:linear-gradient(135deg,rgba(217,119,6,0.25),rgba(180,83,9,0.35));border:2px solid #d97706}
+.ranking-card.r4,.ranking-card.r5,.ranking-card.r6{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)}
+.ranking-card:hover{transform:translateX(4px)}
+.ranking-medal{font-size:2.2em;width:50px;text-align:center;flex-shrink:0}
+.ranking-info{flex:1;min-width:0}
+.ranking-name{font-size:1.15em;font-weight:700;color:white}
+.ranking-detail{font-size:0.85em;color:rgba(255,255,255,0.6);margin-top:4px}
+.ranking-score{font-size:1.6em;font-weight:900;color:#fde68a;text-align:right;flex-shrink:0}
+.result-actions{display:flex;gap:14px;margin-top:12px}
+.btn-play-again{padding:14px 36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;border-radius:14px;font-size:1em;font-weight:700;cursor:pointer;transition:all 0.25s}
+.btn-play-again:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(99,102,241,0.4)}
+.btn-back-home{padding:14px 36px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.2);border-radius:14px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.btn-back-home:hover{background:rgba(255,255,255,0.15)}
 
-  @media (max-width: 600px) {
-    .container { padding: 12px; }
-    .lobby-card, .room-card, .quiz-card, .result-card { padding: 20px; }
-    .mode-cards { flex-direction: column; }
-    .room-actions { flex-direction: column; }
-    .room-code-display { font-size: 1.8em; letter-spacing: 4px; }
-  }
+@media (max-width:1100px){.lobby-body{grid-template-columns:1fr 300px}}
+@media (max-width:850px){
+  html,body{overflow:auto}
+  .main-wrap{height:auto}
+  #lobbyPage{height:auto}
+  .lobby-body{grid-template-columns:1fr}
+  .modes-grid{grid-template-columns:1fr}
+  .quiz-options{grid-template-columns:1fr}
+  .vs-bar{flex-wrap:wrap;gap:12px}
+}
 </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <h1><span>🏆</span>院校PK</h1>
-  <a href="main.html" class="back-btn">← 返回每日训练</a>
+  <h1><span style="font-size:1.3em">⚔️</span> BioVision 答题PK</h1>
+  <a href="main.html" class="back-btn">← 返回训练</a>
 </div>
 
-<div class="container">
+<div class="main-wrap">
 
-  <!-- 配对等待页面 -->
-  <div class="matching-card hidden" id="matchPage">
-    <div class="matching-avatar">🎲</div>
-    <div class="matching-title">正在寻找对手...</div>
-    <div class="matching-subtitle">预计很快匹配到同学</div>
-    <div class="matching-stats">
-      <div class="stat-item">
-        <div class="stat-val" id="queuePos">-</div>
-        <div class="stat-label">队列位置</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val" id="queueSize">-</div>
-        <div class="stat-label">等待人数</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val" id="waitSec">0s</div>
-        <div class="stat-label">已等待</div>
+  <div class="page" id="lobbyPage">
+    <div class="lobby-header">
+      <div class="lobby-title-area">
+        <h2>选择你的PK模式</h2>
+        <p>与同学切磋生物知识，登上排行榜之巅</p>
       </div>
     </div>
-    <div class="matching-dots"><span>●</span><span>●</span><span>●</span></div>
-    <button class="cancel-match-btn" onclick="cancelMatch()">取消配对</button>
-  </div>
-
-  <!-- 大厅页面 -->
-  <div class="lobby-card" id="lobbyPage">
-    <div class="lobby-icon">⚔️</div>
-    <div class="lobby-title">答题PK</div>
-    <div class="lobby-subtitle">创建房间或加入房间，与同学比拼生物知识</div>
-
-    <div class="mode-cards">
-      <div class="mode-card active" id="modeCreate" onclick="switchMode('create')">
-        <div class="mode-card-icon">🏠</div>
-        <div class="mode-card-title">创建房间</div>
-        <div class="mode-card-desc">生成房间码邀请同学</div>
+    <div class="lobby-body">
+      <div class="modes-section">
+        <div class="modes-grid">
+          <div class="mode-card mc-battle" onclick="openQuickMatch()">
+            <div>
+              <span class="mc-icon">⚡</span>
+              <span class="mc-tag">热门</span>
+              <div class="mc-title">答题争上游</div>
+              <div class="mc-desc">系统随机匹配对手<br>30秒极速对战</div>
+            </div>
+            <div class="mc-action">立即匹配 →</div>
+          </div>
+          <div class="mode-card mc-duel" onclick="openPrivateRoom()">
+            <div>
+              <span class="mc-icon">⚔️</span>
+              <span class="mc-tag">推荐</span>
+              <div class="mc-title">多人对战</div>
+              <div class="mc-desc">创建房间邀请好友<br>2-6人同场竞技</div>
+            </div>
+            <div class="mc-action">创建房间 →</div>
+          </div>
+          <div class="mode-card mc-college" onclick="openCollegePK()">
+            <div>
+              <span class="mc-icon">🎓</span>
+              <span class="mc-tag">新增</span>
+              <div class="mc-title">院校PK</div>
+              <div class="mc-desc">选择你的院校<br>与同校同学PK</div>
+            </div>
+            <div class="mc-action">加入院校战 →</div>
+          </div>
+        </div>
+        <div class="rules-box">
+          <b>📋 PK规则</b><br>
+          每场10道选择题 · 每题限时30秒 · 答对得分 = 10分 + 剩余秒数奖励 · 答错/超时0分 · 至少2人开局
+        </div>
       </div>
-      <div class="mode-card" id="modeJoin" onclick="switchMode('join')">
-        <div class="mode-card-icon">🚪</div>
-        <div class="mode-card-title">加入房间</div>
-        <div class="mode-card-desc">输入房间码加入PK</div>
+      <div class="leaderboard-panel">
+        <div class="lb-header">
+          <div class="lb-title">🏆 排行榜</div>
+          <div class="lb-tabs">
+            <div class="lb-tab active" onclick="switchLBTab(this,'player')">个人</div>
+            <div class="lb-tab" onclick="switchLBTab(this,'college')">院校</div>
+          </div>
+        </div>
+        <div class="lb-stats-row">
+          <div class="lb-stat"><div class="lb-stat-val" id="statGames">0</div><div class="lb-stat-label">对局数</div></div>
+          <div class="lb-stat"><div class="lb-stat-val" id="statPlayers">0</div><div class="lb-stat-label">参与人数</div></div>
+        </div>
+        <div class="lb-list" id="lbList"></div>
       </div>
-      <div class="mode-card" id="modeMatch" onclick="switchMode('match')">
-        <div class="mode-card-icon">🎲</div>
-        <div class="mode-card-title">随机配对</div>
-        <div class="mode-card-desc">系统自动匹配对手</div>
-      </div>
-    </div>
-
-    <div id="createSection">
-      <div class="form-group">
-        <label class="form-label">你的昵称</label>
-        <input type="text" class="form-input" id="createName" placeholder="请输入昵称（最多12个字）" maxlength="12" oninput="checkCreateBtn()">
-      </div>
-      <button class="submit-btn" id="createBtn" onclick="createRoom()" disabled>创建PK房间</button>
-    </div>
-
-    <div id="joinSection" class="hidden">
-      <div class="form-group">
-        <label class="form-label">你的昵称</label>
-        <input type="text" class="form-input" id="joinName" placeholder="请输入昵称（最多12个字）" maxlength="12" oninput="checkJoinBtn()">
-      </div>
-      <div class="form-group">
-        <label class="form-label">房间码</label>
-        <input type="text" class="form-input" id="joinCode" placeholder="请输入4位房间码" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'');checkJoinBtn()" style="letter-spacing:4px;font-size:1.3em;text-align:center;">
-      </div>
-      <button class="submit-btn" id="joinBtn" onclick="joinRoom()" disabled>加入房间</button>
-    </div>
-
-    <div id="matchSection" class="hidden">
-      <div class="form-group">
-        <label class="form-label">你的昵称</label>
-        <input type="text" class="form-input" id="matchName" placeholder="请输入昵称（最多12个字）" maxlength="12" oninput="checkMatchBtn()">
-      </div>
-      <button class="submit-btn" id="matchBtn" onclick="startMatch()" disabled style="background: linear-gradient(135deg, #f093fb, #f5576c); box-shadow: 0 8px 24px rgba(245,87,108,0.3);">🎲 开始随机配对</button>
-      <div style="margin-top:12px;padding:12px;background:linear-gradient(135deg, #faf5ff, #e9d8fd);border-radius:10px;font-size:0.85em;color:#553c9a;">
-        💡 配对成功后系统会自动创建房间，2人匹配后即可开始PK
-      </div>
-    </div>
-
-    <div class="rules-box">
-      <div class="rules-box-title">📋 PK规则</div>
-      <div>• 每场PK共 <b>10道选择题</b>，从生物题库随机抽取</div>
-      <div>• 每题限时 <b>30秒</b>，答对得 <b>10分+剩余秒数</b>（越快得分越高）</div>
-      <div>• 答错或超时得 <b>0分</b>，所有玩家答完后自动进入下一题</div>
-      <div>• 至少需要 <b>2名玩家</b> 才能开始PK</div>
     </div>
   </div>
 
-  <!-- 等待房间页面 -->
-  <div class="room-card hidden" id="roomPage">
-    <div class="room-header">
-      <div class="room-code-box">
-        <div class="room-code-label">房间码（分享给同学加入）</div>
+  <div class="page hidden" id="roomPage">
+    <div class="room-header-bar">
+      <div class="room-code-area">
+        <div class="room-code-label">房间码 · 分享给同学</div>
         <div class="room-code-display" id="roomCodeDisplay">----</div>
-        <button class="room-code-copy" onclick="copyRoomCode()">复制房间码</button>
+        <div class="room-code-btns">
+          <button class="room-code-copy" onclick="copyRoomCode()">📋 复制房间码</button>
+          <button class="room-code-share" onclick="openShareForum()">📢 分享到论坛</button>
+        </div>
       </div>
-      <div class="player-count-box">
-        <div class="player-count-label">玩家数</div>
-        <div class="player-count-val"><span id="playerCount">1</span>/6</div>
+      <div class="room-meta">
+        <div class="room-meta-label">玩家</div>
+        <div class="room-meta-val"><span id="playerCount">1</span>/6</div>
       </div>
     </div>
-
-    <div class="players-list" id="playersList"></div>
-
-    <div class="room-actions">
-      <button class="btn-start" id="startBtn" onclick="startGame()" disabled>等待玩家加入...</button>
-      <button class="btn-leave" onclick="leaveRoom()">离开房间</button>
-    </div>
-
-    <div class="waiting-hint" id="waitingHint">
-      等待其他同学加入<span class="dot">...</span>
+    <div class="players-grid" id="playersList"></div>
+    <div class="room-actions-bar">
+      <button class="btn-start-pk" id="startBtn" onclick="startGame()" disabled>等待玩家加入...</button>
+      <button class="btn-leave-room" onclick="leaveRoom()">离开</button>
     </div>
   </div>
 
-  <!-- 答题页面 -->
-  <div class="quiz-card hidden" id="quizPage">
-    <div class="quiz-header">
-      <div class="quiz-progress" id="quizProgress">第 1/10 题</div>
-      <div class="quiz-timer" id="quizTimer">30s</div>
+  <div class="page hidden" id="quizPage">
+    <div class="quiz-top">
+      <div class="quiz-progress-info">
+        <span class="quiz-q-num" id="quizQNum">第 1</span>
+        <span class="quiz-q-total">/ <span id="quizQTotal">10</span> 题</span>
+      </div>
+      <div class="quiz-timer-wrap">
+        <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="quizTimerFill"></div></div>
+        <div class="quiz-timer-text" id="quizTimerText">30s</div>
+      </div>
     </div>
-    <div class="quiz-score-bar" id="scoreBar"></div>
-    <div class="quiz-stem" id="quizStem">题目加载中...</div>
-    <div class="quiz-options" id="quizOptions"></div>
-    <div class="answer-feedback" id="answerFeedback"></div>
+    <div class="vs-bar" id="vsBar"></div>
+    <div class="quiz-body">
+      <div class="quiz-stem" id="quizStem">题目加载中...</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="answer-feedback" id="answerFeedback"></div>
+    </div>
   </div>
 
-  <!-- 结果页面 -->
-  <div class="result-card hidden" id="resultPage">
-    <div class="result-title">🎉 PK结果</div>
-    <div class="ranking-list" id="rankingList"></div>
+  <div class="page hidden" id="matchPage">
+    <div class="match-avatar">🎲</div>
+    <div class="match-title" id="matchTitle">正在寻找对手...</div>
+    <div class="match-subtitle" id="matchSubtitle">系统将自动为你匹配对手</div>
+    <div class="match-stats">
+      <div class="match-stat"><div class="match-stat-val" id="matchQueuePos">-</div><div class="match-stat-label">队列位置</div></div>
+      <div class="match-stat"><div class="match-stat-val" id="matchQueueSize">-</div><div class="match-stat-label">等待人数</div></div>
+      <div class="match-stat"><div class="match-stat-val" id="matchWaitSec">0s</div><div class="match-stat-label">已等待</div></div>
+    </div>
+    <div class="match-dots"><span>●</span><span>●</span><span>●</span></div>
+    <button class="btn-cancel" onclick="cancelMatch()">取消配对</button>
+  </div>
+
+  <div class="page hidden" id="collegeMatchPage">
+    <div class="match-avatar">🎓</div>
+    <div class="match-title" id="collegeMatchTitle">正在匹配同校对手...</div>
+    <div class="match-subtitle" id="collegeMatchSubtitle">优先匹配同院校同学</div>
+    <div class="match-stats">
+      <div class="match-stat"><div class="match-stat-val" id="collegeWaitSec">0s</div><div class="match-stat-label">已等待</div></div>
+      <div class="match-stat"><div class="match-stat-val" id="collegeSameSize">-</div><div class="match-stat-label">同校等待</div></div>
+      <div class="match-stat"><div class="match-stat-val" id="collegePos">-</div><div class="match-stat-label">队列位置</div></div>
+    </div>
+    <div class="match-dots"><span>●</span><span>●</span><span>●</span></div>
+    <button class="btn-cancel" onclick="cancelCollegeMatch()">取消院校配对</button>
+  </div>
+
+  <div class="page hidden" id="resultPage">
+    <div class="result-header">
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <div class="result-title" id="resultTitle">PK结果</div>
+      <div class="result-subtitle" id="resultSubtitle">恭喜完成PK挑战！</div>
+    </div>
+    <div class="ranking-cards" id="rankingCards"></div>
     <div class="result-actions">
-      <button class="btn-again" onclick="backToLobby()">再来一局</button>
-      <button class="btn-home" onclick="window.location.href='main.html'">返回训练</button>
+      <button class="btn-play-again" onclick="backToLobby()">再来一局</button>
+      <button class="btn-back-home" onclick="window.location.href='main.html'">返回训练</button>
     </div>
   </div>
 
+</div>
+
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal-card">
+    <button class="close-modal" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
 </div>
 
 <script>
 const API_BASE = "http://127.0.0.1:8000";
-let myName = "";
-let roomCode = "";
-let isHost = false;
-let pollTimer = null;
-let timerInterval = null;
-let currentQuestion = null;
-let answered = false;
+let myName = "", myCollege = "", roomCode = "", isHost = false;
+let pollTimer = null, timerInterval = null, timerFillInterval = null;
+let currentQuestion = null, answered = false, serverQuestionIndex = -1;
+let quizPollTimer = null, gameFinished = false;
+let colleges = [], currentLBTab = 'player';
 
-// ===== 大厅 =====
-function switchMode(mode) {
-  ['Create','Join','Match'].forEach(k => {
-    document.getElementById('mode'+k).classList.toggle('active', mode === k.toLowerCase());
-  });
-  document.getElementById('createSection').classList.toggle('hidden', mode !== 'create');
-  document.getElementById('joinSection').classList.toggle('hidden', mode !== 'join');
-  document.getElementById('matchSection').classList.toggle('hidden', mode !== 'match');
+init();
+
+async function init(){
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/colleges`);
+    const r = await resp.json();
+    if(r.success) colleges = r.data.colleges;
+  }catch(e){}
+  loadLeaderboard();
 }
 
-function checkCreateBtn() {
-  const name = document.getElementById('createName').value.trim();
-  document.getElementById('createBtn').disabled = name.length === 0;
+function avatarColor(name){
+  const colors = ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+  return colors[name.charCodeAt(0) % colors.length];
 }
 
-function checkJoinBtn() {
-  const name = document.getElementById('joinName').value.trim();
-  const code = document.getElementById('joinCode').value.trim();
-  document.getElementById('joinBtn').disabled = name.length === 0 || code.length !== 4;
+function switchPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
 }
 
-function checkMatchBtn() {
+function showModal(html, extraClass){
+  const card = document.querySelector('#modal .modal-card');
+  if(extraClass) card.classList.add(extraClass); else card.classList.remove('share-forum-modal');
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(){
+  document.querySelector('#modal .modal-card').classList.remove('share-forum-modal');
+  document.getElementById('modal').classList.add('hidden');
+}
+
+async function loadLeaderboard(){
+  try{
+    const url = currentLBTab === 'player'
+      ? `${API_BASE}/api/pk/stats/rank?top_n=15`
+      : `${API_BASE}/api/pk/stats/rank?top_n=10`;
+    const resp = await fetch(url);
+    const r = await resp.json();
+    if(r.success){
+      document.getElementById('statGames').textContent = r.data.stats.total_games;
+      document.getElementById('statPlayers').textContent = r.data.stats.total_players;
+      renderLBList(r.data);
+    }
+  }catch(e){}
+}
+
+function renderLBList(data){
+  const list = document.getElementById('lbList');
+  if(currentLBTab === 'player'){
+    if(!data.ranking || data.ranking.length === 0){
+      list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:30px 10px;font-size:0.9em">暂无数据<br>快去创建房间开始PK吧！</div>';
+      return;
+    }
+    list.innerHTML = data.ranking.map(p => {
+      const medal = p.rank === 1 ? '🥇' : p.rank === 2 ? '🥈' : p.rank === 3 ? '🥉' : '';
+      const rankCls = p.rank === 1 ? 'gold' : p.rank === 2 ? 'silver' : p.rank === 3 ? 'bronze' : 'normal';
+      return `<div class="lb-item">
+        <div class="lb-rank ${rankCls}">${medal || p.rank}</div>
+        <div class="lb-avatar" style="background:${avatarColor(p.player_name)}">${p.player_name.charAt(0).toUpperCase()}</div>
+        <div class="lb-info"><div class="lb-name">${p.player_name}${p.player_name===myName?' (我)':''}</div><div class="lb-college">${p.college||'未设置'} · 胜率${p.win_rate}%</div></div>
+        <div class="lb-score">${p.score}</div></div>`;
+    }).join('');
+  } else {
+    if(!data.college_ranking || data.college_ranking.length === 0){
+      list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:30px 10px;font-size:0.9em">暂无院校数据<br>快去参加院校PK吧！</div>';
+      return;
+    }
+    list.innerHTML = data.college_ranking.map(c => {
+      const rankCls = c.rank === 1 ? 'gold' : c.rank === 2 ? 'silver' : c.rank === 3 ? 'bronze' : 'normal';
+      const medal = c.rank === 1 ? '🥇' : c.rank === 2 ? '🥈' : c.rank === 3 ? '🥉' : '';
+      return `<div class="lb-item">
+        <div class="lb-rank ${rankCls}">${medal || c.rank}</div>
+        <div class="lb-avatar" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)">🎓</div>
+        <div class="lb-info"><div class="lb-name">${c.college}</div><div class="lb-college">${c.player_count}人 · ${c.games}场</div></div>
+        <div class="lb-score">${c.total_score}</div></div>`;
+    }).join('');
+  }
+}
+
+function switchLBTab(el, tab){
+  currentLBTab = tab;
+  document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadLeaderboard();
+}
+
+function openQuickMatch(){
+  const options = colleges.map(c=>`<option value="${c}">`).join('');
+  showModal(`
+    <div class="modal-title">⚡ 答题争上游</div>
+    <div class="modal-desc">输入昵称即可加入随机匹配队列。</div>
+    <div class="form-group">
+      <label class="form-label">你的昵称</label>
+      <input type="text" class="form-input" id="matchName" placeholder="请输入昵称" maxlength="12">
+    </div>
+    <div class="form-group">
+      <label class="form-label">你的院校（可选）</label>
+      <input type="text" class="form-input" id="matchCollege" list="collegeList" placeholder="选择或输入院校">
+      <datalist id="collegeList">${options}</datalist>
+    </div>
+    <button class="btn-primary" onclick="startQuickMatch()">🎲 开始随机配对</button>
+    <button class="btn-secondary" onclick="closeModal()">取消</button>
+  `);
+}
+
+async function startQuickMatch(){
   const name = document.getElementById('matchName').value.trim();
-  document.getElementById('matchBtn').disabled = name.length === 0;
-}
-
-async function createRoom() {
-  const name = document.getElementById('createName').value.trim();
-  if (!name) { alert('请先输入昵称'); return; }
-
-  const btn = document.getElementById('createBtn');
-  btn.disabled = true;
-  btn.textContent = '正在创建...';
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player_name: name })
+  const college = document.getElementById('matchCollege').value.trim();
+  if(!name){ alert('请输入昵称'); return; }
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/match/join`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({player_name:name,college:college})
     });
-    const result = await resp.json();
-    if (result.success) {
-      myName = name;
-      roomCode = result.data.room_code;
-      isHost = true;
-      showRoom();
-    } else {
-      alert(result.msg || '创建失败');
-      btn.disabled = false;
-      btn.textContent = '创建PK房间';
+    const r = await resp.json();
+    if(r.success){
+      myName = name; myCollege = college;
+      closeModal();
+      if(r.data.matched){
+        roomCode = r.data.room_code; isHost = r.data.opponent !== name;
+        showMatchSuccess();
+      } else {
+        showMatchWaiting();
+      }
+    } else { alert(r.msg || '配对失败'); }
+  }catch(e){ alert('网络错误:'+e.message); }
+}
+
+function showMatchWaiting(){
+  switchPage('matchPage');
+  let sec = 0;
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{ sec++; document.getElementById('matchWaitSec').textContent = sec+'s'; },1000);
+  pollMatchStatus();
+}
+
+async function pollMatchStatus(){
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/match/status?player_name=${encodeURIComponent(myName)}`);
+    const r = await resp.json();
+    if(r.success){
+      document.getElementById('matchQueuePos').textContent = r.data.position;
+      document.getElementById('matchQueueSize').textContent = r.data.queue_size;
+      if(r.data.matched){
+        if(timerInterval) clearInterval(timerInterval);
+        roomCode = r.data.room_code; isHost = false;
+        showMatchSuccess();
+        return;
+      }
+      pollTimer = setTimeout(pollMatchStatus, 2000);
     }
-  } catch (e) {
-    alert('网络错误：' + e.message);
-    btn.disabled = false;
-    btn.textContent = '创建PK房间';
-  }
+  }catch(e){ pollTimer = setTimeout(pollMatchStatus,3000); }
 }
 
-async function joinRoom() {
-  const name = document.getElementById('joinName').value.trim();
-  const code = document.getElementById('joinCode').value.trim();
-  if (!name) { alert('请先输入昵称'); return; }
-  if (!code || code.length !== 4) { alert('请输入4位房间码'); return; }
-
-  const btn = document.getElementById('joinBtn');
-  btn.disabled = true;
-  btn.textContent = '正在加入...';
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/join`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ room_code: code, player_name: name })
-    });
-    const result = await resp.json();
-    if (result.success) {
-      myName = name;
-      roomCode = code;
-      isHost = false;
-      showRoom();
-    } else {
-      alert(result.msg || '加入失败');
-      btn.disabled = false;
-      btn.textContent = '加入房间';
-    }
-  } catch (e) {
-    alert('网络错误：' + e.message);
-    btn.disabled = false;
-    btn.textContent = '加入房间';
-  }
-}
-
-function copyRoomCode() {
-  const code = document.getElementById('roomCodeDisplay').textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    const btn = document.querySelector('.room-code-copy');
-    const orig = btn.textContent;
-    btn.textContent = '已复制!';
-    setTimeout(() => { btn.textContent = orig; }, 2000);
-  }).catch(() => {
-    // 降级方案
-    const input = document.createElement('input');
-    input.value = code;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    document.body.removeChild(input);
-    alert('房间码已复制: ' + code);
-  });
-}
-
-// ===== 房间等待 =====
-function showRoom() {
-  document.getElementById('lobbyPage').classList.add('hidden');
-  document.getElementById('roomPage').classList.remove('hidden');
-  document.getElementById('quizPage').classList.add('hidden');
-  document.getElementById('resultPage').classList.add('hidden');
+function showMatchSuccess(){
+  if(timerInterval) clearInterval(timerInterval);
+  switchPage('roomPage');
   document.getElementById('roomCodeDisplay').textContent = roomCode;
-
-  const startBtn = document.getElementById('startBtn');
-  startBtn.style.display = isHost ? 'block' : 'none';
-
+  isHost = true;
   pollRoomStatus();
+  setTimeout(()=>startGame(),1500);
 }
 
-async function pollRoomStatus() {
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}`);
-    const result = await resp.json();
-    if (!result.success) {
-      alert('房间不存在');
-      backToLobby();
-      return;
-    }
-
-    const data = result.data;
-    renderPlayers(data.players);
-
-    if (data.status === 'playing') {
-      startQuiz();
-      return;
-    }
-    if (data.status === 'finished') {
-      showResult();
-      return;
-    }
-
-    if (document.getElementById('roomPage').offsetParent !== null) {
-      pollTimer = setTimeout(pollRoomStatus, 2000);
-    }
-  } catch (e) {
-    console.error('轮询失败:', e);
-    pollTimer = setTimeout(pollRoomStatus, 3000);
-  }
-}
-
-function renderPlayers(players) {
-  const list = document.getElementById('playersList');
-  document.getElementById('playerCount').textContent = players.length;
-  list.innerHTML = players.map((p, i) => {
-    const initial = p.name.charAt(0).toUpperCase();
-    const isMe = p.name === myName;
-    return `
-      <div class="player-item">
-        <div class="player-avatar">${initial}</div>
-        <div>
-          <div class="player-name">${p.name}${isMe ? ' (我)' : ''}</div>
-          <div class="player-host">${i === 0 ? '房主' : '玩家'}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  const startBtn = document.getElementById('startBtn');
-  if (isHost) {
-    startBtn.disabled = players.length < 2;
-    startBtn.textContent = players.length < 2 ? '等待玩家加入...' : '开始PK';
-  }
-}
-
-async function startGame() {
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player_name: myName })
-    });
-    const result = await resp.json();
-    if (!result.success) {
-      alert(result.msg || '开始失败');
-    }
-  } catch (e) {
-    alert('网络错误：' + e.message);
-  }
-}
-
-async function leaveRoom() {
-  if (pollTimer) clearTimeout(pollTimer);
-  try {
-    await fetch(`${API_BASE}/api/pk/${roomCode}/leave`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player_name: myName })
-    });
-  } catch (e) {}
+async function cancelMatch(){
+  if(pollTimer) clearTimeout(pollTimer);
+  if(timerInterval) clearInterval(timerInterval);
+  try{ await fetch(`${API_BASE}/api/pk/match/cancel`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({player_name:myName})}); }catch(e){}
   backToLobby();
 }
 
-// ===== 答题（服务端轮询同步模式）=====
-let serverQuestionIndex = -1;
-let quizPollTimer = null;
-let gameFinished = false;
+function openPrivateRoom(){
+  const options = colleges.map(c=>`<option value="${c}">`).join('');
+  showModal(`
+    <div class="modal-title">⚔️ 双人对战</div>
+    <div class="modal-desc">创建房间或加入已有房间，邀请好友一同PK。</div>
+    <div class="form-group"><label class="form-label">你的昵称</label><input type="text" class="form-input" id="roomName" placeholder="请输入昵称" maxlength="12"></div>
+    <div class="form-group"><label class="form-label">你的院校（可选）</label><input type="text" class="form-input" id="roomCollege" list="collegeList2" placeholder="选择或输入院校"><datalist id="collegeList2">${options}</datalist></div>
+    <div class="form-group"><label class="form-label">房间码（加入时填写，留空则创建）</label><input type="text" class="form-input" id="roomJoinCode" placeholder="4位房间码" maxlength="4" style="letter-spacing:4px;text-align:center"></div>
+    <button class="btn-primary" onclick="enterRoom()">进入房间</button>
+    <button class="btn-secondary" onclick="closeModal()">取消</button>
+  `);
+}
 
-function startQuiz() {
-  if (pollTimer) clearTimeout(pollTimer);
-  document.getElementById('roomPage').classList.add('hidden');
-  document.getElementById('quizPage').classList.remove('hidden');
-  serverQuestionIndex = -1;
-  answered = false;
-  gameFinished = false;
+async function enterRoom(){
+  const name = document.getElementById('roomName').value.trim();
+  const college = document.getElementById('roomCollege').value.trim();
+  const joinCode = document.getElementById('roomJoinCode').value.trim();
+  if(!name){ alert('请输入昵称'); return; }
+  try{
+    if(joinCode && joinCode.length === 4){
+      const resp = await fetch(`${API_BASE}/api/pk/join`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({room_code:joinCode,player_name:name,college:college})
+      });
+      const r = await resp.json();
+      if(r.success){ myName=name;myCollege=college;roomCode=joinCode;isHost=false;closeModal();showRoom(); }
+      else{ alert(r.msg||'加入失败'); }
+    } else {
+      const resp = await fetch(`${API_BASE}/api/pk/create`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({player_name:name,college:college,mode:'private'})
+      });
+      const r = await resp.json();
+      if(r.success){ myName=name;myCollege=college;roomCode=r.data.room_code;isHost=true;closeModal();showRoom(); }
+      else{ alert(r.msg||'创建失败'); }
+    }
+  }catch(e){ alert('网络错误:'+e.message); }
+}
+
+let selectedCollege = '';
+function openCollegePK(){
+  selectedCollege = '';
+  const chips = colleges.map(c=>`<div class="college-chip" data-c="${c}">${c}</div>`).join('');
+  showModal(`
+    <div class="modal-title">🎓 院校PK</div>
+    <div class="modal-desc">选择你的院校，与同校同学PK，赢取院校荣誉！</div>
+    <div class="form-group"><label class="form-label">你的昵称</label><input type="text" class="form-input" id="collegeName" placeholder="请输入昵称" maxlength="12"></div>
+    <div class="form-group"><label class="form-label">选择你的院校</label>
+      <div class="college-list" id="collegeList">${chips}</div>
+    </div>
+    <button class="btn-primary" onclick="startCollegePK()">🎯 加入院校战场</button>
+    <button class="btn-secondary" onclick="closeModal()">取消</button>
+  `);
+  setTimeout(()=>{
+    document.querySelectorAll('.college-chip').forEach(chip=>{
+      chip.onclick = ()=>{
+        selectedCollege = chip.dataset.c;
+        document.querySelectorAll('.college-chip').forEach(c=>c.classList.remove('selected'));
+        chip.classList.add('selected');
+      };
+    });
+  },50);
+}
+
+async function startCollegePK(){
+  const name = document.getElementById('collegeName').value.trim();
+  if(!name){ alert('请输入昵称'); return; }
+  if(!selectedCollege){ alert('请选择院校'); return; }
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/college/join`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({player_name:name,college:selectedCollege})
+    });
+    const r = await resp.json();
+    if(r.success){
+      myName=name;myCollege=selectedCollege;
+      closeModal();
+      if(r.data.matched){
+        roomCode=r.data.room_code;isHost=true;showCollegeMatchSuccess();
+      } else {
+        showCollegeWaiting(r.data);
+      }
+    } else { alert(r.msg||'失败'); }
+  }catch(e){ alert('网络错误:'+e.message); }
+}
+
+function showCollegeWaiting(data){
+  switchPage('collegeMatchPage');
+  document.getElementById('collegeMatchTitle').textContent = `🎓 ${myCollege} 院校PK`;
+  document.getElementById('collegeMatchSubtitle').textContent = `正在为 ${myCollege} 寻找对手...`;
+  document.getElementById('collegeSameSize').textContent = data.same_college_size || '-';
+  document.getElementById('collegePos').textContent = data.college_position || '-';
+  let sec = 0;
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{ sec++; document.getElementById('collegeWaitSec').textContent = sec+'s'; },1000);
+  pollCollegeStatus();
+}
+
+async function pollCollegeStatus(){
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/college/status?player_name=${encodeURIComponent(myName)}`);
+    const r = await resp.json();
+    if(r.success){
+      document.getElementById('collegeSameSize').textContent = r.data.same_college_size || '-';
+      document.getElementById('collegePos').textContent = r.data.college_position || '-';
+      if(r.data.matched){
+        if(timerInterval) clearInterval(timerInterval);
+        roomCode=r.data.room_code;isHost=false;showCollegeMatchSuccess();
+        return;
+      }
+      pollTimer = setTimeout(pollCollegeStatus, 2000);
+    }
+  }catch(e){ pollTimer = setTimeout(pollCollegeStatus,3000); }
+}
+
+function showCollegeMatchSuccess(){
+  switchPage('roomPage');
+  document.getElementById('roomCodeDisplay').textContent = roomCode;
+  isHost = true;
+  pollRoomStatus();
+  setTimeout(()=>startGame(),1500);
+}
+
+async function cancelCollegeMatch(){
+  if(pollTimer) clearTimeout(pollTimer);
+  if(timerInterval) clearInterval(timerInterval);
+  try{ await fetch(`${API_BASE}/api/pk/college/cancel`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({player_name:myName})}); }catch(e){}
+  backToLobby();
+}
+
+function showRoom(){
+  switchPage('roomPage');
+  document.getElementById('roomCodeDisplay').textContent = roomCode;
+  pollRoomStatus();
+}
+
+function copyRoomCode(){
+  navigator.clipboard.writeText(roomCode).then(()=>{
+    const btn = document.querySelector('.room-code-copy');
+    const orig = btn.textContent; btn.textContent = '✅ 已复制';
+    setTimeout(()=>{ btn.textContent = orig; },2000);
+  }).catch(()=>{
+    const input = document.createElement('input'); input.value = roomCode;
+    document.body.appendChild(input); input.select(); document.execCommand('copy'); document.body.removeChild(input);
+    alert('房间码已复制: '+roomCode);
+  });
+}
+
+const forumTags = [
+  {key:'Question_discussion', label:'学习交流'},
+  {key:'Course_discussion', label:'课程讨论'},
+  {key:'Experience_sharing', label:'备考经验'},
+  {key:'Life_sharing', label:'生活分享'}
+];
+let selectedForumTag = 'Question_discussion';
+
+function openShareForum(){
+  selectedForumTag = 'Question_discussion';
+  const defaultContent = `🔥 来一场生物知识PK大战！\n\n房间码：${roomCode}\n${myCollege ? '院校：' + myCollege + '\n' : ''}模式：${isHost ? '创建房间' : '加入房间'}\n\n快邀请好友一起来挑战吧！`;
+  const tagsHtml = forumTags.map(t=>`<div class="tag-chip ${t.key===selectedForumTag?'active':''}" data-tag="${t.key}">${t.label}</div>`).join('');
+  showModal(`
+    <div class="modal-title">📢 分享到论坛</div>
+    <div class="modal-desc">将房间码发布到论坛，邀请更多同学加入PK</div>
+    <div class="form-group"><label class="form-label">帖子标签</label>
+      <div class="tag-select" id="tagSelect">${tagsHtml}</div>
+    </div>
+    <div class="form-group"><label class="form-label">帖子内容</label>
+      <textarea class="form-textarea" id="shareContent" placeholder="输入帖子内容...">${defaultContent}</textarea>
+    </div>
+    <button class="btn-primary" onclick="submitShareForum()">🚀 发布帖子</button>
+    <button class="btn-secondary" onclick="closeModal()">取消</button>
+  `,'share-forum-modal');
+  setTimeout(()=>{
+    document.querySelectorAll('.tag-chip').forEach(chip=>{
+      chip.onclick = ()=>{
+        selectedForumTag = chip.dataset.tag;
+        document.querySelectorAll('.tag-chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+      };
+    });
+  },50);
+}
+
+async function submitShareForum(){
+  const token = localStorage.getItem('token');
+  if(!token){
+    alert('请先登录后再分享');
+    openPage('/login/login-main.html','../login/login-main.html');
+    return;
+  }
+  const content = document.getElementById('shareContent').value.trim();
+  if(!content){ alert('请输入帖子内容'); return; }
+  try{
+    const resp = await fetch(`${API_BASE}/api/create_post`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','token':token},
+      body:JSON.stringify({content, tag:selectedForumTag, image_urls:[], tags:[selectedForumTag]})
+    });
+    const r = await resp.json();
+    if(r.success){
+      closeModal();
+      alert('✅ 已成功分享到论坛！');
+      // 发帖成功后跳转到论坛列表页：http模式走绝对路径，file模式走相对路径
+      openPage('/forum/main.html','../forum/main.html');
+    } else {
+      alert(r.msg || '发布失败，请重试');
+    }
+  }catch(e){
+    alert('网络错误：'+e.message);
+  }
+}
+
+function openPage(absPath, relPath){
+  // http/https/Vite 模式用绝对路径；直接双击打开的 file 协议用相对路径
+  if(window.location.protocol === 'file:'){
+    window.open(relPath,'_blank');
+  } else {
+    window.open(absPath,'_blank');
+  }
+}
+
+async function pollRoomStatus(){
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}`);
+    const r = await resp.json();
+    if(!r.success){ alert('房间不存在'); backToLobby(); return; }
+    renderPlayers(r.data.players);
+    if(r.data.status === 'playing'){ startQuiz(); return; }
+    if(r.data.status === 'finished'){ showResult(); return; }
+    if(!document.getElementById('roomPage').classList.contains('hidden')){
+      pollTimer = setTimeout(pollRoomStatus, 2000);
+    }
+  }catch(e){ pollTimer = setTimeout(pollRoomStatus,3000); }
+}
+
+function renderPlayers(players){
+  document.getElementById('playerCount').textContent = players.length;
+  const list = document.getElementById('playersList');
+  list.innerHTML = players.map((p,i)=>{
+    const initial = p.name.charAt(0).toUpperCase();
+    const isMe = p.name === myName;
+    const color = avatarColor(p.name);
+    return `<div class="player-card">
+      <div class="player-avatar" style="background:${color}">${initial}</div>
+      <div class="player-details">
+        <div class="player-name">${p.name}${isMe?' (我)':''}</div>
+        <div class="player-role">${i===0?'<span class="player-tag">👑 房主</span>':'玩家'}${p.college?' · '+p.college:''}</div>
+      </div></div>`;
+  }).join('');
+  const startBtn = document.getElementById('startBtn');
+  if(isHost){
+    startBtn.disabled = players.length < 2;
+    startBtn.textContent = players.length < 2 ? '等待玩家加入...' : '🔥 开始PK';
+  } else {
+    startBtn.style.display = 'none';
+  }
+}
+
+async function startGame(){
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/start`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({player_name:myName})
+    });
+    const r = await resp.json();
+    if(!r.success){ alert(r.msg||'开始失败'); }
+  }catch(e){ alert('网络错误:'+e.message); }
+}
+
+async function leaveRoom(){
+  if(pollTimer) clearTimeout(pollTimer);
+  try{ await fetch(`${API_BASE}/api/pk/${roomCode}/leave`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({player_name:myName})}); }catch(e){}
+  backToLobby();
+}
+
+function startQuiz(){
+  if(pollTimer) clearTimeout(pollTimer);
+  switchPage('quizPage');
+  serverQuestionIndex = -1; answered = false; gameFinished = false;
   startQuizPolling();
 }
 
-async function startQuizPolling() {
-  if (quizPollTimer) clearTimeout(quizPollTimer);
-
-  async function pollOnce() {
-    if (gameFinished) return;
-    try {
+async function startQuizPolling(){
+  if(quizPollTimer) clearTimeout(quizPollTimer);
+  async function pollOnce(){
+    if(gameFinished) return;
+    try{
       const resp = await fetch(`${API_BASE}/api/pk/${roomCode}`);
-      const result = await resp.json();
-      if (!result.success) { pollAgain(1500); return; }
-
-      const data = result.data;
-      renderScoreBar(data);
-
-      if (data.status === 'finished') {
-        gameFinished = true;
-        showResult();
-        return;
-      }
-
-      // 检测到新题目
-      if (data.current_q > serverQuestionIndex) {
-        serverQuestionIndex = data.current_q;
+      const r = await resp.json();
+      if(!r.success){ pollAgain(1500); return; }
+      renderVSBar(r.data);
+      if(r.data.status === 'finished'){ gameFinished=true; showResult(); return; }
+      if(r.data.current_q > serverQuestionIndex){
+        serverQuestionIndex = r.data.current_q;
         answered = false;
         const qResp = await fetch(`${API_BASE}/api/pk/${roomCode}/question`);
         const qData = await qResp.json();
-        if (qData.success) {
+        if(qData.success){
           currentQuestion = qData.data;
           renderQuestion(currentQuestion);
           startTimer(currentQuestion.remaining);
-        } else {
-          gameFinished = true;
-          showResult();
-          return;
-        }
+        } else { gameFinished=true; showResult(); return; }
       }
-
       pollAgain(1500);
-    } catch (e) {
-      pollAgain(2000);
-    }
+    }catch(e){ pollAgain(2000); }
   }
-
-  function pollAgain(delay) {
-    if (gameFinished) return;
-    quizPollTimer = setTimeout(pollOnce, delay);
-  }
-
+  function pollAgain(delay){ if(!gameFinished) quizPollTimer = setTimeout(pollOnce, delay); }
   pollOnce();
 }
 
-function renderQuestion(q) {
-  document.getElementById('quizProgress').textContent = `第 ${q.question_index}/${q.total} 题`;
+function renderVSBar(roomData){
+  const bar = document.getElementById('vsBar');
+  const sorted = [...roomData.players].sort((a,b)=>b.score-a.score);
+  if(sorted.length === 1){
+    const p = sorted[0];
+    bar.innerHTML = `<div class="vs-player"><div class="vs-avatar" style="background:${avatarColor(p.name)}">${p.name.charAt(0).toUpperCase()}</div>
+      <div class="vs-player-info"><div class="vs-player-name">${p.name}</div><div class="vs-player-stats">答对 ${p.correct_count} 题</div></div>
+      <div class="vs-score">${p.score}</div></div>`;
+    return;
+  }
+  const left = sorted[0], right = sorted[1];
+  const lCls = left.answered?'answered':'thinking';
+  const rCls = right.answered?'answered':'thinking';
+  bar.innerHTML = `
+    <div class="vs-player">
+      <div class="vs-avatar" style="background:${avatarColor(left.name)}">${left.name.charAt(0).toUpperCase()}<div class="vs-badge ${lCls}">${left.answered?'✓':'?'}</div></div>
+      <div class="vs-player-info"><div class="vs-player-name">${left.name}</div><div class="vs-player-stats">答对 ${left.correct_count} 题</div></div>
+      <div class="vs-score">${left.score}</div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="vs-player right">
+      <div class="vs-avatar" style="background:${avatarColor(right.name)}">${right.name.charAt(0).toUpperCase()}<div class="vs-badge ${rCls}">${right.answered?'✓':'?'}</div></div>
+      <div class="vs-player-info"><div class="vs-player-name">${right.name}</div><div class="vs-player-stats">答对 ${right.correct_count} 题</div></div>
+      <div class="vs-score">${right.score}</div>
+    </div>
+  `;
+  if(sorted.length > 2){
+    const others = sorted.slice(2);
+    bar.innerHTML += `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center;width:100%">
+      ${others.map(p=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,255,255,0.08);border-radius:10px;font-size:0.82em;color:rgba(255,255,255,0.8)">
+        <div class="vs-avatar" style="background:${avatarColor(p.name)};width:28px;height:28px;font-size:0.75em">${p.name.charAt(0).toUpperCase()}</div>
+        ${p.name}: <b style="color:#fde68a">${p.score}</b>分</div>`).join('')}
+    </div>`;
+  }
+}
+
+function renderQuestion(q){
+  document.getElementById('quizQNum').textContent = `第 ${q.question_index}`;
+  document.getElementById('quizQTotal').textContent = q.total;
   document.getElementById('quizStem').textContent = q.stem;
-  const optionsHtml = ['A', 'B', 'C', 'D'].map(key => {
+  const optionsHtml = ['A','B','C','D'].map(key => {
     const text = q.options[key];
-    if (!text) return '';
+    if(!text) return '';
     return `<div class="quiz-option" data-key="${key}" onclick="selectAnswer('${key}')"><div class="option-label">${key}</div><div>${text}</div></div>`;
   }).join('');
   document.getElementById('quizOptions').innerHTML = optionsHtml;
@@ -715,257 +943,111 @@ function renderQuestion(q) {
   document.getElementById('answerFeedback').textContent = '';
 }
 
-function startTimer(seconds) {
-  if (timerInterval) clearInterval(timerInterval);
+function startTimer(seconds){
+  if(timerInterval) clearInterval(timerInterval);
+  if(timerFillInterval) clearInterval(timerFillInterval);
   let remaining = seconds;
-  const timerEl = document.getElementById('quizTimer');
-  function update() {
+  const total = currentQuestion ? currentQuestion.time_limit : 30;
+  const timerEl = document.getElementById('quizTimerText');
+  const fillEl = document.getElementById('quizTimerFill');
+  function update(){
     timerEl.textContent = remaining + 's';
-    timerEl.className = 'quiz-timer';
-    if (remaining <= 10) timerEl.classList.add('warning');
-    if (remaining <= 5) timerEl.classList.add('danger');
+    timerEl.className = 'quiz-timer-text';
+    if(remaining <= 10) timerEl.classList.add('warning');
+    if(remaining <= 5) timerEl.classList.add('danger');
+    fillEl.style.width = ((remaining/total)*100) + '%';
     remaining--;
-    if (remaining < 0) {
+    if(remaining < 0){
       clearInterval(timerInterval);
-      if (!answered) submitAnswer('');
+      if(!answered) submitAnswer('');
     }
   }
   update();
   timerInterval = setInterval(update, 1000);
 }
 
-async function selectAnswer(key) {
-  if (answered) return;
+async function selectAnswer(key){
+  if(answered) return;
   answered = true;
   document.querySelectorAll('.quiz-option').forEach(el => {
     el.classList.add('disabled');
-    if (el.dataset.key === key) el.classList.add('selected');
+    if(el.dataset.key === key) el.classList.add('selected');
   });
   await submitAnswer(key);
 }
 
-async function submitAnswer(answer) {
-  if (timerInterval) clearInterval(timerInterval);
+async function submitAnswer(answer){
+  if(timerInterval) clearInterval(timerInterval);
   answered = true;
   document.querySelectorAll('.quiz-option').forEach(el => el.classList.add('disabled'));
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/answer`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player_name: myName, answer: answer })
+  try{
+    const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/answer`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({player_name:myName,answer:answer})
     });
-    const result = await resp.json();
-    if (result.success) {
-      const data = result.data;
-      const feedback = document.getElementById('answerFeedback');
-      if (!answer) {
-        feedback.className = 'answer-feedback wrong';
-        feedback.textContent = `超时未答题！正确答案：${data.correct_answer}`;
-      } else if (data.correct) {
-        feedback.className = 'answer-feedback correct';
-        feedback.textContent = `回答正确！+${data.score}分`;
+    const r = await resp.json();
+    if(r.success){
+      const data = r.data;
+      const fb = document.getElementById('answerFeedback');
+      if(!answer){
+        fb.className = 'answer-feedback wrong';
+        fb.textContent = `⏰ 超时！正确答案：${data.correct_answer}`;
+      } else if(data.correct){
+        fb.className = 'answer-feedback correct';
+        fb.textContent = `✅ 回答正确！+${data.score}分`;
       } else {
-        feedback.className = 'answer-feedback wrong';
-        feedback.textContent = `回答错误！正确答案：${data.correct_answer}`;
+        fb.className = 'answer-feedback wrong';
+        fb.textContent = `❌ 回答错误！正确答案：${data.correct_answer}`;
       }
       document.querySelectorAll('.quiz-option').forEach(el => {
-        if (el.dataset.key === data.correct_answer) el.classList.add('correct');
-        else if (el.dataset.key === answer && !data.correct) el.classList.add('wrong');
+        if(el.dataset.key === data.correct_answer) el.classList.add('correct');
+        else if(el.dataset.key === answer && !data.correct) el.classList.add('wrong');
       });
-      // 不再使用setTimeout获取下一题，由polling自动检测
-    } else {
-      console.error('提交失败:', result.msg);
     }
-  } catch (e) {
-    console.error('提交答案失败:', e);
-  }
+  }catch(e){ console.error('提交失败:',e); }
 }
 
-function renderScoreBar(roomData) {
-  const bar = document.getElementById('scoreBar');
-  const players = roomData.players;
-  bar.innerHTML = players.map(p => {
-    const isMe = p.name === myName;
-    const done = p.answered;
-    const cls = `score-chip${isMe ? ' me' : ''} ${done ? 'answered' : 'waiting'}`;
-    const status = done ? '已答' : '答题中';
-    return `<div class="${cls}"><span class="dot"></span>${p.name}: <b>${p.score}</b>分 <span style="opacity:0.6;font-size:0.8em;">(${status})</span></div>`;
-  }).join('');
-}
-
-// ===== 结果 =====
-async function showResult() {
-  if (timerInterval) clearInterval(timerInterval);
-  document.getElementById('quizPage').classList.add('hidden');
-  document.getElementById('resultPage').classList.remove('hidden');
-  try {
+async function showResult(){
+  if(timerInterval) clearInterval(timerInterval);
+  if(quizPollTimer) clearTimeout(quizPollTimer);
+  switchPage('resultPage');
+  try{
     const resp = await fetch(`${API_BASE}/api/pk/${roomCode}/result`);
-    const result = await resp.json();
-    if (result.success) {
-      renderRanking(result.data.ranking, result.data.total_questions);
-    }
-  } catch (e) {
-    console.error('获取结果失败:', e);
-  }
+    const r = await resp.json();
+    if(r.success) renderResult(r.data);
+  }catch(e){ console.error(e); }
+  loadLeaderboard();
 }
 
-function renderRanking(ranking, totalQ) {
-  const list = document.getElementById('rankingList');
-  const medals = ['🥇', '🥈', '🥉'];
-  list.innerHTML = ranking.map((p, i) => {
-    const medal = medals[i] || `#${p.rank}`;
-    const rankClass = i < 3 ? `rank-${i+1}` : '';
-    return `
-      <div class="ranking-item ${rankClass}">
-        <div class="ranking-medal">${medal}</div>
-        <div class="ranking-info">
-          <div class="ranking-name">${p.name}${p.name === myName ? ' (我)' : ''}</div>
-          <div class="ranking-stats">答对 ${p.correct}/${totalQ} 题</div>
-        </div>
-        <div class="ranking-score">${p.score}分</div>
+function renderResult(data){
+  const cards = document.getElementById('rankingCards');
+  const topScore = data.ranking[0]?.score || 0;
+  document.getElementById('resultEmoji').textContent = topScore > 50 ? '🏆' : topScore > 30 ? '🎉' : '💪';
+  document.getElementById('resultTitle').textContent = topScore > 50 ? '完美胜利！' : topScore > 30 ? '表现优异！' : '继续加油！';
+  document.getElementById('resultSubtitle').textContent = data.college ? `院校：${data.college}` : '恭喜完成PK挑战！';
+  cards.innerHTML = data.ranking.map((p,i)=>{
+    const rankCls = i===0?'r1':i===1?'r2':i===2?'r3':i<6?`r${i+1}`:'';
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${p.rank}`;
+    return `<div class="ranking-card ${rankCls}">
+      <div class="ranking-medal">${medal}</div>
+      <div class="ranking-info">
+        <div class="ranking-name">${p.name}${p.name===myName?' (我)':''}</div>
+        <div class="ranking-detail">答对 ${p.correct}/${data.total_questions} 题${p.college?' · '+p.college:''}</div>
       </div>
-    `;
+      <div class="ranking-score">${p.score}</div>
+    </div>`;
   }).join('');
 }
 
-// ===== 导航 =====
-function backToLobby() {
-  if (pollTimer) clearTimeout(pollTimer);
-  if (timerInterval) clearInterval(timerInterval);
-  if (matchPollTimer) clearTimeout(matchPollTimer);
-  if (matchTimerInterval) clearInterval(matchTimerInterval);
-  if (quizPollTimer) clearTimeout(quizPollTimer);
-  gameFinished = false;
-  serverQuestionIndex = -1;
-  myName = "";
-  roomCode = "";
-  isHost = false;
-  document.getElementById('lobbyPage').classList.remove('hidden');
-  document.getElementById('matchPage').classList.add('hidden');
-  document.getElementById('roomPage').classList.add('hidden');
-  document.getElementById('quizPage').classList.add('hidden');
-  document.getElementById('resultPage').classList.add('hidden');
-  document.getElementById('createName').value = '';
-  document.getElementById('joinName').value = '';
-  document.getElementById('matchName').value = '';
-  document.getElementById('joinCode').value = '';
-  document.getElementById('createBtn').disabled = true;
-  document.getElementById('createBtn').textContent = '创建PK房间';
-  document.getElementById('joinBtn').disabled = true;
-  document.getElementById('joinBtn').textContent = '加入房间';
-  document.getElementById('matchBtn').disabled = true;
-  document.getElementById('matchBtn').textContent = '🎲 开始随机配对';
-}
-
-// ===== 随机配对 =====
-let matchPollTimer = null;
-let matchTimerInterval = null;
-let matchStartAt = 0;
-
-async function startMatch() {
-  const name = document.getElementById('matchName').value.trim();
-  if (!name) { alert('请先输入昵称'); return; }
-
-  const btn = document.getElementById('matchBtn');
-  btn.disabled = true;
-  btn.textContent = '正在配对...';
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/pk/match/join`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player_name: name })
-    });
-    const result = await resp.json();
-    if (result.success) {
-      myName = name;
-      matchStartAt = Date.now();
-      if (result.data.matched) {
-        // 立即匹配到了
-        roomCode = result.data.room_code;
-        isHost = result.data.opponent !== name;
-        showMatchSuccess(result.data.opponent);
-      } else {
-        // 进入等待
-        document.getElementById('lobbyPage').classList.add('hidden');
-        document.getElementById('matchPage').classList.remove('hidden');
-        document.getElementById('queuePos').textContent = result.data.position;
-        document.getElementById('queueSize').textContent = result.data.queue_size;
-        startMatchPolling();
-      }
-    } else {
-      alert(result.msg || '配对失败');
-      btn.disabled = false;
-      btn.textContent = '🎲 开始随机配对';
-    }
-  } catch (e) {
-    alert('网络错误：' + e.message);
-    btn.disabled = false;
-    btn.textContent = '🎲 开始随机配对';
-  }
-}
-
-function startMatchPolling() {
-  // 等待时间显示
-  if (matchTimerInterval) clearInterval(matchTimerInterval);
-  matchTimerInterval = setInterval(() => {
-    const sec = Math.floor((Date.now() - matchStartAt) / 1000);
-    document.getElementById('waitSec').textContent = sec + 's';
-  }, 1000);
-
-  // 轮询匹配状态
-  async function poll() {
-    try {
-      const resp = await fetch(`${API_BASE}/api/pk/match/status?player_name=${encodeURIComponent(myName)}`);
-      const result = await resp.json();
-      if (result.success && result.data.matched) {
-        roomCode = result.data.room_code;
-        // 找到对手名
-        isHost = false;
-        showMatchSuccess();
-        return;
-      }
-      if (result.success && !result.data.matched) {
-        document.getElementById('queuePos').textContent = result.data.position;
-        document.getElementById('queueSize').textContent = result.data.queue_size;
-        matchPollTimer = setTimeout(poll, 2000);
-      }
-    } catch (e) {
-      matchPollTimer = setTimeout(poll, 3000);
-    }
-  }
-  poll();
-}
-
-function showMatchSuccess(opponent) {
-  if (matchPollTimer) clearTimeout(matchPollTimer);
-  if (matchTimerInterval) clearInterval(matchTimerInterval);
-  // 先跳转到房间等待页，然后自动开始
-  document.getElementById('matchPage').classList.add('hidden');
-  isHost = true;
-  showRoom();
-  // 1.5秒后自动开始PK
-  setTimeout(() => {
-    startGame();
-  }, 1500);
-}
-
-async function cancelMatch() {
-  if (matchPollTimer) clearTimeout(matchPollTimer);
-  if (matchTimerInterval) clearInterval(matchTimerInterval);
-  try {
-    await fetch(`${API_BASE}/api/pk/match/cancel`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player_name: myName })
-    });
-  } catch (e) {}
-  document.getElementById('matchPage').classList.add('hidden');
-  document.getElementById('lobbyPage').classList.remove('hidden');
-  const btn = document.getElementById('matchBtn');
-  btn.disabled = false;
-  btn.textContent = '🎲 开始随机配对';
+function backToLobby(){
+  if(pollTimer) clearTimeout(pollTimer);
+  if(timerInterval) clearInterval(timerInterval);
+  if(timerFillInterval) clearInterval(timerFillInterval);
+  if(quizPollTimer) clearTimeout(quizPollTimer);
+  gameFinished = false; serverQuestionIndex = -1;
+  myName = ''; myCollege = ''; roomCode = ''; isHost = false;
+  switchPage('lobbyPage');
+  loadLeaderboard();
 }
 </script>
 

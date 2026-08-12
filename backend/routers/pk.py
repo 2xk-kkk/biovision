@@ -1,6 +1,6 @@
 """
 院校PK API 路由 — 同学之间通过答题比赛进行PK。
-使用内存存储房间状态（适合小型应用）。
+支持: 快速配对、双人对战、院校PK、排行榜。
 """
 
 import random
@@ -12,16 +12,29 @@ from utils.response import ApiResponse
 router = APIRouter()
 
 # 内存存储房间状态
-# room_code -> { host, players: [{name, score, answers}], status, questions, current_q, start_time }
+# room_code -> { host, college, mode, players: [{name, score, answers}], status, questions, current_q, start_time }
 rooms = {}
 
-# 随机配对队列：[{player_name, joined_at}]，按加入时间排序自动匹配为2人房间
+# 随机配对队列：[{player_name, college, joined_at}]
 match_queue = []
+
+# 院校PK配对队列：[{player_name, college, joined_at}]
+college_queue = []
 
 # 每场PK题目数
 QUESTIONS_PER_ROUND = 10
 # 每题答题时间（秒）
 TIME_PER_QUESTION = 30
+
+# 支持的院校列表
+COLLEGES = [
+    "清华大学", "北京大学", "复旦大学", "上海交通大学", "浙江大学",
+    "南京大学", "武汉大学", "华中科技大学", "中山大学", "四川大学",
+    "湖南大学", "厦门大学", "同济大学", "北京师范大学", "华东师范大学",
+    "中国人民大学", "北京航空航天大学", "北京理工大学", "天津大学", "南开大学",
+    "西安交通大学", "哈尔滨工业大学", "大连理工大学", "华南理工大学", "中南大学",
+    "其他院校"
+]
 
 
 def _generate_room_code():
@@ -63,25 +76,58 @@ def _get_random_questions(count=QUESTIONS_PER_ROUND):
         db.close()
 
 
+def _save_game_result(room_code, room):
+    """将比赛结果保存到数据库"""
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        ranking = sorted(room["players"], key=lambda p: p["score"], reverse=True)
+        for rank, p in enumerate(ranking, 1):
+            correct_count = sum(1 for a in p["answers"] if a["correct"])
+            cursor.execute("""
+                INSERT INTO pk_records (room_code, player_name, college, score, correct_count, total_count, result)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (room_code, p["name"], room.get("college", ""), p["score"],
+                  correct_count, len(p["answers"]), "win" if rank == 1 else "lose"))
+        db.commit()
+    except Exception as e:
+        print(f"保存PK结果失败: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
+# ===== 房间管理 =====
+
 @router.post("/pk/create")
-def create_room(player_name: str = Body(..., embed=True)):
+def create_room(
+    player_name: str = Body(..., embed=True),
+    college: str = Body("", embed=True),
+    mode: str = Body("private", embed=True),
+):
     """创建PK房间，返回房间码"""
     code = _generate_room_code()
     rooms[code] = {
         "host": player_name,
+        "college": college,
+        "mode": mode,  # private / random / college
         "players": [{"name": player_name, "score": 0, "answers": [], "ready": True}],
-        "status": "waiting",  # waiting -> playing -> finished
+        "status": "waiting",
         "questions": [],
         "current_q": 0,
         "start_time": None,
         "q_start_time": None,
         "max_players": 6,
     }
-    return ApiResponse.success({"room_code": code, "player_name": player_name})
+    return ApiResponse.success({"room_code": code, "player_name": player_name, "college": college})
 
 
 @router.post("/pk/join")
-def join_room(room_code: str = Body(..., embed=True), player_name: str = Body(..., embed=True)):
+def join_room(
+    room_code: str = Body(..., embed=True),
+    player_name: str = Body(..., embed=True),
+    college: str = Body("", embed=True),
+):
     """加入PK房间"""
     room = rooms.get(room_code)
     if not room:
@@ -93,8 +139,21 @@ def join_room(room_code: str = Body(..., embed=True), player_name: str = Body(..
     if any(p["name"] == player_name for p in room["players"]):
         return ApiResponse.error(msg="该昵称已被使用")
 
-    room["players"].append({"name": player_name, "score": 0, "answers": [], "ready": True})
+    # 如果房间有院校限制，检查匹配
+    if room.get("college") and college and room["college"] != college:
+        return ApiResponse.error(msg=f"该房间仅限 {room['college']} 同学加入")
+
+    room["players"].append({
+        "name": player_name, "score": 0, "answers": [], "ready": True,
+        "college": college
+    })
     return ApiResponse.success({"room_code": room_code, "player_name": player_name})
+
+
+@router.get("/pk/colleges")
+def get_colleges():
+    """获取支持的院校列表"""
+    return ApiResponse.success({"colleges": COLLEGES})
 
 
 @router.get("/pk/{room_code}")
@@ -121,16 +180,20 @@ def get_room_status(room_code: str):
             room["q_start_time"] = time.time()
             if room["current_q"] >= len(room["questions"]):
                 room["status"] = "finished"
+                _save_game_result(room_code, room)
 
     idx = room["current_q"]
     return ApiResponse.success({
         "room_code": room_code,
         "host": room["host"],
+        "college": room.get("college", ""),
+        "mode": room.get("mode", "private"),
         "status": room["status"],
         "players": [
             {
                 "name": p["name"],
                 "score": p["score"],
+                "college": p.get("college", ""),
                 "answered": any(a["q_index"] == idx for a in p["answers"]),
                 "correct_count": sum(1 for a in p["answers"] if a["correct"]),
                 "total_answered": len(p["answers"]),
@@ -176,11 +239,10 @@ def get_current_question(room_code: str):
 
     idx = room["current_q"]
 
-    # 自动超时推进：如果本题时间已到但还没推进，强制推进
+    # 自动超时推进
     if room["q_start_time"]:
         elapsed = time.time() - room["q_start_time"]
         if elapsed >= TIME_PER_QUESTION and idx < len(room["questions"]):
-            # 给所有未答题的玩家记录超时错误
             for p in room["players"]:
                 if not any(a["q_index"] == idx for a in p["answers"]):
                     p["answers"].append({
@@ -194,6 +256,7 @@ def get_current_question(room_code: str):
             idx = room["current_q"]
             if idx >= len(room["questions"]):
                 room["status"] = "finished"
+                _save_game_result(room_code, room)
                 return ApiResponse.error(msg="题目已答完")
 
     if idx >= len(room["questions"]):
@@ -229,7 +292,6 @@ def submit_pk_answer(
     if idx >= len(room["questions"]):
         return ApiResponse.error(msg="题目已答完")
 
-    # 找到玩家
     player = None
     for p in room["players"]:
         if p["name"] == player_name:
@@ -238,7 +300,6 @@ def submit_pk_answer(
     if not player:
         return ApiResponse.error(msg="玩家不在房间中")
 
-    # 检查是否已答过
     if any(a["q_index"] == idx for a in player["answers"]):
         return ApiResponse.error(msg="已答过此题")
 
@@ -246,7 +307,6 @@ def submit_pk_answer(
     user_answer = answer.strip().upper()
     is_correct = user_answer == correct_answer
 
-    # 计算得分（答对+10分，剩余时间奖励每秒+1分）
     elapsed = time.time() - (room["q_start_time"] or time.time())
     remaining = max(0, TIME_PER_QUESTION - int(elapsed))
     score = 10 + remaining if is_correct else 0
@@ -258,7 +318,6 @@ def submit_pk_answer(
     })
     player["score"] += score
 
-    # 检查是否所有玩家都已答题
     all_answered = all(
         any(a["q_index"] == idx for a in p["answers"])
         for p in room["players"]
@@ -269,6 +328,7 @@ def submit_pk_answer(
         room["q_start_time"] = time.time()
         if room["current_q"] >= len(room["questions"]):
             room["status"] = "finished"
+            _save_game_result(room_code, room)
 
     return ApiResponse.success({
         "correct": is_correct,
@@ -287,7 +347,6 @@ def get_result(room_code: str):
     if room["status"] != "finished":
         return ApiResponse.error(msg="比赛未结束")
 
-    # 按分数排序
     ranking = sorted(room["players"], key=lambda p: p["score"], reverse=True)
     result = []
     for rank, p in enumerate(ranking, 1):
@@ -296,6 +355,7 @@ def get_result(room_code: str):
             "rank": rank,
             "name": p["name"],
             "score": p["score"],
+            "college": p.get("college", ""),
             "correct": correct_count,
             "total": len(p["answers"]),
         })
@@ -303,6 +363,7 @@ def get_result(room_code: str):
     return ApiResponse.success({
         "ranking": result,
         "total_questions": len(room["questions"]),
+        "college": room.get("college", ""),
     })
 
 
@@ -318,26 +379,123 @@ def leave_room(room_code: str, player_name: str = Body(..., embed=True)):
     return ApiResponse.success({"msg": "已离开房间"})
 
 
+# ===== 排行榜 =====
+
+@router.get("/pk/stats/rank")
+def get_leaderboard(
+    period: str = "weekly",
+    college: str = "",
+    top_n: int = 20,
+):
+    """获取PK排行榜"""
+    db = get_db_connection()
+    try:
+        cursor = db.cursor()
+        if college:
+            cursor.execute("""
+                SELECT player_name, college,
+                       SUM(score) as total_score,
+                       SUM(CASE WHEN result = 'win' THEN 1 ELSE 0 END) as wins,
+                       COUNT(*) as games,
+                       ROUND(AVG(CASE WHEN result = 'win' THEN 1.0 ELSE 0.0 END) * 100, 1) as win_rate
+                FROM pk_records
+                WHERE college = ?
+                GROUP BY player_name, college
+                ORDER BY total_score DESC
+                LIMIT ?
+            """, (college, top_n))
+        else:
+            cursor.execute("""
+                SELECT player_name, college,
+                       SUM(score) as total_score,
+                       SUM(CASE WHEN result = 'win' THEN 1 ELSE 0 END) as wins,
+                       COUNT(*) as games,
+                       ROUND(AVG(CASE WHEN result = 'win' THEN 1.0 ELSE 0.0 END) * 100, 1) as win_rate
+                FROM pk_records
+                GROUP BY player_name, college
+                ORDER BY total_score DESC
+                LIMIT ?
+            """, (top_n,))
+
+        rows = cursor.fetchall()
+        ranking = []
+        for i, r in enumerate(rows):
+            ranking.append({
+                "rank": i + 1,
+                "player_name": r[0],
+                "college": r[1],
+                "score": r[2],
+                "wins": r[3],
+                "games": r[4],
+                "win_rate": r[5],
+            })
+
+        # 院校排行
+        cursor.execute("""
+            SELECT college,
+                   SUM(score) as total_score,
+                   COUNT(DISTINCT player_name) as player_count,
+                   COUNT(*) as games
+            FROM pk_records
+            WHERE college != ''
+            GROUP BY college
+            ORDER BY total_score DESC
+            LIMIT 10
+        """)
+        college_rows = cursor.fetchall()
+        college_ranking = []
+        for i, r in enumerate(college_rows):
+            college_ranking.append({
+                "rank": i + 1,
+                "college": r[0],
+                "total_score": r[1],
+                "player_count": r[2],
+                "games": r[3],
+            })
+
+        # 获取今日/本周新增数据统计
+        cursor.execute("SELECT COUNT(*) FROM pk_records")
+        total_games = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(DISTINCT player_name) FROM pk_records")
+        total_players = cursor.fetchone()[0]
+
+        return ApiResponse.success({
+            "ranking": ranking,
+            "college_ranking": college_ranking,
+            "stats": {
+                "total_games": total_games,
+                "total_players": total_players,
+            }
+        })
+    finally:
+        db.close()
+
+
 # ===== 随机配对 =====
 
 @router.post("/pk/match/join")
-def join_match_queue(player_name: str = Body(..., embed=True)):
-    """加入随机配对队列，匹配到对手后自动创建房间并开始"""
+def join_match_queue(
+    player_name: str = Body(..., embed=True),
+    college: str = Body("", embed=True),
+):
+    """加入随机配对队列"""
     global match_queue
 
-    # 防止重名
     if any(p["player_name"] == player_name for p in match_queue):
         return ApiResponse.error(msg="该昵称已在配对队列中")
 
-    # 若队列中有其他玩家，自动匹配
     if match_queue:
         opponent = match_queue.pop(0)
         code = _generate_room_code()
         rooms[code] = {
             "host": opponent["player_name"],
+            "college": college or opponent.get("college", ""),
+            "mode": "random",
             "players": [
-                {"name": opponent["player_name"], "score": 0, "answers": [], "ready": True},
-                {"name": player_name, "score": 0, "answers": [], "ready": True},
+                {"name": opponent["player_name"], "score": 0, "answers": [], "ready": True,
+                 "college": opponent.get("college", "")},
+                {"name": player_name, "score": 0, "answers": [], "ready": True,
+                 "college": college},
             ],
             "status": "waiting",
             "questions": [],
@@ -354,13 +512,11 @@ def join_match_queue(player_name: str = Body(..., embed=True)):
             "player_name": player_name,
         })
 
-    # 否则加入队列等待
-    match_queue.append({"player_name": player_name, "joined_at": time.time()})
-    queue_size = len(match_queue)
-    pos = next((i for i, p in enumerate(match_queue) if p["player_name"] == player_name), 0) + 1
+    match_queue.append({"player_name": player_name, "college": college, "joined_at": time.time()})
+    pos = len(match_queue)
     return ApiResponse.success({
         "matched": False,
-        "queue_size": queue_size,
+        "queue_size": len(match_queue),
         "position": pos,
         "player_name": player_name,
     })
@@ -369,7 +525,6 @@ def join_match_queue(player_name: str = Body(..., embed=True)):
 @router.get("/pk/match/status")
 def check_match_status(player_name: str):
     """查询是否已匹配到对手"""
-    # 先检查是否已匹配（在某个房间中且matched=True）
     for code, room in rooms.items():
         if room.get("matched") and any(p["name"] == player_name for p in room["players"]):
             return ApiResponse.success({
@@ -378,7 +533,6 @@ def check_match_status(player_name: str):
                 "status": room["status"],
             })
 
-    # 检查是否在队列中
     pos = next((i for i, p in enumerate(match_queue) if p["player_name"] == player_name), None)
     if pos is not None:
         return ApiResponse.success({
@@ -401,3 +555,114 @@ def cancel_match_queue(player_name: str = Body(..., embed=True)):
     if before == after:
         return ApiResponse.error(msg="不在配对队列中")
     return ApiResponse.success({"msg": "已取消配对", "queue_size": after})
+
+
+# ===== 院校PK配对 =====
+
+@router.post("/pk/college/join")
+def join_college_queue(
+    player_name: str = Body(..., embed=True),
+    college: str = Body(..., embed=True),
+):
+    """加入院校PK配对队列"""
+    global college_queue
+
+    if not college:
+        return ApiResponse.error(msg="请选择院校")
+
+    if any(p["player_name"] == player_name for p in college_queue):
+        return ApiResponse.error(msg="该昵称已在院校配对队列中")
+
+    # 优先匹配同院校的对手
+    same_college = [p for p in college_queue if p["college"] == college]
+    if same_college:
+        opponent = same_college[0]
+        college_queue.remove(opponent)
+        code = _generate_room_code()
+        rooms[code] = {
+            "host": opponent["player_name"],
+            "college": college,
+            "mode": "college",
+            "players": [
+                {"name": opponent["player_name"], "score": 0, "answers": [], "ready": True,
+                 "college": college},
+                {"name": player_name, "score": 0, "answers": [], "ready": True,
+                 "college": college},
+            ],
+            "status": "waiting",
+            "questions": [],
+            "current_q": 0,
+            "start_time": None,
+            "q_start_time": None,
+            "max_players": 6,
+            "matched": True,
+        }
+        return ApiResponse.success({
+            "matched": True,
+            "room_code": code,
+            "opponent": opponent["player_name"],
+            "player_name": player_name,
+            "college": college,
+        })
+
+    # 否则加入院校队列等待
+    college_queue.append({"player_name": player_name, "college": college, "joined_at": time.time()})
+    pos = next((i for i, p in enumerate(college_queue)
+                if p["player_name"] == player_name), 0) + 1
+    college_pos = next((i for i, p in enumerate(
+        [p for p in college_queue if p["college"] == college]
+    ) if p["player_name"] == player_name), 0) + 1
+
+    return ApiResponse.success({
+        "matched": False,
+        "queue_size": len(college_queue),
+        "position": pos,
+        "college_position": college_pos,
+        "college": college,
+        "player_name": player_name,
+    })
+
+
+@router.get("/pk/college/status")
+def check_college_status(player_name: str):
+    """查询院校配对状态"""
+    for code, room in rooms.items():
+        if room.get("matched") and room.get("mode") == "college" and \
+                any(p["name"] == player_name for p in room["players"]):
+            return ApiResponse.success({
+                "matched": True,
+                "room_code": code,
+                "status": room["status"],
+                "college": room.get("college", ""),
+            })
+
+    pos = next((i for i, p in enumerate(college_queue)
+                if p["player_name"] == player_name), None)
+    if pos is not None:
+        college = college_queue[pos]["college"]
+        same_count = len([p for p in college_queue if p["college"] == college])
+        same_pos = next((i for i, p in enumerate(
+            [p for p in college_queue if p["college"] == college]
+        ) if p["player_name"] == player_name), 0) + 1
+        return ApiResponse.success({
+            "matched": False,
+            "college": college,
+            "queue_size": len(college_queue),
+            "same_college_size": same_count,
+            "college_position": same_pos,
+            "wait_seconds": int(time.time() - college_queue[pos]["joined_at"]),
+        })
+
+    return ApiResponse.error(msg="不在院校配对队列中")
+
+
+@router.post("/pk/college/cancel")
+def cancel_college_queue(player_name: str = Body(..., embed=True)):
+    """取消院校配对"""
+    global college_queue
+    before = len(college_queue)
+    college_queue = [p for p in college_queue if p["player_name"] != player_name]
+    after = len(college_queue)
+    if before == after:
+        return ApiResponse.error(msg="不在院校配对队列中")
+    return ApiResponse.success({"msg": "已取消院校配对", "queue_size": after})
