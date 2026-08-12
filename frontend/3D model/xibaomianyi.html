@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>细胞免疫 · 完整动画</title>
+<style>
+  :root{--bg:#060918}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg)}
+  #cv{display:block;position:fixed;inset:0}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;background:rgba(6,9,24,0.88);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.04)}
+  .back-btn{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);color:#b0b8c0;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0}
+  .back-btn:hover{background:rgba(255,255,255,0.1);border-color:#fff}
+  .topbar h1{font-size:11px;font-weight:600;background:linear-gradient(90deg,#a855f7,#f59e0b,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .topbar-actions{margin-left:auto;display:flex;gap:4px}
+  .tb-btn{padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#b0b8c0;font-size:9px;font-family:inherit;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+  .tb-btn:hover{background:rgba(255,255,255,0.08);color:#e6edf3}
+  .tb-btn.on{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#f59e0b}
+  .info-popup{position:fixed;z-index:200;pointer-events:none;opacity:0;background:rgba(6,9,24,0.93);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:7px 10px;max-width:200px;backdrop-filter:blur(8px);transition:opacity 0.12s;font-size:10px;line-height:1.4}
+  .info-popup.show{opacity:1}
+  .info-popup h4{font-size:11px;margin-bottom:1px;color:#fbbf24}
+  .info-popup p{color:#8b949e}
+  .knowledge-panel{position:fixed;right:-320px;top:44px;bottom:6px;z-index:150;width:280px;background:rgba(6,9,24,0.93);border-left:1px solid rgba(255,255,255,0.05);backdrop-filter:blur(10px);box-shadow:-3px 0 18px rgba(0,0,0,0.5);transition:right 0.28s cubic-bezier(0.4,0,0.2,1);padding:12px;overflow-y:auto;border-radius:8px 0 0 8px}
+  .knowledge-panel.open{right:0}
+  .kp-close{position:absolute;top:5px;right:7px;width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#b0b8c0;cursor:pointer;font-size:10px}
+  .kp-close:hover{background:rgba(255,255,255,0.1);color:#fff}
+  .kp-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+  .knowledge-panel h3{font-size:13px;color:#e6edf3;margin-bottom:4px}
+  .kp-short{font-size:10px;color:#8b949e;line-height:1.6;margin-bottom:5px}
+  .kp-detail summary{font-size:10px;color:#f59e0b;cursor:pointer;padding:1px 0}
+  .kp-detail p{font-size:9px;color:#a0aab4;line-height:1.6;margin-top:2px;padding-left:5px;border-left:1.5px solid rgba(245,158,11,0.2)}
+  .kp-tip{background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.1);border-radius:5px;padding:4px 6px;margin-top:4px}
+  .kp-tip strong{font-size:9px;color:#f59e0b}
+  .kp-tip p{font-size:9px;color:#b0b8c0;line-height:1.4;margin-top:1px}
+  .kp-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,0.18);opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .kp-overlay.on{opacity:1;pointer-events:auto}
+  .hint{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);z-index:45;padding:3px 12px;border-radius:999px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.03);font-size:9px;color:#6e7681;backdrop-filter:blur(3px);pointer-events:none}
+  .hint em{color:#f59e0b;font-style:normal}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main3.html" class="back-btn">←</a>
+  <h1>细胞免疫 · 完整流程图解</h1>
+  <div class="topbar-actions">
+    <button class="tb-btn on" id="btnLabels" onclick="toggleLabels()">标注</button>
+    <button class="tb-btn" onclick="resetAnim()">重播</button>
+    <button class="tb-btn" id="btnSpeed" onclick="toggleSpeed()">1×</button>
+  </div>
+</div>
+
+<canvas id="cv"></canvas>
+
+<div class="info-popup" id="popup"><h4 id="popTitle"></h4><p id="popDesc"></p></div>
+<div class="kp-overlay" id="kpOverlay" onclick="closeKnowledge()"></div>
+<div class="knowledge-panel" id="kp">
+  <button class="kp-close" onclick="closeKnowledge()">✕</button>
+  <h3><span class="kp-dot" id="kpDot"></span><span id="kpTitle"></span></h3>
+  <p class="kp-short" id="kpShort"></p>
+  <details class="kp-detail"><summary>📖 详细说明</summary><p id="kpDetail"></p></details>
+  <div class="kp-tip"><strong>🎯 考点提示</strong><p id="kpTip"></p></div>
+</div>
+
+<div class="hint">🖱 点击细胞看详情 &nbsp;|&nbsp; ⌨ <em>空格</em>暂停 &nbsp;|&nbsp; ←→ 步进 &nbsp;|&nbsp; R 重播</div>
+
+<script>
+// ═══════════════════ Canvas ═══════════════════
+const DPR=Math.min(devicePixelRatio||1,2);
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+let W,H;
+function rs(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(1,0,0,1,0,0)}
+rs();addEventListener('resize',rs);
+
+// ═══════════════════ State ═══════════════════
+let t=0,spd=0.055,playing=true,lbl=1,spdMul=1;
+// 颜色编码：紫=病原体/抗原 · 青=靶细胞 · 红/橙=免疫细胞 · 绿=促进 · 黄=抗体/信号
+const C={
+  path:'#a855f7',pathD:'#3b0764',pathL:'#c4b5fd',   // 病原体/抗原 (紫)
+  tg:'#22d3ee',tgD:'#155e75',tgL:'#a5f3fc',        // 靶细胞 (青)
+  m:'#f59e0b',mD:'#78350f',mL:'#fde68a',           // 吞噬细胞 (橙)
+  th:'#10b981',thD:'#064e3b',thL:'#6ee7b7',        // 辅助性T细胞 (绿)
+  tc:'#ef4444',tcD:'#7f1d1d',tcL:'#fca5a5',        // 细胞毒性T细胞 (红)
+  eff:'#fb7185',effD:'#9f1239',effL:'#fecdd3',     // 效应T细胞 (玫红)
+  mt:'#fb923c',mtD:'#7c2d12',mtL:'#fdba74',        // 记忆T细胞 (橙黄)
+  ab:'#fbbf24',                                     // 抗体 (黄)
+  cy:'#facc15',                                     // 呈递/细胞因子 (黄)
+  arr:'#334155',dim:'#1e293b',mut:'#64748b',
+  zone1:'rgba(239,68,68,0.025)',zone2:'rgba(251,146,60,0.025)',zone3:'rgba(34,211,238,0.025)',
+};
+
+// ═══════════════════ Coordinate system (ref 1350×820) ═══════════════════
+const RX=1350,RY=820;
+function S(){return Math.min(W/RX,H/RY)}
+function X(v){return W/2+(v-675)*S()}
+function Y(v){return v*S()+Math.max(0,(H-RY*S())/2)}
+
+// ═══════════════════ Node positions ═══════════════════
+const ND={
+  // 【感应阶段】x: 60~370
+  pathogen:   {x:115, y:110, r:24, type:'pathogen'},
+  target1:    {x:290, y:110, r:44, type:'target'},
+  macro1:     {x:290, y:280, r:40, type:'macro'},
+  thCell:     {x:470, y:280, r:32, type:'th'},
+
+  // 【反应阶段】x: 380~860
+  tcCell:     {x:665, y:280, r:30, type:'tc'},
+  tcProlif:   {x:665, y:420, r:28, type:'tc'},
+  effTc1:     {x:850, y:300, r:26, type:'efftc'},
+  memT1:      {x:850, y:520, r:20, type:'memt'},
+
+  // 【效应阶段】x: 870~1290
+  target2:    {x:1135, y:300, r:48, type:'target'},
+  pathogenRel:{x:1135, y:460, r:22, type:'pathogen'},
+  abBind:     {x:985,  y:600, r:12, type:'ab'},
+  precip:     {x:1135, y:600, r:18, type:'precip'},
+  macro2:     {x:1135, y:715, r:40, type:'macro'},
+};
+
+// ═══════════════════ Timeline ═══════════════════
+const STEPS=[
+  {t:0.00,id:'pathogen',  note:'① 病原体入侵并感染正常细胞 → 形成靶细胞'},
+  {t:0.08,id:'target1',   note:'② 靶细胞（被感染）—— 表面带有抗原'},
+  {t:0.16,id:'macro1',    note:'③ 靶细胞释放抗原 → 吞噬细胞摄取、处理、呈递抗原'},
+  {t:0.24,id:'thCell',    note:'④ 吞噬细胞呈递抗原 → 辅助性T细胞（Th）识别抗原并活化'},
+  {t:0.34,id:'tcCell',    note:'⑤ Th分泌细胞因子（淋巴因子）→ 作用于细胞毒性T细胞'},
+  {t:0.44,id:'tcProlif',  note:'⑥ 细胞毒性T细胞受抗原刺激 + 细胞因子作用 → 增殖分化'},
+  {t:0.52,id:'effTc1',    note:'⑦ 增殖、分化 → 效应T细胞'},
+  {t:0.60,id:'memT1',     note:'⑧ 同时分化 → 记忆T细胞（长期潜伏）'},
+  {t:0.68,id:'target2',   note:'⑨ 效应T细胞与靶细胞密切接触'},
+  {t:0.76,id:'pathogenRel',note:'⑩ 靶细胞裂解死亡 → 释放抗原（病原体暴露）'},
+  {t:0.84,id:'precip',    note:'⑪ 抗原失去藏身之所 → 体液免疫：抗原+抗体 → 沉淀'},
+  {t:0.92,id:'macro2',    note:'⑫ 吞噬细胞吞噬消化 → 免疫完成 ✓'},
+];
+
+const act=new Set();
+function curStep(){for(let i=STEPS.length-1;i>=0;i--)if(t>=STEPS[i].t)return i;return -1}
+function updAct(){act.clear();const s=curStep();for(let i=0;i<=s;i++)act.add(STEPS[i].id)}
+function isOn(id){return act.has(id)}
+function alpha(id){if(!isOn(id))return 0.2;const si=STEPS.findIndex(s=>s.id===id);if(si<0)return 1;return 0.2+0.8*Math.min(1,(t-STEPS[si].t)/0.08)}
+
+// ═══════════════════ Flow paths ═══════════════════
+const FLOWS=[
+  {from:'pathogen',to:'target1',color:C.pathL,count:8,  type:'invasion'},
+  {from:'target1',to:'macro1',color:C.tgL,count:12, type:'release'},
+  {from:'macro1',to:'thCell',color:C.cy,count:16,   type:'present'},
+  {from:'thCell',to:'tcCell',color:C.thL,count:20,  type:'cytokine'},
+  {from:'tcCell',to:'tcProlif',color:C.tcL,count:14,type:'prolif'},
+  {from:'tcProlif',to:'effTc1',color:C.effL,count:12,type:'diff'},
+  {from:'tcProlif',to:'memT1',color:C.mtL,count:10, type:'diff'},
+  {from:'effTc1',to:'target2',color:C.tc,count:14,  type:'contact'},
+  {from:'target2',to:'pathogenRel',color:'#ff8844',count:12,type:'lyse'},
+  {from:'pathogenRel',to:'precip',color:C.thL,count:12,type:'handover'},
+  {from:'abBind',to:'precip',color:C.ab,count:12,   type:'bind'},
+  {from:'precip',to:'macro2',color:C.mL,count:12,   type:'cleanup'},
+];
+
+// ═══════════════════ Particles ═══════════════════
+let ps=[];
+function spawnP(f){
+  const a=ND[f.from],b=ND[f.to];if(!a||!b)return;
+  if(!isOn(f.from))return;
+  const inten=isOn(f.to)?1:0.3;
+  const n=Math.floor(f.count*inten);
+  const sx=X(a.x),sy=Y(a.y),ex=X(b.x),ey=Y(b.y);
+  const dx=ex-sx,dy=ey-sy,d=Math.sqrt(dx*dx+dy*dy);
+  const ux=dx/d,uy=dy/d;
+  for(let i=0;i<n;i++)ps.push({x:sx+ux*8,y:sy+uy*8,ex,ey,ux,uy,d,t:Math.random()*0.5*d,maxT:d,r:1+Math.random()*1.8,c:f.color});
+}
+function updP(dt){
+  for(let i=ps.length-1;i>=0;i--){
+    const p=ps[i];p.t+=p.maxT*0.65*dt;
+    if(p.t>=p.maxT){ps.splice(i,1);continue}
+    const f=p.t/p.maxT;p.x=p.ex-(1-f)*p.maxT*p.ux;p.y=p.ey-(1-f)*p.maxT*p.uy;
+  }
+}
+function drawP(){
+  for(const p of ps){
+    const a=0.45+0.45*Math.sin(p.t*0.06);
+    ctx.shadowColor=p.c;ctx.shadowBlur=3;
+    const h=p.c;const r=parseInt(h[1]+h[2],16),g=parseInt(h[3]+h[4],16),b=parseInt(h[5]+h[6],16);
+    ctx.fillStyle=`rgba(${r},${g},${b},${a})`;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  }
+}
+
+// ═══════════════════ Ripples ═══════════════════
+let rips=[];
+function spawnR(x,y,c){rips.push({x,y,r:3,mr:38+Math.random()*16,c,life:1,sp:55+Math.random()*35})}
+function updR(dt){for(let i=rips.length-1;i>=0;i--){const r=rips[i];r.r+=r.sp*dt;r.life=1-r.r/r.mr;if(r.life<=0)rips.splice(i,1)}}
+function drawR(){for(const r of rips){ctx.strokeStyle=r.c;ctx.globalAlpha=r.life*.45;ctx.lineWidth=1.3*(1-r.life);ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1}}
+
+// ═══════════════════ Drawing primitives ═══════════════════
+function sphere(x,y,r,base,light,dark){
+  const g=ctx.createRadialGradient(x-r*.22,y-r*.28,r*.03,x,y,r);
+  g.addColorStop(0,light);g.addColorStop(0.4,base);g.addColorStop(1,dark);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+}
+function arrow(x1,y1,x2,y2,col,wd,on){
+  col=col||C.arr;wd=wd||1.6;
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(len<2)return;
+  const ux=dx/len,uy=dy/len,mx=x2-ux*8,my=y2-uy*8;
+  ctx.globalAlpha=on?.9:.18;ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(mx,my);ctx.stroke();
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(mx-uy*3.5,my+ux*3.5);ctx.lineTo(mx+uy*3.5,my-ux*3.5);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+}
+function dashedArr(x1,y1,x2,y2,col,wd,on){
+  col=col||C.arr;wd=wd||1.2;
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(len<2)return;
+  const ux=dx/len,uy=dy/len;
+  ctx.globalAlpha=on?.82:.16;ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.setLineDash([3.5,2.5]);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-ux*5,y2-uy*5);ctx.stroke();ctx.setLineDash([]);
+  const mx=x2-ux*5,my=y2-uy*5;
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(mx-uy*3,my+ux*3);ctx.lineTo(mx+uy*3,my-ux*3);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+}
+
+// Text with background chip
+function chip(x,y,text,col,sz){
+  sz=sz||12;ctx.font=`bold ${sz}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  const m=ctx.measureText(text),pw=m.width+8,ph=sz+5;
+  ctx.fillStyle='rgba(6,9,24,0.82)';const r=4;
+  ctx.beginPath();ctx.roundRect(x-pw/2,y-ph/2,pw,ph,r);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=.8;ctx.beginPath();ctx.roundRect(x-pw/2,y-ph/2,pw,ph,r);ctx.stroke();
+  ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y);ctx.textAlign='start';ctx.textBaseline='alphabetic';
+}
+function plainText(x,y,text,col,sz,align){
+  sz=sz||11;ctx.font=`${sz}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  ctx.fillStyle=col;ctx.textAlign=align||'center';ctx.fillText(text,x,y);ctx.textAlign='start';
+}
+
+// ═══════════════════ Cell renderers ═══════════════════
+function drawPathogen(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.05*Math.sin(t*13):1,pr=r*p;
+  if(on){ctx.shadowColor=C.path;ctx.shadowBlur=9+3*Math.sin(t*9)}
+  sphere(x,y,pr,on?C.path:'#2a1435',on?C.pathL:'#4a2a5a',on?C.pathD:'#150a20');ctx.shadowBlur=0;
+  for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2;ctx.strokeStyle=on?C.pathD:'#2a1435';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x+Math.cos(a)*(pr+1.5),y+Math.sin(a)*(pr+1.5));ctx.lineTo(x+Math.cos(a)*(pr+pr*.26),y+Math.sin(a)*(pr+pr*.26));ctx.stroke();ctx.fillStyle=on?C.path:'#4a1a55';ctx.beginPath();ctx.arc(x+Math.cos(a)*(pr+pr*.26),y+Math.sin(a)*(pr+pr*.26),1.6,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+function drawMacro(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.035*Math.sin(t*11):1,pr=r*p;
+  if(on){ctx.shadowColor=C.m;ctx.shadowBlur=7+2.5*Math.sin(t*8)}
+  const pts=38;ctx.beginPath();
+  for(let i=0;i<pts;i++){const a=(i/pts)*Math.PI*2;const w=1+.11*Math.sin(a*5+1.4+t*2.2)*Math.cos(a*3+.6);const px=x+Math.cos(a)*pr*w,py=y+Math.sin(a)*pr*w;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)}ctx.closePath();
+  const g=ctx.createRadialGradient(x-pr*.18,y-pr*.28,pr*.03,x,y,pr);
+  g.addColorStop(0,on?C.mL:'#4a3a1a');g.addColorStop(.45,on?C.m:'#3a2a10');g.addColorStop(1,on?C.mD:'#1a0a00');ctx.fillStyle=g;ctx.fill();ctx.shadowBlur=0;
+  for(let i=0;i<5;i++){const a=(i/5)*Math.PI*2+.3+t*.5;ctx.fillStyle=on?C.mD:'#2a1a08';ctx.beginPath();ctx.arc(x+Math.cos(a)*pr*1.04,y+Math.sin(a)*pr*1.04,pr*.15,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+function drawTh(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.045*Math.sin(t*12):1,pr=r*p;
+  if(on){ctx.shadowColor=C.th;ctx.shadowBlur=6+2.5*Math.sin(t*10)}
+  sphere(x,y,pr,on?C.th:'#1a2a1a',on?C.thL:'#2a4422',on?C.thD:'#0a1a0a');ctx.shadowBlur=0;
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;ctx.fillStyle=on?C.thL:'#2a4422';ctx.beginPath();ctx.arc(x+Math.cos(a)*(pr+1.5),y+Math.sin(a)*(pr+1.5),1.8+Math.sin(t*7+i)*.5,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+// 靶细胞（被感染的宿主细胞）：内部藏有病原体
+function drawTarget(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.04*Math.sin(t*11):1,pr=r*p;
+  if(on){ctx.shadowColor=C.tg;ctx.shadowBlur=6+2*Math.sin(t*8)}
+  sphere(x,y,pr,on?C.tg:'#0e2a33',on?C.tgL:'#1a4a5a',on?C.tgD:'#062028');ctx.shadowBlur=0;
+  // 细胞核
+  ctx.fillStyle=on?'rgba(6,9,24,.5)':'rgba(6,9,24,.28)';
+  ctx.beginPath();ctx.arc(x+pr*.14,y-pr*.1,pr*.38,0,Math.PI*2);ctx.fill();
+  // 内部病原体（被感染）
+  for(let i=0;i<3;i++){const a=(i/3)*Math.PI*2+t*.9;const rr=pr*.5;ctx.fillStyle=on?C.path:'#2a1435';ctx.beginPath();ctx.arc(x+Math.cos(a)*rr,y+Math.sin(a)*rr,pr*.11,0,Math.PI*2);ctx.fill()}
+  // 表面受体（小点）
+  for(let i=0;i<9;i++){const a=(i/9)*Math.PI*2;ctx.fillStyle=on?C.tgL:'#1a4a5a';ctx.beginPath();ctx.arc(x+Math.cos(a)*(pr+1.5),y+Math.sin(a)*(pr+1.5),1.3,0,Math.PI*2);ctx.fill()}
+  ctx.globalAlpha=1;
+}
+// 细胞毒性T细胞（Tc）：红色小圆球
+function drawTc(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.05*Math.sin(t*12):1,pr=r*p;
+  if(on){ctx.shadowColor=C.tc;ctx.shadowBlur=6+2.5*Math.sin(t*9)}
+  sphere(x,y,pr,on?C.tc:'#3a1515',on?C.tcL:'#5a2525',on?C.tcD:'#1a0808');ctx.shadowBlur=0;
+  for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2;ctx.fillStyle=on?C.tcL:'#5a2525';ctx.beginPath();ctx.arc(x+Math.cos(a)*(pr+1.5),y+Math.sin(a)*(pr+1.5),1.5,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+// 效应T细胞：玫红，带白色高光（"活跃"状态）
+function drawEffTc(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.06*Math.sin(t*13):1,pr=r*p;
+  if(on){ctx.shadowColor=C.eff;ctx.shadowBlur=13+3*Math.sin(t*10)}
+  sphere(x,y,pr,on?C.eff:'#3a1520',on?C.effL:'#5a2530',on?C.effD:'#1a0a10');ctx.shadowBlur=0;
+  if(on){const core=ctx.createRadialGradient(x,y,0,x,y,pr*.3);core.addColorStop(0,'rgba(255,255,255,.6)');core.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(x,y,pr*.3,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+// 记忆T细胞：橙黄 + 虚线环
+function drawMemT(x,y,r,on,al){
+  ctx.globalAlpha=al;const p=on?1+.035*Math.sin(t*10):1,pr=r*p;
+  if(on){ctx.shadowColor=C.mt;ctx.shadowBlur=5+2*Math.sin(t*8)}
+  sphere(x,y,pr,on?C.mt:'#352015',on?C.mtL:'#5a3a20',on?C.mtD:'#150c05');ctx.shadowBlur=0;
+  ctx.strokeStyle=on?C.mtL:'#5a3a20';ctx.lineWidth=1.1;ctx.setLineDash([2.5,2]);ctx.beginPath();ctx.arc(x,y,pr+3.5,t*1.8,t*1.8+Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+}
+// 抗体（Y形）
+function drawAb(x,y,on,al){
+  ctx.save();ctx.translate(x,y);ctx.globalAlpha=al;
+  if(on){ctx.shadowColor=C.ab;ctx.shadowBlur=4}
+  ctx.strokeStyle=on?C.ab:'#554422';ctx.fillStyle=on?C.ab:'#554422';ctx.lineWidth=2;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(0,2.5);ctx.stroke();ctx.beginPath();ctx.arc(0,2.5,1.5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.moveTo(0,2.5);ctx.lineTo(-4,8.5);ctx.stroke();ctx.beginPath();ctx.moveTo(0,2.5);ctx.lineTo(4,8.5);ctx.stroke();
+  ctx.beginPath();ctx.arc(-4,8.5,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(4,8.5,2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.restore();
+}
+// 沉淀/细胞集团（抗原-抗体复合物）
+function drawPrecip(x,y,r,on){
+  if(!on)return;const a=alpha('precip');if(a<.12)return;ctx.globalAlpha=a*.55;ctx.shadowColor='#ff7722';ctx.shadowBlur=7;
+  ctx.fillStyle='rgba(170,70,30,.45)';ctx.beginPath();ctx.arc(x,y,r+7+Math.sin(t*4.5)*2.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  for(let i=0;i<10;i++){const ang=(i/10)*Math.PI*2+t*.4;const rr=(r+5)*(.45+.55*Math.sin(i*2.9));ctx.fillStyle=`rgba(150,60,25,${a*.65})`;ctx.beginPath();ctx.arc(x+Math.cos(ang)*rr,y+Math.sin(ang)*rr,2.2,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+}
+// 红色叉号 = 裂解死亡
+function drawLysis(x,y,rr){
+  ctx.strokeStyle='rgba(239,68,68,.9)';ctx.lineWidth=2.6;ctx.lineCap='round';
+  const s=rr*(0.9+0.12*Math.sin(t*6));
+  ctx.beginPath();ctx.moveTo(x-s,y-s);ctx.lineTo(x+s,y+s);ctx.moveTo(x+s,y-s);ctx.lineTo(x-s,y+s);ctx.stroke();
+}
+
+// ═══════════════════ Main render ═══════════════════
+let spTimer=0,pv='';
+
+function draw(dt){
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#060918';ctx.fillRect(0,0,W,H);
+  updAct();const sc=S(),step=curStep();const now=step>=0?STEPS[step].id:'';
+
+  // Ripple on step change
+  if(now!==pv&&step>=0){const nd=ND[now];if(nd){const cl=nd.type==='pathogen'?C.path:nd.type==='target'?C.tg:nd.type==='macro'?C.m:nd.type==='th'?C.th:nd.type==='tc'?C.tc:nd.type==='efftc'?C.eff:nd.type==='memt'?C.mt:nd.type==='ab'?C.ab:C.m;spawnR(X(nd.x),Y(nd.y),cl)}pv=now}
+
+  // ── Stage zone backgrounds ──
+  ctx.fillStyle=C.zone1;ctx.fillRect(X(60),Y(35),X(370)-X(60),Y(785)-Y(35));
+  ctx.fillStyle=C.zone2;ctx.fillRect(X(380),Y(35),X(860)-X(380),Y(785)-Y(35));
+  ctx.fillStyle=C.zone3;ctx.fillRect(X(870),Y(35),X(1290)-X(870),Y(785)-Y(35));
+  ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;
+  [370,860].forEach(xx=>{ctx.beginPath();ctx.moveTo(X(xx),Y(35));ctx.lineTo(X(xx),Y(785));ctx.stroke()});
+
+  // ── Stage headers ──
+  const hb=3+Math.sin(t*3.5)*1.8;
+  ctx.textAlign='center';
+  ctx.font=`bold ${18*sc}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  ctx.fillStyle=C.tc;ctx.fillText('【感应阶段】',X(215),Y(30)-hb);
+  ctx.fillStyle=C.m;ctx.fillText('【反应阶段】',X(620),Y(30)-hb);
+  ctx.fillStyle=C.tg;ctx.fillText('【效应阶段】',X(1080),Y(30)-hb);
+  ctx.textAlign='start';
+
+  // ── Stage subtitles ──
+  ctx.font=`${10*sc}px "Microsoft YaHei","PingFang SC",sans-serif`;
+  ctx.fillStyle=C.mut;ctx.textAlign='center';
+  ctx.fillText('感染靶细胞 · 摄取呈递 · Th活化',X(215),Y(50));ctx.fillText('细胞因子 · Tc增殖分化',X(620),Y(50));ctx.fillText('密切接触 · 裂解靶细胞',X(1080),Y(50));ctx.textAlign='start';
+
+  // Background ambient
+  for(let i=0;i<45;i++){const px=X(70+Math.sin(i*71+t*.25)*18+Math.random()*1210);const py=Y(55+Math.cos(i*53+t*.18)*18+Math.random()*730);ctx.fillStyle=`rgba(70,110,150,${.04+.035*Math.sin(i*12+t*2.5)})`;ctx.beginPath();ctx.arc(px,py,.7+Math.random(),0,Math.PI*2);ctx.fill()}
+
+  const D=ND;
+
+  // ── 体液免疫发挥作用区域（虚线框，先画，让内部细胞覆盖其上）──
+  ctx.strokeStyle='rgba(16,185,129,.35)';ctx.lineWidth=1.2;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.roundRect(X(945),Y(535),X(1290)-X(945),Y(760)-Y(535),8);ctx.stroke();ctx.setLineDash([]);
+  ctx.font=`${10*sc}px "Microsoft YaHei","PingFang SC",sans-serif`;ctx.fillStyle=C.th;ctx.textAlign='center';
+  ctx.fillText('体液免疫发挥作用区域（细胞免疫与体液免疫配合）',X(1118),Y(552));ctx.textAlign='start';
+
+  // ═══════════════ ROW 1: 感应阶段 — 病原体 → 靶细胞 ═══════════════
+
+  // Pathogen
+  const pa=isOn('pathogen'),pal=alpha('pathogen');
+  const pxOff=pa?-5*Math.exp(-t*15)*Math.cos(t*20):15;
+  drawPathogen(X(D.pathogen.x)+pxOff*sc,Y(D.pathogen.y),D.pathogen.r*sc,pa,pal);
+  if(lbl)chip(X(D.pathogen.x),Y(D.pathogen.y-22),'病原体（抗原）',C.path,12);
+  if(pa&&t<.1)plainText(X(D.pathogen.x+35),Y(D.pathogen.y-5),'感染→',C.pathL,11,'center');
+
+  // Arrow: pathogen → target1
+  const t1=isOn('target1'),t1al=alpha('target1');
+  arrow(X(D.pathogen.x)+D.pathogen.r*sc+2,Y(D.pathogen.y),X(D.target1.x)-D.target1.r*sc-2,Y(D.target1.y),C.path,1.5,t1);
+  if(t1)plainText(X((D.pathogen.x+D.target1.x)/2),Y(D.pathogen.y-12),'感染',C.pathL,10,'center');
+
+  // target1
+  drawTarget(X(D.target1.x),Y(D.target1.y),D.target1.r*sc,t1,t1al);
+  if(lbl)chip(X(D.target1.x),Y(D.target1.y-32),'靶细胞（被感染）',C.tg,11.5);
+
+  // Arrow down: target1 → macro1 (释放抗原)
+  const m1=isOn('macro1'),m1al=alpha('macro1');
+  if(t1){arrow(X(D.target1.x),Y(D.target1.y)+D.target1.r*sc+2,X(D.macro1.x),Y(D.macro1.y)-D.macro1.r*sc-2,C.tg,1.3,m1);plainText(X(D.target1.x+28),Y((D.target1.y+D.macro1.y)/2-4),'释放抗原',C.tgL,10,'center')}
+
+  // macro1
+  drawMacro(X(D.macro1.x),Y(D.macro1.y),D.macro1.r*sc,m1,m1al);
+  if(lbl)chip(X(D.macro1.x-82),Y(D.macro1.y+4),'吞噬细胞',C.m,11);
+
+  // Arrow: macro1 → thCell (摄取、处理、呈递抗原)
+  arrow(X(D.macro1.x)+D.macro1.r*sc*.6,Y(D.macro1.y)+D.macro1.r*sc*.15,X(D.thCell.x)-D.thCell.r*sc-2,Y(D.thCell.y),C.cy,1.5,m1);
+  if(m1)plainText(X((D.macro1.x+D.thCell.x)/2-12),Y(D.macro1.y-12),'摄取、处理、呈递抗原',C.cy,10,'center');
+
+  // thCell
+  const th1=isOn('thCell'),th1al=alpha('thCell');
+  drawTh(X(D.thCell.x),Y(D.thCell.y),D.thCell.r*sc,th1,th1al);
+  if(lbl){chip(X(D.thCell.x),Y(D.thCell.y-24),'辅助性T细胞 (Th)',C.th,12);plainText(X(D.thCell.x),Y(D.thCell.y+6),'活化',C.thL,10,'center');plainText(X(D.thCell.x),Y(D.thCell.y+22),'注：Th也能识别抗原',C.mut,9,'center')}
+
+  // ═══════════════ ROW 2: 反应阶段 — Th → Tc (细胞因子) ═══════════════
+
+  const tc=isOn('tcCell'),tcal=alpha('tcCell');
+
+  // Th secretes cytokines → Tc
+  if(tc){
+    dashedArr(X(D.thCell.x)+D.thCell.r*sc,Y(D.thCell.y)+D.thCell.r*sc*.3,X(D.tcCell.x),Y(D.tcCell.y-D.tcCell.r*sc-4),C.thL,1.3,true);
+    chip(X((D.thCell.x+D.tcCell.x)/2),Y(D.tcCell.y-28),'分泌细胞因子（淋巴因子）',C.thL,10.5);
+  }
+
+  // Tc cell
+  drawTc(X(D.tcCell.x),Y(D.tcCell.y),D.tcCell.r*sc,tc,tcal);
+  if(lbl)chip(X(D.tcCell.x),Y(D.tcCell.y-24),'细胞毒性T细胞',C.tc,11.5);
+  if(tc)plainText(X(D.tcCell.x+52),Y(D.tcCell.y+6),'受抗原刺激+细胞因子作用',C.tcL,9.5,'center');
+
+  // Arrow down: tc → tcProlif (增殖分化)
+  const tp=isOn('tcProlif'),tpal=alpha('tcProlif');
+  arrow(X(D.tcCell.x),Y(D.tcCell.y)+D.tcCell.r*sc+2,X(D.tcProlif.x),Y(D.tcProlif.y)-D.tcProlif.r*sc-2,C.tcL,1.6,tp);
+  if(tp)plainText(X(D.tcCell.x+34),Y((D.tcCell.y+D.tcProlif.y)/2),'增殖分化',C.tcL,11,'center');
+
+  // tcProlif
+  drawTc(X(D.tcProlif.x),Y(D.tcProlif.y),D.tcProlif.r*sc,tp,tpal);
+  if(lbl&&tp)chip(X(D.tcProlif.x+42),Y(D.tcProlif.y),'增殖分化',C.tc,11);
+
+  // ═══════════════ ROW 3: 分支 — 效应T细胞 (上) + 记忆T细胞 (下) ═══════════════
+  const e1=isOn('effTc1'),e1al=alpha('effTc1');
+  const mt1=isOn('memT1'),mt1al=alpha('memT1');
+
+  if(e1){
+    arrow(X(D.tcProlif.x)+D.tcProlif.r*sc+2,Y(D.tcProlif.y)-6,X(D.effTc1.x)-D.effTc1.r*sc-2,Y(D.effTc1.y),C.eff,1.4,true);
+    plainText(X((D.tcProlif.x+D.effTc1.x)/2),Y((D.tcProlif.y+D.effTc1.y)/2-14),'增殖、分化',C.effL,10.5,'center');
+  }
+  if(mt1){
+    dashedArr(X(D.tcProlif.x)+D.tcProlif.r*sc+2,Y(D.tcProlif.y)+D.tcProlif.r*sc*.5,X(D.memT1.x)-D.memT1.r*sc-2,Y(D.memT1.y),C.mt,1.1,true);
+  }
+
+  // Effector T cell (upper branch)
+  drawEffTc(X(D.effTc1.x),Y(D.effTc1.y),D.effTc1.r*sc,e1,e1al);
+  if(lbl&&e1)chip(X(D.effTc1.x),Y(D.effTc1.y-20),'效应T细胞',C.eff,11);
+
+  // Memory T cell (lower branch)
+  drawMemT(X(D.memT1.x),Y(D.memT1.y),D.memT1.r*sc,mt1,mt1al);
+  if(lbl&&mt1){
+    chip(X(D.memT1.x+52),Y(D.memT1.y),'记忆T细胞',C.mt,11);
+    plainText(X(D.memT1.x+66),Y(D.memT1.y+12),'潜伏·长寿命',C.mtL,10,'center');
+  }
+
+  // ═══════════════ ROW 4: 效应阶段 — 密切接触 → 裂解 → 体液免疫 ═══════════════
+  const t2=isOn('target2'),t2al=alpha('target2');
+
+  // Arrow: effTc1 → target2 (密切接触)
+  if(t2){arrow(X(D.effTc1.x)+D.effTc1.r*sc+2,Y(D.effTc1.y),X(D.target2.x)-D.target2.r*sc-2,Y(D.target2.y),C.tc,1.6,true);plainText(X((D.effTc1.x+D.target2.x)/2),Y(D.effTc1.y-12),'密切接触',C.tcL,11,'center')}
+
+  // target2 (被裂解)
+  drawTarget(X(D.target2.x),Y(D.target2.y),D.target2.r*sc,t2,t2al);
+  if(lbl&&t2)chip(X(D.target2.x),Y(D.target2.y-32),'靶细胞',C.tg,11);
+  // 裂解死亡（红叉）
+  if(t2&&t>=STEPS[9].t)drawLysis(X(D.target2.x),Y(D.target2.y),D.target2.r*sc*1.05);
+
+  // Arrow: target2 → pathogenRel (裂解死亡 → 释放抗原)
+  const pr=isOn('pathogenRel'),pral=alpha('pathogenRel');
+  if(pr){arrow(X(D.target2.x),Y(D.target2.y)+D.target2.r*sc+2,X(D.pathogenRel.x),Y(D.pathogenRel.y)-D.pathogenRel.r*sc-2,'#ff8844',1.4,true);plainText(X(D.target2.x+30),Y((D.target2.y+D.pathogenRel.y)/2-5),'裂解死亡',C.tcL,10,'center')}
+
+  // pathogenRel (释放的抗原/病原体)
+  drawPathogen(X(D.pathogenRel.x),Y(D.pathogenRel.y),D.pathogenRel.r*sc,pr,pral);
+  if(lbl&&pr)chip(X(D.pathogenRel.x),Y(D.pathogenRel.y-20),'释放的抗原（病原体）',C.path,11);
+
+  // Arrow: pathogenRel → precip (失去藏身之所 → 体液免疫)
+  const pp=isOn('precip'),ppal=alpha('precip');
+  if(pp){arrow(X(D.pathogenRel.x),Y(D.pathogenRel.y)+D.pathogenRel.r*sc+2,X(D.precip.x),Y(D.precip.y)-D.precip.r*sc-2,C.th,1.4,true);plainText(X(D.pathogenRel.x+44),Y((D.pathogenRel.y+D.precip.y)/2-5),'失去藏身之所',C.thL,10,'center')}
+
+  // 体液免疫框内：抗体 → 沉淀 → 吞噬
+  const ab1=isOn('precip'),ab1al=alpha('precip');
+  drawAb(X(D.abBind.x),Y(D.abBind.y),ab1,ab1al*.8);
+  if(lbl&&ab1)plainText(X(D.abBind.x),Y(D.abBind.y-16),'抗体',C.ab,10,'center');
+  if(ab1){arrow(X(D.abBind.x)+10,Y(D.abBind.y),X(D.precip.x)-D.precip.r*sc-2,Y(D.precip.y),C.ab,1.3,true);plainText(X((D.abBind.x+D.precip.x)/2),Y(D.abBind.y-12),'结合',C.ab,10,'center')}
+
+  drawPrecip(X(D.precip.x),Y(D.precip.y),D.precip.r*sc,pp);
+  if(pp)plainText(X(D.precip.x),Y(D.precip.y+22),'沉淀 / 细胞集团',C.mut,10,'center');
+
+  const m2=isOn('macro2'),m2al=alpha('macro2');
+  if(m2){arrow(X(D.precip.x),Y(D.precip.y)+D.precip.r*sc+2,X(D.macro2.x),Y(D.macro2.y)-D.macro2.r*sc-2,C.m,1.4,true);plainText(X(D.precip.x+30),Y((D.precip.y+D.macro2.y)/2-5),'吞噬消化',C.mL,10,'center')}
+  drawMacro(X(D.macro2.x),Y(D.macro2.y),D.macro2.r*sc,m2,m2al);
+  if(lbl&&m2)chip(X(D.macro2.x+52),Y(D.macro2.y),'吞噬细胞',C.m,11);
+
+  // ═══════════════ 二次免疫分支 (记忆T → 再次感染 → 迅速效应T) ═══════════════
+  if(m2){
+    drawMemT(X(960),Y(700),14*sc,true,alpha('macro2')*.8);
+    if(lbl){
+      chip(X(1028),Y(696),'记忆T细胞（潜伏）',C.mt,10);
+      plainText(X(1040),Y(714),'再次感染 → 迅速增殖分化',C.mtL,9.5,'center');
+    }
+    dashedArr(X(960)+16*sc,Y(700),X(D.effTc1.x)+D.effTc1.r*sc+2,Y(D.effTc1.y)+8,C.mt,1,true);
+    plainText(X(950),Y(682),'二次免疫·快·多',C.mt,9.5,'center');
+  }
+
+  // ═══════════════ Effects ═══════════════
+  drawR();drawP();
+
+  // ═══════════════ Step annotation ═══════════════
+  if(step>=0){
+    const nt=STEPS[step].note;
+    ctx.fillStyle='rgba(245,158,11,.1)';const nw=ctx.measureText(nt).width+24;
+    const nx=W/2-nw/2,ny=Y(770);
+    ctx.beginPath();ctx.roundRect(nx,ny-12,nw,26,6);ctx.fill();
+    ctx.strokeStyle='rgba(245,158,11,.25)';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(nx,ny-12,nw,26,6);ctx.stroke();
+    ctx.fillStyle=C.m;ctx.font=`bold ${13*sc}px "Microsoft YaHei","PingFang SC",sans-serif`;ctx.textAlign='center';
+    ctx.fillText(nt,W/2,ny+5);ctx.textAlign='start';
+  }
+
+  // ═══════════════ Progress bar ═══════════════
+  const pbw=W*.6,pbh=2,pbx=W*.2,pby=Y(795);
+  ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.roundRect(pbx,pby,pbw,pbh,1);ctx.fill();
+  const ac=STEPS.filter(s=>t>=s.t).length,pg=ac/STEPS.length;
+  const pgr=ctx.createLinearGradient(pbx,0,pbx+pbw,0);pgr.addColorStop(0,C.path);pgr.addColorStop(.4,C.tc);pgr.addColorStop(1,C.tg);
+  ctx.fillStyle=pgr;ctx.beginPath();ctx.roundRect(pbx,pby,pbw*pg,pbh,1);ctx.fill();
+  ctx.fillStyle='#fff';ctx.shadowColor='#fff';ctx.shadowBlur=3;ctx.beginPath();ctx.arc(pbx+pbw*pg,pby+pbh/2,2.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+
+  // ═══════════════ Spawn particles ═══════════════
+  spTimer+=dt;if(spTimer>.055){spTimer=0;for(const f of FLOWS){if(isOn(f.from)&&isOn(f.to))spawnP(f)}}
+  updP(dt);updR(dt);
+}
+
+// ═══════════════════ Interaction ═══════════════════
+const hits=[];
+function bldH(){hits.length=0;const sc=S();for(const[n,d]of Object.entries(ND)){if(!d.type)continue;hits.push({x:X(d.x),y:Y(d.y),r:(d.r+10)*sc,type:d.type})}}
+
+cv.addEventListener('mousemove',e=>{bldH();const mx=e.clientX,my=e.clientY;let f=null;for(const h of hits){if((mx-h.x)**2+(my-h.y)**2<h.r**2){f=h;break}}const pp=document.getElementById('popup');if(f){cv.style.cursor='pointer';pp.classList.add('show');pp.style.left=(mx+12)+'px';pp.style.top=(my-12)+'px';const k=K[f.type];if(k){document.getElementById('popTitle').textContent=k.t;document.getElementById('popDesc').textContent=k.s}}else{cv.style.cursor='default';pp.classList.remove('show')}});
+
+cv.addEventListener('click',e=>{bldH();const mx=e.clientX,my=e.clientY;for(const h of hits){if((mx-h.x)**2+(my-h.y)**2<h.r**2){const k=K[h.type];if(k)openK(h.type,k);return}}});
+
+// ═══════════════════ Knowledge ═══════════════════
+const K={
+  pathogen:{c:'#a855f7',t:'病原体（抗原）',s:'侵入机体的病毒、细菌等异物。病毒感染宿主细胞后，该细胞即成为细胞免疫要清除的靶细胞。',d:'病原体表面的抗原决定簇可被免疫细胞特异性识别。病毒侵入宿主细胞后在其中复制，使宿主细胞"标记"为靶细胞，成为细胞免疫攻击的对象。',tip:'抗原≠病原体。细胞免疫主要针对"藏"在宿主细胞内的病原体（如病毒、胞内寄生菌）。'},
+  target:{c:'#22d3ee',t:'靶细胞（被感染的宿主细胞）',s:'病原体侵入后，宿主细胞成为靶细胞。效应T细胞能识别靶细胞，与靶细胞密切接触，使其裂解死亡。',d:'被病原体（如病毒）感染的宿主细胞即为靶细胞。效应T细胞通过表面的受体特异性识别靶细胞，与靶细胞密切接触，使靶细胞裂解死亡，暴露出其中的病原体。',tip:'细胞免疫直接作用的"对象"是靶细胞（被感染的宿主细胞），而非游离的病原体——这是与体液免疫（作用于游离抗原）的本质区别。'},
+  macro:{c:'#f59e0b',t:'吞噬细胞',s:'摄取、处理靶细胞释放的抗原，并将抗原呈递给辅助性T细胞。',d:'靶细胞裂解释放的抗原被吞噬细胞摄取、处理，再由吞噬细胞把抗原呈递给辅助性T细胞。吞噬细胞是重要的抗原呈递细胞。',tip:'吞噬细胞摄取的是"靶细胞释放的抗原"，而不是直接吞噬靶细胞。'},
+  th:{c:'#10b981',t:'辅助性T细胞（Th）',s:'识别吞噬细胞呈递的抗原后活化，分泌细胞因子（淋巴因子），作用于细胞毒性T细胞。',d:'辅助性T细胞识别吞噬细胞呈递的抗原后活化，分泌细胞因子（淋巴因子）。细胞因子作用于细胞毒性T细胞，促进其增殖分化。',tip:'① 辅助性T细胞也能"识别抗原"（选择题常见坑点）。② 细胞因子是Th分泌的，不是细胞毒性T细胞自分泌的。'},
+  tc:{c:'#ef4444',t:'细胞毒性T细胞',s:'受抗原刺激，并在辅助性T细胞分泌的细胞因子作用下，增殖分化为效应T细胞和记忆T细胞。',d:'细胞毒性T细胞受抗原刺激，并接受辅助性T细胞分泌的细胞因子作用后活化，增殖分化为效应T细胞和记忆T细胞。',tip:'细胞毒性T细胞的增殖分化需要"抗原刺激 + 细胞因子作用"共同完成。'},
+  efftc:{c:'#fb7185',t:'效应T细胞（效应细胞毒性T细胞）',s:'细胞免疫的"效应细胞"。与靶细胞密切接触，使靶细胞裂解死亡。',d:'效应T细胞特异性识别靶细胞后，与靶细胞密切接触，使靶细胞裂解死亡（可激活靶细胞内的溶酶体酶）。效应T细胞不吞噬靶细胞，也不作用于游离病原体，只作用于被感染的靶细胞。',tip:'效应T细胞"不吞噬"靶细胞，而是与靶细胞"密切接触"使其"裂解死亡"——这是细胞免疫的标志性机制。'},
+  memt:{c:'#fb923c',t:'记忆T细胞',s:'长期存活，再次遇同种抗原时迅速增殖分化为效应T细胞，产生更快更强的二次细胞免疫应答。',d:'记忆T细胞是细胞毒性T细胞分化后的长寿命形式。再次感染时，记忆T细胞迅速增殖分化为大量效应T细胞，速度快、数量多。',tip:'二次免疫特点：潜伏期短、反应快、强度大。记忆T细胞与记忆B细胞分别是细胞免疫与体液免疫的"记忆"载体。'},
+  ab:{c:'#fbbf24',t:'抗体',s:'体液免疫中浆细胞分泌的蛋白质，能与抗原特异性结合。',d:'抗体由浆细胞分泌，能与游离的抗原特异性结合，形成沉淀或细胞集团，便于吞噬细胞清除。',tip:'抗体是体液免疫的效应分子；细胞免疫的效应分子是效应T细胞。二者协同配合。'},
+  precip:{c:'#fb923c',t:'抗原-抗体复合物（沉淀/细胞集团）',s:'抗原与抗体特异性结合后聚集形成的沉淀或细胞集团，便于吞噬细胞吞噬消化。',d:'靶细胞裂解释放的抗原进入体液后，被抗体特异性结合、凝集形成沉淀或细胞集团，随后被吞噬细胞吞噬消化。',tip:'抗原"失去藏身之所"后，必须依靠体液免疫（抗体）才能被清除——这体现了细胞免疫与体液免疫的配合。'},
+};
+function openK(type,k){k=k||K[type];if(!k)return;document.getElementById('kpDot').style.background=k.c;document.getElementById('kpDot').style.boxShadow=`0 0 7px ${k.c}`;document.getElementById('kpTitle').textContent=k.t;document.getElementById('kpShort').textContent=k.s;document.getElementById('kpDetail').textContent=k.d;document.getElementById('kpTip').textContent=k.tip;document.getElementById('kp').classList.add('open');document.getElementById('kpOverlay').classList.add('on')}
+function closeKnowledge(){document.getElementById('kp').classList.remove('open');document.getElementById('kpOverlay').classList.remove('on')}
+function toggleLabels(){lbl=!lbl;document.getElementById('btnLabels').classList.toggle('on',lbl)}
+function resetAnim(){t=0;playing=true;ps=[];rips=[];pv=''}
+function toggleSpeed(){spdMul=spdMul===1?2:spdMul===2?0.5:1;document.getElementById('btnSpeed').textContent=spdMul+'×'}
+
+addEventListener('keydown',e=>{
+  if(e.key===' '){e.preventDefault();playing=!playing}
+  if(e.key==='r'||e.key==='R')resetAnim()
+  if(e.key==='ArrowRight'){t=Math.min(1,t+.025);ps=[];rips=[]}
+  if(e.key==='ArrowLeft'){t=Math.max(0,t-.025);ps=[];rips=[]}
+  if(e.key==='Escape')closeKnowledge()
+});
+
+// ═══════════════════ Loop ═══════════════════
+let last=performance.now();
+function loop(ts){const dt=Math.min((ts-last)/1000,.1);last=ts;if(playing){t+=dt*spd*spdMul;if(t>=1)t=0}draw(dt);requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
