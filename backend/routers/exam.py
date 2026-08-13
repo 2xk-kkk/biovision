@@ -6,8 +6,8 @@ import os
 router = APIRouter()
 
 @router.get("/exams")
-def list_exams(year: str = Query(None), region: str = Query(None)):
-    return get_exam_list(year=year, region=region)
+def list_exams(year: str = Query(None), region: str = Query(None), scope: str = Query(None)):
+    return get_exam_list(year=year, region=region, scope=scope)
 
 @router.get("/exams/{exam_id}/questions")
 def get_questions(exam_id: int):

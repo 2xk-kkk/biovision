@@ -1205,7 +1205,7 @@
             const container = document.getElementById('examContainer');
             try {
                 let url = 'http://localhost:8000/api/exams';
-                const params = [];
+                const params = ['scope=真题'];
                 if (year && year !== '全部') params.push(`year=${year}`);
                 if (region && region !== '全部') params.push(`region=${encodeURIComponent(region)}`);
                 if (params.length > 0) url += '?' + params.join('&');

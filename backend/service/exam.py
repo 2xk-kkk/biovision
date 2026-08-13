@@ -11,12 +11,30 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "forum.db")
 
 REGIONS = ['全国', '北京', '上海', '江苏', '浙江', '广东', '山东', '湖北', '湖南', '河北', '四川', '重庆', '陕西', '山西', '青海', '宁夏', '云南', '黑龙江', '吉林', '辽宁', '内蒙古', '河南', '安徽', '福建', '江西', '天津', '新疆', '海南', '甘肃', '贵州', '广西', '黑吉辽蒙', '黑吉辽', '陕晋青宁']
 
+# 试卷练习页的知名高中列表（与前端 exam-practice.html 保持一致）
+SCHOOLS = ['人大附中', '北京四中', '上海中学', '华师大二附中', '南京外国语', '杭二中', '华师一附中', '成都七中', '深圳中学', '衡水中学']
+
+# 试卷练习页的考试类型（与前端保持一致）
+EXAM_TYPES = ['模拟考', '月考', '期中', '期末', '联考', '模拟题', '三模', '二模', '一模']
+
 def parse_exam_info(name):
     year = ''
     region = ''
     exam_type = '高考真题'
     question_count = 0
-    
+
+    # 先提取考试类型（月考/期中/期末/模拟考/联考 等），从 name 中识别
+    for t in EXAM_TYPES:
+        if t in name:
+            exam_type = t
+            break
+
+    # 先识别知名高中（比省份更具体，如"上海中学"应识别为学校而非"上海"）
+    for s in SCHOOLS:
+        if s in name:
+            region = s
+            break
+
     patterns = [
         r'^(20\d{2})_([^_]+)_([^_]+)$',
         r'^(20\d{2})_([^_]+)$',
@@ -24,7 +42,7 @@ def parse_exam_info(name):
         r'^(20\d{2})年(.+?)卷',
         r'^(2\d)(.+)$'
     ]
-    
+
     matched = False
     for pattern in patterns:
         match = re.match(pattern, name)
@@ -33,33 +51,36 @@ def parse_exam_info(name):
                 year = '20' + match.group(1)
             else:
                 year = match.group(1)
-            
+
             if len(match.groups()) > 1:
                 remaining = match.group(2)
-                
-                for r in REGIONS:
-                    if r in remaining:
-                        region = r
-                        break
-                
+
+                # 学校优先；若未识别到学校，再退回省份匹配
+                if not region:
+                    for r in REGIONS:
+                        if r in remaining:
+                            region = r
+                            break
+
                 if not region:
                     region = '全国'
-            
+
             matched = True
             break
-    
+
     if not matched:
         year_match = re.search(r'(20\d{2})', name)
         if year_match:
             year = year_match.group(1)
-        
-        for r in REGIONS:
-            if r in name:
-                region = r
-                break
+
         if not region:
-            region = '其他'
-    
+            for r in REGIONS:
+                if r in name:
+                    region = r
+                    break
+            if not region:
+                region = '其他'
+
     name_clean = name.replace(f'{year}_', '').replace(f'{year}年', '')
     if '卷' in name_clean:
         match = re.search(r'(.+?)卷', name_clean)
@@ -68,17 +89,17 @@ def parse_exam_info(name):
             if region_candidate and region_candidate != region:
                 if region_candidate in REGIONS:
                     region = region_candidate
-    
+
     if '新课标' in name:
         region = '新课标'
-    
+
     region = region.replace('卷', '').strip()
     if region == '':
         region = '全国'
-    
+
     return year, region, exam_type, question_count
 
-def get_exam_list(year=None, region=None):
+def get_exam_list(year=None, region=None, scope=None):
     exams = []
     stats = {
         'total_exams': 0,
@@ -122,7 +143,14 @@ def get_exam_list(year=None, region=None):
                     continue
                 
                 exam_year, exam_region, exam_type, question_count = parse_exam_info(item)
-                
+
+                # 试卷来源筛选：真题大观(非学校高考真题) vs 试卷练习(名校模拟卷)
+                # scope='真题' 只返回高考真题（region 不是知名高中）；scope='模拟' 只返回名校模拟卷（region 是知名高中）
+                if scope == '真题' and exam_region in SCHOOLS:
+                    continue
+                if scope == '模拟' and exam_region not in SCHOOLS:
+                    continue
+
                 if year and exam_year != year:
                     continue
                 if region and region != '全部' and exam_region != region:
