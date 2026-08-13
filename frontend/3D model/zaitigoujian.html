@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基因表达载体的构建 · 交互演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Microsoft YaHei", "PingFang SC", "黑体", sans-serif;
+      background: #eef4f0;
+    }
+
+    #cv {
+      display: block;
+      position: fixed;
+      inset: 0;
+    }
+    /* ===== 玻璃拟态面板 ===== */
+    .panel {
+      position: fixed;
+      z-index: 20;
+      border: 1.5px solid #c8d6ce;
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(8px);
+      border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(60, 100, 80, 0.08);
+    }
+
+    /* 左上：返回按钮 */
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 21;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #c0cec6;
+      background: rgba(255, 255, 255, 0.86);
+      color: #4c6a5d;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+      backdrop-filter: blur(6px);
+    }
+
+    .back-btn:hover {
+      background: #fff;
+      border-color: #3aa17e;
+      color: #3aa17e;
+    }
+
+    /* 左上：步骤讲解 */
+    .info-panel {
+      top: 60px;
+      left: 16px;
+      width: 372px;
+      padding: 14px 16px;
+      line-height: 1.75;
+      font-size: 13px;
+      color: #466055;
+    }
+
+    .info-panel .step-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      background: #3aa17e;
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .info-panel .info-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #2b5a48;
+      margin-bottom: 4px;
+    }
+
+    .info-panel b {
+      color: #2b5a48;
+    }
+
+    .info-panel .tip {
+      margin-top: 8px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #f2faf5;
+      border: 1px dashed #9fceb6;
+      color: #4c7a64;
+      font-size: 12px;
+    }
+
+    /* 右侧：知识卡片（组成结构） */
+    .knowledge-panel {
+      top: 16px;
+      right: 16px;
+      width: 300px;
+      padding: 14px 14px 10px;
+    }
+
+    .knowledge-panel .kp-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #2b5a48;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .kp-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all .18s;
+      border: 1.5px solid transparent;
+      margin-bottom: 4px;
+    }
+
+    .kp-item:hover {
+      background: #f4faf6;
+      border-color: #cfE3d8;
+    }
+
+    .kp-item.active {
+      background: #eaf6ef;
+      border-color: #8cc9a9;
+    }
+
+    .kp-item .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      flex: none;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .kp-item .name {
+      font-weight: bold;
+      font-size: 13px;
+      color: #33524a;
+      white-space: nowrap;
+    }
+
+    .kp-item .func {
+      font-size: 11.5px;
+      color: #6d8a7d;
+      line-height: 1.4;
+    }
+
+    /* 底部：步骤指示点 */
+    .step-dots {
+      position: fixed;
+      bottom: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .step-dot {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid #b9ccc2;
+      background: rgba(255, 255, 255, 0.8);
+      color: #7a948a;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .2s;
+      backdrop-filter: blur(6px);
+    }
+
+    .step-dot:hover {
+      border-color: #3aa17e;
+      color: #3aa17e;
+    }
+
+    .step-dot.on {
+      background: #3aa17e;
+      border-color: #3aa17e;
+      color: #fff;
+      transform: scale(1.12);
+      box-shadow: 0 3px 10px rgba(58, 161, 126, 0.4);
+    }
+
+    /* 底部控制按钮 */
+    .controls {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .ctrl-btn {
+      padding: 9px 20px;
+      border-radius: 22px;
+      border: 1.5px solid #c0cec6;
+      background: rgba(255, 255, 255, 0.86);
+      color: #4c6a5d;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .2s;
+      backdrop-filter: blur(6px);
+    }
+
+    .ctrl-btn:hover {
+      background: #fff;
+      border-color: #3aa17e;
+      color: #3aa17e;
+    }
+
+    .ctrl-btn.on {
+      background: #3aa17e;
+      border-color: #3aa17e;
+      color: #fff;
+    }
+
+    .ctrl-btn.primary {
+      background: #3aa17e;
+      border-color: #3aa17e;
+      color: #fff;
+      font-weight: bold;
+      padding: 10px 28px;
+    }
+
+    .ctrl-btn.primary:hover {
+      background: #34906f;
+      border-color: #34906f;
+      color: #fff;
+    }
+
+    .ctrl-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.7);
+      color: #9ab0a6;
+      border-color: #d4ddd8;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="cv"></canvas>
+
+  <!-- 左上：返回按钮 -->
+  <a class="back-btn" href="main5.html">← 返回</a>
+
+  <!-- 左上：步骤讲解 -->
+  <div class="panel info-panel" id="infoPanel">
+    <span class="step-tag" id="stepTag">第 1 / 5 步</span>
+    <div class="info-title" id="infoTitle">认识两位主角</div>
+    <div id="infoBody"></div>
+    <div class="tip" id="infoTip"></div>
+  </div>
+
+  <!-- 右侧：知识卡片 -->
+  <div class="panel knowledge-panel" id="knowledgePanel">
+    <div class="kp-title">基因表达载体的组成</div>
+    <div class="kp-item" data-part="promoter">
+      <span class="dot" style="background:#4a90d9"></span>
+      <div><span class="name">启动子</span><br><span class="func">RNA聚合酶识别结合，启动转录</span></div>
+    </div>
+    <div class="kp-item" data-part="insert">
+      <span class="dot" style="background:#4cb87a"></span>
+      <div><span class="name">目的基因</span><br><span class="func">要表达的基因（如 Bt 基因）</span></div>
+    </div>
+    <div class="kp-item" data-part="terminator">
+      <span class="dot" style="background:#e0556a"></span>
+      <div><span class="name">终止子</span><br><span class="func">使转录在合适位置停止</span></div>
+    </div>
+    <div class="kp-item" data-part="marker">
+      <span class="dot" style="background:#9b6bd6"></span>
+      <div><span class="name">标记基因</span><br><span class="func">筛选成功导入的细胞（如抗氨苄青霉素基因）</span></div>
+    </div>
+    <div class="kp-item" data-part="origin">
+      <span class="dot" style="background:#e8a040"></span>
+      <div><span class="name">复制原点</span><br><span class="func">让质粒在受体细胞中自我复制</span></div>
+    </div>
+  </div>
+
+  <!-- 步骤指示点 -->
+  <div class="step-dots" id="stepDots"></div>
+
+  <!-- 底部控制 -->
+  <div class="controls">
+    <button class="ctrl-btn" id="btnPrev" onclick="prevStep()">← 上一步</button>
+    <button class="ctrl-btn primary" id="btnNext" onclick="nextStep()">下一步 →</button>
+    <button class="ctrl-btn" id="btnPlay" onclick="togglePlay()">▶ 自动演示</button>
+    <button class="ctrl-btn" onclick="resetAll()">↺ 重置</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('cv');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+
+    function resize() {
+      canvas.width = innerWidth * devicePixelRatio;
+      canvas.height = innerHeight * devicePixelRatio;
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      W = innerWidth;
+      H = innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', () => { resize(); updateLayout(); });
+
+    // ===== 配色 =====
+    const C = {
+      bg: '#eef4f0',
+      text: '#2b4a3d',
+      textLight: '#7a948a',
+      baseRing: '#a9cbb9',
+      origin: '#e8a040',
+      promoter: '#4a90d9',
+      gene: '#4cb87a',
+      geneDark: '#2f8f60',
+      terminator: '#e0556a',
+      marker: '#9b6bd6',
+      enzyme: '#d9484a',
+      ligase: '#2e8bb5',
+      white: '#ffffff',
+    };
+
+    // ===== 状态 =====
+    let step = 0;          // 0..4
+    let progress = 0;      // 0..1 每步动画进度
+    let playing = false;
+    let autoPlay = false;  // true=自动连续演示；false=只播放当前这一步
+    let lastTs = 0;
+    let holdTimer = 0;     // 步骤停留计时
+    let highlightPart = null; // 点击知识卡高亮的部件
+
+    // ===== 布局 =====
+    let pcx, pcy, pr, gcx, gcy, glen;
+
+    function updateLayout() {
+      const drawW = W - 340;                 // 右侧留知识卡
+      pcx = Math.min(W * 0.27, drawW * 0.40);
+      pcy = H * 0.47;
+      pr = Math.min(W * 0.115, H * 0.185, 150);
+      gcx = Math.min(W * 0.52, drawW * 0.78);
+      gcy = H * 0.47;
+      glen = Math.min(W * 0.16, 210);
+    }
+    updateLayout();
+
+    // ===== 数学工具 =====
+    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function easeOut(t) { return 1 - (1 - t) * (1 - t); }
+    function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+    function ang(d) { return d * Math.PI / 180; }
+
+    // ===== 质粒部件定义（角度：0=右，90=下，顺时针）=====
+    const PARTS = [
+      { id: 'origin', name: '复制原点', color: C.origin, a: -90, a0: -135, a1: -45 },
+      { id: 'promoter', name: '启动子', color: C.promoter, a: -20, a0: -42, a1: 0 },
+      { id: 'insert', name: '目的基因', color: C.gene, a: 40, a0: 12, a1: 68 },
+      { id: 'terminator', name: '终止子', color: C.terminator, a: 95, a0: 76, a1: 116 },
+      { id: 'marker', name: '标记基因', color: C.marker, a: 160, a0: 132, a1: 190 },
+    ];
+    const CUT_A = 40; // 限制酶切割位点角度（与 insert 相同）
+
+    // ===== 绘图工具 =====
+    function circle(x, y, r, fill, stroke, sw) {
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw || 1.5; ctx.stroke(); }
+    }
+
+    function label(x, y, text, color, size, align, weight) {
+      ctx.font = (weight ? weight + ' ' : '') + (size || 14) + 'px "Microsoft YaHei","PingFang SC","黑体",sans-serif';
+      ctx.textAlign = align || 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = color || C.text;
+      ctx.fillText(text, x, y);
+    }
+
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, w) {
+      const dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 2) return;
+      const ux = dx / len, uy = dy / len, hl = Math.min(11, len * 0.4);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * hl, y2 - uy * hl);
+      ctx.strokeStyle = color; ctx.lineWidth = w || 2; ctx.lineCap = 'round'; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ux * hl - uy * hl * 0.45, y2 - uy * hl + ux * hl * 0.45);
+      ctx.lineTo(x2 - ux * hl + uy * hl * 0.45, y2 - uy * hl - ux * hl * 0.45);
+      ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+    }
+
+    // 带缺口的圆环（缺口在 cutA，宽 gapRad 弧度）
+    function ring(cx, cy, r, cutRad, gapRad, color, lw) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, cutRad + gapRad / 2, cutRad - gapRad / 2 + Math.PI * 2);
+      ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
+    }
+
+    // 弧线段
+    function segmentArc(cx, cy, r, a0deg, a1deg, color, lw) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, ang(a0deg), ang(a1deg));
+      ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'butt'; ctx.stroke();
+    }
+
+    // ===== 绘制质粒 =====
+    function drawPlasmid(cx, cy, r, gapDeg, withGene, alpha) {
+      alpha = alpha === undefined ? 1 : alpha;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const lw = 17;
+      const cutRad = ang(CUT_A);
+      const gapRad = ang(gapDeg);
+
+      // 基底环
+      ring(cx, cy, r, cutRad, gapRad, C.baseRing, lw);
+
+      // 彩色部件（不含 insert）
+      for (const p of PARTS) {
+        if (p.id === 'insert') continue;
+        segmentArc(cx, cy, r, p.a0, p.a1, p.color, lw);
+      }
+
+      // insert 位置：已插入目的基因 → 绿色段；否则若未切开 → 切割位点标记
+      if (withGene && gapDeg < 2) {
+        segmentArc(cx, cy, r, 12, 68, C.gene, lw);
+      }
+
+      // 黏性末端（切开时）
+      if (gapDeg > 2) {
+        const e1 = cutRad + gapRad / 2;
+        const e2 = cutRad - gapRad / 2;
+        for (const e of [e1, e2]) {
+          const x = cx + r * Math.cos(e), y = cy + r * Math.sin(e);
+          circle(x, y, 5, '#fff', C.textLight, 1.2);
+          // 短单链尾巴
+          const tx = x + Math.cos(e) * 14, ty = y + Math.sin(e) * 14;
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty);
+          ctx.strokeStyle = C.enzyme; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
+        }
+      }
+
+      // 切割位点标记（未切开时的小标记）
+      if (!withGene && gapDeg < 2) {
+        const mx = cx + r * Math.cos(cutRad), my = cy + r * Math.sin(cutRad);
+        ctx.strokeStyle = C.enzyme; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(mx - 5, my - 5); ctx.lineTo(mx + 5, my + 5); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(mx + 5, my - 5); ctx.lineTo(mx - 5, my + 5); ctx.stroke();
+      }
+
+      // 高亮
+      if (highlightPart && highlightPart !== 'insert') {
+        const hp = PARTS.find(p => p.id === highlightPart);
+        if (hp) {
+          const ha = ang(hp.a);
+          const hx = cx + r * Math.cos(ha), hy = cy + r * Math.sin(ha);
+          const pulse = 1 + Math.sin(performance.now() / 180) * 0.15;
+          circle(hx, hy, 16 * pulse, 'rgba(255,255,255,0.0)', hp.color, 3);
+        }
+      } else if (highlightPart === 'insert') {
+        const ha = ang(CUT_A);
+        const hx = cx + r * Math.cos(ha), hy = cy + r * Math.sin(ha);
+        const pulse = 1 + Math.sin(performance.now() / 180) * 0.15;
+        circle(hx, hy, 16 * pulse, 'rgba(255,255,255,0.0)', C.gene, 3);
+      }
+
+      ctx.restore();
+    }
+
+    // ===== 质粒部件标注（引线，避免重叠）=====
+    function drawPlasmidLabels(cx, cy, r, gapDeg, withGene) {
+      const rr = r + 46;
+      const defs = [
+        { id: 'origin', x: cx, y: cy - rr - 6, align: 'center' },
+        { id: 'promoter', x: cx + rr * 0.92 + 18, y: cy - rr * 0.42, align: 'left' },
+        { id: 'insert', x: cx + rr * 0.72 + 24, y: cy + rr * 0.66, align: 'left' },
+        { id: 'terminator', x: cx + rr * 0.20, y: cy + rr + 18, align: 'center' },
+        { id: 'marker', x: cx - rr * 0.90 - 16, y: cy + rr * 0.42, align: 'right' },
+      ];
+      for (const d of defs) {
+        const p = PARTS.find(q => q.id === d.id);
+        const a = ang(p.a);
+        const ax = cx + r * Math.cos(a), ay = cy + r * Math.sin(a);
+        // 引线
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(d.x, d.y);
+        ctx.strokeStyle = 'rgba(120,140,130,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]);
+
+        let name = p.name, color = p.color;
+        if (d.id === 'insert') {
+          if (withGene && gapDeg < 2) { name = '目的基因'; color = C.gene; }
+          else if (gapDeg > 2) { name = '黏性末端'; color = C.enzyme; }
+          else { name = '限制酶切割位点'; color = C.enzyme; }
+        }
+        // 小圆点
+        circle(ax, ay, 3.5, color, '#fff', 1);
+        label(d.x, d.y, name, color, 12.5, d.align, 'bold');
+      }
+    }
+
+    // ===== 绘制目的基因片段（线性）=====
+    function drawGene(x, y, len, cut, alpha, showLabel) {
+      alpha = alpha === undefined ? 1 : alpha;
+      showLabel = showLabel === undefined ? true : showLabel;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const h = 16;
+      roundRect(x - len / 2, y - h / 2, len, h, h / 2);
+      ctx.fillStyle = C.gene; ctx.fill();
+      ctx.strokeStyle = C.geneDark; ctx.lineWidth = 1.6; roundRect(x - len / 2, y - h / 2, len, h, h / 2); ctx.stroke();
+      // 双链示意
+      ctx.beginPath(); ctx.moveTo(x - len / 2 + 8, y - 3.5); ctx.lineTo(x + len / 2 - 8, y - 3.5);
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - len / 2 + 8, y + 3.5); ctx.lineTo(x + len / 2 - 8, y + 3.5);
+      ctx.stroke();
+
+      if (cut) {
+        drawStickyEnd(x - len / 2, y, -1);
+        drawStickyEnd(x + len / 2, y, 1);
+      }
+      ctx.restore();
+      if (showLabel) {
+        label(x, y - h - 6, 'Bt 抗虫蛋白基因', C.geneDark, 12, 'center', 'bold');
+        label(x, y + h + 12, '（目的基因）', C.geneDark, 11, 'center');
+      }
+    }
+
+    function drawStickyEnd(x, y, dir) {
+      const sx = x + dir * 16;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(sx, y - 6);
+      ctx.strokeStyle = C.enzyme; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(sx, y + 6);
+      ctx.stroke();
+      label(sx + dir * 8, y - 12, 'AATT', C.enzyme, 9, dir > 0 ? 'left' : 'right');
+    }
+
+    // ===== 绘制限制酶（剪刀）=====
+    function drawEnzyme(x, y, alpha, labelText) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      // 剪刀：两片刀刃交叉
+      ctx.strokeStyle = '#7a2f31'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - 16, y - 10); ctx.lineTo(x + 4, y + 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - 16, y + 10); ctx.lineTo(x + 4, y + 4); ctx.stroke();
+      // 手柄
+      circle(x + 10, y - 8, 5.5, null, '#7a2f31', 2.5);
+      circle(x + 10, y + 8, 5.5, null, '#7a2f31', 2.5);
+      // 刀刃亮色
+      ctx.strokeStyle = C.enzyme; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(x - 14, y - 9); ctx.lineTo(x + 2, y + 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - 14, y + 9); ctx.lineTo(x + 2, y + 4); ctx.stroke();
+      if (labelText) label(x, y + 26, labelText, C.enzyme, 12, 'center', 'bold');
+      ctx.restore();
+    }
+
+    // ===== 绘制 DNA 连接酶 =====
+    function drawLigase(x, y, alpha, labelText) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      roundRect(x - 14, y - 10, 28, 20, 8);
+      ctx.fillStyle = 'rgba(46,139,181,0.18)'; ctx.fill();
+      ctx.strokeStyle = C.ligase; ctx.lineWidth = 2; roundRect(x - 14, y - 10, 28, 20, 8); ctx.stroke();
+      // 夹缝
+      ctx.beginPath(); ctx.moveTo(x, y - 8); ctx.lineTo(x, y + 8);
+      ctx.strokeStyle = C.ligase; ctx.lineWidth = 2; ctx.stroke();
+      if (labelText) label(x, y + 26, labelText, C.ligase, 12, 'center', 'bold');
+      ctx.restore();
+    }
+
+    // ===== 各步骤绘制 =====
+    function drawStep0(p) {
+      drawPlasmid(pcx, pcy, pr, 0, false, 1);
+      drawPlasmidLabels(pcx, pcy, pr, 0, false);
+      drawGene(gcx, gcy, glen, false, 1);
+      // 说明性箭头/标注
+      label(pcx, pcy - pr - 44, '质粒（载体）', C.text, 15, 'center', 'bold');
+      drawArrow(gcx - glen / 2 - 30, gcy - 40, gcx - glen / 2 + 4, gcy - 22, C.gene, 1.6);
+    }
+
+    function drawStep1(p) {
+      // 剪刀从右侧滑入 (0→0.4)，然后切口打开 (0.4→1)
+      const cutX = pcx + pr * Math.cos(ang(CUT_A)), cutY = pcy + pr * Math.sin(ang(CUT_A));
+      let sx, sy, sa, gap;
+      if (p < 0.4) {
+        const t = easeOut(p / 0.4);
+        sx = lerp(cutX + 170, cutX + 46, t);
+        sy = lerp(cutY + 70, cutY - 34, t);
+        sa = 0.6 * t;
+        gap = 0;
+      } else {
+        const t = easeOut((p - 0.4) / 0.6);
+        sx = cutX + 46; sy = cutY - 34;
+        sa = 0.6 + 0.4 * Math.sin(t * Math.PI * 2) * (1 - t);
+        gap = lerp(0, 58, t);
+      }
+      drawPlasmid(pcx, pcy, pr, gap, false, 1);
+      drawPlasmidLabels(pcx, pcy, pr, gap, false);
+      drawEnzyme(sx, sy, clamp(sa, 0, 1), '限制酶（EcoRⅠ）');
+      // 切口说明
+      if (gap > 2) {
+        label(cutX + 40, cutY - 46, '切开一个切口', C.enzyme, 12, 'left', 'bold');
+        label(cutX + 40, cutY + 40, '露出黏性末端', C.enzyme, 12, 'left', 'bold');
+      }
+    }
+
+    function drawStep2(p) {
+      // 质粒保持切开状态
+      drawPlasmid(pcx, pcy, pr, 58, false, 1);
+      drawPlasmidLabels(pcx, pcy, pr, 58, false);
+
+      // 剪刀先切左端 (0→0.5) 再切右端 (0.5→1)
+      let ex, ey, ea, cut;
+      if (p < 0.5) {
+        const t = easeOut(p / 0.5);
+        ex = lerp(gcx - glen / 2 - 40, gcx - glen / 2, t);
+        ey = gcy - 30;
+        ea = 0.5 * t;
+        cut = 0;
+      } else {
+        const t = easeOut((p - 0.5) / 0.5);
+        ex = lerp(gcx + glen / 2 + 40, gcx + glen / 2, t);
+        ey = gcy - 30;
+        ea = 0.5 + 0.5 * Math.sin(t * Math.PI * 2) * (1 - t);
+        cut = 1;
+      }
+      drawGene(gcx, gcy, glen, cut, 1);
+      drawEnzyme(ex, ey, ea, '同种限制酶');
+      label(gcx, gcy + 52, '两端也产生黏性末端', C.enzyme, 12.5, 'center', 'bold');
+    }
+
+    function drawStep3(p) {
+      const cutX = pcx + pr * Math.cos(ang(CUT_A)), cutY = pcy + pr * Math.sin(ang(CUT_A));
+      // 目的基因从右侧滑入缺口 (0→0.55)，然后缺口闭合、连接酶缝合 (0.55→1)
+      let gx, gy, gap, ligA;
+      if (p < 0.55) {
+        const t = easeOut(p / 0.55);
+        gx = lerp(gcx, cutX + 40, t);
+        gy = lerp(gcy, cutY, t);
+        gap = 58;
+        ligA = 0;
+      } else {
+        const t = easeOut((p - 0.55) / 0.45);
+        gx = cutX + 40 * (1 - t);
+        gy = cutY;
+        gap = lerp(58, 0, t);
+        ligA = t;
+      }
+      drawPlasmid(pcx, pcy, pr, gap, false, 1);
+      // 滑入中的目的基因
+      const gl = Math.max(glen * 0.9, 40);
+      drawGene(gx, gy, gl * 0.7, gap < 30 ? 0 : 1, 1, false);
+      drawPlasmidLabels(pcx, pcy, pr, gap, gap < 4);
+      if (ligA > 0) {
+        drawLigase(cutX + 60, cutY - 40, ligA, 'DNA 连接酶');
+        if (ligA > 0.7) label(cutX + 30, cutY + 44, '重新连接 → 重组DNA分子', C.ligase, 12.5, 'left', 'bold');
+      } else {
+        label(gcx + 40, gcy - 60, '黏性末端互补配对', C.enzyme, 12.5, 'center', 'bold');
+      }
+    }
+
+    function drawStep4(p) {
+      drawPlasmid(pcx, pcy, pr, 0, true, 1);
+      drawPlasmidLabels(pcx, pcy, pr, 0, true);
+      // 完成标记
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 400);
+      ctx.globalAlpha = pulse;
+      circle(pcx, pcy, pr + 12, null, C.gene, 3);
+      ctx.globalAlpha = 1;
+      label(pcx, pcy, '基因表达载体', '#ffffff', 15, 'center', 'bold');
+      label(pcx, pcy + 22, '构建完成 ✔', C.geneDark, 13, 'center', 'bold');
+    }
+
+    function drawScene() {
+      if (step === 0) drawStep0(progress);
+      else if (step === 1) drawStep1(progress);
+      else if (step === 2) drawStep2(progress);
+      else if (step === 3) drawStep3(progress);
+      else drawStep4(progress);
+    }
+
+    // ===== 主渲染 =====
+    function render() {
+      updateLayout();
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = C.bg;
+      ctx.fillRect(0, 0, W, H);
+
+      // 标题
+      label(W / 2, 34, '基因表达载体的构建', C.text, 25, 'center', 'bold');
+      label(W / 2, 62, '—— 转基因抗虫棉 · Bt 基因（第3章 基因工程 · 第2节）', C.textLight, 12.5, 'center');
+
+      drawScene();
+    }
+
+    // ===== 讲解文案 =====
+    const INFO = [
+      {
+        title: '认识两位主角',
+        body: '左边是一个<b>质粒</b>（基因工程最常用的载体），它是能自我复制的环状 DNA 分子。右边是要转入植物的<b>目的基因——Bt 抗虫蛋白基因</b>。',
+        tip: '小提示：质粒上已经有启动子、终止子、标记基因、复制原点等结构，点击右侧知识卡可高亮对应部位。'
+      },
+      {
+        title: '第一步：用限制酶切开质粒',
+        body: '用<b>限制酶（如 EcoRⅠ）</b>——“分子手术刀”，在质粒的特定位点（限制酶切割位点）切开一个切口，露出<b>黏性末端</b>。',
+        tip: '小提示：EcoRⅠ 识别 GAATTC 序列，在 G 与 A 之间切割，产生 5\'-AATT 黏性末端。'
+      },
+      {
+        title: '第二步：切取目的基因',
+        body: '用<b>同一种限制酶</b>切割含有目的基因的 DNA 片段，两端也产生<b>互补的黏性末端</b>，这样之后才能和质粒配对拼接。',
+        tip: '小提示：用同种限制酶（或产生相同末端的酶）是关键——否则黏性末端无法互补配对。'
+      },
+      {
+        title: '第三步：DNA 连接酶“缝合”',
+        body: '目的基因与质粒的黏性末端<b>碱基互补配对</b>，再由<b>DNA 连接酶</b>——“分子缝合针”，把磷酸二酯键重新连接起来，形成<b>重组 DNA 分子</b>。',
+        tip: '小提示：DNA 连接酶连接的是“磷酸二酯键”，不是碱基之间的氢键哦。'
+      },
+      {
+        title: '第四步：基因表达载体构建完成',
+        body: '一个完整的基因表达载体至少包含：<b>目的基因、启动子、终止子、标记基因</b>（还应有<b>复制原点</b>）。它是基因工程操作的<b>核心</b>。',
+        tip: '小提示：启动子像“油门”，让基因开始转录；终止子像“刹车”，让转录停止。点击右侧知识卡回顾每个结构的作用。'
+      },
+    ];
+
+    function updatePanels() {
+      const info = INFO[step];
+      document.getElementById('stepTag').textContent = '第 ' + (step + 1) + ' / 5 步';
+      document.getElementById('infoTitle').textContent = info.title;
+      document.getElementById('infoBody').innerHTML = info.body;
+      document.getElementById('infoTip').innerHTML = info.tip;
+
+      // 步骤点
+      const dots = document.querySelectorAll('.step-dot');
+      dots.forEach((d, i) => d.classList.toggle('on', i === step));
+
+      // 按钮状态
+      document.getElementById('btnPrev').disabled = (step === 0);
+      document.getElementById('btnNext').disabled = (step === 4);
+    }
+
+    function buildStepDots() {
+      const container = document.getElementById('stepDots');
+      const names = ['认识', '切质粒', '切基因', '连接', '完成'];
+      container.innerHTML = '';
+      names.forEach((n, i) => {
+        const d = document.createElement('div');
+        d.className = 'step-dot';
+        d.textContent = (i + 1);
+        d.title = n;
+        d.onclick = () => goToStep(i);
+        container.appendChild(d);
+      });
+    }
+    buildStepDots();
+
+    // ===== 动画循环 =====
+    function syncPlayButton() {
+      const btn = document.getElementById('btnPlay');
+      btn.classList.toggle('on', playing);
+      btn.textContent = playing ? '⏸ 暂停' : '▶ 自动演示';
+    }
+
+    function tick(ts) {
+      requestAnimationFrame(tick);
+      if (lastTs === 0) { lastTs = ts; render(); updatePanels(); return; }
+      const dt = Math.min((ts - lastTs) / 1000, 0.06);
+      lastTs = ts;
+
+      if (playing) {
+        progress += dt * 0.85;
+        if (progress >= 1) {
+          progress = 1;
+          if (autoPlay && step < 4) {
+            holdTimer += dt;
+            if (holdTimer > 1.4) { step++; progress = 0; holdTimer = 0; updatePanels(); }
+          } else {
+            playing = false;
+            autoPlay = false;
+            syncPlayButton();
+          }
+        }
+      }
+
+      render();
+    }
+
+    // ===== 事件 =====
+    // 跳到某一步并播放该步动画（不自动连播）
+    function goToStep(n) {
+      step = clamp(n, 0, 4);
+      progress = 0;
+      holdTimer = 0;
+      playing = true;
+      autoPlay = false;
+      updatePanels();
+      syncPlayButton();
+    }
+
+    window.nextStep = () => { if (step < 4) goToStep(step + 1); };
+    window.prevStep = () => { if (step > 0) goToStep(step - 1); };
+
+    window.togglePlay = () => {
+      if (playing) {
+        playing = false;
+        autoPlay = false;
+      } else {
+        if (step === 4 && progress >= 1) goToStep(0);
+        playing = true;
+        autoPlay = true;
+        if (progress >= 1) progress = 0;
+      }
+      syncPlayButton();
+    };
+
+    window.resetAll = () => {
+      step = 0; progress = 0; holdTimer = 0; playing = false; autoPlay = false;
+      highlightPart = null;
+      document.querySelectorAll('.kp-item').forEach(e => e.classList.remove('active'));
+      updatePanels();
+      syncPlayButton();
+      render();
+    };
+
+    // 键盘
+    window.addEventListener('keydown', e => {
+      if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); nextStep(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
+      if (e.key === 'r' || e.key === 'R') resetAll();
+    });
+
+    // 知识卡点击高亮
+    document.querySelectorAll('.kp-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const part = el.dataset.part;
+        if (highlightPart === part) {
+          highlightPart = null;
+          el.classList.remove('active');
+        } else {
+          highlightPart = part;
+          document.querySelectorAll('.kp-item').forEach(e => e.classList.remove('active'));
+          el.classList.add('active');
+        }
+      });
+    });
+
+    requestAnimationFrame(tick);
+    updatePanels();
+  </script>
+</body>
+
+</html>
