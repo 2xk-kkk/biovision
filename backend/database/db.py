@@ -86,6 +86,18 @@ def init_db():
         )
     ''')
 
+    # 3D 模型收藏表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS model_favorites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            model_id TEXT NOT NULL,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, model_id),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ''')
+
     # 帖子表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS posts (

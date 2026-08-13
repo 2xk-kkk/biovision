@@ -528,6 +528,15 @@
             color: #3b82f6;
         }
 
+        .action-btn.favorite-btn {
+            cursor: pointer;
+        }
+
+        .action-btn.favorite-btn.favorited {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
         .footer {
             background-color: #343a40;
             color: #f8f9fa;
@@ -951,6 +960,79 @@
 
         // 页面加载时同步头像
         loadUserAvatar();
+
+        // ===== 收藏模型 =====
+        function getToken() {
+            return localStorage.getItem('token') || sessionStorage.getItem('token');
+        }
+
+        // 从卡片上解析模型 id：优先 data-model-id，其次 href 的文件名
+        function resolveModelId(card) {
+            const explicit = card.getAttribute('data-model-id');
+            if (explicit) return explicit;
+            const href = card.getAttribute('href') || '';
+            const m = href.match(/([^/]+)\.html$/i);
+            return m ? m[1] : null;
+        }
+
+        // 高亮已收藏的模型
+        async function highlightFavoriteModels() {
+            const token = getToken();
+            if (!token) return;
+            try {
+                const resp = await fetch(`${API_BASE}/model/favorites/ids`, { headers: { 'token': token } });
+                const data = await resp.json();
+                if (data.success && data.data && Array.isArray(data.data.model_ids)) {
+                    const set = new Set(data.data.model_ids);
+                    document.querySelectorAll('.model-card').forEach(card => {
+                        const modelId = resolveModelId(card);
+                        const starBtn = card.querySelector('.card-actions .action-btn');
+                        if (starBtn && set.has(modelId)) {
+                            starBtn.classList.add('favorited');
+                            starBtn.textContent = '★';
+                        }
+                    });
+                }
+            } catch (e) { /* 忽略 */ }
+        }
+
+        // 绑定收藏按钮
+        document.querySelectorAll('.model-card').forEach(card => {
+            const modelId = resolveModelId(card);
+            const starBtn = card.querySelector('.card-actions .action-btn');
+            if (!modelId || !starBtn) return;
+            starBtn.classList.add('favorite-btn');
+            starBtn.textContent = '☆';
+            starBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const token = getToken();
+                if (!token) {
+                    if (confirm('收藏需要登录，是否前往登录？')) {
+                        window.location.href = '../login/login-main.html';
+                    }
+                    return;
+                }
+                try {
+                    const resp = await fetch(`${API_BASE}/model/${modelId}/favorite`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'token': token }
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        const fav = data.data.is_favorited;
+                        starBtn.classList.toggle('favorited', fav);
+                        starBtn.textContent = fav ? '★' : '☆';
+                    } else {
+                        alert(data.msg || '操作失败');
+                    }
+                } catch (err) {
+                    alert('网络错误，请稍后重试');
+                }
+            });
+        });
+
+        highlightFavoriteModels();
     </script>
 </body>
 

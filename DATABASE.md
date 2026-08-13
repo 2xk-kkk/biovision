@@ -228,6 +228,20 @@ backend/
 
 ---
 
+### 2.10 model_favorites — 3D 模型收藏
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | INTEGER PK | 记录ID |
+| user_id | INTEGER FK→users | 收藏用户 |
+| model_id | TEXT | 模型标识（见 `backend/model/model_favorite.py` 的 `MODEL_CATALOG`，30个模型） |
+| create_at | TIMESTAMP | 收藏时间 |
+| 唯一约束 | (user_id, model_id) | 同一用户同一模型只收藏一次 |
+
+> 模型元数据（名称/描述/章节/页面文件/图标）由后端 `MODEL_CATALOG` 常量统一维护，作为收藏详情接口的返回来源。
+
+---
+
 ## 三、API 接口文档
 
 Base URL: `http://localhost:8000/api`
@@ -251,6 +265,9 @@ Base URL: `http://localhost:8000/api`
 | GET | `/user/{id}/likers` | 否 | 点赞用户列表 |
 | GET | `/user/{id}/likes` | 否 | 用户点赞的帖子 |
 | GET | `/user/{id}/collects` | 否 | 用户收藏的帖子 |
+| POST | `/model/{model_id}/favorite` | JWT | 收藏/取消收藏 3D 模型 |
+| GET | `/model/favorites/ids` | JWT | 当前用户已收藏的模型 id 列表 |
+| GET | `/user/{id}/model-favorites` | 否 | 用户收藏的 3D 模型详情列表 |
 | POST | `/user/{id}/follow` | JWT | 关注用户 |
 | POST | `/user/{id}/unfollow` | JWT | 取消关注 |
 | GET | `/user/{id}/follow/status` | JWT | 检查关注状态 |

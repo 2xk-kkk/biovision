@@ -1550,6 +1550,19 @@
             font-size: 0.92rem;
         }
 
+        /* 收藏模型卡片（链接形态） */
+        a.tag-card.model-fav-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .model-fav-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
         /* 右侧栏整体布局 */
         .sidebar {
             display: grid;
@@ -1859,47 +1872,12 @@
                         </div>
                     </div>
                 </div>
-                <!-- 收藏模型：你后面可以替换为真实模型列表 -->
+                <!-- 收藏模型：真实收藏数据 -->
                 <div class="content-box" id="model">
-                    <div class="tag-grid">
-                        <div class="tag-card">
-                            <div class="tag-card-head">
-                                <div>
-                                    <h3 class="tag-title">动物细胞</h3>
-                                    <p class="tag-desc">无细胞壁，含线粒体、内质网等细胞器，以有丝分裂方式增殖</p>
-                                </div>
-                                <div class="tag-icon"><img src="../images/animal-cell.png" alt="动物细胞" width="30"
-                                        height="30"></div>
-                            </div>
-                        </div>
-                        <div class="tag-card">
-                            <div class="tag-card-head">
-                                <div>
-                                    <h3 class="tag-title">DNA的复制</h3>
-                                    <p class="tag-desc">在细胞分裂前，DNA双链解开，以每条链为模板，按碱基互补配对原则合成新链，形成两个完全相同的DNA分子。</p>
-                                </div>
-                                <div class="tag-icon"><img src="../images/dna.png" alt="DNA" width="30" height="30">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tag-card">
-                            <div class="tag-card-head">
-                                <div>
-                                    <h3 class="tag-title">哺乳动物受精过程</h3>
-                                    <p class="tag-desc">精子与卵子融合，形成受精卵。</p>
-                                </div>
-                                <div class="tag-icon"><img src="../images/reproduction.png" alt="精子细胞" width="30"
-                                        height="30"></div>
-                            </div>
-                        </div>
-                        <div class="tag-card">
-                            <div class="tag-card-head">
-                                <div>
-                                    <h3 class="tag-title">突触</h3>
-                                    <p class="tag-desc">神经元之间或神经元与效应器之间传递信息的结构，通过神经递质实现信号的化学传递。</p>
-                                </div>
-                                <div class="tag-icon">⚡</div>
-                            </div>
+                    <div id="modelFavoritesContainer">
+                        <div class="loading" style="text-align: center; padding: 40px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
+                            <div style="color: #64748b;">加载中...</div>
                         </div>
                     </div>
                 </div>
@@ -2835,6 +2813,7 @@
                 await loadUserStats(userId);
                 await loadUserPosts(userId);
                 await loadUserCollects(userId);
+                await loadUserModelFavorites(userId);
                 await loadWrongBook(userId);
             } else {
                 console.log('未登录：API调用失败或返回错误');
@@ -2891,6 +2870,18 @@
                     <a href="../login/login-main.html" class="btn btn-primary" style="margin-top: 20px;">立即登录</a>
                 </div>
             `;
+
+            const modelFavoritesContainer = document.getElementById('modelFavoritesContainer');
+            if (modelFavoritesContainer) {
+                modelFavoritesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">请先登录</h3>
+                        <p style="color: #64748b;">登录后才能查看您收藏的模型</p>
+                        <a href="../login/login-main.html" class="btn btn-primary" style="margin-top: 20px;">立即登录</a>
+                    </div>
+                `;
+            }
         }
 
         function updateStudyData(user) {
@@ -3293,6 +3284,102 @@
         }
 
         /* =========================
+           收藏模型 - 加载真实收藏的 3D 模型
+        ========================= */
+        async function loadUserModelFavorites(userId) {
+            const container = document.getElementById('modelFavoritesContainer');
+            if (!container) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/${userId}/model-favorites`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    renderModelFavoritesEmpty(container);
+                    return;
+                }
+
+                const models = result.data || [];
+                if (!models || models.length === 0) {
+                    renderModelFavoritesEmpty(container);
+                    return;
+                }
+
+                renderModelFavorites(models);
+            } catch (error) {
+                console.error('加载收藏模型失败:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
+                        <h3 style="color: #374151; margin-bottom: 8px;">加载失败</h3>
+                        <p style="color: #64748b;">网络错误，请稍后重试</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderModelFavoritesEmpty(container) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">🧬</div>
+                    <h3 style="color: #374151; margin-bottom: 8px;">还没有收藏任何模型</h3>
+                    <p style="color: #64748b;">去可视学习页收藏你感兴趣的 3D 模型吧！</p>
+                    <a href="../3D model/main.html" class="btn btn-primary" style="margin-top: 20px;">去收藏</a>
+                </div>
+            `;
+        }
+
+        function renderModelFavorites(models) {
+            const container = document.getElementById('modelFavoritesContainer');
+            container.innerHTML = `<div class="tag-grid">` + models.map(m => {
+                const iconHtml = (m.icon && /\.png$/i.test(m.icon))
+                    ? `<img src="${m.icon}" alt="${m.name}" width="30" height="30">`
+                    : `<span>${m.icon || '🔬'}</span>`;
+                return `
+                <a href="../3D model/${m.page}" target="_blank" class="tag-card model-fav-card">
+                    <div class="tag-card-head">
+                        <div>
+                            <h3 class="tag-title">${m.name}</h3>
+                            <p class="tag-desc">${m.tag || ''} · ${m.desc || ''}</p>
+                        </div>
+                        <div class="tag-icon">${iconHtml}</div>
+                    </div>
+                    <div class="model-fav-actions">
+                        <button class="btn btn-secondary cancel-model-fav-btn" data-model-id="${m.id}" type="button">取消收藏</button>
+                    </div>
+                </a>
+            `}).join('') + `</div>`;
+
+            bindCancelModelFavEvents();
+        }
+
+        function bindCancelModelFavEvents() {
+            document.querySelectorAll('.cancel-model-fav-btn').forEach(btn => {
+                btn.addEventListener('click', async function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const modelId = this.dataset.modelId;
+                    if (!confirm('确定要取消收藏这个模型吗？')) return;
+
+                    const response = await fetchWithToken(`${API_BASE_URL}/model/${modelId}/favorite`, {
+                        method: 'POST'
+                    });
+
+                    if (response.success) {
+                        const card = this.closest('.model-fav-card');
+                        if (card) card.remove();
+                        if (document.querySelectorAll('.model-fav-card').length === 0) {
+                            renderModelFavoritesEmpty(document.getElementById('modelFavoritesContainer'));
+                        }
+                    } else {
+                        alert(response.msg || '取消收藏失败');
+                    }
+                });
+            });
+        }
+
+        /* =========================
            错题本 - 加载真实错题数据
         ========================= */
         let wrongBookPage = 1;
@@ -3611,14 +3698,15 @@
         // 页面加载时根据 URL hash 自动切换标签页或打开设置弹窗
         function handleHashChange() {
             const hash = window.location.hash.substring(1); // 去掉 #
+            // 将 URL hash 映射到实际 content-box 的 id
             if (hash === 'posts') {
-                activateTab('posts');
+                activateTab('post');
             } else if (hash === 'collections') {
-                activateTab('collections');
+                activateTab('model');
             } else if (hash === 'downloads') {
-                activateTab('downloads');
+                activateTab('ppt');
             } else if (hash === 'wrongBook') {
-                activateTab('wrongBook');
+                activateTab('wrong');
             } else if (hash === 'settings') {
                 // 打开编辑资料弹窗（使用统一的打开函数，确保数据同步且能正常关闭）
                 openProfileModal();

@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import user, post, exam, question, ppt
+from routers import user, post, exam, question, ppt, model
 from utils.response import ApiResponse
 from database.db import init_db
 import os
@@ -51,6 +51,7 @@ app.include_router(question.router, prefix="/api", tags=["题目"])
 app.include_router(ppt.router, prefix="/api", tags=["PPT生成"])
 app.include_router(mindmap.router, prefix="/api", tags=["思维导图"])
 app.include_router(pk.router, prefix="/api", tags=["院校PK"])
+app.include_router(model.router, prefix="/api", tags=["3D模型"])
 
 # 挂载 PPT 输出文件和资源文件（需要挂载两个路径，因为 HTML 内相对路径 ../assets/ 会解析到 /api/ppt/decks/assets/）
 os.makedirs(PPT_OUTPUT_DIR, exist_ok=True)
