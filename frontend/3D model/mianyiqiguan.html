@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>免疫系统的组成和功能</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: "Microsoft YaHei", "PingFang SC", "宋体", sans-serif;
+      background: #eef0f2;
+      -webkit-user-select: none; user-select: none;
+      color: #333;
+    }
+
+    #cv { display: block; position: fixed; inset: 0; }
+
+    /* 返回按钮 */
+    .back-btn {
+      position: fixed; top: 12px; left: 14px; z-index: 30;
+      padding: 8px 16px; border-radius: 20px; border: 1px solid #d5d9dc;
+      background: rgba(255,255,255,0.9); color: #2f4b57; font-size: 13px;
+      cursor: pointer; font-family: inherit; backdrop-filter: blur(6px);
+      transition: all .2s;
+    }
+    .back-btn:hover { background: #fff; border-color: #3a6ea5; color: #3a6ea5; }
+
+    /* 标题 */
+    .title {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+      z-index: 30; padding: 8px 22px; border-radius: 20px;
+      border: 1px solid #d5d9dc; background: rgba(255,255,255,0.9);
+      color: #2f4b57; font-size: 16px; font-weight: bold;
+      backdrop-filter: blur(6px); text-align: center; white-space: nowrap;
+    }
+    .title .sub { font-size: 11px; color: #889399; font-weight: normal; }
+
+    /* 左侧知识导航 */
+    .sidebar {
+      position: fixed; top: 62px; left: 14px; bottom: 66px; z-index: 20;
+      width: 224px; padding: 12px 10px; overflow-y: auto;
+      border-radius: 12px; border: 1px solid #d5d9dc;
+      background: rgba(255,255,255,0.92); backdrop-filter: blur(6px);
+    }
+    .side-title { font-size: 13px; font-weight: bold; color: #2f4b57; padding: 2px 8px 8px; }
+    .nav-cat {
+      display: flex; align-items: center; gap: 7px; padding: 7px 8px;
+      font-size: 13px; font-weight: bold; color: #3c4a50; cursor: pointer;
+      border-radius: 7px; margin-top: 4px;
+    }
+    .nav-cat:hover { background: #f0f3f4; }
+    .nav-item {
+      display: flex; align-items: center; gap: 7px; padding: 6px 8px 6px 20px;
+      font-size: 13px; color: #4a555a; cursor: pointer; border-radius: 7px;
+    }
+    .nav-item:hover { background: #f0f3f4; }
+    .nav-item.active { background: #e3ecf0; color: #1f4b57; font-weight: bold; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+    /* 右侧详情面板 */
+    .detail {
+      position: fixed; top: 62px; right: 14px; bottom: 66px; z-index: 20;
+      width: 330px; padding: 16px 18px; overflow-y: auto;
+      border-radius: 12px; border: 1px solid #d5d9dc;
+      background: rgba(255,255,255,0.94); backdrop-filter: blur(6px);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+    }
+    .detail .ph { color: #9aa4a9; text-align: center; padding: 20px 4px; line-height: 2; font-size: 13px; }
+    .d-title {
+      font-size: 19px; font-weight: bold; color: #26373d;
+      padding-bottom: 8px; margin-bottom: 10px; border-bottom: 2px solid #3a6ea5;
+    }
+    .d-line { margin: 10px 0; font-size: 13.5px; line-height: 1.75; color: #3a454a; }
+    .d-line b { color: #2f4b57; }
+    .d-note {
+      margin-top: 12px; padding: 8px 10px; border-radius: 8px;
+      background: #f2f6f7; color: #5a6a70; font-size: 12.5px; line-height: 1.7;
+      border-left: 3px solid #3a6ea5;
+    }
+
+    /* 闯关 */
+    .quizbox {
+      position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+      z-index: 26; display: none; flex-direction: column; gap: 8px; align-items: center;
+    }
+    .quizbox.show { display: flex; }
+    .qtext {
+      padding: 10px 22px; border-radius: 12px; border: 1px solid #3a6ea5;
+      background: rgba(255,255,255,0.96); color: #26373d; font-size: 15px; font-weight: bold;
+      backdrop-filter: blur(6px); text-align: center; max-width: 640px;
+      box-shadow: 0 4px 16px rgba(58,110,165,0.15);
+    }
+    .qtext .qhint { font-size: 11px; color: #889399; font-weight: normal; margin-top: 3px; }
+    .options { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 640px; }
+    .opt-btn {
+      padding: 8px 16px; border-radius: 10px; border: 1px solid #d5d9dc;
+      background: rgba(255,255,255,0.94); color: #3c4a50; font-size: 13px;
+      cursor: pointer; font-family: inherit; transition: all .15s; backdrop-filter: blur(6px);
+    }
+    .opt-btn:hover { border-color: #3a6ea5; color: #3a6ea5; background: #fff; }
+    .opt-btn b { color: #3a6ea5; margin-right: 4px; }
+
+    /* 底部控制 */
+    .controls {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 10; display: flex; gap: 10px; align-items: center;
+    }
+    .ctrl-btn {
+      padding: 8px 20px; border-radius: 20px; border: 1.5px solid #cfd5d8;
+      background: rgba(255,255,255,0.88); color: #4a555a; font-size: 13px;
+      cursor: pointer; font-family: inherit; transition: all .2s; backdrop-filter: blur(6px);
+    }
+    .ctrl-btn:hover { background: #fff; border-color: #3a6ea5; color: #3a6ea5; }
+    .ctrl-btn.on { background: #3a6ea5; border-color: #3a6ea5; color: #fff; }
+    .ctrl-btn.quiz { background: #3a6ea5; border-color: #3a6ea5; color: #fff; }
+    .score-badge {
+      padding: 8px 16px; border-radius: 20px; background: #2f4b57; color: #fff;
+      font-size: 13px; font-weight: bold; display: none;
+    }
+    .score-badge.show { display: inline-block; }
+  </style>
+</head>
+
+<body>
+  <canvas id="cv"></canvas>
+
+  <button class="back-btn" onclick="location.href='main3.html'">← 返回</button>
+
+  <div class="title">
+    免疫系统的组成和功能
+    <div class="sub">第4章 免疫调节 · 第1节</div>
+  </div>
+
+  <div class="sidebar">
+    <div class="side-title">知识导航</div>
+    <div id="nav"></div>
+  </div>
+
+  <div class="detail" id="detail">
+    <div class="ph">在左侧选择知识点，<br>或点击图中器官，查看课本原文。</div>
+  </div>
+
+  <div class="quizbox" id="quizbox">
+    <div class="qtext" id="qtext"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn on" id="btnLearn" onclick="setMode('learn')">学习模式</button>
+    <button class="ctrl-btn quiz" id="btnQuiz" onclick="setMode('quiz')">闯关模式</button>
+    <button class="ctrl-btn" onclick="resetView()">重置</button>
+    <span class="score-badge" id="scoreBadge">得分 0</span>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('cv');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+
+    function resize() {
+      canvas.width = innerWidth * devicePixelRatio;
+      canvas.height = innerHeight * devicePixelRatio;
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      W = innerWidth; H = innerHeight;
+      updateLayout();
+    }
+
+    // ===== 配色（冷静、临床风格） =====
+    const C = {
+      bg: '#eef0f2',
+      body: '#ece5d7',
+      bodyLine: '#c4bba8',
+      bone: '#f4f0e6',
+      boneLine: '#cfc7b4',
+      text: '#2f4b57',
+      textLight: '#7d898e',
+    };
+
+    // ===== 知识分类 =====
+    const CATS = [
+      { id:'organs', title:'一、免疫器官', sub:'免疫细胞生成、成熟或集中分布的场所', color:'#a33a3a',
+        overview: '免疫器官主要由淋巴组织构成，并借助于血液循环和淋巴循环相互联系。免疫器官包括骨髓、胸腺、脾、淋巴结和扁桃体等。骨髓和胸腺是免疫细胞分化、发育、成熟的场所；脾、淋巴结和扁桃体是免疫细胞集中分布的场所，也是它们“作战”的战场。' },
+      { id:'cells', title:'二、免疫细胞', sub:'发挥免疫作用的细胞', color:'#3a6ea5',
+        overview: '免疫细胞是执行免疫功能的细胞，它们来自骨髓的造血干细胞，包括各种类型的白细胞，如淋巴细胞、树突状细胞和巨噬细胞等。' },
+      { id:'substances', title:'三、免疫活性物质', sub:'由免疫细胞或其他细胞产生的、发挥免疫作用的物质', color:'#4c8a4c',
+        overview: '免疫活性物质是指由免疫细胞或其他细胞产生的、并发挥免疫作用的物质。机体产生的专门应对抗原的蛋白质，称为抗体。除了抗体，溶菌酶、淋巴细胞分泌的细胞因子等，也属于免疫活性物质。' },
+      { id:'functions', title:'四、免疫系统的功能', sub:'免疫防御 · 免疫自稳 · 免疫监视', color:'#7a5fa0',
+        overview: '人体有三道防线来抵御病原体的攻击。免疫系统具有免疫防御、免疫自稳和免疫监视三大基本功能。' }
+    ];
+
+    const INTRO = {
+      id:'intro', name:'免疫系统的组成',
+      lines: [
+        ['组成', '免疫系统是人体的“安全保卫部”，它拥有一支强大的“部队”，主要包括免疫器官、免疫细胞和免疫活性物质。'],
+        ['免疫器官', '免疫细胞生成、成熟或集中分布的场所，如骨髓、胸腺、脾、淋巴结、扁桃体等。'],
+        ['免疫细胞', '发挥免疫作用的细胞，如淋巴细胞（T细胞、B细胞）、树突状细胞、巨噬细胞等。'],
+        ['免疫活性物质', '由免疫细胞或其他细胞产生的发挥免疫作用的物质，如抗体、细胞因子、溶菌酶等。']
+      ]
+    };
+
+    // ===== 知识点条目（课本原文） =====
+    const ITEMS = [
+      // —— 免疫器官 ——
+      { id:'marrow', cat:'organs', name:'骨髓', organ:true, color:'#a83232', c1:'#b84040', c2:'#7c1f1f', stroke:'#5f1717',
+        lines: [
+          ['位置与形态', '位于骨髓腔或骨松质内。'],
+          ['功能', '是各种免疫细胞的发生地，是B细胞分化、发育、成熟的场所，是机体重要的免疫器官。']
+        ] },
+      { id:'thymus', cat:'organs', name:'胸腺', organ:true, color:'#b57979', c1:'#d8a8a8', c2:'#a86a6a', stroke:'#8a5454',
+        lines: [
+          ['位置与形态', '位于胸骨的后面，呈扁平的椭圆形，分左、右两叶。胸腺随年龄而增长，在青春期时达到高峰，以后逐渐退化。'],
+          ['功能', '胸腺是T细胞分化、发育、成熟的场所。']
+        ] },
+      { id:'spleen', cat:'organs', name:'脾', organ:true, color:'#7a3b3b', c1:'#a84a4a', c2:'#6e2828', stroke:'#541d1d',
+        lines: [
+          ['位置与形态', '呈椭圆形，在胃的左侧。'],
+          ['功能', '内含大量的淋巴细胞；也参与制造新的血细胞与清除衰老的血细胞等。']
+        ] },
+      { id:'lymph', cat:'organs', name:'淋巴结', organ:true, color:'#5f7f92', c1:'#8fabbd', c2:'#58788c', stroke:'#46616f',
+        lines: [
+          ['位置与形态', '呈圆形或豆状，是淋巴细胞集中的地方；沿淋巴管遍布全身，主要集中在颈部、腋窝部和腹股沟部等处。'],
+          ['功能', '能阻止和消灭侵入体内的微生物。']
+        ] },
+      { id:'tonsil', cat:'organs', name:'扁桃体', organ:true, color:'#c07878', c1:'#d89a9a', c2:'#a86a6a', stroke:'#8a5454',
+        lines: [
+          ['位置与形态', '通常指咽腭部的扁桃体，左右各一，形状像扁桃。'],
+          ['功能', '其内部有很多免疫细胞，具有防御功能。']
+        ] },
+
+      // —— 免疫细胞 ——
+      { id:'lymphocyte', cat:'cells', name:'淋巴细胞', color:'#3a6ea5',
+        lines: [
+          ['概述', '淋巴细胞在机体的免疫反应中起着非常重要的作用，包括B淋巴细胞（简称B细胞）和T淋巴细胞（简称T细胞）等。T细胞又可以分为辅助性T细胞和细胞毒性T细胞等。'],
+          ['分布', '位于淋巴液、血液和淋巴结中。'],
+          ['来源与成熟', 'T淋巴细胞迁移到胸腺成熟；B淋巴细胞在骨髓中成熟。']
+        ] },
+      { id:'dendritic', cat:'cells', name:'树突状细胞', color:'#3a6ea5',
+        lines: [
+          ['分布与形态', '分布于皮肤、消化道、呼吸道等很多上皮组织及淋巴器官内，成熟时具有分支。'],
+          ['功能', '具有强大的吞噬、呈递抗原功能。']
+        ] },
+      { id:'macrophage', cat:'cells', name:'巨噬细胞', color:'#3a6ea5',
+        lines: [
+          ['分布', '几乎分布于机体的各种组织中。'],
+          ['功能', '具有吞噬消化、抗原处理和呈递功能。']
+        ] },
+      { id:'apc', cat:'cells', name:'抗原与抗原呈递细胞（APC）', color:'#3a6ea5',
+        lines: [
+          ['抗原', '病原体在进入机体后，其表面一些特定的蛋白质等物质，能够与免疫细胞表面的受体结合，从而引发免疫反应。这些能引发免疫反应的物质称为抗原。'],
+          ['抗原呈递细胞（APC）', 'B细胞、树突状细胞和巨噬细胞都能摄取和加工处理抗原，并且可以将抗原信息暴露在细胞表面，以便呈递给其他免疫细胞，因此，这些细胞统称为抗原呈递细胞（antigen presenting cell, APC）。']
+        ] },
+
+      // —— 免疫活性物质 ——
+      { id:'antibody', cat:'substances', name:'抗体', color:'#4c8a4c',
+        lines: [
+          ['本质', '机体产生的专门应对抗原的蛋白质，称为抗体。'],
+          ['特点', '抗体能与相应抗原发生特异性结合，即一种抗体只能与特定抗原结合。'],
+          ['分布', '抗体能随血液循环和淋巴循环到达身体的各个部位。']
+        ] },
+      { id:'cytokine', cat:'substances', name:'细胞因子', color:'#4c8a4c',
+        lines: [
+          ['来源', '由淋巴细胞等免疫细胞分泌。'],
+          ['种类', '白细胞介素、干扰素、肿瘤坏死因子等是几类主要的细胞因子。']
+        ] },
+      { id:'lysozyme', cat:'substances', name:'溶菌酶', color:'#4c8a4c',
+        lines: [
+          ['性质', '是体液中的杀菌物质，属于免疫活性物质。'],
+          ['作用', '是保卫人体第二道防线的重要组成部分（体液中的杀菌物质）。']
+        ] },
+
+      // —— 免疫系统的功能 ——
+      { id:'defense', cat:'functions', name:'三道防线', color:'#7a5fa0',
+        lines: [
+          ['第一道防线', '皮肤、黏膜。'],
+          ['第二道防线', '体液中的杀菌物质（如溶菌酶）和吞噬细胞（如巨噬细胞和树突状细胞）。'],
+          ['非特异性免疫', '这两道防线人人生来就有，是机体在长期进化过程中遗传下来的，不针对某一类特定的病原体，而是对多种病原体都有防御作用，因此叫作非特异性免疫。'],
+          ['第三道防线（特异性免疫）', '机体在个体发育过程中与病原体接触后获得的，主要针对特定的抗原起作用，因而具有特异性，叫作特异性免疫。'],
+          ['整体性', '这三道防线是统一的整体，它们共同实现免疫防御、免疫自稳和免疫监视三大基本功能。']
+        ] },
+      { id:'functions3', cat:'functions', name:'三大基本功能', color:'#7a5fa0',
+        lines: [
+          ['免疫防御', '机体排除外来抗原性异物的一种免疫防护作用。这是免疫系统最基本的功能。该功能正常时，机体能抵抗病原体的入侵；异常时，免疫反应过强、过弱或缺失，可能会导致组织损伤或易被病原体感染等问题。'],
+          ['免疫自稳', '机体清除衰老或损伤的细胞，进行自身调节，维持内环境稳态的功能。正常情况下，免疫系统对自身的抗原物质不产生免疫反应；若该功能异常，则容易发生自身免疫病。'],
+          ['免疫监视', '机体识别和清除突变的细胞，防止肿瘤发生的功能。机体免疫功能正常时，可识别这些突变的肿瘤细胞，然后调动一切免疫因素将其消除；若此功能低下或失调，机体会有肿瘤发生或持续的病毒感染。']
+        ] }
+    ];
+
+    // ===== 闯关题目 =====
+    const QUIZ = [
+      { type:'organ', q:'B淋巴细胞在哪里分化、发育、成熟？', a:'marrow', hint:'点击图中正确的器官作答' },
+      { type:'organ', q:'T淋巴细胞在哪里分化、发育、成熟？', a:'thymus', hint:'点击图中正确的器官作答' },
+      { type:'organ', q:'哪个器官能清除衰老的血细胞？', a:'spleen', hint:'点击图中正确的器官作答' },
+      { type:'organ', q:'哪个器官沿淋巴管遍布全身，能阻止和消灭微生物？', a:'lymph', hint:'点击图中正确的器官作答' },
+      { type:'organ', q:'位于咽腭部、左右各一的免疫器官是？', a:'tonsil', hint:'点击图中正确的器官作答' },
+      { type:'choice', q:'下列全部属于免疫活性物质的是？', opts:['抗体、细胞因子、溶菌酶','皮肤、黏膜、体液','骨髓、胸腺、脾','红细胞、白细胞、血小板'], a:0 },
+      { type:'choice', q:'保卫人体的第一道防线是？', opts:['皮肤和黏膜','体液中的杀菌物质和吞噬细胞','特异性免疫','淋巴细胞'], a:0 },
+      { type:'choice', q:'下列不属于免疫器官的是？', opts:['骨髓','胸腺','心脏','扁桃体'], a:2 },
+      { type:'choice', q:'免疫系统最基本的功能是？', opts:['免疫自稳','免疫监视','免疫防御','免疫识别'], a:2 },
+      { type:'choice', q:'能与相应抗原发生特异性结合的蛋白质是？', opts:['抗体','溶菌酶','细胞因子','白细胞介素'], a:0 },
+      { type:'choice', q:'T细胞又可以分为？', opts:['辅助性T细胞和细胞毒性T细胞','B细胞和树突状细胞','巨噬细胞和淋巴细胞','红细胞和血小板'], a:0 },
+      { type:'choice', q:'属于人体第二道防线的是？', opts:['皮肤','黏膜','体液中的杀菌物质（如溶菌酶）和吞噬细胞','特异性免疫'], a:2 }
+    ];
+
+    // ===== 布局 =====
+    let L = {};
+    function updateLayout() {
+      const cx = W * 0.5;
+      L = {
+        cx,
+        headY: H * 0.13, headRx: W * 0.05, headRy: H * 0.068,
+        neckTop: H * 0.185, neckBot: H * 0.235, neckHalf: W * 0.017,
+        shoulderY: H * 0.235, shoulderHalf: W * 0.145,
+        armpitY: H * 0.30, waistY: H * 0.50, waistHalf: W * 0.095,
+        hipY: H * 0.55, hipHalf: W * 0.105,
+        armOutX: W * 0.175, handY: H * 0.54, legX: W * 0.055, footY: H * 0.84,
+        // 器官位置
+        tonsil: [
+          { x: cx - W * 0.021, y: H * 0.215, rx: W * 0.013, ry: H * 0.02 },
+          { x: cx + W * 0.021, y: H * 0.215, rx: W * 0.013, ry: H * 0.02 }
+        ],
+        thymus: [
+          { x: cx - W * 0.027, y: H * 0.325, rx: W * 0.028, ry: H * 0.042 },
+          { x: cx + W * 0.027, y: H * 0.325, rx: W * 0.028, ry: H * 0.042 }
+        ],
+        spleen: { x: cx + W * 0.095, y: H * 0.42, rx: W * 0.038, ry: H * 0.062 },
+        lymph: [
+          { x: cx, y: H * 0.252, rx: W * 0.012, ry: H * 0.013 },
+          { x: cx - W * 0.13, y: H * 0.295, rx: W * 0.012, ry: H * 0.013 },
+          { x: cx + W * 0.13, y: H * 0.295, rx: W * 0.012, ry: H * 0.013 },
+          { x: cx - W * 0.055, y: H * 0.575, rx: W * 0.012, ry: H * 0.013 },
+          { x: cx + W * 0.055, y: H * 0.575, rx: W * 0.012, ry: H * 0.013 }
+        ],
+        marrow: { x1: cx - W * 0.055, y1: H * 0.59, x2: cx - W * 0.055, y2: H * 0.80, w: W * 0.02 }
+      };
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ===== 状态 =====
+    let mode = 'learn';
+    let selected = null;      // 选中的知识点 id
+    let selectedOrgan = null; // 图中高亮的器官 id
+    let hovered = null;
+    let quizIndex = 0, score = 0, quizLock = false, pulse = 0;
+
+    // ===== 绘图工具 =====
+    function circle(x, y, r, fill, stroke, sw) {
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw || 1.5; ctx.stroke(); }
+    }
+    function ellipse(x, y, rx, ry, fill, stroke, sw) {
+      ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw || 1.5; ctx.stroke(); }
+    }
+    function label(x, y, text, color, size, align, weight) {
+      ctx.font = (weight ? 'bold ' : '') + (size || 14) + 'px "Microsoft YaHei","PingFang SC","宋体",sans-serif';
+      ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = color || C.text; ctx.fillText(text, x, y);
+    }
+    function strokeBar(x1, y1, x2, y2, w, color) {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.lineWidth = w; ctx.lineCap = 'round';
+      if (color) ctx.strokeStyle = color; ctx.stroke();
+    }
+    function grad(x, y, rx, ry, c1, c2) {
+      const g = ctx.createLinearGradient(x - rx, y - ry, x + rx, y + ry);
+      g.addColorStop(0, c1); g.addColorStop(1, c2);
+      return g;
+    }
+    function glow(color) { ctx.shadowColor = color; ctx.shadowBlur = 18; }
+    function noGlow() { ctx.shadowBlur = 0; }
+    function leader(x1, y1, x2, y2, color) {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
+      circle(x2, y2, 2, color, null, 0);
+    }
+
+    function organData(id) { return ITEMS.find(i => i.id === id); }
+
+    // ===== 绘制人体轮廓 =====
+    function drawBody() {
+      const cx = L.cx;
+      ellipse(cx, L.headY, L.headRx, L.headRy, C.body, C.bodyLine, 1.5);
+      ctx.fillStyle = C.body; ctx.strokeStyle = C.bodyLine; ctx.lineWidth = 1.5;
+      ctx.fillRect(cx - L.neckHalf, L.neckTop, L.neckHalf * 2, L.neckBot - L.neckTop);
+      // 躯干
+      ctx.beginPath();
+      ctx.moveTo(cx - L.shoulderHalf, L.shoulderY);
+      ctx.quadraticCurveTo(cx - L.shoulderHalf - W * 0.012, L.armpitY, cx - L.waistHalf, L.waistY);
+      ctx.quadraticCurveTo(cx - L.hipHalf + W * 0.008, (L.waistY + L.hipY) / 2, cx - L.hipHalf, L.hipY);
+      ctx.lineTo(cx + L.hipHalf, L.hipY);
+      ctx.quadraticCurveTo(cx + L.hipHalf - W * 0.008, (L.waistY + L.hipY) / 2, cx + L.waistHalf, L.waistY);
+      ctx.quadraticCurveTo(cx + L.shoulderHalf + W * 0.012, L.armpitY, cx + L.shoulderHalf, L.shoulderY);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // 手臂
+      strokeBar(cx - L.shoulderHalf, L.shoulderY + H * 0.012, cx - L.armOutX, L.handY, W * 0.034, C.bodyLine);
+      strokeBar(cx - L.shoulderHalf, L.shoulderY + H * 0.012, cx - L.armOutX, L.handY, W * 0.026, C.body);
+      strokeBar(cx + L.shoulderHalf, L.shoulderY + H * 0.012, cx + L.armOutX, L.handY, W * 0.034, C.bodyLine);
+      strokeBar(cx + L.shoulderHalf, L.shoulderY + H * 0.012, cx + L.armOutX, L.handY, W * 0.026, C.body);
+      // 腿
+      strokeBar(cx - L.legX, L.hipY, cx - L.legX - W * 0.006, L.footY, W * 0.05, C.bodyLine);
+      strokeBar(cx - L.legX, L.hipY, cx - L.legX - W * 0.006, L.footY, W * 0.042, C.body);
+      strokeBar(cx + L.legX, L.hipY, cx + L.legX + W * 0.006, L.footY, W * 0.05, C.bodyLine);
+      strokeBar(cx + L.legX, L.hipY, cx + L.legX + W * 0.006, L.footY, W * 0.042, C.body);
+    }
+
+    // ===== 绘制器官 =====
+    function drawOrgan(id) {
+      const l = L, o = organData(id);
+      const active = selectedOrgan === id || hovered === id;
+      if (active) glow(o.color);
+      switch (id) {
+        case 'tonsil':
+          for (const p of l.tonsil) ellipse(p.x, p.y, p.rx, p.ry, grad(p.x, p.y, p.rx, p.ry, o.c1, o.c2), o.stroke, 1.5);
+          break;
+        case 'thymus':
+          for (const p of l.thymus) ellipse(p.x, p.y, p.rx, p.ry, grad(p.x, p.y, p.rx, p.ry, o.c1, o.c2), o.stroke, 1.5);
+          // 两叶之间的连接
+          ctx.strokeStyle = o.stroke; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(l.thymus[0].x + l.thymus[0].rx, l.thymus[0].y); ctx.lineTo(l.thymus[1].x - l.thymus[1].rx, l.thymus[1].y); ctx.stroke();
+          break;
+        case 'spleen':
+          ellipse(l.spleen.x, l.spleen.y, l.spleen.rx, l.spleen.ry, grad(l.spleen.x, l.spleen.y, l.spleen.rx, l.spleen.ry, o.c1, o.c2), o.stroke, 1.5);
+          // 脾门切迹
+          ctx.fillStyle = C.bg;
+          circle(l.spleen.x - l.spleen.rx * 0.5, l.spleen.y - l.spleen.ry * 0.35, l.spleen.ry * 0.28, C.bg, null, 0);
+          break;
+        case 'lymph':
+          for (const p of l.lymph) ellipse(p.x, p.y, p.rx, p.ry, grad(p.x, p.y, p.rx, p.ry, o.c1, o.c2), o.stroke, 1.2);
+          break;
+        case 'marrow':
+          drawBone(l.marrow.x1, l.marrow.y1, l.marrow.x2, l.marrow.y2, l.marrow.w, active);
+          break;
+      }
+      noGlow();
+    }
+
+    function drawBone(x1, y1, x2, y2, w, active) {
+      const o = organData('marrow');
+      // 骨皮质（外圈）
+      strokeBar(x1, y1, x2, y2, w + 10, C.boneLine);
+      strokeBar(x1, y1, x2, y2, w + 5, C.bone);
+      // 骨髓腔（红骨髓）
+      if (active) glow(o.color);
+      strokeBar(x1, y1, x2, y2, w * 0.55, o.color);
+      noGlow();
+      // 两端骨骺
+      circle(x1, y1, (w + 5) / 2, C.bone, C.boneLine, 1.2);
+      circle(x2, y2, (w + 5) / 2, C.bone, C.boneLine, 1.2);
+    }
+
+    function drawOrgans() {
+      for (const id of ['marrow', 'spleen', 'thymus', 'tonsil', 'lymph']) drawOrgan(id);
+      // 选中器官脉动环
+      if (selectedOrgan) {
+        const o = organData(selectedOrgan);
+        const r = 16 + Math.sin(pulse * 0.09) * 5;
+        for (const pt of organCenters(selectedOrgan)) {
+          glow(o.color);
+          circle(pt.x, pt.y, r, null, o.color, 1.6);
+          noGlow();
+        }
+      }
+    }
+
+    function organCenters(id) {
+      const l = L;
+      switch (id) {
+        case 'tonsil': return l.tonsil;
+        case 'thymus': return l.thymus;
+        case 'spleen': return [l.spleen];
+        case 'lymph': return l.lymph;
+        case 'marrow': return [{ x: (l.marrow.x1 + l.marrow.x2) / 2, y: (l.marrow.y1 + l.marrow.y2) / 2 }];
+      }
+      return [];
+    }
+
+    // ===== 标签（固定位置，避免重叠） =====
+    function labelAnchor(id) {
+      const l = L;
+      switch (id) {
+        case 'tonsil': return l.tonsil[1];
+        case 'thymus': return { x: l.cx, y: l.thymus[0].y };
+        case 'spleen': return l.spleen;
+        case 'lymph': return l.lymph[1];
+        case 'marrow': return { x: (l.marrow.x1 + l.marrow.x2) / 2, y: (l.marrow.y1 + l.marrow.y2) / 2 };
+      }
+      return null;
+    }
+    function drawLabels() {
+      const l = L;
+      const defs = [
+        ['tonsil', '扁桃体', l.cx + W * 0.06, H * 0.215, 'left'],
+        ['thymus', '胸腺', l.cx, H * 0.39, 'center'],
+        ['spleen', '脾', l.spleen.x + W * 0.065, l.spleen.y, 'left'],
+        ['lymph', '淋巴结', l.cx - W * 0.155, H * 0.295, 'right'],
+        ['marrow', '骨髓', l.cx - W * 0.10, H * 0.70, 'right']
+      ];
+      for (const [id, name, x, y, align] of defs) {
+        const o = organData(id);
+        const act = selectedOrgan === id || hovered === id;
+        label(x, y, name, o.color, act ? 14 : 13, align, act);
+        const c = labelAnchor(id);
+        leader(x + (align === 'left' ? -16 : align === 'right' ? 16 : 0), y, c.x, c.y, o.color);
+      }
+    }
+
+    // ===== 命中检测 =====
+    function distToSeg(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy;
+      let t = l2 ? ((px - x1) * dx + (py - y1) * dy) / l2 : 0;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+    }
+    function inEllipse(mx, my, e, pad) {
+      return Math.pow((mx - e.x) / (e.rx + pad), 2) + Math.pow((my - e.y) / (e.ry + pad), 2) < 1;
+    }
+    function hitOrgan(mx, my) {
+      const l = L, pad = 7;
+      for (const p of l.tonsil) if (inEllipse(mx, my, p, pad)) return 'tonsil';
+      for (const p of l.thymus) if (inEllipse(mx, my, p, pad)) return 'thymus';
+      if (inEllipse(mx, my, l.spleen, pad)) return 'spleen';
+      for (const p of l.lymph) if (inEllipse(mx, my, p, pad)) return 'lymph';
+      if (distToSeg(mx, my, l.marrow.x1, l.marrow.y1, l.marrow.x2, l.marrow.y2) < l.marrow.w / 2 + pad) return 'marrow';
+      return null;
+    }
+
+    // ===== UI：导航 =====
+    function buildNav() {
+      let h = navRow('intro', '免疫系统的组成', '#8a9aa3', 8);
+      for (const cat of CATS) {
+        h += '<div class="nav-cat" onclick="showCat(\'' + cat.id + '\')">' +
+             '<span class="dot" style="background:' + cat.color + '"></span>' + cat.title + '</div>';
+        for (const it of ITEMS.filter(i => i.cat === cat.id)) {
+          h += navRow(it.id, it.name, it.color || cat.color, 20);
+        }
+      }
+      document.getElementById('nav').innerHTML = h;
+    }
+    function navRow(id, name, color, padLeft) {
+      return '<div class="nav-item" id="nav_' + id + '" style="padding-left:' + padLeft + 'px" onclick="showItem(\'' + id + '\')">' +
+             '<span class="dot" style="background:' + color + '"></span>' + name + '</div>';
+    }
+
+    // ===== UI：详情 =====
+    function showItem(id) {
+      if (mode === 'quiz') return;
+      selected = id;
+      const el = document.getElementById('detail');
+      if (id === 'intro') {
+        setNavActive(id);
+        selectedOrgan = null;
+        renderLines(el, INTRO.name, '#3a6ea5', INTRO.lines, null);
+        return;
+      }
+      const it = ITEMS.find(i => i.id === id);
+      if (!it) return;
+      setNavActive(id);
+      selectedOrgan = it.organ ? id : null;
+      const note = it.organ ? '图中已高亮该器官（对应左侧人体免疫器官示意图）。' : null;
+      renderLines(el, it.name, it.color, it.lines, note);
+    }
+    function showCat(id) {
+      if (mode === 'quiz') return;
+      const cat = CATS.find(c => c.id === id);
+      if (!cat) return;
+      selected = null; selectedOrgan = null; setNavActive(null);
+      const el = document.getElementById('detail');
+      renderLines(el, cat.title, cat.color, [['概述', cat.overview]], null);
+    }
+    function renderLines(el, title, color, lines, note) {
+      let h = '<div class="d-title" style="border-color:' + color + '">' + title + '</div>';
+      for (const [k, v] of lines) {
+        h += '<div class="d-line"><b>【' + k + '】</b> ' + v + '</div>';
+      }
+      if (note) h += '<div class="d-note">' + note + '</div>';
+      el.innerHTML = h;
+      el.scrollTop = 0;
+    }
+    function setNavActive(id) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      if (id) { const n = document.getElementById('nav_' + id); if (n) n.classList.add('active'); }
+    }
+    function showPlaceholder() {
+      document.getElementById('detail').innerHTML = '<div class="ph">在左侧选择知识点，<br>或点击图中器官，查看课本原文。</div>';
+    }
+
+    // ===== UI：闯关 =====
+    function setMode(m) {
+      mode = m;
+      selected = null; selectedOrgan = null; setNavActive(null);
+      document.getElementById('btnLearn').classList.toggle('on', m === 'learn');
+      document.getElementById('quizbox').classList.toggle('show', m === 'quiz');
+      if (m === 'quiz') {
+        quizIndex = 0; score = 0; quizLock = false;
+        updateScore(); showQuestion(); showPlaceholder();
+      } else {
+        document.getElementById('scoreBadge').classList.remove('show');
+        showPlaceholder();
+      }
+    }
+    function updateScore() {
+      const b = document.getElementById('scoreBadge');
+      b.textContent = '得分 ' + score + ' / ' + QUIZ.length;
+      b.classList.add('show');
+    }
+    function showQuestion() {
+      const q = QUIZ[quizIndex];
+      const qt = document.getElementById('qtext');
+      qt.innerHTML = '第 ' + (quizIndex + 1) + '/' + QUIZ.length + ' 题　' + q.q +
+        (q.hint ? '<div class="qhint">' + q.hint + '</div>' : '');
+      const opt = document.getElementById('options');
+      if (q.type === 'choice') {
+        const letters = ['A', 'B', 'C', 'D'];
+        opt.innerHTML = q.opts.map((o, i) =>
+          '<button class="opt-btn" onclick="answerChoice(' + i + ')"><b>' + letters[i] + '</b>' + o + '</button>'
+        ).join('');
+      } else {
+        opt.innerHTML = '';
+      }
+    }
+    function correctText(q) {
+      if (q.type === 'organ') return organData(q.a).name;
+      return q.opts[q.a];
+    }
+    function showFeedback(ok, q) {
+      const el = document.getElementById('detail');
+      const c = ok ? '#4c8a4c' : '#a83232';
+      el.innerHTML = '<div class="d-title" style="border-color:' + c + '">' + (ok ? '回答正确' : '回答错误') + '</div>' +
+        '<div class="d-line">正确答案：<b>' + correctText(q) + '</b></div>' +
+        (ok ? '' : '<div class="d-note" style="border-left-color:' + c + '">' + q.q + ' 请结合课本复习后重试。</div>');
+    }
+    function advance() {
+      quizIndex++;
+      if (quizIndex >= QUIZ.length) {
+        const el = document.getElementById('detail');
+        const perfect = score === QUIZ.length;
+        el.innerHTML = '<div class="d-title" style="border-color:#3a6ea5">闯关结束</div>' +
+          '<div class="d-line">答对 <b style="color:#a83232">' + score + '</b> / ' + QUIZ.length + ' 题</div>' +
+          '<div class="d-note">' + (perfect ? '全部答对，知识点已掌握。' : '可返回学习模式复习，再重新闯关。') + '</div>';
+        document.getElementById('options').innerHTML = '';
+        document.getElementById('qtext').innerHTML = '已完成全部题目';
+        quizLock = false;
+        return;
+      }
+      quizLock = false;
+      showQuestion();
+    }
+    function answerChoice(i) {
+      if (mode !== 'quiz' || quizLock) return;
+      const q = QUIZ[quizIndex];
+      quizLock = true;
+      const ok = (i === q.a);
+      if (ok) score++;
+      updateScore();
+      showFeedback(ok, q);
+      setTimeout(advance, 1400);
+    }
+    function answerOrgan(id) {
+      if (mode !== 'quiz' || quizLock) return;
+      const q = QUIZ[quizIndex];
+      selectedOrgan = id;
+      quizLock = true;
+      const ok = (id === q.a);
+      if (ok) score++;
+      updateScore();
+      showFeedback(ok, q);
+      setTimeout(advance, 1400);
+    }
+    function resetView() {
+      selected = null; selectedOrgan = null; hovered = null; setNavActive(null);
+      if (mode === 'learn') showPlaceholder(); else showQuestion();
+    }
+
+    // ===== 主渲染 =====
+    function render() {
+      pulse++;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+      drawBody();
+      drawOrgans();
+      drawLabels();
+    }
+    function tick() { requestAnimationFrame(tick); render(); }
+    requestAnimationFrame(tick);
+
+    // ===== 事件 =====
+    canvas.addEventListener('mousemove', e => {
+      hovered = hitOrgan(e.clientX, e.clientY);
+      canvas.style.cursor = hovered ? 'pointer' : 'default';
+    });
+    canvas.addEventListener('click', e => {
+      const id = hitOrgan(e.clientX, e.clientY);
+      if (!id) return;
+      if (mode === 'learn') showItem(id);
+      else if (mode === 'quiz') answerOrgan(id);
+    });
+
+    buildNav();
+    showPlaceholder();
+  </script>
+</body>
+
+</html>
