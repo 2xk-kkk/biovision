@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Half 2</title>
+</head>
+<body>
+    <h1>Test Half 2</h1>
+    <div id="output">Testing...</div>
+    <script>
+    var document = { 
+        getElementById: function(id) { return { 
+            innerHTML: '', textContent: '', value: '',
+            style: {}, classList: { add: function(){}, remove: function(){} },
+            appendChild: function(){}, addEventListener: function(){},
+            querySelectorAll: function(){ return []; },
+            onclick: null, textContent: ''
+        }; },
+        createElement: function(tag) { return { 
+            className: '', textContent: '', innerHTML: '',
+            style: {}, setAttribute: function(){},
+            appendChild: function(){}, onclick: null
+        }; },
+        querySelectorAll: function(sel) { return []; },
+        querySelector: function(sel) { return null; }
+    };
+    var window = { location: { href: '' }, open: function(){} };
+    var alert = function() {};
+    var fetch = function() { return Promise.resolve(); };
+    var atob = function(s) { return s; };
+    
+    try {
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="preview-no-questions">
+                        <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                        <div>加载失败</div>
+                        <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('预览失败:', error);
+            }
+        }
+
+        function parseOptions(optionsData) {
+            if (!optionsData) return [];
+            let result = [];
+            if (typeof optionsData === 'string') {
+                try {
+                    const parsed = JSON.parse(optionsData);
+                    result = parseOptions(parsed);
+                } catch (e) {
+                    // Try to parse inline options like "A. xxx B. xxx C. xxx D. xxx"
+                    result = parseOptionsFromString(optionsData);
+                }
+            } else if (Array.isArray(optionsData)) {
+                result = optionsData;
+            } else if (typeof optionsData === 'object' && optionsData !== null) {
+                result = Object.keys(optionsData)
+                    .filter(key => optionsData[key] && String(optionsData[key]).trim())
+                    .map(key => ({ key, text: String(optionsData[key]).trim() }));
+            }
+            // Filter out empty text
+            return result.filter(o => o && o.text && o.text.trim());
+        }
+
+        function parseOptionsFromString(text) {
+            if (!text) return [];
+            const options = [];
+            // Match patterns like: A. content B. content or A、content B、content
+            const pattern = /([A-D])[\s]*[.．、)）:：][\s]*(.*?)(?=[\s]*[A-D][\s]*[.．、)）:：]|$)/g;
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                const content = (match[2] || '').trim();
+                if (content) {
+                    options.push({ key: match[1], text: content });
+                }
+            }
+            return options;
+        }
+
+        function parseImages(imagesData) {
+            if (!imagesData) return [];
+            let images = [];
+            if (typeof imagesData === 'string') {
+                try {
+                    images = JSON.parse(imagesData);
+                } catch (e) {
+                    if (imagesData.startsWith('/') || imagesData.startsWith('http')) {
+                        if (imagesData.includes(',')) {
+                            images = imagesData.split(',').map(img => img.trim()).filter(img => img);
+                        } else {
+                            images = [imagesData];
+                        }
+                    } else {
+                        return [];
+                    }
+                }
+            } else {
+                images = imagesData;
+            }
+            // Return as-is (URLs or paths), don't filter by extension since URLs may not have extensions visible
+            return images.filter(img => img && typeof img === 'string' && img.length > 0);
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('show');
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function handleDrop(event) {
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('selectedFile').style.display = 'none';
+        }
+
+        async function importAndParse() {
+            try {
+                showToast('success', '正在从D盘导入并解析试卷...');
+                const response = await fetch('http://localhost:8000/api/exams/import-and-parse', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data || {};
+                    const parseData = data.parse_result || {};
+                    let msg = result.msg || '导入完成';
+                    if (parseData.success !== undefined) {
+                        msg += `（成功解析 ${parseData.success} 个，失败 ${parseData.failed} 个）`;
+                    }
+                    showToast('success', msg);
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '导入失败，请确保后端服务已启动');
+                console.error('导入失败:', error);
+            }
+        }
+
+        async function parseExam(examName) {
+            try {
+                showToast('success', `正在解析 ${examName}...`);
+                const formData = new FormData();
+                formData.append('exam_name', examName);
+                
+                const response = await fetch('http://localhost:8000/api/exams/parse', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', result.msg);
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '解析失败，请确保后端服务已启动');
+                console.error('解析失败:', error);
+            }
+        }
+
+        async function parseAllPending() {
+            if (!confirm('确定要解析所有尚未解析的试卷吗？')) return;
+            
+            try {
+                showToast('success', '正在批量解析试卷...');
+                const response = await fetch('http://localhost:8000/api/exams/parse-all', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data || {};
+                    showToast('success', result.msg);
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '批量解析失败，请确保后端服务已启动');
+                console.error('批量解析失败:', error);
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const category = document.getElementById('categoryInput').value.trim();
+            if (!category) {
+                showToast('error', '请输入试卷分类');
+                return;
+            }
+            
+            if (!selectedFile) {
+                showToast('error', '请选择要上传的文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('category', category);
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('http://localhost:8000/api/exams/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', '上传成功');
+                    closeUploadModal();
+                    loadExams();
+                } else {
+                    showToast('error', result.msg);
+                }
+            } catch (error) {
+                showToast('error', '上传失败，请确保后端服务已启动');
+                console.error('上传失败:', error);
+            }
+        });
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+
+        document.getElementById('uploadModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUploadModal();
+            }
+        });
+        // 下拉菜单交互
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.parentElement;
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+            const navDropdown = document.getElementById('navDropdownMenu');
+            if (navDropdown && !e.target.closest('#navAvatarBtn')) {
+                navDropdown.classList.remove('show');
+            }
+        });
+        
+        // 导航栏头像下拉菜单
+        const navAvatarBtn = document.getElementById('navAvatarBtn');
+        const navDropdown = document.getElementById('navDropdownMenu');
+        if (navAvatarBtn && navDropdown) {
+            navAvatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navDropdown.classList.toggle('show');
+            });
+        }
+        
+        // 解析JWT token
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const binaryString = atob(base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const jsonPayload = decodeURIComponent(escape(String.fromCharCode.apply(null, bytes)));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        // 获取默认头像
+        function getDefaultAvatar(username) {
+            const colors = [
+                '#4338ca',
+                '#be185d',
+                '#0369a1',
+                '#15803d',
+                '#c2410c',
+                '#7c3aed',
+                '#dc2626',
+                '#b45309'
+            ];
+            const char = (username || '用').trim()[0].toUpperCase();
+            const colorIndex = char.charCodeAt(0) % colors.length;
+            return {
+                color: colors[colorIndex],
+                char: char
+            };
+        }
+        
+        // 加载用户信息
+        async function loadUserInfo() {
+            const token = localStorage.getItem('token');
+            const navAvatarEl = document.getElementById('navAvatar');
+            if (!navAvatarEl) return;
+            
+            if (!token) {
+                navAvatarEl.innerHTML = '👤';
+                return;
+            }
+            
+            try {
+                const payload = parseJwt(token);
+                if (!payload || !payload.user_id) {
+                    navAvatarEl.innerHTML = '👤';
+                    return;
+                }
+                
+                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const data = await resp.json();
+                
+                if (data.success && data.data) {
+                    const username = data.data.username || '用户';
+                    if (data.data.avatar) {
+                        navAvatarEl.innerHTML = `<img src="${data.data.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;">`;
+                    } else {
+                        const defaultAvatar = getDefaultAvatar(username);
+                        navAvatarEl.style.background = defaultAvatar.color;
+                        navAvatarEl.textContent = defaultAvatar.char;
+                    }
+                } else {
+                    navAvatarEl.innerHTML = '👤';
+                }
+            } catch (e) {
+                navAvatarEl.innerHTML = '👤';
+            }
+        }
+        
+        loadUserInfo();
+        loadExams();
+    
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

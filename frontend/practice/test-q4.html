@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Quarter 4</title>
+</head>
+<body>
+    <h1>Test Quarter 4</h1>
+    <div id="output">Testing...</div>
+    <script>
+var document = { 
+    getElementById: function(id) { return { 
+        innerHTML: '', textContent: '', value: '',
+        style: {}, classList: { add: function(){}, remove: function(){} },
+        appendChild: function(){}, addEventListener: function(){},
+        querySelectorAll: function(){ return []; },
+        onclick: null, textContent: ''
+    }; },
+    createElement: function(tag) { return { 
+        className: '', textContent: '', innerHTML: '',
+        style: {}, setAttribute: function(){},
+        appendChild: function(){}, onclick: null
+    }; },
+    querySelectorAll: function(sel) { return []; },
+    querySelector: function(sel) { return null; }
+};
+var window = { location: { href: '' }, open: function(){} };
+var alert = function(){};
+var fetch = function() { return Promise.resolve(); };
+var atob = function(s) { return s; };
+try {
+
+                    let choiceHtml = '';
+                    if (choiceQuestions.length > 0) {
+                        choiceHtml = `
+                            <div class="preview-section-title">一、选择题（共${choiceQuestions.length}题，每题只有一个选项符合题意）</div>
+                            ${choiceQuestions.map(q => {
+                                const stem = q.stem || q.content || q.question || '';
+                                const images = parseImages(q.images);
+                                const imagesHtml = images.length > 0 ? `
+                                    <div class="preview-q-images">
+                                        ${images.map(img => '<img src="' + img + '" alt="题目图片" onerror="this.style.display=\'none\'">').join('')}
+                                    </div>
+                                ` : '';
+                                const optionsHtml = q._options.map(opt => `
+                                    <div class="preview-option">
+                                        <span class="preview-option-letter">${opt.key}.</span>
+                                        <span class="preview-option-text">${opt.text || ''}</span>
+                                    </div>
+                                `).join('');
+                                const answerHtml = q.answer ? `
+                                    <div class="preview-answer"><strong>参考答案：</strong>${q.answer}</div>
+                                ` : '';
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-stem" data-num="${q._index}">${stem}</div>
+                                        ${imagesHtml}
+                                        <div class="preview-options">${optionsHtml}</div>
+                                        ${answerHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                    
+                    // 构建填空题部分
+                    let fillHtml = '';
+                    if (fillQuestions.length > 0) {
+                        fillHtml = `
+                            <div class="preview-section-title">${choiceQuestions.length > 0 ? '二、' : '一、'}非选择题（共${fillQuestions.length}题）</div>
+                            ${fillQuestions.map(q => {
+                                const stem = q.stem || q.content || q.question || '';
+                                const images = parseImages(q.images);
+                                const imagesHtml = images.length > 0 ? `
+                                    <div class="preview-q-images">
+                                        ${images.map(img => '<img src="' + img + '" alt="题目图片" onerror="this.style.display=\'none\'">').join('')}
+                                    </div>
+                                ` : '';
+                                const answerHtml = q.answer ? `
+                                    <div class="preview-answer"><strong>参考答案：</strong>${q.answer}</div>
+                                ` : '';
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-stem" data-num="${q._index}">${stem}</div>
+                                        ${imagesHtml}
+                                        <div class="preview-no-options">（本题无选项，请直接作答）</div>
+                                        ${answerHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                    
+                    content.innerHTML = `
+                        <div class="preview-paper">
+                            <div class="preview-paper-header">
+                                <div class="preview-paper-title">${examTitle}</div>
+                                <div class="preview-paper-info">
+                                    ${grade ? `<span>年级：${grade}</span>` : ''}
+                                    ${region ? `<span>学校：${region}</span>` : ''}
+                                    ${examType ? `<span>类型：${examType}</span>` : ''}
+                                    <span>共 ${questions.length} 题</span>
+                                </div>
+                            </div>
+                            ${choiceHtml}
+                            ${fillHtml}
+                            <div class="preview-paper-footer">
+                                —— 试卷预览结束 ——
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="preview-no-questions">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                            <div>该试卷暂无题目</div>
+                            <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请先解析试卷提取题目</div>
+                        </div>
+                    `;
+
+    document.getElementById('output').innerHTML = 'SUCCESS';
+} catch(e) {
+    document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+}
+
+    </script>
+</body>
+</html>

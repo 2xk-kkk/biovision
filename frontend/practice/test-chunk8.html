@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 8 (lines 351-400)</title>
+</head>
+<body>
+    <h1>Test Chunk 8 (lines 351-400)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+                `;
+                console.error('预览失败:', error);
+            }
+        }
+
+        function parseOptions(optionsData) {
+            if (!optionsData) return [];
+            let result = [];
+            if (typeof optionsData === 'string') {
+                try {
+                    const parsed = JSON.parse(optionsData);
+                    result = parseOptions(parsed);
+                } catch (e) {
+                    // Try to parse inline options like "A. xxx B. xxx C. xxx D. xxx"
+                    result = parseOptionsFromString(optionsData);
+                }
+            } else if (Array.isArray(optionsData)) {
+                result = optionsData;
+            } else if (typeof optionsData === 'object' && optionsData !== null) {
+                result = Object.keys(optionsData)
+                    .filter(key => optionsData[key] && String(optionsData[key]).trim())
+                    .map(key => ({ key, text: String(optionsData[key]).trim() }));
+            }
+            // Filter out empty text
+            return result.filter(o => o && o.text && o.text.trim());
+        }
+
+        function parseOptionsFromString(text) {
+            if (!text) return [];
+            const options = [];
+            // Match patterns like: A. content B. content or A、content B、content
+            const pattern = /([A-D])[\s]*[.．、)）:：][\s]*(.*?)(?=[\s]*[A-D][\s]*[.．、)）:：]|$)/g;
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                const content = (match[2] || '').trim();
+                if (content) {
+                    options.push({ key: match[1], text: content });
+                }
+            }
+            return options;
+        }
+
+        function parseImages(imagesData) {
+            if (!imagesData) return [];
+            let images = [];
+            if (typeof imagesData === 'string') {
+                try {
+                    images = JSON.parse(imagesData);
+                } catch (e) {
+                    if (imagesData.startsWith('/') || imagesData.startsWith('http')) {
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

@@ -3,7 +3,11 @@ import shutil
 import re
 import sqlite3
 import json
+import sys
 from utils.response import ApiResponse
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "exams")
 EXTERNAL_DIR = r"D:\paper"
@@ -48,11 +52,11 @@ SCHOOLS = [
     '东北育才', '东北育才学校', '哈师大附中', '哈师大附属中学',
     '大庆中学', '大庆实验中学', '牡丹江一中', '双鸭山一中', '东辽一中',
     '吉林省实验中学', '吉大附中', '东北师大附中', '长春十一高',
-    '沈阳市第', '大连育明', '大连二十四中',
+    '沈阳市第', '大连育明', '大连二十四中', '大连二十中',
     '石家庄市二中', '唐山一中', '保定一中', '衡水二中',
-    '郑州外国语', '郑州一中', '河南省实验中学', '洛阳一高',
-    '济南外国语', '山东省实验', '青岛二中', '青岛五十八中',
-    '南京师大附中', '金陵中学', '苏州中学', '苏大附中',
+    '郑州外国语', '郑州一中', '河南省实验中学', '洛阳一高', '洛阳市',
+    '济南外国语', '山东省实验', '青岛二中', '青岛五十八中', '山东师大附中',
+    '南京师大附中', '金陵中学', '苏州中学', '苏大附中', '姜堰二中', '江阴一中',
     '杭州学军', '杭州二中', '镇海中学', '宁波中学',
     '合肥一中', '合肥一六八', '芜湖一中',
     '福州一中', '厦门一中', '厦门双十', '泉州五中',
@@ -60,7 +64,7 @@ SCHOOLS = [
     '武汉外国语', '武汉二中', '武汉六中', '华师大一附中',
     '长沙市一中', '雅礼中学', '长郡中学', '湖南师大附中',
     '广州执信', '广州二中', '广东实验中学', '肇庆中学',
-    '绵阳中学', '绵阳南山', '德阳中学', '四川五校',
+    '绵阳中学', '绵阳南山', '德阳中学', '四川五校', '树德中学',
     '重庆一中', '重庆南开', '重庆巴蜀', '重庆八中',
     '西安交大附中', '西北工大附中', '陕师大附中', '西安中学',
     '钦州港区', '钦州一中', '南宁三中', '南宁二中',
@@ -70,17 +74,37 @@ SCHOOLS = [
     '青岛五十八中', '青岛二中', '山东省实验', '济南外国语',
     '大同一中', '太原五中', '山西大学附中',
     '呼和浩特二中', '包头市一中', '赤峰二中',
-    '通辽一中', '鄂尔多斯一中'
+    '通辽一中', '鄂尔多斯一中',
+    '成都九校联考', '成都七中', '南阳中学', '蓉城名校联盟',
+    '吉林省实验', '吉林油田实验中学', '大港油田实验中学',
+    '鸡西市第一中学', '鸡西一中', '佳木斯一中',
+    '四川省树德中学', '江苏油田', '江阴', '姜堰',
+    '大连', '青岛', '烟台二中', '威海二中'
 ]
 
 # 试卷练习页的考试类型（与前端保持一致）
 EXAM_TYPES = ['模拟考', '月考', '期中', '期末', '联考', '模拟题', '三模', '二模', '一模']
+
+# 年级关键词映射
+GRADE_KEYWORDS = {
+    '高一': '高一',
+    '高二': '高二',
+    '高三': '高三',
+}
+
+def extract_grade(name):
+    """从试卷名称中提取年级信息"""
+    for keyword, grade in GRADE_KEYWORDS.items():
+        if keyword in name:
+            return grade
+    return ''
 
 def parse_exam_info(name):
     year = ''
     region = ''
     exam_type = '高考真题'
     question_count = 0
+    grade = extract_grade(name)
 
     # 先提取考试类型（月考/期中/期末/模拟考/联考 等），从 name 中识别
     for t in EXAM_TYPES:
@@ -169,7 +193,7 @@ def parse_exam_info(name):
     if region == '':
         region = '全国'
 
-    return year, region, exam_type, question_count
+    return year, region, exam_type, question_count, grade
 
 def get_exam_list(year=None, region=None, scope=None):
     exams = []
@@ -214,7 +238,7 @@ def get_exam_list(year=None, region=None, scope=None):
                 if file_count == 0:
                     continue
                 
-                exam_year, exam_region, exam_type, question_count = parse_exam_info(item)
+                exam_year, exam_region, exam_type, question_count, exam_grade = parse_exam_info(item)
 
                 # 试卷来源筛选：真题大观(非学校高考真题) vs 试卷练习(名校模拟卷)
                 # scope='真题' 只返回高考真题（region 不是知名高中）；scope='模拟' 只返回名校模拟卷（region 是知名高中）
@@ -245,6 +269,7 @@ def get_exam_list(year=None, region=None, scope=None):
                     "id": db_id,
                     "name": item,
                     "year": exam_year,
+                    "grade": exam_grade,
                     "region": exam_region,
                     "exam_type": exam_type,
                     "question_count": db_question_count,
@@ -355,6 +380,9 @@ def get_exam_questions(exam_id: int):
         
         exam_id_val, exam_name = exam_row
         
+        # 获取试卷信息
+        exam_year, exam_region, exam_type, _, exam_grade = parse_exam_info(exam_name)
+        
         cursor.execute('''
             SELECT id, number, stem, option_a, option_b, option_c, option_d, answer, images, type, analysis 
             FROM questions 
@@ -372,6 +400,19 @@ def get_exam_questions(exam_id: int):
                 except:
                     images = []
             
+            # 构建图片URL（如果图片是本地路径，转换为HTTP URL）
+            image_urls = []
+            for img in images:
+                if img and isinstance(img, str):
+                    if img.startswith('http'):
+                        image_urls.append(img)
+                    elif img.startswith('/uploads/') or img.startswith('uploads/'):
+                        # 已经是web路径，直接使用
+                        image_urls.append(img)
+                    else:
+                        # 本地图片路径，转换为可访问的URL
+                        image_urls.append(f'/api/exams/image?path={img}')
+            
             questions.append({
                 'id': row[0],
                 'number': row[1],
@@ -383,7 +424,7 @@ def get_exam_questions(exam_id: int):
                     'D': row[6] if row[6] else ''
                 },
                 'answer': row[7] if row[7] else '',
-                'images': images if images else [],
+                'images': image_urls,
                 'type': row[9] if row[9] else '',
                 'analysis': row[10] if row[10] else ''
             })
@@ -393,8 +434,215 @@ def get_exam_questions(exam_id: int):
         return ApiResponse.success(data={
             'exam_id': exam_id_val,
             'exam_name': exam_name,
+            'exam_info': {
+                'name': exam_name,
+                'grade': exam_grade,
+                'region': exam_region,
+                'exam_type': exam_type,
+                'year': exam_year
+            },
             'questions': questions,
             'question_count': len(questions)
         })
     except Exception as e:
         return ApiResponse.error(msg=f"获取题目失败: {str(e)}")
+
+
+def parse_exam_to_db(exam_name: str):
+    """
+    解析指定试卷文件夹，提取题目并保存到数据库。
+    exam_name: 试卷文件夹名称（在 EXAM_DIR 下）
+    """
+    try:
+        from service.doc_parser import process_exam_folder
+        
+        folder_path = os.path.join(EXAM_DIR, exam_name)
+        if not os.path.exists(folder_path):
+            return ApiResponse.error(msg=f"试卷文件夹不存在: {exam_name}")
+        
+        # 检查数据库中是否已有此试卷的记录
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT id, question_count FROM exams WHERE name = ?', (exam_name,))
+        existing = cursor.fetchone()
+        
+        if existing and existing[1] > 0:
+            conn.close()
+            return ApiResponse.success(msg=f"试卷 {exam_name} 已解析过，无需重复解析")
+        
+        # 如果已有试卷记录但没有题目，先删除旧记录
+        if existing:
+            cursor.execute('DELETE FROM questions WHERE exam_id = ?', (existing[0],))
+            cursor.execute('DELETE FROM exams WHERE id = ?', (existing[0],))
+            conn.commit()
+        
+        # 解析文件夹
+        result = process_exam_folder(folder_path)
+        
+        if not result or not result.get('success'):
+            conn.close()
+            msg = result.get('msg', '解析失败') if result else '解析失败'
+            return ApiResponse.error(msg=f"解析 {exam_name} 失败: {msg}")
+        
+        questions = result.get('questions', [])
+        if not questions:
+            conn.close()
+            return ApiResponse.error(msg=f"解析 {exam_name} 成功但未提取到题目")
+        
+        # 获取试卷信息
+        exam_year, exam_region, exam_type, _, exam_grade = parse_exam_info(exam_name)
+        
+        # 插入试卷记录
+        cursor.execute('''
+            INSERT INTO exams (name, file_name, question_count)
+            VALUES (?, ?, ?)
+        ''', (exam_name, exam_name, len(questions)))
+        exam_id = cursor.lastrowid
+        
+        # 插入题目
+        inserted_count = 0
+        for q in questions:
+            q_num = q.get('number', 0)
+            q_stem = q.get('stem', '')
+            q_options = q.get('options', {})
+            q_answer = q.get('answer', '')
+            q_type = q.get('type', 'choice')
+            q_analysis = q.get('analysis', '')
+            
+            if not q_stem or len(q_stem) < 3:
+                continue
+            
+            # 确保选项字段不为空
+            opt_a = q_options.get('A', '') if q_options else ''
+            opt_b = q_options.get('B', '') if q_options else ''
+            opt_c = q_options.get('C', '') if q_options else ''
+            opt_d = q_options.get('D', '') if q_options else ''
+            
+            cursor.execute('''
+                INSERT OR IGNORE INTO questions 
+                (exam_id, number, stem, option_a, option_b, option_c, option_d, answer, type, analysis)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (exam_id, q_num, q_stem, opt_a, opt_b, opt_c, opt_d, q_answer, q_type, q_analysis))
+            inserted_count += 1
+        
+        # 更新试卷的题目数量
+        cursor.execute('UPDATE exams SET question_count = ? WHERE id = ?', (inserted_count, exam_id))
+        conn.commit()
+        conn.close()
+        
+        return ApiResponse.success(data={
+            'exam_name': exam_name,
+            'exam_id': exam_id,
+            'questions_found': len(questions),
+            'questions_inserted': inserted_count
+        }, msg=f"成功解析 {exam_name}，共提取 {len(questions)} 道题目，入库 {inserted_count} 道")
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return ApiResponse.error(msg=f"解析试卷失败: {str(e)}")
+
+
+def parse_all_pending_exams():
+    """
+    解析所有尚未解析的试卷（有文件但数据库中无题目的试卷）。
+    """
+    if not os.path.exists(EXAM_DIR):
+        return ApiResponse.error(msg="试卷目录不存在")
+    
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        results = {
+            'total': 0,
+            'success': 0,
+            'failed': 0,
+            'skipped': 0,
+            'details': []
+        }
+        
+        for item in os.listdir(EXAM_DIR):
+            item_path = os.path.join(EXAM_DIR, item)
+            if not os.path.isdir(item_path):
+                continue
+            
+            # 检查是否有 .doc/.docx 文件
+            has_doc = False
+            for root, dirs, files in os.walk(item_path):
+                for f in files:
+                    ext = os.path.splitext(f)[1].lower()
+                    if ext in ('.doc', '.docx'):
+                        has_doc = True
+                        break
+                if has_doc:
+                    break
+            
+            if not has_doc:
+                results['skipped'] += 1
+                continue
+            
+            # 检查数据库中是否已有此题目的记录
+            cursor.execute('SELECT id, question_count FROM exams WHERE name = ?', (item,))
+            existing = cursor.fetchone()
+            
+            if existing and existing[1] > 0:
+                results['skipped'] += 1
+                continue
+            
+            results['total'] += 1
+            
+            # 调用解析
+            parse_result = parse_exam_to_db(item)
+            
+            if parse_result.get('success'):
+                results['success'] += 1
+                results['details'].append({
+                    'name': item,
+                    'status': 'success',
+                    'msg': parse_result.get('msg', '')
+                })
+            else:
+                results['failed'] += 1
+                results['details'].append({
+                    'name': item,
+                    'status': 'failed',
+                    'msg': parse_result.get('msg', '')
+                })
+        
+        conn.close()
+        
+        return ApiResponse.success(data=results, msg=f"解析完成：成功 {results['success']} 个，失败 {results['failed']} 个，跳过 {results['skipped']} 个")
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return ApiResponse.error(msg=f"批量解析失败: {str(e)}")
+
+
+def import_and_parse():
+    """
+    从D盘导入试卷并自动解析所有新试卷。
+    """
+    # 先导入
+    import_result = import_from_external()
+    
+    if not import_result.get('success'):
+        return import_result
+    
+    imported_count = import_result.get('data', {}).get('imported_count', 0)
+    
+    # 再批量解析
+    parse_result = parse_all_pending_exams()
+    
+    result_data = {
+        'imported_count': imported_count,
+        'parse_result': parse_result.get('data') if parse_result.get('success') else None
+    }
+    
+    msg = f"导入 {imported_count} 个文件"
+    if parse_result.get('success') and parse_result.get('data'):
+        msg += f"，解析成功 {parse_result['data']['success']} 个"
+    
+    return ApiResponse.success(data=result_data, msg=msg)

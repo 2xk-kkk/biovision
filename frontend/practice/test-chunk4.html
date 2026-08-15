@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 4 (lines 151-200)</title>
+</head>
+<body>
+    <h1>Test Chunk 4 (lines 151-200)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+            allTag.onclick = () => selectUniversity('全部');
+            container.appendChild(allTag);
+
+            // 知名高校标签
+            FAMOUS_UNIVERSITIES.forEach(uni => {
+                const tag = document.createElement('span');
+                tag.className = `region-tag ${currentUniversity === uni ? 'active' : ''}`;
+                tag.textContent = uni;
+                tag.onclick = () => selectUniversity(uni);
+                container.appendChild(tag);
+            });
+        }
+
+        function selectUniversity(university) {
+            currentUniversity = university;
+            loadExams(currentYear === '全部' ? null : currentYear, currentUniversity === '全部' ? null : currentUniversity, currentType === '全部' ? null : currentType);
+        }
+
+        function handleFilterChange() {
+            currentYear = document.getElementById('yearSelect').value;
+            currentType = document.getElementById('typeSelect').value;
+            loadExams(currentYear === '全部' ? null : currentYear, currentUniversity === '全部' ? null : currentUniversity, currentType === '全部' ? null : currentType);
+        }
+
+        function downloadFiles(encodedFiles) {
+            const files = JSON.parse(decodeURIComponent(encodedFiles));
+            if (files.length === 1) {
+                window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(files[0].path)}`, '_blank');
+            } else {
+                files.forEach(file => {
+                    setTimeout(() => {
+                        window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
+                    }, 300);
+                });
+            }
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('show');
+            document.getElementById('categoryInput').value = '';
+            clearFile();
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.remove('show');
+        }
+
+        function startQuiz(examId) {
+            window.location.href = `exam-quiz.html?exam_id=${examId}`;
+        }
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

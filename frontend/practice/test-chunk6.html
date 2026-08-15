@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 6 (lines 251-300)</title>
+</head>
+<body>
+    <h1>Test Chunk 6 (lines 251-300)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+                    const grade = examInfo.grade || '';
+                    const region = examInfo.region || '';
+                    const examType = examInfo.exam_type || '';
+                    
+                    // 构建选择题部分
+                    let choiceHtml = '';
+                    if (choiceQuestions.length > 0) {
+                        choiceHtml = `
+                            <div class="preview-section-title">一、选择题（共${choiceQuestions.length}题，每题只有一个选项符合题意）</div>
+                            ${choiceQuestions.map(q => {
+                                const stem = q.stem || q.content || q.question || '';
+                                const images = parseImages(q.images);
+                                const imagesHtml = images.length > 0 ? `
+                                    <div class="preview-q-images">
+                                        ${images.map(img => '<img src="' + img + '" alt="题目图片" onerror="this.style.display=\'none\'">').join('')}
+                                    </div>
+                                ` : '';
+                                const optionsHtml = q._options.map(opt => `
+                                    <div class="preview-option">
+                                        <span class="preview-option-letter">${opt.key}.</span>
+                                        <span class="preview-option-text">${opt.text || ''}</span>
+                                    </div>
+                                `).join('');
+                                const answerHtml = q.answer ? `
+                                    <div class="preview-answer"><strong>参考答案：</strong>${q.answer}</div>
+                                ` : '';
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-stem" data-num="${q._index}">${stem}</div>
+                                        ${imagesHtml}
+                                        <div class="preview-options">${optionsHtml}</div>
+                                        ${answerHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                    
+                    // 构建填空题部分
+                    let fillHtml = '';
+                    if (fillQuestions.length > 0) {
+                        fillHtml = `
+                            <div class="preview-section-title">${choiceQuestions.length > 0 ? '二、' : '一、'}非选择题（共${fillQuestions.length}题）</div>
+                            ${fillQuestions.map(q => {
+                                const stem = q.stem || q.content || q.question || '';
+                                const images = parseImages(q.images);
+                                const imagesHtml = images.length > 0 ? `
+                                    <div class="preview-q-images">
+                                        ${images.map(img => '<img src="' + img + '" alt="题目图片" onerror="this.style.display=\'none\'">').join('')}
+                                    </div>
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

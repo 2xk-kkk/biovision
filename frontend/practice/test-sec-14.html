@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Section 14: parseImages, handleFileSelect, handleDrop</title>
+</head>
+<body>
+    <h1>Test Section 14: parseImages, handleFileSelect, handleDrop</h1>
+    <div id="output">Testing...</div>
+    <script>
+    var output = document.getElementById('output');
+    try {
+        // 全国知名高中列表
+        const FAMOUS_UNIVERSITIES = [
+            '人大附中', '北京四中', '上海中学', '华师大二附中',
+            '南京外国语', '杭二中', '华师一附中', '成都七中',
+            '深圳中学', '衡水中学'
+        ];
+
+        const HOT_UNIVERSITIES = ['人大附中', '上海中学', '衡水中学', '成都七中', '华师一附中'];
+
+        let selectedFile = null;
+        let currentYear = '全部';
+        let currentUniversity = '全部';
+        let currentType = '全部';
+        let years = [];
+
+        async function loadExams(year = null, university = null, type = null) {
+            const container = document.getElementById('examContainer');
+            try {
+                let url = 'http://localhost:8000/api/exams';
+                const params = ['scope=模拟'];
+                if (year && year !== '全部') params.push(`year=${year}`);
+                if (university && university !== '全部') params.push(`region=${encodeURIComponent(university)}`);
+                if (type && type !== '全部') params.push(`type=${encodeURIComponent(type)}`);
+                if (params.length > 0) url += '?' + params.join('&');
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (!result.success) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">${result.msg || '试卷目录为空'}</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const data = result.data;
+                const exams = data.exams;
+                const stats = data.stats || {};
+                years = data.years || [];
+
+                updateStats(stats);
+                updateYearSelect(years);
+                updateUniversityTags();
+
+                if (exams.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">请点击上方"上传试卷"添加高中模拟题</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = exams.map((exam, index) => {
+                    const gradeLabel = exam.grade || exam.year || '';
+                    const gradeColor = exam.grade === '高一' ? '#10b981' : exam.grade === '高二' ? '#3b82f6' : '#f59e0b';
+                    return `
+                    <div class="exam-card">
+                        <div class="exam-card-header">
+                            <div class="exam-icon">📘</div>
+                            <div class="exam-title">
+                                <div class="exam-name">
+                                    ${gradeLabel ? `<span class="grade-badge" style="background:${gradeColor}">${gradeLabel}</span>` : ''}
+                                    ${exam.region || ''} ${exam.exam_type || '模拟题'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">🏫</span>
+                                <span class="meta-value">${exam.region || '未知高校'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📄</span>
+                                <span class="meta-value">${exam.file_count || 0}份文件</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📝</span>
+                                <span class="meta-value">${exam.has_answers ? exam.question_count + '题' : '未解析'}</span>
+                            </div>
+                        </div>
+                        <div class="exam-tags">
+                            ${index < 3 ? '<span class="exam-tag tag-new">新增</span>' : ''}
+                            ${HOT_UNIVERSITIES.includes(exam.region) ? '<span class="exam-tag tag-hot">热门高中</span>' : ''}
+                        </div>
+                        <div class="exam-footer">
+                            <div class="star-rating">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">☆</span>
+                            </div>
+                            <div class="exam-actions">
+                                <button class="btn-preview" onclick="previewExam(${exam.id || 'null'}, '${exam.name.replace(/'/g, "\\'")}')">预览</button>
+                                ${exam.has_answers ? 
+                                    `<button class="btn-quiz" onclick="startQuiz(${exam.id})">开始练习</button>` : 
+                                    `<button class="btn-quiz" onclick="parseExam('${exam.name.replace(/'/g, "\\'")}')">📝 解析</button>`
+                                }
+                                <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">加载失败</div>
+                        <div class="empty-desc">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('加载试卷失败:', error);
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('statTotalExams').textContent = stats.total_exams || 0;
+            document.getElementById('statTotalRegions').textContent = stats.total_regions || 0;
+            document.getElementById('statYearRange').textContent = stats.year_range || '--';
+            document.getElementById('statTotalQuestions').textContent = stats.total_questions > 0 ? stats.total_questions + '+' : '0';
+        }
+
+        function updateYearSelect(yearList) {
+            const select = document.getElementById('yearSelect');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="全部">全部年份</option>';
+            yearList.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '年';
+                select.appendChild(option);
+            });
+            select.value = currentYear;
+        }
+
+        function updateUniversityTags() {
+            const container = document.getElementById('uniTags');
+            container.innerHTML = '';
+
+            // "全部高校" 标签
+            const allTag = document.createElement('span');
+            allTag.className = `region-tag ${currentUniversity === '全部' ? 'active' : ''}`;
+            allTag.textContent = '全部高中';
+            allTag.onclick = () => selectUniversity('全部');
+            container.appendChild(allTag);
+
+            // 知名高校标签
+            FAMOUS_UNIVERSITIES.forEach(uni => {
+                const tag = document.createElement('span');
+                tag.className = `region-tag ${currentUniversity === uni ? 'active' : ''}`;
+                tag.textContent = uni;
+                tag.onclick = () => selectUniversity(uni);
+                container.appendChild(tag);
+            });
+        }
+
+        function selectUniversity(university) {
+            currentUniversity = university;
+            loadExams(currentYear === '全部' ? null : currentYear, currentUniversity === '全部' ? null : currentUniversity, currentType === '全部' ? null : currentType);
+        }
+
+        function handleFilterChange() {
+            currentYear = document.getElementById('yearSelect').value;
+            currentType = document.getElementById('typeSelect').value;
+            loadExams(currentYear === '全部' ? null : currentYear, currentUniversity === '全部' ? null : currentUniversity, currentType === '全部' ? null : currentType);
+        }
+
+        function downloadFiles(encodedFiles) {
+            const files = JSON.parse(decodeURIComponent(encodedFiles));
+            if (files.length === 1) {
+                window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(files[0].path)}`, '_blank');
+            } else {
+                files.forEach(file => {
+                    setTimeout(() => {
+                        window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
+                    }, 300);
+                });
+            }
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('show');
+            document.getElementById('categoryInput').value = '';
+            clearFile();
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.remove('show');
+        }
+
+        function startQuiz(examId) {
+            window.location.href = `exam-quiz.html?exam_id=${examId}`;
+        }
+
+        async function previewExam(examId, examName) {
+            if (!examId) {
+                if (confirm(`试卷"${examName}"尚未解析，是否先进行解析？`)) {
+                    await parseExam(examName);
+                    showToast('success', '解析成功，请再次点击预览按钮');
+                }
+                return;
+            }
+            
+            document.getElementById('previewModal').classList.add('show');
+            const content = document.getElementById('previewContent');
+            content.innerHTML = `
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/exams/${examId}/questions`);
+                const result = await response.json();
+                
+                let questions = [];
+                let examInfo = {};
+                if (result.code === 200 && result.data) {
+                    if (Array.isArray(result.data)) {
+                        questions = result.data;
+                    } else if (result.data.questions && Array.isArray(result.data.questions)) {
+                        questions = result.data.questions;
+                        examInfo = result.data.exam_info || {};
+                    }
+                }
+                
+                if (questions.length > 0) {
+                    // 按题型分组
+                    const choiceQuestions = [];
+                    const fillQuestions = [];
+                    
+                    questions.forEach((q, index) => {
+                        const options = parseOptions(q.options);
+                        const isChoice = options.length > 0;
+                        if (isChoice) {
+                            choiceQuestions.push({ ...q, _index: index + 1, _options: options });
+                        } else {
+                            fillQuestions.push({ ...q, _index: index + 1 });
+                        }
+                    });
+                    
+                    const examTitle = examInfo.name || examName || '生物试卷';
+                    const grade = examInfo.grade || '';
+                    const region = examInfo.region || '';
+                    const examType = examInfo.exam_type || '';
+                    
+                    // 构建选择题部分
+                    let choiceHtml = '';
+                    if (choiceQuestions.length > 0) {
+                        choiceHtml = `
+                            <div class="preview-section-title">一、选择题（共${choiceQuestions.length}题，每题只有一个选项符合题意）</div>
+                            ${choiceQuestions.map(q => {
+                                const stem = q.stem || q.content || q.question || '';
+                                const images = parseImages(q.images);
+                                const imagesHtml = images.length > 0 ? `
+                                    <div class="preview-q-images">
+                                        ${images.map(img => '<img src="' + img + '" alt="题目图片" onerror="this.style.display=\'none\'">').join('')}
+                                    </div>
+                                ` : '';
+                                const optionsHtml = q._options.map(opt => `
+                                    <div class="preview-option">
+                                        <span class="preview-option-letter">${opt.key}.</span>
+                                        <span class="preview-option-text">${opt.text || ''}</span>
+                                    </div>
+                                `).join('');
+                                const answerHtml = q.answer ? `
+                                    <div class="preview-answer"><strong>参考答案：</strong>${q.answer}</div>
+                                ` : '';
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-stem" data-num="${q._index}">${stem}</div>
+                                        ${imagesHtml}
+                                        <div class="preview-options">${optionsHtml}</div>
+                                        ${answerHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                    
+                    // 构建填空题部分
+                    let fillHtml = '';
+                    if (fillQuestions.length > 0) {
+                        fillHtml = `
+                            <div class="preview-section-title">${choiceQuestions.length > 0 ? '二、' : '一、'}非选择题（共${fillQuestions.length}题）</div>
+                            ${fillQuestions.map(q => {
+                                const stem = q.stem || q.content || q.question || '';
+                                const images = parseImages(q.images);
+                                const imagesHtml = images.length > 0 ? `
+                                    <div class="preview-q-images">
+                                        ${images.map(img => '<img src="' + img + '" alt="题目图片" onerror="this.style.display=\'none\'">').join('')}
+                                    </div>
+                                ` : '';
+                                const answerHtml = q.answer ? `
+                                    <div class="preview-answer"><strong>参考答案：</strong>${q.answer}</div>
+                                ` : '';
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-stem" data-num="${q._index}">${stem}</div>
+                                        ${imagesHtml}
+                                        <div class="preview-no-options">（本题无选项，请直接作答）</div>
+                                        ${answerHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                    
+                    content.innerHTML = `
+                        <div class="preview-paper">
+                            <div class="preview-paper-header">
+                                <div class="preview-paper-title">${examTitle}</div>
+                                <div class="preview-paper-info">
+                                    ${grade ? `<span>年级：${grade}</span>` : ''}
+                                    ${region ? `<span>学校：${region}</span>` : ''}
+                                    ${examType ? `<span>类型：${examType}</span>` : ''}
+                                    <span>共 ${questions.length} 题</span>
+                                </div>
+                            </div>
+                            ${choiceHtml}
+                            ${fillHtml}
+                            <div class="preview-paper-footer">
+                                —— 试卷预览结束 ——
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="preview-no-questions">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                            <div>该试卷暂无题目</div>
+                            <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请先解析试卷提取题目</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="preview-no-questions">
+                        <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                        <div>加载失败</div>
+                        <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('预览失败:', error);
+            }
+        }
+
+        function parseOptions(optionsData) {
+            if (!optionsData) return [];
+            let result = [];
+            if (typeof optionsData === 'string') {
+                try {
+                    const parsed = JSON.parse(optionsData);
+                    result = parseOptions(parsed);
+                } catch (e) {
+                    // Try to parse inline options like "A. xxx B. xxx C. xxx D. xxx"
+                    result = parseOptionsFromString(optionsData);
+                }
+            } else if (Array.isArray(optionsData)) {
+                result = optionsData;
+            } else if (typeof optionsData === 'object' && optionsData !== null) {
+                result = Object.keys(optionsData)
+                    .filter(key => optionsData[key] && String(optionsData[key]).trim())
+                    .map(key => ({ key, text: String(optionsData[key]).trim() }));
+            }
+            // Filter out empty text
+            return result.filter(o => o && o.text && o.text.trim());
+        }
+
+        function parseOptionsFromString(text) {
+            if (!text) return [];
+            const options = [];
+            // Match patterns like: A. content B. content or A、content B、content
+            const pattern = /([A-D])[\s]*[.．、)）:：][\s]*(.*?)(?=[\s]*[A-D][\s]*[.．、)）:：]|$)/g;
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                const content = (match[2] || '').trim();
+                if (content) {
+                    options.push({ key: match[1], text: content });
+                }
+            }
+            return options;
+        }
+
+        function parseImages(imagesData) {
+            if (!imagesData) return [];
+            let images = [];
+            if (typeof imagesData === 'string') {
+                try {
+                    images = JSON.parse(imagesData);
+                } catch (e) {
+                    if (imagesData.startsWith('/') || imagesData.startsWith('http')) {
+                        if (imagesData.includes(',')) {
+                            images = imagesData.split(',').map(img => img.trim()).filter(img => img);
+                        } else {
+                            images = [imagesData];
+                        }
+                    } else {
+                        return [];
+                    }
+                }
+            } else {
+        output.innerHTML = 'SUCCESS';
+    } catch(e) {
+        output.innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

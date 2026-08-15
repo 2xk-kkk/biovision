@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Regex Test</title>
+</head>
+<body>
+    <h1>Regex Test</h1>
+    <script>
+        // Test the regex from exam-practice.html
+        try {
+            const pattern = /([A-D])[\s]*[.．、)）:：][\s]*(.*?)(?=[\s]*[A-D][\s]*[.．、)）:：]|$)/g;
+            console.log('Regex compiled successfully');
+            const testStr = 'A.选项1 B.选项2';
+            const match = pattern.exec(testStr);
+            console.log('Regex test result:', match);
+        } catch (e) {
+            console.error('Regex error:', e.message);
+        }
+    </script>
+</body>
+</html>

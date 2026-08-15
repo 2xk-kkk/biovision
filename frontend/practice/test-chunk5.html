@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 5 (lines 201-250)</title>
+</head>
+<body>
+    <h1>Test Chunk 5 (lines 201-250)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+
+        async function previewExam(examId, examName) {
+            if (!examId) {
+                if (confirm(`试卷"${examName}"尚未解析，是否先进行解析？`)) {
+                    await parseExam(examName);
+                    showToast('success', '解析成功，请再次点击预览按钮');
+                }
+                return;
+            }
+            
+            document.getElementById('previewModal').classList.add('show');
+            const content = document.getElementById('previewContent');
+            content.innerHTML = `
+                <div class="preview-no-questions">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>加载中...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/exams/${examId}/questions`);
+                const result = await response.json();
+                
+                let questions = [];
+                let examInfo = {};
+                if (result.code === 200 && result.data) {
+                    if (Array.isArray(result.data)) {
+                        questions = result.data;
+                    } else if (result.data.questions && Array.isArray(result.data.questions)) {
+                        questions = result.data.questions;
+                        examInfo = result.data.exam_info || {};
+                    }
+                }
+                
+                if (questions.length > 0) {
+                    // 按题型分组
+                    const choiceQuestions = [];
+                    const fillQuestions = [];
+                    
+                    questions.forEach((q, index) => {
+                        const options = parseOptions(q.options);
+                        const isChoice = options.length > 0;
+                        if (isChoice) {
+                            choiceQuestions.push({ ...q, _index: index + 1, _options: options });
+                        } else {
+                            fillQuestions.push({ ...q, _index: index + 1 });
+                        }
+                    });
+                    
+                    const examTitle = examInfo.name || examName || '生物试卷';
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

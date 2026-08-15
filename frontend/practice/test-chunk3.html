@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 3 (lines 101-150)</title>
+</head>
+<body>
+    <h1>Test Chunk 3 (lines 101-150)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+                                <button class="btn-preview" onclick="previewExam(${exam.id || 'null'}, '${exam.name.replace(/'/g, "\\'")}')">预览</button>
+                                ${exam.has_answers ? 
+                                    `<button class="btn-quiz" onclick="startQuiz(${exam.id})">开始练习</button>` : 
+                                    `<button class="btn-quiz" onclick="parseExam('${exam.name.replace(/'/g, "\\'")}')">📝 解析</button>`
+                                }
+                                <button class="btn-start" onclick="downloadFiles('${encodeURIComponent(JSON.stringify(exam.files))}')">下载</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">加载失败</div>
+                        <div class="empty-desc">请确保后端服务已启动</div>
+                    </div>
+                `;
+                console.error('加载试卷失败:', error);
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('statTotalExams').textContent = stats.total_exams || 0;
+            document.getElementById('statTotalRegions').textContent = stats.total_regions || 0;
+            document.getElementById('statYearRange').textContent = stats.year_range || '--';
+            document.getElementById('statTotalQuestions').textContent = stats.total_questions > 0 ? stats.total_questions + '+' : '0';
+        }
+
+        function updateYearSelect(yearList) {
+            const select = document.getElementById('yearSelect');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="全部">全部年份</option>';
+            yearList.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '年';
+                select.appendChild(option);
+            });
+            select.value = currentYear;
+        }
+
+        function updateUniversityTags() {
+            const container = document.getElementById('uniTags');
+            container.innerHTML = '';
+
+            // "全部高校" 标签
+            const allTag = document.createElement('span');
+            allTag.className = `region-tag ${currentUniversity === '全部' ? 'active' : ''}`;
+            allTag.textContent = '全部高中';
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

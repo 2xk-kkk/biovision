@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 2 (lines 51-100)</title>
+</head>
+<body>
+    <h1>Test Chunk 2 (lines 51-100)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title">暂无试卷</div>
+                            <div class="empty-desc">请点击上方"上传试卷"添加高中模拟题</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = exams.map((exam, index) => {
+                    const gradeLabel = exam.grade || exam.year || '';
+                    const gradeColor = exam.grade === '高一' ? '#10b981' : exam.grade === '高二' ? '#3b82f6' : '#f59e0b';
+                    return `
+                    <div class="exam-card">
+                        <div class="exam-card-header">
+                            <div class="exam-icon">📘</div>
+                            <div class="exam-title">
+                                <div class="exam-name">
+                                    ${gradeLabel ? `<span class="grade-badge" style="background:${gradeColor}">${gradeLabel}</span>` : ''}
+                                    ${exam.region || ''} ${exam.exam_type || '模拟题'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">🏫</span>
+                                <span class="meta-value">${exam.region || '未知高校'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📄</span>
+                                <span class="meta-value">${exam.file_count || 0}份文件</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📝</span>
+                                <span class="meta-value">${exam.has_answers ? exam.question_count + '题' : '未解析'}</span>
+                            </div>
+                        </div>
+                        <div class="exam-tags">
+                            ${index < 3 ? '<span class="exam-tag tag-new">新增</span>' : ''}
+                            ${HOT_UNIVERSITIES.includes(exam.region) ? '<span class="exam-tag tag-hot">热门高中</span>' : ''}
+                        </div>
+                        <div class="exam-footer">
+                            <div class="star-rating">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">☆</span>
+                            </div>
+                            <div class="exam-actions">
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

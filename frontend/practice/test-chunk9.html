@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 9 (lines 401-450)</title>
+</head>
+<body>
+    <h1>Test Chunk 9 (lines 401-450)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+                        if (imagesData.includes(',')) {
+                            images = imagesData.split(',').map(img => img.trim()).filter(img => img);
+                        } else {
+                            images = [imagesData];
+                        }
+                    } else {
+                        return [];
+                    }
+                }
+            } else {
+                images = imagesData;
+            }
+            // Return as-is (URLs or paths), don't filter by extension since URLs may not have extensions visible
+            return images.filter(img => img && typeof img === 'string' && img.length > 0);
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('show');
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function handleDrop(event) {
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+            }
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('selectedFile').style.display = 'none';
+        }
+
+        async function importAndParse() {
+            try {
+                showToast('success', '正在从D盘导入并解析试卷...');
+                const response = await fetch('http://localhost:8000/api/exams/import-and-parse', {
+                    method: 'POST'
+                });
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

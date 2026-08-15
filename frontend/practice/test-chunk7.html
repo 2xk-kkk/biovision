@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chunk 7 (lines 301-350)</title>
+</head>
+<body>
+    <h1>Test Chunk 7 (lines 301-350)</h1>
+    <div id="output">Testing...</div>
+    <script>
+    try {
+                                ` : '';
+                                const answerHtml = q.answer ? `
+                                    <div class="preview-answer"><strong>参考答案：</strong>${q.answer}</div>
+                                ` : '';
+                                return `
+                                    <div class="preview-question">
+                                        <div class="preview-question-stem" data-num="${q._index}">${stem}</div>
+                                        ${imagesHtml}
+                                        <div class="preview-no-options">（本题无选项，请直接作答）</div>
+                                        ${answerHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                    
+                    content.innerHTML = `
+                        <div class="preview-paper">
+                            <div class="preview-paper-header">
+                                <div class="preview-paper-title">${examTitle}</div>
+                                <div class="preview-paper-info">
+                                    ${grade ? `<span>年级：${grade}</span>` : ''}
+                                    ${region ? `<span>学校：${region}</span>` : ''}
+                                    ${examType ? `<span>类型：${examType}</span>` : ''}
+                                    <span>共 ${questions.length} 题</span>
+                                </div>
+                            </div>
+                            ${choiceHtml}
+                            ${fillHtml}
+                            <div class="preview-paper-footer">
+                                —— 试卷预览结束 ——
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="preview-no-questions">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                            <div>该试卷暂无题目</div>
+                            <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请先解析试卷提取题目</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="preview-no-questions">
+                        <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                        <div>加载失败</div>
+                        <div style="font-size: 13px; color: #9ca3af; margin-top: 8px;">请确保后端服务已启动</div>
+                    </div>
+        document.getElementById('output').innerHTML = 'SUCCESS';
+    } catch(e) {
+        document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+    }
+    </script>
+</body>
+</html>

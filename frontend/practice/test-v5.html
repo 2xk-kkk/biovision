@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Test 5: Just regex</title>
+</head>
+<body>
+    <h1>Test 5: Just regex</h1>
+    <div id="output">Testing...</div>
+    <script>
+var document = { 
+    getElementById: function(id) { return { 
+        innerHTML: '', textContent: '', value: '',
+        style: {}, classList: { add: function(){}, remove: function(){} },
+        appendChild: function(){}, addEventListener: function(){},
+        querySelectorAll: function(){ return []; },
+        onclick: null, textContent: ''
+    }; },
+    createElement: function(tag) { return { 
+        className: '', textContent: '', innerHTML: '',
+        style: {}, setAttribute: function(){},
+        appendChild: function(){}, onclick: null
+    }; },
+    querySelectorAll: function(sel) { return []; },
+    querySelector: function(sel) { return null; }
+};
+var window = { location: { href: '' }, open: function(){} };
+var alert = function(){};
+var fetch = function() { return Promise.resolve(); };
+var atob = function(s) { return s; };
+
+
+try {
+    const exam = {id: 1, name: "test's"};
+    const result = exam.name.replace(/'/g, "\'");
+    const html = `<button onclick="previewExam(${exam.id}, '${result}')">预览</button>`;
+    document.getElementById('output').innerHTML = 'SUCCESS: ' + html;
+} catch(e) {
+    document.getElementById('output').innerHTML = 'ERROR: ' + e.message;
+}
+
+    </script>
+</body>
+</html>
