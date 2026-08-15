@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人体内分泌腺 · 交互式学习</title>
+<style>
+  :root{
+    --bg:#eef5f4;
+    --card:#ffffff;
+    --ink:#1e293b;
+    --muted:#64748b;
+    --line:#dbe7e5;
+    --teal:#0d9488;
+    --teal-dark:#0f766e;
+    --amber:#f59e0b;
+    --violet:#8b5cf6;
+    --red:#ef4444;
+    --orange:#f97316;
+    --green:#10b981;
+    --pink:#ec4899;
+    --shadow:0 10px 30px rgba(15,118,110,.10);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    background:linear-gradient(160deg,#f6fbfa 0%,#e7f1ef 100%);
+    color:var(--ink);
+    line-height:1.7;
+    min-height:100vh;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:20px 20px 80px}
+
+  header.hero{
+    text-align:center;padding:52px 24px 40px;margin:0;
+    background:linear-gradient(135deg,#0d9488,#0f766e 60%,#115e59);
+    color:#fff;border-radius:0 0 30px 30px;box-shadow:0 18px 40px rgba(15,118,110,.28);
+    position:relative;overflow:hidden;
+  }
+  header.hero::before{
+    content:"";position:absolute;inset:0;opacity:.25;pointer-events:none;
+    background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.35),transparent 40%),
+               radial-gradient(circle at 80% 80%,rgba(255,255,255,.22),transparent 45%);
+  }
+  header.hero h1{font-size:2rem;letter-spacing:1px;position:relative}
+  header.hero p{font-size:.98rem;opacity:.92;margin-top:8px;position:relative}
+  .hero .tag{
+    display:inline-block;margin-top:14px;font-size:.8rem;background:rgba(255,255,255,.16);
+    padding:4px 14px;border-radius:999px;letter-spacing:1px;position:relative;
+  }
+
+  nav.tabs{
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:26px;position:sticky;top:8px;z-index:20;
+  }
+  nav.tabs button{
+    border:1px solid var(--line);background:var(--card);color:var(--muted);
+    padding:10px 16px;border-radius:999px;cursor:pointer;font-size:.92rem;
+    transition:.22s;box-shadow:0 2px 6px rgba(0,0,0,.03);
+  }
+  nav.tabs button:hover{transform:translateY(-2px);color:var(--teal-dark);border-color:var(--teal)}
+  nav.tabs button.active{background:var(--teal);color:#fff;border-color:var(--teal);box-shadow:0 6px 16px rgba(13,148,136,.3)}
+
+  section{display:none;animation:fade .4s ease}
+  section.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:20px;border:1px solid #eef4f3}
+  h2.sec-title{font-size:1.35rem;margin-bottom:6px;color:var(--teal-dark)}
+  h2.sec-title::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--teal);margin-right:10px;transform:rotate(45deg)}
+  .sec-sub{color:var(--muted);font-size:.9rem;margin-bottom:18px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  /* ===== overview map ===== */
+  .map-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+  @media(max-width:860px){.map-layout{grid-template-columns:1fr}}
+  .map-svg{width:100%;height:auto;display:block}
+  .gland-dot{cursor:pointer}
+  .gland-dot .core{transition:.2s}
+  .gland-dot:hover .core{transform:scale(1.25);transform-origin:center}
+  .gland-dot:hover .ring{opacity:1}
+  .ring{transform-origin:center;transform-box:fill-box;animation:ping 1.8s ease-out infinite}
+  @keyframes ping{0%{transform:scale(.5);opacity:.9}80%,100%{transform:scale(1.7);opacity:0}}
+  .gland-label{cursor:pointer;user-select:none}
+  .gland-label text{font-weight:700;font-size:15px;fill:#334155}
+  .gland-label:hover text{fill:var(--teal-dark)}
+  .gland-label .chip{transition:.2s}
+  .gland-label:hover .chip{transform:translateX(0)!important}
+
+  .detail-panel{min-height:340px;display:flex;flex-direction:column}
+  .detail-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .detail-dot{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:0 0 0 4px rgba(0,0,0,.05)}
+  .detail-head h3{font-size:1.3rem}
+  .detail-role{font-size:.8rem;color:var(--teal-dark);background:#e6f7f4;padding:3px 10px;border-radius:999px;margin-left:auto;white-space:nowrap}
+  .detail-func{color:#475569;font-size:.95rem;margin-bottom:14px}
+  .hormone-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .pill{font-size:.82rem;padding:6px 12px;border-radius:999px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0}
+  .pill b{color:var(--teal-dark)}
+  .detail-tip{font-size:.85rem;color:#0f766e;background:#f0fdfa;border-left:4px solid var(--teal);padding:10px 12px;border-radius:8px;margin-top:auto}
+
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .legend span{font-size:.8rem;display:flex;align-items:center;gap:6px;color:#475569}
+  .legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+
+  .mnemonic{font-size:.98rem;line-height:2;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:14px;padding:18px 20px;color:#92400e;text-align:center}
+
+  /* ===== glands grid ===== */
+  .gland-card{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fbfdfd;transition:.25s}
+  .gland-card:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.08)}
+  .gland-card .top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .gland-card h4{font-size:1.05rem}
+  .gland-card .dot{width:14px;height:14px;border-radius:50%;flex:none}
+  .gland-card .role{font-size:.72rem;color:#fff;padding:2px 9px;border-radius:999px;margin-left:auto;white-space:nowrap}
+  .gland-card .func{font-size:.86rem;color:#475569;margin-bottom:10px}
+  .gland-card .horms{display:flex;flex-wrap:wrap;gap:6px}
+  .gland-card .horms span{font-size:.74rem;padding:3px 10px;border-radius:999px;background:#eef2ff;color:#4338ca;border:1px solid #e0e7ff}
+
+  /* ===== glands comparison ===== */
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:760px){.cmp{grid-template-columns:1fr}}
+  .cmp-box{border-radius:16px;padding:20px;position:relative;overflow:hidden}
+  .cmp-box.exo{background:#fff7ed;border:1px solid #fed7aa}
+  .cmp-box.endo{background:#f0fdfa;border:1px solid #99f6e4}
+  .cmp-box h3{font-size:1.1rem;margin-bottom:6px}
+  .cmp-box .svgbox{width:100%;height:auto;margin:12px 0}
+  .cmp-box ul{list-style:none;font-size:.9rem;color:#475569}
+  .cmp-box ul li{padding:5px 0 5px 22px;position:relative}
+  .cmp-box ul li::before{content:"";position:absolute;left:2px;top:12px;width:9px;height:9px;border-radius:3px}
+  .cmp-box.exo ul li::before{background:var(--orange)}
+  .cmp-box.endo ul li::before{background:var(--teal)}
+  .vs-badge{position:absolute;top:12px;right:14px;font-size:.72rem;letter-spacing:1px;color:#fff;padding:2px 10px;border-radius:999px}
+  .cmp-box.exo .vs-badge{background:var(--orange)}
+  .cmp-box.endo .vs-badge{background:var(--teal)}
+
+  /* ===== axis diagram ===== */
+  .axis-controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+  .axis-controls button{border:1px solid var(--line);background:#fff;color:var(--teal-dark);padding:9px 16px;border-radius:10px;cursor:pointer;font-size:.9rem;transition:.2s}
+  .axis-controls button:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .axis-controls button.on{background:var(--teal);color:#fff}
+  .axis-svg{width:100%;height:auto;display:block}
+  .axis-svg .node{filter:drop-shadow(0 4px 8px rgba(0,0,0,.08))}
+  .axis-svg .flow-dot{opacity:0}
+  .axis-svg.play .flow-dot{opacity:1}
+  .axis-svg .neg{opacity:0;transition:opacity .4s}
+  .axis-svg.show-neg .neg{opacity:1}
+  .axis-svg .cold-flash{opacity:0}
+  .axis-svg.cold .cold-flash{animation:blink 1s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:0}50%{opacity:1}}
+
+  /* ===== blood glucose ===== */
+  .glucose-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:760px){.glucose-layout{grid-template-columns:1fr}}
+  .slider-box input[type=range]{width:100%;accent-color:var(--teal)}
+  .gauge{position:relative;height:26px;border-radius:999px;background:linear-gradient(90deg,#3b82f6,#10b981 33%,#10b981 60%,#f59e0b 82%,#ef4444);margin:18px 0 8px}
+  .gauge .zone-low,.gauge .zone-norm,.gauge .zone-high{position:absolute;top:0;bottom:0;border-radius:999px}
+  .gauge .needle{position:absolute;top:-9px;width:4px;height:44px;background:#0f172a;border-radius:2px;transform:translateX(-50%);transition:left .15s ease;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+  .gauge .needle::after{content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:12px;height:12px;border-radius:50%;background:#0f172a}
+  .gauge-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted)}
+  .status-badge{text-align:center;font-size:.95rem;font-weight:700;padding:10px;border-radius:12px;margin-bottom:14px}
+  .hormone-bar{margin:14px 0}
+  .hormone-bar .hb-label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:5px}
+  .hormone-bar .hb-track{height:16px;border-radius:999px;background:#eef2f7;overflow:hidden}
+  .hormone-bar .hb-fill{height:100%;border-radius:999px;transition:width .2s ease}
+  .hb-insulin .hb-fill{background:linear-gradient(90deg,#34d399,#059669)}
+  .hb-glucagon .hb-fill{background:linear-gradient(90deg,#fb923c,#ea580c)}
+  .glucose-note{font-size:.86rem;color:#475569;background:#f8fafc;border-radius:12px;padding:14px}
+
+  /* ===== features ===== */
+  .feat{border:1px solid var(--line);border-radius:16px;padding:16px;background:#fbfdfd;text-align:center}
+  .feat .svgbox{width:100%;height:120px;margin-bottom:10px}
+  .feat h4{font-size:1rem;margin-bottom:6px;color:var(--teal-dark)}
+  .feat p{font-size:.84rem;color:#475569;text-align:left}
+
+  /* ===== quiz ===== */
+  .quiz-bar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .quiz-progress{flex:1;height:10px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+  .quiz-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),#34d399);transition:width .3s}
+  .quiz-count{font-size:.9rem;color:var(--muted);white-space:nowrap}
+  .q-text{font-size:1.08rem;font-weight:600;margin-bottom:18px}
+  .q-options{display:flex;flex-direction:column;gap:10px}
+  .q-options button{text-align:left;border:1.5px solid var(--line);background:#fff;padding:13px 16px;border-radius:12px;cursor:pointer;font-size:.95rem;transition:.18s}
+  .q-options button:hover{border-color:var(--teal);background:#f0fdfa}
+  .q-options button.correct{border-color:var(--green);background:#ecfdf5;color:#065f46}
+  .q-options button.wrong{border-color:var(--red);background:#fef2f2;color:#991b1b}
+  .q-options button:disabled{cursor:default;opacity:.9}
+  .q-feedback{display:none;font-size:.9rem;margin-top:14px;padding:12px 14px;border-radius:10px}
+  .q-feedback.show{display:block}
+  .q-feedback.ok{background:#ecfdf5;color:#065f46;border-left:4px solid var(--green)}
+  .q-feedback.no{background:#fef2f2;color:#991b1b;border-left:4px solid var(--red)}
+  .quiz-nav{display:flex;justify-content:space-between;margin-top:18px}
+  .quiz-nav button{border:1px solid var(--line);background:#fff;color:var(--teal-dark);padding:10px 20px;border-radius:10px;cursor:pointer;font-size:.9rem;transition:.2s}
+  .quiz-nav button:hover{background:var(--teal);color:#fff}
+  .quiz-nav button:disabled{opacity:.4;cursor:default}
+  .quiz-result{text-align:center;padding:30px}
+  .quiz-result .score{font-size:3rem;font-weight:800;color:var(--teal)}
+  .quiz-result p{margin-top:8px;color:var(--muted)}
+
+  /* ===== 连线填空 ===== */
+  .match-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .match-toolbar button{border:1px solid var(--line);background:#fff;color:var(--teal-dark);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:.9rem;transition:.2s}
+  .match-toolbar button:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .match-toolbar span{font-size:.9rem;color:var(--muted)}
+  .match-svg{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair}
+  .match-svg .left-label,.match-svg .right-label{user-select:none}
+  .fill-passage{font-size:1.06rem;line-height:2.5;background:#f8fafc;border-radius:14px;padding:20px;color:#334155}
+  .fill-passage select{font-size:.98rem;padding:4px 8px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;margin:0 2px}
+  .fill-passage select.ok{border-color:var(--green);background:#ecfdf5;color:#065f46}
+  .fill-passage select.no{border-color:var(--red);background:#fef2f2;color:#991b1b}
+  .fill-actions{display:flex;align-items:center;gap:12px;margin-top:16px}
+  .fill-actions button{border:1px solid var(--line);background:#fff;color:var(--teal-dark);padding:10px 18px;border-radius:10px;cursor:pointer;font-size:.9rem;transition:.2s}
+  .fill-actions button:hover{background:var(--teal);color:#fff}
+  .fill-actions span{font-size:.95rem;color:var(--teal-dark);font-weight:700}
+
+  footer{margin-top:30px;text-align:center;font-size:.8rem;color:var(--muted)}
+
+  .back-btn{
+    position:fixed;top:16px;left:16px;z-index:100;
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.92);color:var(--teal-dark);
+    border:1px solid var(--line);border-radius:999px;
+    padding:8px 16px;font-size:.9rem;font-weight:600;cursor:pointer;
+    text-decoration:none;box-shadow:0 4px 14px rgba(15,118,110,.14);
+    transition:.2s;
+  }
+  .back-btn:hover{background:#fff;color:var(--teal);border-color:var(--teal);transform:translateX(-2px)}
+</style>
+</head>
+<body>
+
+  <a class="back-btn" href="main3.html">← 返回</a>
+
+  <header class="hero">
+    <h1>人体内分泌腺</h1>
+    <p>激素与内分泌系统 · 交互式学习</p>
+    <span class="tag">人教版 · 选择性必修1 · 稳态与调节</span>
+  </header>
+
+<div class="wrap">
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="map" class="active">人体地图</button>
+    <button data-tab="glands">腺体详解</button>
+    <button data-tab="cmp">内外分泌腺</button>
+    <button data-tab="axis">分级调节</button>
+    <button data-tab="glucose">血糖平衡</button>
+    <button data-tab="features">调节特点</button>
+    <button data-tab="match">连线填空</button>
+    <button data-tab="quiz">记忆挑战</button>
+  </nav>
+
+  <!-- ============ 人体地图 ============ -->
+  <section id="map" class="active">
+    <div class="card">
+      <h2 class="sec-title">人体主要内分泌腺</h2>
+      <p class="sec-sub">点击图中闪烁的腺体标记，查看它分泌的激素与作用。</p>
+      <div class="map-layout">
+        <div>
+          <svg class="map-svg" id="bodyMap" viewBox="0 0 640 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="人体内分泌腺示意图"></svg>
+        </div>
+        <div class="detail-panel card" id="detailPanel" style="box-shadow:none;border:1px solid var(--line)">
+          <div class="detail-head">
+            <span class="detail-dot" id="dDot"></span>
+            <h3 id="dName">下丘脑</h3>
+            <span class="detail-role" id="dRole">调节枢纽</span>
+          </div>
+          <p class="detail-func" id="dFunc"></p>
+          <div class="hormone-pills" id="dPills"></div>
+          <div class="detail-tip" id="dTip"></div>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="card mnemonic">
+      <b>记忆口诀：</b>下丘脑是总调度，垂体承上又启下；甲状腺管代谢，胰岛把糖控；肾上腺应应激，性腺管生殖——无导管、入血液，微量高效当信使。
+    </div>
+  </section>
+
+  <!-- ============ 腺体详解 ============ -->
+  <section id="glands">
+    <div class="card">
+      <h2 class="sec-title">各腺体详解</h2>
+      <p class="sec-sub">逐个认识每种内分泌腺的位置、激素与功能。</p>
+      <div class="grid3" id="glandGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ 内外分泌腺 ============ -->
+  <section id="cmp">
+    <div class="card">
+      <h2 class="sec-title">内分泌腺 与 外分泌腺</h2>
+      <p class="sec-sub">区分的关键在于——有没有导管，分泌物去哪。</p>
+      <div class="cmp">
+        <div class="cmp-box exo">
+          <span class="vs-badge">外分泌腺</span>
+          <h3>有导管 · 流到体外或消化腔</h3>
+          <svg class="svgbox" id="exoSvg" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg"></svg>
+          <ul>
+            <li>分泌物经<b>导管</b>流出</li>
+            <li>例：汗腺、唾液腺、胃腺</li>
+            <li>分泌物：汗液、唾液、消化液等</li>
+          </ul>
+        </div>
+        <div class="cmp-box endo">
+          <span class="vs-badge">内分泌腺</span>
+          <h3>无导管 · 激素入血液</h3>
+          <svg class="svgbox" id="endoSvg" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg"></svg>
+          <ul>
+            <li><b>没有导管</b></li>
+            <li>分泌物（激素）直接进入<b>毛细血管</b></li>
+            <li>随<b>血液循环</b>输送到全身</li>
+            <li>例：垂体、甲状腺、肾上腺等</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 分级调节 ============ -->
+  <section id="axis">
+    <div class="card">
+      <h2 class="sec-title">甲状腺激素的分级调节与反馈</h2>
+      <p class="sec-sub">下丘脑 — 垂体 — 甲状腺轴：层层调控，再负反馈抑制，实现精细调节。</p>
+      <div class="axis-controls">
+        <button id="btnCold">寒冷刺激</button>
+        <button id="btnNeg">显示负反馈</button>
+        <button id="btnReset">重置</button>
+      </div>
+      <svg class="axis-svg" id="axisSvg" viewBox="0 0 940 380" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+  </section>
+
+  <!-- ============ 血糖平衡 ============ -->
+  <section id="glucose">
+    <div class="card">
+      <h2 class="sec-title">血糖平衡的调节</h2>
+      <p class="sec-sub">拖动滑块改变血糖浓度，观察胰岛素与胰高血糖素如何协同维持稳定。</p>
+      <div class="glucose-layout">
+        <div class="slider-box">
+          <div class="status-badge" id="glStatus">血糖正常</div>
+          <div class="gauge" id="gauge"><div class="needle" id="needle" style="left:50%"></div></div>
+          <div class="gauge-labels"><span>3.0</span><span>6.1</span><span>11.0</span></div>
+          <input type="range" id="glucoseSlider" min="3.0" max="11.0" step="0.1" value="5.0" style="margin-top:18px">
+          <div style="text-align:center;font-size:1.1rem;margin-top:8px">血糖浓度：<b id="glValue">5.0</b> mmol/L</div>
+        </div>
+        <div>
+          <div class="hormone-bar hb-insulin">
+            <div class="hb-label"><span>胰岛素（胰岛B细胞 · 降血糖）</span><b id="insVal">低</b></div>
+            <div class="hb-track"><div class="hb-fill" id="insFill" style="width:20%"></div></div>
+          </div>
+          <div class="hormone-bar hb-glucagon">
+            <div class="hb-label"><span>胰高血糖素（胰岛A细胞 · 升血糖）</span><b id="gluVal">低</b></div>
+            <div class="hb-track"><div class="hb-fill" id="gluFill" style="width:20%"></div></div>
+          </div>
+          <div class="glucose-note" id="glNote"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 调节特点 ============ -->
+  <section id="features">
+    <div class="card">
+      <h2 class="sec-title">激素调节的特点</h2>
+      <p class="sec-sub">各种激素化学结构不同、生理作用各异，但作用方式有共同之处。</p>
+      <div class="grid2" id="featGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ 连线填空 ============ -->
+  <section id="match">
+    <div class="card">
+      <h2 class="sec-title">拖拽连线</h2>
+      <p class="sec-sub">按住左侧腺体，拖到右侧它分泌的激素上松开；连错会闪红，连对变绿锁定。</p>
+      <div class="match-toolbar">
+        <button id="matchReset">重新开始</button>
+        <span id="matchStatus">已连对 0 / 6</span>
+      </div>
+      <svg class="match-svg" id="matchSvg" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="card">
+      <h2 class="sec-title">填空检测</h2>
+      <p class="sec-sub">从下拉框选择正确词语填入空格，点击「检查答案」查看对错。</p>
+      <div class="fill-passage" id="fillPassage"></div>
+      <div class="fill-actions">
+        <button id="fillCheck">检查答案</button>
+        <button id="fillReset">重新填写</button>
+        <span id="fillScore"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 记忆挑战 ============ -->
+  <section id="quiz">
+    <div class="card">
+      <h2 class="sec-title">记忆挑战</h2>
+      <p class="sec-sub">用几道题检验一下你记住了多少。</p>
+      <div class="quiz-bar">
+        <span class="quiz-count" id="quizCount">1 / 7</span>
+        <div class="quiz-progress"><i id="quizProgress" style="width:0%"></i></div>
+        <span class="quiz-count" id="quizScore">得分 0</span>
+      </div>
+      <div id="quizBody"></div>
+    </div>
+  </section>
+
+  <footer>内容整理自人教版《生物学 · 选择性必修1 稳态与调节》第3章 · 体液调节</footer>
+</div>
+
+<script>
+"use strict";
+
+/* ================= 数据 ================= */
+const GLAND_COLORS = {
+  hypothalamus:"#f59e0b",
+  pituitary:"#8b5cf6",
+  thyroid:"#ef4444",
+  adrenal:"#f97316",
+  pancreas:"#10b981",
+  gonad:"#ec4899"
+};
+
+const glands = [
+  {
+    id:"hypothalamus", name:"下丘脑", color:"#f59e0b", role:"调节枢纽",
+    cx:320, cy:58, labelSide:"left",
+    hormones:["促甲状腺激素释放激素(TRH)","促性腺激素释放激素(GnRH)","促肾上腺皮质激素释放激素(CRH)"],
+    func:"分泌多种释放激素，作用于垂体，调控垂体分泌相应激素。是联系神经调节与激素调节的枢纽。",
+    tip:"口诀：下丘脑是总调度，先把指令传给垂体。"
+  },
+  {
+    id:"pituitary", name:"垂体", color:"#8b5cf6", role:"总开关",
+    cx:320, cy:86, labelSide:"left",
+    hormones:["生长激素(GH)","促甲状腺激素(TSH)","促性腺激素","促肾上腺皮质激素(ACTH)"],
+    func:"接受下丘脑调节，分泌多种促激素调节相应内分泌腺；分泌生长激素调节生长发育。",
+    tip:"口诀：垂体承上又启下，生长激素从这里来。"
+  },
+  {
+    id:"thyroid", name:"甲状腺", color:"#ef4444", role:"代谢与发育",
+    cx:320, cy:142, labelSide:"right",
+    hormones:["甲状腺激素"],
+    func:"调节体内有机物代谢、促进生长和发育、提高神经的兴奋性。",
+    tip:"口诀：甲状腺管代谢；幼年缺乏会得呆小症，成年缺乏会反应迟钝。"
+  },
+  {
+    id:"adrenal", name:"肾上腺", color:"#f97316", role:"应激与水盐",
+    cx:320, cy:226, labelSide:"left",
+    hormones:["醛固酮、皮质醇(皮质)","肾上腺素(髓质)"],
+    func:"皮质分泌醛固酮、皮质醇，调节水盐代谢和有机物代谢；髓质分泌肾上腺素，提高机体应激能力。",
+    tip:"口诀：肾上腺应应激——遇到危险时肾上腺素让你心跳加速、反应敏捷。"
+  },
+  {
+    id:"pancreas", name:"胰岛", color:"#10b981", role:"血糖调节",
+    cx:320, cy:272, labelSide:"right",
+    hormones:["胰岛素(胰岛B细胞)","胰高血糖素(胰岛A细胞)"],
+    func:"胰岛B细胞分泌胰岛素降低血糖，胰岛A细胞分泌胰高血糖素升高血糖，二者共同维持血糖平衡。",
+    tip:"口诀：胰岛把糖控——B降A升，记住『B降糖』。"
+  },
+  {
+    id:"gonad", name:"性腺", color:"#ec4899", role:"生殖与第二性征",
+    cx:320, cy:336, labelSide:"right",
+    hormones:["雌激素、孕激素(卵巢)","雄激素·睾酮(睾丸)"],
+    func:"卵巢分泌雌激素和孕激素，睾丸分泌雄激素(睾酮)，促进生殖器官发育、生殖细胞生成和第二性征出现。",
+    tip:"口诀：性腺管生殖——卵巢产雌激素，睾丸产雄激素。"
+  }
+];
+
+/* ================= 人体地图 SVG ================= */
+const bodySvg = document.getElementById("bodyMap");
+
+function drawBody(){
+  let s = `<defs>
+    <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e2f0ee"/><stop offset="1" stop-color="#cde3e0"/>
+    </linearGradient>
+  </defs>`;
+
+  // 人体轮廓
+  s += `<g fill="url(#bodyGrad)" stroke="#a7c8c3" stroke-width="2">
+    <ellipse cx="320" cy="72" rx="42" ry="48"/>
+    <path d="M320 118 L320 132"/>
+    <rect x="300" y="122" width="40" height="20" rx="10" fill="url(#bodyGrad)"/>
+    <path d="M320 142 C 258 150 244 200 246 250 C 246 300 268 360 282 392 L 292 500 L 306 500 L 316 420 L 324 500 L 338 500 L 348 392 C 362 360 394 300 394 250 C 396 200 382 150 320 142 Z"/>
+    <path d="M246 250 C 220 300 214 360 210 400 L 224 400 C 228 360 236 306 260 262 Z" stroke="#a7c8c3"/>
+    <path d="M394 250 C 420 300 426 360 430 400 L 416 400 C 412 360 404 306 380 262 Z" stroke="#a7c8c3"/>
+    <path d="M292 500 C 290 528 288 548 284 560 L 300 560 C 303 548 306 528 308 500 Z"/>
+    <path d="M338 500 C 340 528 342 548 346 560 L 330 560 C 327 548 324 528 322 500 Z"/>
+  </g>`;
+
+  // 腺体标记点
+  glands.forEach(g=>{
+    const c = g.color;
+    s += `<g class="gland-dot" data-id="${g.id}" transform="translate(${g.cx},${g.cy})">
+      <circle class="ring" r="16" fill="none" stroke="${c}" stroke-width="2.5"/>
+      <circle class="core" r="9" fill="${c}" stroke="#fff" stroke-width="2"/>
+    </g>`;
+  });
+
+  // 标签 + 引导线
+  glands.forEach(g=>{
+    const left = g.labelSide === "left";
+    const lx = left ? 118 : 522;
+    const ty = g.cy;
+    const dotX = g.cx;
+    const dx = left ? -1 : 1;
+    s += `<g class="gland-label" data-id="${g.id}">
+      <line x1="${dotX + dx*11}" y1="${ty}" x2="${lx - dx*14}" y2="${ty}" stroke="${g.color}" stroke-width="1.4" stroke-dasharray="3 3"/>
+      <rect class="chip" x="${left ? lx-110 : lx}" y="${ty-15}" width="110" height="30" rx="15" fill="#fff" stroke="${g.color}" stroke-width="1.5"/>
+      <circle cx="${left ? lx-94 : lx+16}" cy="${ty}" r="6" fill="${g.color}"/>
+      <text x="${left ? lx-82 : lx+28}" y="${ty+5}" text-anchor="start">${g.name}</text>
+    </g>`;
+  });
+
+  // 图内说明文字（性腺标注两个）
+  s += `<g font-size="11" fill="#64748b">
+    <text x="282" y="238" text-anchor="end">左肾上腺</text>
+    <text x="358" y="238">右肾上腺</text>
+  </g>`;
+
+  bodySvg.innerHTML = s;
+
+  // 事件
+  document.querySelectorAll("#bodyMap .gland-dot, #bodyMap .gland-label").forEach(el=>{
+    el.addEventListener("click", ()=>selectGland(el.dataset.id));
+  });
+}
+
+/* ================= 详情面板 ================= */
+function selectGland(id){
+  const g = glands.find(x=>x.id===id);
+  if(!g) return;
+  const dot = document.getElementById("dDot");
+  dot.style.background = g.color;
+  document.getElementById("dName").textContent = g.name;
+  document.getElementById("dRole").textContent = g.role;
+  document.getElementById("dFunc").textContent = g.func;
+  document.getElementById("dPills").innerHTML = g.hormones.map(h=>{
+    const [name,extra] = h.split("(");
+    return `<span class="pill">${name}<b>${extra?"("+extra:""}</b></span>`;
+  }).join("");
+  document.getElementById("dTip").textContent = g.tip;
+
+  // 高亮对应标记
+  document.querySelectorAll("#bodyMap .gland-dot").forEach(el=>{
+    const on = el.dataset.id===id;
+    el.querySelector(".core").setAttribute("r", on ? 12 : 9);
+    el.style.opacity = on ? 1 : .45;
+  });
+  document.querySelectorAll("#bodyMap .gland-label").forEach(el=>{
+    el.style.opacity = el.dataset.id===id ? 1 : .45;
+  });
+}
+
+function drawLegend(){
+  document.getElementById("legend").innerHTML = glands.map(g=>
+    `<span><i style="background:${g.color}"></i>${g.name}</span>`
+  ).join("");
+}
+
+/* ================= 腺体详解卡片 ================= */
+function drawGlandCards(){
+  document.getElementById("glandGrid").innerHTML = glands.map(g=>`
+    <div class="gland-card">
+      <div class="top"><span class="dot" style="background:${g.color}"></span><h4>${g.name}</h4><span class="role" style="background:${g.color}">${g.role}</span></div>
+      <div class="func">${g.func}</div>
+      <div class="horms">${g.hormones.map(h=>`<span>${h}</span>`).join("")}</div>
+    </div>
+  `).join("");
+}
+
+/* ================= 内外分泌腺示意图 ================= */
+function drawCmp(){
+  // 外分泌腺：有导管，流到表面
+  document.getElementById("exoSvg").innerHTML = `
+    <defs><linearGradient id="exoG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#ea580c"/></linearGradient></defs>
+    <g stroke="#c2701f" stroke-width="1.6" fill="#fff7ed">
+      <path d="M70 60 C 70 60 60 90 80 90 L 150 90 C 175 90 180 120 180 150" fill="none" stroke-dasharray="none"/>
+    </g>
+    <g font-size="13" fill="#9a3412" text-anchor="middle">
+      <text x="190" y="168">导管</text>
+      <text x="230" y="30">分泌物流向</text>
+      <text x="230" y="46">体外/消化腔</text>
+    </g>
+    <ellipse cx="110" cy="150" rx="60" ry="38" fill="#fff7ed" stroke="#c2701f" stroke-width="2"/>
+    <g fill="url(#exoG)">
+      <circle cx="90" cy="142" r="7"/><circle cx="110" cy="150" r="7"/><circle cx="130" cy="142" r="7"/>
+      <circle cx="100" cy="160" r="7"/><circle cx="120" cy="160" r="7"/>
+    </g>
+    <text x="110" y="205" text-anchor="middle" font-size="13" fill="#9a3412">分泌腺细胞</text>
+    <circle cx="185" cy="155" r="4" fill="#ea580c">
+      <animateMotion dur="2.2s" repeatCount="indefinite" path="M150 150 L195 150"/>
+    </circle>
+  `;
+
+  // 内分泌腺：无导管，激素入毛细血管
+  document.getElementById("endoSvg").innerHTML = `
+    <defs><linearGradient id="endoG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0d9488"/></linearGradient></defs>
+    <g stroke="#b91c1c" stroke-width="2.2" fill="none">
+      <path d="M120 30 C 150 70 210 90 230 60"/>
+      <path d="M120 30 C 150 40 210 50 230 60" stroke="#c2410c"/>
+    </g>
+    <g font-size="13" fill="#7f1d1d" text-anchor="middle">
+      <text x="175" y="24">毛细血管</text>
+    </g>
+    <ellipse cx="110" cy="150" rx="60" ry="38" fill="#f0fdfa" stroke="#0f766e" stroke-width="2"/>
+    <g fill="url(#endoG)">
+      <circle cx="90" cy="142" r="7"/><circle cx="110" cy="150" r="7"/><circle cx="130" cy="142" r="7"/>
+      <circle cx="100" cy="160" r="7"/><circle cx="120" cy="160" r="7"/>
+    </g>
+    <text x="110" y="205" text-anchor="middle" font-size="13" fill="#0f766e">内分泌细胞</text>
+    <g fill="#0d9488">
+      <circle r="4"><animateMotion dur="2.5s" repeatCount="indefinite" path="M120 150 L180 90"/></circle>
+      <circle r="4"><animateMotion dur="2.5s" begin="0.4s" repeatCount="indefinite" path="M115 148 L205 70"/></circle>
+    </g>
+    <text x="150" y="150" font-size="12" fill="#065f46">激素→</text>
+  `;
+}
+
+/* ================= 分级调节 ================= */
+function drawAxis(){
+  const svg = document.getElementById("axisSvg");
+  const boxY = 150, boxH = 74, boxW = 132;
+  const nodes = [
+    {label:"寒冷刺激", x:40,  color:"#0ea5e9", trigger:true},
+    {label:"下丘脑", x:210, color:"#f59e0b"},
+    {label:"垂体",   x:390, color:"#8b5cf6"},
+    {label:"甲状腺", x:570, color:"#ef4444"},
+    {label:"细胞代谢", x:760, color:"#10b981", out:true}
+  ];
+  const arrows = [
+    {from:0,to:1,label:"",plain:true},
+    {from:1,to:2,label:"TRH",flow:"#f59e0b"},
+    {from:2,to:3,label:"TSH",flow:"#8b5cf6"},
+    {from:3,to:4,label:"甲状腺激素",flow:"#ef4444"}
+  ];
+
+  let s = "";
+
+  // 负反馈箭头（默认隐藏）
+  s += `<g class="neg">
+    <path d="M636 150 C 636 60 456 60 456 150" fill="none" stroke="#e11d48" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#arrRed)"/>
+    <path d="M636 150 C 636 96 276 96 276 150" fill="none" stroke="#e11d48" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#arrRed)"/>
+    <text x="540" y="86" font-size="14" fill="#e11d48" font-weight="700">( - )</text>
+    <text x="360" y="122" font-size="14" fill="#e11d48" font-weight="700">( - )</text>
+    <text x="620" y="116" font-size="13" fill="#e11d48">甲状腺激素过多</text>
+  </g>`;
+
+  // 箭头定义
+  s += `<defs>
+    <marker id="arrTeal" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0d9488"/></marker>
+    <marker id="arrRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#e11d48"/></marker>
+  </defs>`;
+
+  // 正向箭头
+  arrows.forEach((a,i)=>{
+    const f = nodes[a.from], t = nodes[a.to];
+    const x1 = f.x + boxW, x2 = t.x;
+    const y = boxY + boxH/2;
+    s += `<line x1="${x1+4}" y1="${y}" x2="${x2-14}" y2="${y}" stroke="#0d9488" stroke-width="2.4" marker-end="url(#arrTeal)"/>`;
+    if(a.label){
+      s += `<text x="${(x1+x2)/2}" y="${y-12}" text-anchor="middle" font-size="14" font-weight="700" fill="#0f766e">${a.label}</text>`;
+    }
+    if(a.flow){
+      const pathId = "p"+i;
+      s += `<path id="${pathId}" d="M${x1+6} ${y} L${x2-14} ${y}" fill="none" stroke="none"/>`;
+      s += `<circle class="flow-dot" r="5" fill="${a.flow}">
+        <animateMotion dur="1.6s" begin="${i*0.0}s" repeatCount="indefinite"><mpath href="#${pathId}"/></animateMotion>
+      </circle>`;
+    }
+  });
+
+  // 节点盒
+  nodes.forEach((n,i)=>{
+    const c = n.color;
+    const cold = n.trigger;
+    const r = n.out ? 20 : 12;
+    s += `<g class="node">
+      <rect x="${n.x}" y="${boxY}" width="${boxW}" height="${boxH}" rx="${r}" fill="${cold?'#e0f2fe':n.out?'#ecfdf5':'#fff'}" stroke="${c}" stroke-width="2.6"/>
+      <text x="${n.x+boxW/2}" y="${boxY+boxH/2+6}" text-anchor="middle" font-size="19" font-weight="800" fill="${cold?'#0369a1':n.out?'#065f46':'#334155'}">${n.label}</text>
+    </g>`;
+  });
+
+  // 寒冷闪光
+  s += `<circle class="cold-flash" cx="106" cy="187" r="26" fill="none" stroke="#0ea5e9" stroke-width="3"/>`;
+
+  // 底部说明
+  s += `<g font-size="13.5" fill="#475569">
+    <text x="20" y="300">分级调节：下丘脑 → 垂体 → 靶腺，层层放大激素效应。</text>
+    <text x="20" y="324">反馈调节：甲状腺激素增多，会抑制下丘脑和垂体（负反馈）。</text>
+  </g>`;
+
+  svg.innerHTML = s;
+
+  document.getElementById("btnCold").onclick = ()=>{
+    svg.classList.toggle("cold");
+    svg.classList.add("play");
+    document.getElementById("btnCold").classList.toggle("on", svg.classList.contains("cold"));
+  };
+  document.getElementById("btnNeg").onclick = ()=>{
+    svg.classList.toggle("show-neg");
+    document.getElementById("btnNeg").classList.toggle("on", svg.classList.contains("show-neg"));
+  };
+  document.getElementById("btnReset").onclick = ()=>{
+    svg.classList.remove("cold","show-neg","play");
+    document.getElementById("btnCold").classList.remove("on");
+    document.getElementById("btnNeg").classList.remove("on");
+  };
+}
+
+/* ================= 血糖平衡 ================= */
+function setupGlucose(){
+  const slider = document.getElementById("glucoseSlider");
+  const needle = document.getElementById("needle");
+  const gauge = document.getElementById("gauge");
+  const glValue = document.getElementById("glValue");
+  const glStatus = document.getElementById("glStatus");
+  const glNote = document.getElementById("glNote");
+  const insFill = document.getElementById("insFill");
+  const gluFill = document.getElementById("gluFill");
+  const insVal = document.getElementById("insVal");
+  const gluVal = document.getElementById("gluVal");
+
+  function update(){
+    const v = parseFloat(slider.value);
+    glValue.textContent = v.toFixed(1);
+    // 映射到 3.0-11.0 → 0%-100%
+    const pct = ((v - 3.0) / (11.0 - 3.0)) * 100;
+    needle.style.left = pct + "%";
+
+    // 胰岛素：血糖越高分泌越多
+    const ins = Math.max(0, Math.min(100, (v - 4.0) / 7.0 * 100));
+    // 胰高血糖素：血糖越低分泌越多
+    const glu = Math.max(0, Math.min(100, (8.0 - v) / 5.5 * 100));
+    insFill.style.width = ins + "%";
+    gluFill.style.width = glu + "%";
+    insVal.textContent = ins > 60 ? "高" : (ins > 25 ? "中" : "低");
+    gluVal.textContent = glu > 60 ? "高" : (glu > 25 ? "中" : "低");
+
+    let status, note, bg;
+    if(v >= 3.9 && v <= 6.1){
+      status = "血糖正常（3.9~6.1 mmol/L）"; bg="#ecfdf5";
+      note = "胰岛素与胰高血糖素分泌都处于较低水平，二者相互拮抗、共同维持血糖稳定。";
+    } else if(v > 6.1){
+      status = "血糖偏高"; bg="#fef2f2";
+      note = "胰岛B细胞分泌胰岛素增多，促进血糖进入组织细胞氧化分解、合成肝糖原等，使血糖下降；胰高血糖素分泌减少。";
+    } else {
+      status = "血糖偏低"; bg="#fffbeb";
+      note = "胰岛A细胞分泌胰高血糖素增多，促进肝糖原分解、非糖物质转化为葡萄糖，使血糖升高；胰岛素分泌减少。";
+    }
+    glStatus.textContent = status;
+    glStatus.style.background = bg;
+    glNote.innerHTML = "<b>为什么？</b> " + note;
+  }
+  slider.addEventListener("input", update);
+  update();
+}
+
+/* ================= 激素调节特点 ================= */
+const features = [
+  {t:"通过体液进行运输", d:"内分泌腺没有导管，激素弥散到体液中，随血液流到全身传递信息。临床上可抽血检测激素水平。", icon:"transport"},
+  {t:"作用于靶器官、靶细胞", d:"激素只作用于有特异性受体的细胞，通过与受体特异性识别并结合来发挥作用。", icon:"target"},
+  {t:"作为信使传递信息", d:"激素像信使一样把信息从内分泌细胞传递给靶细胞，一经作用后就失活。", icon:"messenger"},
+  {t:"微量和高效", d:"血液中激素浓度极低（10⁻¹²~10⁻⁹ mol/L），但作用极其显著，是微量高效的活性物质。", icon:"potent"}
+];
+
+function drawFeatures(){
+  document.getElementById("featGrid").innerHTML = features.map(f=>`
+    <div class="feat">
+      <svg class="svgbox" viewBox="0 0 200 120">${featIcon(f.icon)}</svg>
+      <h4>${f.t}</h4>
+      <p>${f.d}</p>
+    </div>
+  `).join("");
+}
+
+function featIcon(kind){
+  if(kind==="transport"){
+    return `<path d="M20 60 H180" stroke="#cbd5e1" stroke-width="18" stroke-linecap="round"/>
+      <path d="M20 60 H180" stroke="#fca5a5" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <circle r="6" fill="#ef4444"><animateMotion dur="2.5s" repeatCount="indefinite" path="M30 60 H170"/></circle>
+      <circle r="6" fill="#f59e0b"><animateMotion dur="2.5s" begin="0.6s" repeatCount="indefinite" path="M30 60 H170"/></circle>`;
+  }
+  if(kind==="target"){
+    return `<circle cx="100" cy="60" r="40" fill="#eef2ff" stroke="#8b5cf6" stroke-width="2"/>
+      <circle cx="100" cy="60" r="26" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+      <circle cx="100" cy="60" r="10" fill="#8b5cf6"/>
+      <path d="M40 30 A 60 60 0 0 1 70 22" fill="none" stroke="#c084fc" stroke-width="2"/>
+      <circle r="5" fill="#a855f7"><animateMotion dur="1.6s" repeatCount="indefinite" path="M44 34 L84 50"/></circle>`;
+  }
+  if(kind==="messenger"){
+    return `<rect x="20" y="30" width="44" height="36" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+      <rect x="136" y="30" width="44" height="36" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+      <text x="42" y="53" text-anchor="middle" font-size="16">细胞</text>
+      <text x="158" y="53" text-anchor="middle" font-size="16">靶细胞</text>
+      <g fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 4">
+        <path d="M64 48 C 90 20 110 76 136 48"/>
+      </g>
+      <circle r="5" fill="#f59e0b"><animateMotion dur="1.8s" repeatCount="indefinite" path="M64 48 C 90 20 110 76 136 48"/></circle>
+      <text x="100" y="24" text-anchor="middle" font-size="13" fill="#b45309">信息</text>`;
+  }
+  // potent
+  return `<g text-anchor="middle">
+      <circle cx="70" cy="70" r="22" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+      <text x="70" y="76" font-size="16" fill="#ef4444" font-weight="700">微</text>
+      <circle cx="140" cy="60" r="38" fill="#fef2f2" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6 5">
+        <animate attributeName="r" values="32;40;32" dur="2.4s" repeatCount="indefinite"/>
+      </circle>
+      <text x="140" y="66" font-size="24" fill="#ef4444" font-weight="800">效</text>
+      <line x1="92" y1="70" x2="102" y2="64" stroke="#ef4444" stroke-width="2" marker-end="url(#arrR)"/>
+      <defs><marker id="arrR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ef4444"/></marker></defs>
+    </g>`;
+}
+
+/* ================= 记忆挑战 ================= */
+const questions = [
+  {q:"生长激素由下列哪个腺体分泌？", opts:["甲状腺","垂体","胰岛","肾上腺"], a:1, exp:"垂体分泌生长激素，调节生长发育；幼年分泌不足会得侏儒症。"},
+  {q:"能降低血糖的激素是？", opts:["胰高血糖素","肾上腺素","胰岛素","甲状腺激素"], a:2, exp:"胰岛素由胰岛B细胞分泌，是体内唯一能降低血糖的激素。"},
+  {q:"甲状腺激素的作用不包括下列哪一项？", opts:["促进生长发育","提高神经兴奋性","降低血糖","调节有机物代谢"], a:2, exp:"甲状腺激素促进有机物代谢（使血糖升高）、促发育、提高神经兴奋性，并不降低血糖。"},
+  {q:"机体在紧急情况下提高应激能力的激素，主要由哪个部位分泌？", opts:["胰岛","肾上腺","垂体","性腺"], a:1, exp:"肾上腺髓质分泌肾上腺素，提高机体的应激能力。"},
+  {q:"关于内分泌腺与外分泌腺的区别，正确的是？", opts:["内分泌腺有导管","内分泌腺分泌物经导管排出","内分泌腺无导管，激素进入血液","外分泌腺无导管"], a:2, exp:"内分泌腺没有导管，激素直接进入毛细血管随血液运输；外分泌腺有导管。"},
+  {q:"甲状腺激素分泌的分级调节轴是？", opts:["下丘脑—垂体—甲状腺","垂体—甲状腺—肾上腺","下丘脑—胰岛—甲状腺","大脑—垂体—性腺"], a:0, exp:"下丘脑分泌TRH→垂体分泌TSH→甲状腺分泌甲状腺激素，构成分级调节轴。"},
+  {q:"甲状腺激素增多会抑制下丘脑和垂体分泌相关激素，这属于？", opts:["正反馈调节","负反馈调节","分级调节","协同作用"], a:1, exp:"这是典型的负反馈调节，使甲状腺激素维持在一定范围内。"}
+];
+
+let qi = 0, score = 0, answered = false;
+function drawQuiz(){
+  const body = document.getElementById("quizBody");
+  body.innerHTML = "";
+  answered = false;
+
+  if(qi >= questions.length){
+    let msg = score === questions.length ? "满分！你对人体内分泌腺掌握得很扎实。" :
+              score >= 5 ? "很不错！再复习一下错题就更好了。" :
+              score >= 3 ? "有基础了，建议回到『人体地图』和『腺体详解』再巩固一遍。" :
+              "别灰心，回到前面的图解部分多看几遍，再回来挑战。";
+    body.innerHTML = `<div class="quiz-result">
+      <div class="score">${score} / ${questions.length}</div>
+      <p>${msg}</p>
+      <div class="quiz-nav" style="justify-content:center"><button id="retry">重新挑战</button></div>
+    </div>`;
+    document.getElementById("retry").onclick = ()=>{ qi=0; score=0; updateQuizBar(); drawQuiz(); };
+    return;
+  }
+
+  const q = questions[qi];
+  body.innerHTML = `
+    <div class="q-text">${qi+1}. ${q.q}</div>
+    <div class="q-options">
+      ${q.opts.map((o,i)=>`<button data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}
+    </div>
+    <div class="q-feedback" id="qfb"></div>
+    <div class="quiz-nav">
+      <button id="prev" ${qi===0?"disabled":""}>上一题</button>
+      <button id="next" style="visibility:hidden">下一题</button>
+    </div>`;
+
+  const fb = document.getElementById("qfb");
+  const nextBtn = document.getElementById("next");
+  document.querySelectorAll(".q-options button").forEach(btn=>{
+    btn.onclick = ()=>{
+      if(answered) return;
+      answered = true;
+      const i = parseInt(btn.dataset.i);
+      document.querySelectorAll(".q-options button").forEach(b=>b.disabled = true);
+      if(i === q.a){
+        btn.classList.add("correct");
+        score++;
+        fb.className = "q-feedback show ok";
+        fb.innerHTML = "回答正确！" + q.exp;
+      } else {
+        btn.classList.add("wrong");
+        document.querySelector(`.q-options button[data-i="${q.a}"]`).classList.add("correct");
+        fb.className = "q-feedback show no";
+        fb.innerHTML = "回答错误。" + q.exp;
+      }
+      nextBtn.style.visibility = "visible";
+      updateQuizBar();
+    };
+  });
+  document.getElementById("prev").onclick = ()=>{ if(qi>0){qi--; drawQuiz();} };
+  nextBtn.onclick = ()=>{ qi++; drawQuiz(); };
+  updateQuizBar();
+}
+function updateQuizBar(){
+  document.getElementById("quizCount").textContent = Math.min(qi+1, questions.length) + " / " + questions.length;
+  document.getElementById("quizProgress").style.width = (qi / questions.length * 100) + "%";
+  document.getElementById("quizScore").textContent = "得分 " + score;
+}
+
+/* ================= 拖拽连线 ================= */
+function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
+
+const matchPairs = [
+  {gland:"下丘脑", hormone:"促甲状腺激素释放激素等", color:"#f59e0b"},
+  {gland:"垂体",   hormone:"生长激素、促甲状腺激素等", color:"#8b5cf6"},
+  {gland:"甲状腺", hormone:"甲状腺激素", color:"#ef4444"},
+  {gland:"肾上腺", hormone:"肾上腺素、醛固酮、皮质醇", color:"#f97316"},
+  {gland:"胰岛",   hormone:"胰岛素、胰高血糖素", color:"#10b981"},
+  {gland:"性腺",   hormone:"雌激素、雄激素(睾酮)", color:"#ec4899"}
+];
+
+function drawMatch(){
+  const svg = document.getElementById("matchSvg");
+  const VB_W = 720, VB_H = 460;
+  const leftX = 40, rightX = 680;
+  const topY = 58, gap = 66;
+  const rights = shuffle(matchPairs);
+
+  let s = `<g font-size="14.5" fill="#94a3b8">
+    <text x="20" y="26">腺体（按住并拖动）</text>
+    <text x="700" y="26" text-anchor="end">分泌的激素</text>
+  </g>`;
+
+  matchPairs.forEach((p,i)=>{
+    const y = topY + i*gap;
+    s += `<g class="anchor left-anchor" data-left="${i}" style="cursor:grab">
+      <circle cx="${leftX}" cy="${y}" r="11" fill="${p.color}" stroke="#fff" stroke-width="2.5"/>
+      <text class="left-label" x="${leftX+22}" y="${y+5}" font-size="16" font-weight="700" fill="#334155">${p.gland}</text>
+    </g>`;
+  });
+
+  rights.forEach((p,ri)=>{
+    const y = topY + ri*gap;
+    s += `<g class="anchor right-anchor" data-right="${ri}">
+      <circle cx="${rightX}" cy="${y}" r="11" fill="none" stroke="#94a3b8" stroke-width="2.5"/>
+      <text class="right-label" x="${rightX-22}" y="${y+5}" text-anchor="end" font-size="15.5" fill="#475569">${p.hormone}</text>
+    </g>`;
+  });
+
+  s += `<g id="matchLines"></g>`;
+  svg.innerHTML = s;
+
+  const linesLayer = document.getElementById("matchLines");
+  const leftAnchors = svg.querySelectorAll(".left-anchor");
+  const rightAnchors = svg.querySelectorAll(".right-anchor");
+  const statusEl = document.getElementById("matchStatus");
+  const matched = new Set();
+  const matchedRight = new Set();
+  let drawing = null;
+
+  function point(evt){
+    const r = svg.getBoundingClientRect();
+    return {x:(evt.clientX-r.left)*VB_W/r.width, y:(evt.clientY-r.top)*VB_H/r.height};
+  }
+  function status(){
+    const n = matched.size;
+    statusEl.textContent = `已连对 ${n} / ${matchPairs.length}`;
+    if(n === matchPairs.length){
+      statusEl.innerHTML = `已连对 ${n} / ${matchPairs.length} · 全部正确，太棒了！`;
+    }
+  }
+
+  leftAnchors.forEach(g=>{
+    g.addEventListener("pointerdown", ev=>{
+      ev.preventDefault();
+      const li = parseInt(g.dataset.left);
+      if(matched.has(li)) return;
+      svg.setPointerCapture(ev.pointerId);
+      const p = point(ev);
+      const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+      line.setAttribute("x1", leftX);
+      line.setAttribute("y1", topY + li*gap);
+      line.setAttribute("x2", p.x);
+      line.setAttribute("y2", p.y);
+      line.setAttribute("stroke", matchPairs[li].color);
+      line.setAttribute("stroke-width","3");
+      line.setAttribute("stroke-linecap","round");
+      linesLayer.appendChild(line);
+      drawing = {li, line};
+    });
+  });
+
+  svg.addEventListener("pointermove", ev=>{
+    if(!drawing) return;
+    const p = point(ev);
+    drawing.line.setAttribute("x2", p.x);
+    drawing.line.setAttribute("y2", p.y);
+  });
+
+  svg.addEventListener("pointerup", ev=>{
+    if(!drawing) return;
+    const p = point(ev);
+    let hitRight = -1;
+    rightAnchors.forEach(g=>{
+      const ri = parseInt(g.dataset.right);
+      if(matchedRight.has(ri)) return;
+      const y = topY + ri*gap;
+      if(Math.hypot(p.x-rightX, p.y-y) <= 24) hitRight = ri;
+    });
+
+    if(hitRight >= 0){
+      const rp = rights[hitRight];
+      if(rp.gland === matchPairs[drawing.li].gland){
+        const yl = topY + drawing.li*gap;
+        const yr = topY + hitRight*gap;
+        drawing.line.setAttribute("x1", leftX+12);
+        drawing.line.setAttribute("y1", yl);
+        drawing.line.setAttribute("x2", rightX-12);
+        drawing.line.setAttribute("y2", yr);
+        drawing.line.setAttribute("stroke","#10b981");
+        drawing.line.setAttribute("stroke-width","3.5");
+        matched.add(drawing.li);
+        matchedRight.add(hitRight);
+        const rc = rightAnchors[hitRight].querySelector("circle");
+        rc.setAttribute("fill", matchPairs[drawing.li].color);
+        rc.setAttribute("stroke","#fff");
+        status();
+      } else {
+        drawing.line.setAttribute("stroke","#ef4444");
+        const l = drawing.line;
+        setTimeout(()=>l.remove(), 350);
+      }
+    } else {
+      drawing.line.remove();
+    }
+    drawing = null;
+  });
+
+  document.getElementById("matchReset").onclick = ()=>drawMatch();
+  status();
+}
+
+/* ================= 填空检测 ================= */
+const fillText = "人体的内分泌系统由内分泌腺以及兼有内分泌功能的细胞共同构成。____1____ 分泌促甲状腺激素释放激素等多种激素，调控垂体的活动；垂体分泌 ____2____ 促进甲状腺合成甲状腺激素；胰岛B细胞分泌 ____3____ 可降低血糖；肾上腺髓质分泌 ____4____ 提高机体的应激能力；性腺分泌的 ____5____ 促进第二性征的出现。";
+const fillBlanks = [
+  {label:"1", ans:"下丘脑", opts:["垂体","甲状腺","胰岛"]},
+  {label:"2", ans:"促甲状腺激素", opts:["生长激素","甲状腺激素","肾上腺素"]},
+  {label:"3", ans:"胰岛素", opts:["胰高血糖素","肾上腺素","甲状腺激素"]},
+  {label:"4", ans:"肾上腺素", opts:["醛固酮","皮质醇","甲状腺激素"]},
+  {label:"5", ans:"性激素(雌激素、雄激素)", opts:["甲状腺激素","胰岛素","生长激素"]}
+];
+
+function drawFill(){
+  const box = document.getElementById("fillPassage");
+  let html = fillText;
+  fillBlanks.forEach(b=>{
+    const all = shuffle([b.ans, ...b.opts]);
+    const aIdx = all.indexOf(b.ans);
+    const opts = `<option value="" selected disabled>请选择</option>` + all.map((o,i)=>`<option value="${i}">${o}</option>`).join("");
+    html = html.replace(`____${b.label}____`, `<select data-a="${aIdx}">${opts}</select>`);
+  });
+  box.innerHTML = html;
+  document.getElementById("fillScore").textContent = "";
+
+  document.getElementById("fillCheck").onclick = ()=>{
+    let correct = 0;
+    box.querySelectorAll("select").forEach(s=>{
+      s.classList.remove("ok","no");
+      const chosen = parseInt(s.value);
+      const a = parseInt(s.dataset.a);
+      if(chosen === a){ s.classList.add("ok"); correct++; }
+      else { s.classList.add("no"); }
+    });
+    document.getElementById("fillScore").textContent = `答对 ${correct} / ${fillBlanks.length}`;
+  };
+  document.getElementById("fillReset").onclick = ()=>drawFill();
+}
+
+/* ================= Tab 切换 ================= */
+document.querySelectorAll("#tabs button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("#tabs button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* ================= 初始化 ================= */
+drawBody();
+drawLegend();
+drawGlandCards();
+drawCmp();
+drawAxis();
+setupGlucose();
+drawFeatures();
+drawMatch();
+drawFill();
+drawQuiz();
+selectGland("hypothalamus");
+</script>
+</body>
+</html>
