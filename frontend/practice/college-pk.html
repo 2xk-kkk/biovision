@@ -405,7 +405,8 @@ body::before{
 </div>
 
 <script>
-const API_BASE = "http://127.0.0.1:8000";
+const __PK_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+const API_BASE = (__PK_PROTO__ === 'file:') ? 'http://127.0.0.1:8000' : '';
 let myName = "", myCollege = "", roomCode = "", isHost = false;
 let pollTimer = null, timerInterval = null, timerFillInterval = null;
 let currentQuestion = null, answered = false, serverQuestionIndex = -1;

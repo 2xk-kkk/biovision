@@ -540,6 +540,8 @@
     </footer>
 
     <script>
+        const __TT_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const __TT_API__ = (__TT_PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
         const textbooks = {
             '必修1': {
                 name: '分子与细胞',
@@ -667,7 +669,7 @@
                     return;
                 }
                 
-                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const resp = await fetch(`${__TT_API__}/user/${payload.user_id}/info`);
                 const data = await resp.json();
                 
                 if (data.success && data.data) {

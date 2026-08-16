@@ -12,6 +12,41 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 EXAM_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "exams")
 EXTERNAL_DIR = r"D:\paper"
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "forum.db")
+# uploads 根目录（用于构建相对 Web 路径）
+UPLOADS_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads"))
+# 试卷图片静态目录（与 extract_questions 中的输出保持一致）
+IMAGE_OUTPUT_DIR = os.path.join(UPLOADS_ROOT, "exam_images")
+
+
+def local_path_to_web(local_path):
+    """将项目 uploads 下的本地绝对路径转换为 Web 可访问的相对路径（/uploads/...）。非 uploads 内的路径原样返回。"""
+    try:
+        norm = os.path.normpath(os.path.abspath(local_path))
+        if norm.startswith(os.path.normpath(UPLOADS_ROOT)):
+            rel = os.path.relpath(norm, UPLOADS_ROOT).replace("\\", "/")
+            return "/uploads/" + rel
+    except Exception:
+        pass
+    return local_path
+
+
+def web_path_to_local(web_path):
+    """将 /uploads/... 相对路径转换为本地绝对路径；非 uploads 路径原样返回。"""
+    if isinstance(web_path, str):
+        if web_path.startswith("/uploads/"):
+            rel = web_path[len("/uploads/"):]
+            return os.path.normpath(os.path.join(UPLOADS_ROOT, *rel.split("/")))
+        if web_path.startswith("uploads/") or web_path.startswith("uploads\\"):
+            rel = web_path[len("uploads/") if web_path.startswith("uploads/") else len("uploads\\"):]
+            return os.path.normpath(os.path.join(UPLOADS_ROOT, *rel.replace("\\", "/").split("/")))
+    return web_path
+
+
+def _sanitize_folder_name(name):
+    """清洗试卷文件夹名，避免 Windows 非法字符与穿越。"""
+    bad_chars = '<>:"/\\|?*'
+    cleaned = "".join("_" if c in bad_chars else c for c in name).strip().strip(".")
+    return cleaned or "exam_folder"
 
 REGIONS = ['全国', '北京', '上海', '江苏', '浙江', '广东', '山东', '湖北', '湖南', '河北', '四川', '重庆', '陕西', '山西', '青海', '宁夏', '云南', '黑龙江', '吉林', '辽宁', '内蒙古', '河南', '安徽', '福建', '江西', '天津', '新疆', '海南', '甘肃', '贵州', '广西', '黑吉辽蒙', '黑吉辽', '陕晋青宁']
 
@@ -227,11 +262,18 @@ def get_exam_list(year=None, region=None, scope=None):
                         file_path = os.path.join(root, file_name)
                         if os.path.isfile(file_path):
                             file_ext = os.path.splitext(file_name)[1].lower()
+                            # 兼容：将本地 D:\\ 或项目内路径统一输出为 /uploads/exams/... Web 路径
+                            web_path = local_path_to_web(file_path)
+                            try:
+                                size = os.path.getsize(file_path)
+                            except OSError:
+                                size = 0
                             files.append({
                                 "name": file_name,
-                                "path": file_path,
+                                "path": web_path,          # 前端直接可用于 <a href>
+                                "local_path": file_path,   # 后端读取用（解析/下载回退）
                                 "extension": file_ext,
-                                "size": os.path.getsize(file_path)
+                                "size": size
                             })
                             file_count += 1
                 
@@ -315,41 +357,97 @@ def upload_exam_file(category: str, file_name: str, file_content: bytes):
     try:
         if not os.path.exists(EXAM_DIR):
             os.makedirs(EXAM_DIR)
-        
-        category_path = os.path.join(EXAM_DIR, category)
+
+        category_safe = _sanitize_folder_name(category)
+        category_path = os.path.join(EXAM_DIR, category_safe)
         if not os.path.exists(category_path):
-            os.makedirs(category_path)
-        
-        file_path = os.path.join(category_path, file_name)
+            os.makedirs(category_path, exist_ok=True)
+
+        # 避免非法文件名 & 覆盖冲突
+        file_name_safe = _sanitize_folder_name(file_name) or "exam_file"
+        if not os.path.splitext(file_name_safe)[1]:
+            # 保留原始扩展名
+            orig_ext = os.path.splitext(file_name)[1] or ""
+            file_name_safe = file_name_safe + orig_ext
+
+        file_path = os.path.join(category_path, file_name_safe)
+        base, ext = os.path.splitext(file_path)
+        counter = 1
+        while os.path.exists(file_path):
+            file_path = f"{base}_{counter}{ext}"
+            counter += 1
+
         with open(file_path, 'wb') as f:
             f.write(file_content)
-        
-        return ApiResponse.success(data={"file_path": file_path})
+
+        # 返回前端可直接访问的 Web 路径（/uploads/exams/...）
+        web_path = local_path_to_web(file_path)
+        return ApiResponse.success(data={"file_path": file_path, "web_path": web_path})
     except Exception as e:
         return ApiResponse.error(msg=f"上传文件失败: {str(e)}")
+
 
 def import_from_external():
     if not os.path.exists(EXTERNAL_DIR):
         return ApiResponse.error(msg="外部试卷目录不存在")
-    
+
     try:
-        imported_count = 0
+        imported_exam_count = 0
+        imported_file_count = 0
+        skipped_dirs = []
+
+        if not os.path.exists(EXAM_DIR):
+            os.makedirs(EXAM_DIR, exist_ok=True)
+
         for item in os.listdir(EXTERNAL_DIR):
-            item_path = os.path.join(EXTERNAL_DIR, item)
-            if os.path.isdir(item_path):
-                target_path = os.path.join(EXAM_DIR, item)
-                if os.path.exists(target_path):
-                    continue
-                
-                shutil.copytree(item_path, target_path)
-                file_count = 0
-                for root, dirs, filenames in os.walk(target_path):
-                    for filename in filenames:
-                        if not filename.startswith('.'):
-                            file_count += 1
-                imported_count += file_count
-        
-        return ApiResponse.success(data={"imported_count": imported_count}, msg=f"成功导入 {imported_count} 个文件")
+            src = os.path.join(EXTERNAL_DIR, item)
+            if not os.path.isdir(src):
+                continue
+            # 1) 遍历 D 盘文件夹读取试卷
+            folder_safe = _sanitize_folder_name(item)
+            target_path = os.path.join(EXAM_DIR, folder_safe)
+            if os.path.exists(target_path):
+                skipped_dirs.append(item)
+                continue
+
+            # 2) 将 pdf/docx 等文件复制到项目 uploads/exams 目录
+            try:
+                shutil.copytree(src, target_path)
+            except Exception as inner:
+                skipped_dirs.append(f"{item}: {str(inner)}")
+                continue
+
+            # 清理 .url / 隐藏文件（非真实试卷文件，避免出现在列表中）
+            for root, dirs, filenames in os.walk(target_path):
+                for filename in filenames:
+                    if filename.startswith('.') or filename.lower().endswith('.url'):
+                        try:
+                            os.remove(os.path.join(root, filename))
+                        except Exception:
+                            pass
+
+            file_count = 0
+            for root, dirs, filenames in os.walk(target_path):
+                for filename in filenames:
+                    if not filename.startswith('.') and not filename.lower().endswith('.url'):
+                        file_count += 1
+            imported_exam_count += 1
+            imported_file_count += file_count
+
+        msg = f"成功导入 {imported_exam_count} 个试卷文件夹，共 {imported_file_count} 个文件（已复制到后端 uploads/exams）"
+        if skipped_dirs:
+            msg += f"；跳过 {len(skipped_dirs)} 个（已存在/无法复制）"
+        # 3) 数据库存 /uploads/exams/<试卷文件夹名>/<文件名> 的 Web 路径：
+        #    试卷列表 get_exam_list 在 files 字段中通过 local_path_to_web 转换输出。
+        #    此处只保证文件已进入项目 uploads 目录，后续解析/下载全部走静态路径。
+        return ApiResponse.success(
+            data={
+                "imported_count": imported_file_count,
+                "imported_exam_count": imported_exam_count,
+                "skipped_count": len(skipped_dirs),
+            },
+            msg=msg
+        )
     except Exception as e:
         return ApiResponse.error(msg=f"导入文件失败: {str(e)}")
 

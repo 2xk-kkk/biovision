@@ -1562,7 +1562,15 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000/api';
+        const __Q_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const API_BASE_URL = (__Q_PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
+        const __Q_PREFIX__ = (__Q_PROTO__ === 'file:') ? 'http://localhost:8000' : '';
+        function _q(raw) {
+            if (!raw || typeof raw !== 'string') return '';
+            if (/^https?:/i.test(raw)) return raw;
+            if (raw.charAt(0) === '/') return __Q_PREFIX__ + raw;
+            return raw;
+        }
         const QUESTION_COUNT = 5;
         
         let examId = null;
@@ -1805,7 +1813,7 @@
                 imagePaths.forEach(imgPath => {
                     imgPath = imgPath.trim();
                     if (imgPath) {
-                        const imgUrl = `http://localhost:8000${imgPath}`;
+                        const imgUrl = _q(imgPath);
                         html += `<img src="${encodeURI(imgUrl)}" class="question-image" alt="题目图片">`;
                     }
                 });

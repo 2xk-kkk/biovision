@@ -1010,7 +1010,8 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api';
+        const __WA_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const API_BASE = (__WA_PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
 
         // ===== 状态 =====
         let currentPage = 1;

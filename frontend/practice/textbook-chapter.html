@@ -974,6 +974,8 @@
     </div>
 
     <script>
+        const __TC_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const __TC_API__ = (__TC_PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
         // 教材图标映射
         const textbookIcons = {
             '必修一：分子与细胞': '🔬', '必修二：遗传与进化': '🧬',
@@ -1014,7 +1016,7 @@
             }
 
             try {
-                const resp = await fetch(`http://localhost:8000/api/textbook/chapters?textbook=${encodeURIComponent(apiName)}&user_id=${userId}`);
+                const resp = await fetch(`${__TC_API__}/textbook/chapters?textbook=${encodeURIComponent(apiName)}&user_id=${userId}`);
                 const data = await resp.json();
                 if (data.success) {
                     chapterData = data.data.chapters || [];
@@ -1188,7 +1190,7 @@
                     return;
                 }
                 
-                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const resp = await fetch(`${__TC_API__}/user/${payload.user_id}/info`);
                 const data = await resp.json();
                 
                 if (data.success && data.data) {

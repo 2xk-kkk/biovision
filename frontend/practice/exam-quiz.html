@@ -432,7 +432,15 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api';
+        const __PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const API_BASE = (__PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
+        const __STATIC_PREFIX__ = (__PROTO__ === 'file:') ? 'http://localhost:8000' : '';
+        function _u(raw) {
+            if (!raw || typeof raw !== 'string') return '';
+            if (/^https?:/i.test(raw)) return raw;
+            if (raw.charAt(0) === '/') return __STATIC_PREFIX__ + raw;
+            return raw;
+        }
         let examId = null;
         let examData = null;
         let questions = [];

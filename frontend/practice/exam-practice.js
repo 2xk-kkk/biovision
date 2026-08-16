@@ -1,3 +1,29 @@
+        // 自动识别 API 基础路径：
+        // - 页面通过 FastAPI 访问（http://host:port/...）→ 使用相对路径 '/api'
+        // - 直接 file:// 双击打开 → 回退到 'http://localhost:8000/api'
+        (function () {
+            var proto = (typeof location !== 'undefined' && location.protocol) || '';
+            window.__API_BASE__ = (proto === 'file:') ? 'http://localhost:8000/api' : '/api';
+            window.__STATIC_PREFIX__ = (proto === 'file:') ? 'http://localhost:8000' : '';
+        })();
+
+        function apiUrl(path) {
+            var base = window.__API_BASE__ || '/api';
+            if (!path) return base;
+            if (path.charAt(0) !== '/') path = '/' + path;
+            return base + path;
+        }
+
+        /** 将 /uploads/... 或 /api/... 相对路径转换为当前访问方式下可直接请求/下载/展示的完整 URL。 */
+        function toAccessibleUrl(raw) {
+            if (!raw || typeof raw !== 'string') return '';
+            if (/^https?:/i.test(raw)) return raw;
+            if (raw.charAt(0) === '/') {
+                return (window.__STATIC_PREFIX__ || '') + raw;
+            }
+            return raw;
+        }
+
         // 全国知名高中列表
         const FAMOUS_UNIVERSITIES = [
             '人大附中', '北京四中', '上海中学', '华师大二附中',
@@ -113,7 +139,7 @@
 
             var container = document.getElementById('examContainer');
             try {
-                var url = 'http://localhost:8000/api/exams';
+                var url = apiUrl('/exams');
                 var params = ['scope=模拟'];
                 if (year && year !== '全部') params.push('year=' + year);
                 if (university && university !== '全部') params.push('region=' + encodeURIComponent(university));
@@ -229,13 +255,21 @@
         function downloadFiles(encodedFiles) {
             var files = JSON.parse(decodeURIComponent(encodedFiles));
             if (files.length === 1) {
-                window.open('http://localhost:8000/api/exams/download?file_path=' +
-                    encodeURIComponent(files[0].path), '_blank');
+                var p = (typeof files[0].path === 'string' && files[0].path.charAt(0) === '/')
+                    ? files[0].path
+                    : apiUrl('/exams/download?file_path=' + encodeURIComponent(files[0].path || ''));
+                // 如果后端返回的是 /uploads/... Web 路径，直接作为静态资源下载；否则走 /api/exams/download 代理
+                var downloadUrl = (typeof files[0].path === 'string' && /^\/uploads\//i.test(files[0].path))
+                    ? toAccessibleUrl(files[0].path)
+                    : toAccessibleUrl(apiUrl('/exams/download?file_path=' + encodeURIComponent(files[0].path || '')));
+                window.open(downloadUrl, '_blank');
             } else {
                 files.forEach(function(file) {
                     setTimeout(function() {
-                        window.open('http://localhost:8000/api/exams/download?file_path=' +
-                            encodeURIComponent(file.path), '_blank');
+                        var dUrl = (typeof file.path === 'string' && /^\/uploads\//i.test(file.path))
+                            ? toAccessibleUrl(file.path)
+                            : toAccessibleUrl(apiUrl('/exams/download?file_path=' + encodeURIComponent(file.path || '')));
+                        window.open(dUrl, '_blank');
                     }, 300);
                 });
             }
@@ -341,7 +375,7 @@
                 '</div>';
 
             try {
-                var response = await fetch('http://localhost:8000/api/exams/' + examId + '/questions');
+                var response = await fetch(apiUrl('/exams/' + examId + '/questions'));
                 var result = await response.json();
 
                 var questions = [];
@@ -517,7 +551,7 @@
         async function importAndParse() {
             try {
                 showToast('success', '正在从D盘导入并解析试卷...');
-                var response = await fetch('http://localhost:8000/api/exams/import-and-parse', {
+                var response = await fetch(apiUrl('/exams/import-and-parse'), {
                     method: 'POST'
                 });
                 var result = await response.json();
@@ -546,7 +580,7 @@
                 var formData = new FormData();
                 formData.append('exam_name', examName);
 
-                var response = await fetch('http://localhost:8000/api/exams/parse', {
+                var response = await fetch(apiUrl('/exams/parse'), {
                     method: 'POST',
                     body: formData
                 });
@@ -569,7 +603,7 @@
 
             try {
                 showToast('success', '正在批量解析试卷...');
-                var response = await fetch('http://localhost:8000/api/exams/parse-all', {
+                var response = await fetch(apiUrl('/exams/parse-all'), {
                     method: 'POST'
                 });
                 var result = await response.json();
@@ -606,7 +640,7 @@
             formData.append('file', selectedFile);
 
             try {
-                var response = await fetch('http://localhost:8000/api/exams/upload', {
+                var response = await fetch(apiUrl('/exams/upload'), {
                     method: 'POST',
                     body: formData
                 });
@@ -733,7 +767,7 @@
                     return;
                 }
 
-                var resp = await fetch('http://localhost:8000/api/user/' + payload.user_id + '/info');
+                var resp = await fetch(apiUrl('/user/' + payload.user_id + '/info'));
                 var data = await resp.json();
 
                 if (data.success && data.data) {

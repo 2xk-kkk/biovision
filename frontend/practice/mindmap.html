@@ -255,7 +255,8 @@
 </div>
 
 <script>
-const API_BASE = "http://127.0.0.1:8000";
+const __MM_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+const API_BASE = (__MM_PROTO__ === 'file:') ? 'http://127.0.0.1:8000' : '';
 let chart = null;
 let allData = {};
 let currentBook = null;

@@ -536,7 +536,15 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000/api';
+        const __EQ_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const API_BASE_URL = (__EQ_PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
+        const __EQ_PREFIX__ = (__EQ_PROTO__ === 'file:') ? 'http://localhost:8000' : '';
+        function _eq(raw) {
+            if (!raw || typeof raw !== 'string') return '';
+            if (/^https?:/i.test(raw)) return raw;
+            if (raw.charAt(0) === '/') return __EQ_PREFIX__ + raw;
+            return raw;
+        }
         
         let examId = null;
         let questions = [];
@@ -748,7 +756,7 @@
                 imagePaths.forEach(imgPath => {
                     imgPath = imgPath.trim();
                     if (imgPath) {
-                        const imgUrl = `http://localhost:8000${imgPath}`;
+                        const imgUrl = _eq(imgPath);
                         imageHtml += `<img src="${encodeURI(imgUrl)}" class="question-image" alt="题目图片">`;
                     }
                 });
@@ -820,7 +828,7 @@
                 imagePaths.forEach(imgPath => {
                     imgPath = imgPath.trim();
                     if (imgPath) {
-                        const imgUrl = `http://localhost:8000${imgPath}`;
+                        const imgUrl = _eq(imgPath);
                         imageHtml += `<img src="${encodeURI(imgUrl)}" class="question-image" alt="题目图片">`;
                     }
                 });

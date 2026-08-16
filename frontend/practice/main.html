@@ -1703,6 +1703,8 @@
     </div>
 
     <script>
+        const __MAIN_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const __MAIN_API__ = (__MAIN_PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
         function parseJwt(token) {
             try {
                 const base64Url = token.split('.')[1];
@@ -1758,7 +1760,7 @@
                     return;
                 }
                 
-                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const resp = await fetch(`${__MAIN_API__}/user/${payload.user_id}/info`);
                 const data = await resp.json();
                 
                 if (data.success && data.data) {
@@ -2004,8 +2006,8 @@
 
                 // 并行请求：用户做题数据 + 题库总量
                 const [answerResp, bankResp] = await Promise.all([
-                    fetch(`http://localhost:8000/api/user/${payload.user_id}/daily-answers?days=90`),
-                    fetch('http://localhost:8000/api/question-bank/structure')
+                    fetch(`${__MAIN_API__}/user/${payload.user_id}/daily-answers?days=90`),
+                    fetch(__MAIN_API__ + '/question-bank/structure')
                 ]);
                 const answerData = await answerResp.json();
                 const bankData = await bankResp.json();
@@ -2047,7 +2049,7 @@
                 const payload = parseJwt(token);
                 if (!payload || !payload.user_id) return;
 
-                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/textbook-progress`);
+                const resp = await fetch(`${__MAIN_API__}/user/${payload.user_id}/textbook-progress`);
                 const data = await resp.json();
                 if (!data.success) return;
 

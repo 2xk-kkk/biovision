@@ -1200,11 +1200,20 @@
         let years = [];
         let regions = [];
         let allRegions = [];
+        const __EX_PROTO__ = (typeof location !== 'undefined' && location.protocol) || '';
+        const __EX_API__ = (__EX_PROTO__ === 'file:') ? 'http://localhost:8000/api' : '/api';
+        const __EX_PREFIX__ = (__EX_PROTO__ === 'file:') ? 'http://localhost:8000' : '';
+        function _ex(raw) {
+            if (!raw || typeof raw !== 'string') return '';
+            if (/^https?:/i.test(raw)) return raw;
+            if (raw.charAt(0) === '/') return __EX_PREFIX__ + raw;
+            return raw;
+        }
 
         async function loadExams(year = null, region = null) {
             const container = document.getElementById('examContainer');
             try {
-                let url = 'http://localhost:8000/api/exams';
+                let url = __EX_API__ + '/exams';
                 const params = ['scope=真题'];
                 if (year && year !== '全部') params.push(`year=${year}`);
                 if (region && region !== '全部') params.push(`region=${encodeURIComponent(region)}`);
@@ -1356,11 +1365,17 @@
         function downloadFiles(encodedFiles) {
             const files = JSON.parse(decodeURIComponent(encodedFiles));
             if (files.length === 1) {
-                window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(files[0].path)}`, '_blank');
+                const url = (typeof files[0].path === 'string' && /^\/uploads\//i.test(files[0].path))
+                    ? _ex(files[0].path)
+                    : _ex(`${__EX_API__}/exams/download?file_path=${encodeURIComponent(files[0].path || '')}`);
+                window.open(url, '_blank');
             } else {
                 files.forEach(file => {
                     setTimeout(() => {
-                        window.open(`http://localhost:8000/api/exams/download?file_path=${encodeURIComponent(file.path)}`, '_blank');
+                        const url = (typeof file.path === 'string' && /^\/uploads\//i.test(file.path))
+                            ? _ex(file.path)
+                            : _ex(`${__EX_API__}/exams/download?file_path=${encodeURIComponent(file.path || '')}`);
+                        window.open(url, '_blank');
                     }, 300);
                 });
             }
@@ -1391,7 +1406,7 @@
             `;
 
             try {
-                const response = await fetch(`http://localhost:8000/api/exams/${examId}/questions`);
+                const response = await fetch(`${__EX_API__}/exams/${examId}/questions`);
                 const result = await response.json();
                 
                 let questions = [];
@@ -1434,7 +1449,7 @@
                                 if (images && images.length > 0) {
                                     imagesHtml = `
                                         <div class="preview-q-images">
-                                            ${images.map(img => `<img src="http://localhost:8000${encodeURI(img)}" alt="题目图片">`).join('')}
+                                            ${images.map(img => `<img src="${encodeURI(typeof img === 'string' && /^https?:/i.test(img) ? img : (typeof img === 'string' && img.charAt(0) === '/' ? __EX_PREFIX__ + img : img))}" alt="题目图片">`).join('')}
                                         </div>
                                     `;
                                 }
@@ -1563,7 +1578,7 @@
 
         async function importFromD() {
             try {
-                const response = await fetch('http://localhost:8000/api/exams/import', {
+                const response = await fetch(__EX_API__ + '/exams/import', {
                     method: 'POST'
                 });
                 const result = await response.json();
@@ -1599,7 +1614,7 @@
             formData.append('file', selectedFile);
 
             try {
-                const response = await fetch('http://localhost:8000/api/exams/upload', {
+                const response = await fetch(__EX_API__ + '/exams/upload', {
                     method: 'POST',
                     body: formData
                 });
@@ -1722,7 +1737,7 @@
                     return;
                 }
                 
-                const resp = await fetch(`http://localhost:8000/api/user/${payload.user_id}/info`);
+                const resp = await fetch(`${__EX_API__}/user/${payload.user_id}/info`);
                 const data = await resp.json();
                 
                 if (data.success && data.data) {
