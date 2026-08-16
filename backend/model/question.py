@@ -95,7 +95,8 @@ def get_wrong_answers(db, user_id, textbook=None, status=None, page=1, page_size
     
     query = '''
         SELECT q.id, q.stem, q.option_a, q.option_b, q.option_c, q.option_d, q.answer, q.textbook,
-               ua.wrong_count, ua.mastered, ua.answer as user_answer, ua.create_at as last_answer_time
+               ua.wrong_count, ua.mastered, ua.answer as user_answer, ua.create_at as last_answer_time,
+               ua.error_reason
         FROM user_answers ua
         JOIN questions q ON ua.question_id = q.id
         WHERE ua.user_id = ? AND ua.is_correct = 0
@@ -129,7 +130,8 @@ def get_wrong_answers(db, user_id, textbook=None, status=None, page=1, page_size
             'wrong_count': row[8] or 0,
             'mastered': row[9] or 0,
             'user_answer': row[10],
-            'last_answer_time': row[11]
+            'last_answer_time': row[11],
+            'error_reason': row[12] or ''
         })
     
     count_query = '''
@@ -191,6 +193,20 @@ def mark_mastered(db, user_id, question_id, mastered=1):
         cursor.execute('''
             UPDATE user_answers SET mastered = ? WHERE user_id = ? AND question_id = ?
         ''', (mastered, user_id, question_id))
+        db.commit()
+        return cursor.rowcount > 0
+    except Exception as e:
+        db.rollback()
+        raise e
+
+def set_wrong_answer_reason(db, user_id, question_id, error_reason):
+    """用户自行设置错题的错误原因"""
+    cursor = db.cursor()
+    try:
+        cursor.execute('''
+            UPDATE user_answers SET error_reason = ?
+            WHERE user_id = ? AND question_id = ?
+        ''', (error_reason, user_id, question_id))
         db.commit()
         return cursor.rowcount > 0
     except Exception as e:
@@ -616,20 +632,21 @@ def get_questions_by_type(db, textbook=None, chapter=None, section=None, questio
     return questions
 
 
-def add_to_wrong_book(db, user_id, question_id, user_answer=None):
-    """将题目加入错题本"""
+def add_to_wrong_book(db, user_id, question_id, user_answer=None, error_reason=None):
+    """将题目加入错题本（可同时设置错误原因）"""
     cursor = db.cursor()
     try:
         cursor.execute('''
-            INSERT INTO user_answers (user_id, question_id, answer, is_correct, wrong_count, mastered)
-            VALUES (?, ?, ?, 0, 1, 0)
+            INSERT INTO user_answers (user_id, question_id, answer, is_correct, wrong_count, mastered, error_reason)
+            VALUES (?, ?, ?, 0, 1, 0, ?)
             ON CONFLICT(user_id, question_id) DO UPDATE SET
                 answer = CASE WHEN excluded.answer IS NOT NULL AND excluded.answer != '' THEN excluded.answer ELSE user_answers.answer END,
                 is_correct = 0,
                 wrong_count = user_answers.wrong_count + 1,
                 mastered = 0,
+                error_reason = CASE WHEN excluded.error_reason IS NOT NULL AND excluded.error_reason != '' THEN excluded.error_reason ELSE user_answers.error_reason END,
                 create_at = CURRENT_TIMESTAMP
-        ''', (user_id, question_id, user_answer))
+        ''', (user_id, question_id, user_answer, error_reason))
         db.commit()
         return True
     except Exception as e:

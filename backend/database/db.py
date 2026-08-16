@@ -98,6 +98,18 @@ def init_db():
         )
     ''')
 
+    # 3D 模型学习记录表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS model_learning (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            model_id TEXT NOT NULL,
+            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, model_id),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ''')
+
     # 帖子表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS posts (
@@ -239,6 +251,9 @@ def init_db():
             UNIQUE(user_id, question_id)
         )
     ''')
+
+    # 迁移：为答题记录表添加错误原因字段（用户自行设置错题原因）
+    add_column_if_not_exists(conn, 'user_answers', 'error_reason', 'TEXT')
 
     # PK排行榜表
     cursor.execute('''

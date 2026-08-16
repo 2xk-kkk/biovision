@@ -686,7 +686,7 @@
                     <div class="course-icon">🌿</div>
                     <div class="course-info">
                         <div class="course-name"><span style="font-size:10px;">选择性必修二</span><br>生物与环境</div>
-                        <div class="course-count">6 个模型</div>
+                        <div class="course-count">3 个模型</div>
                     </div>
                 </a>
                 <a href="main5.html" class="course-item" onclick="selectCourse(this)">
@@ -708,15 +708,15 @@
                 </div>
                 <div class="header-stats">
                     <div class="stat-item">
-                        <div class="stat-number">30</div>
+                        <div class="stat-number" id="stat-available">9</div>
                         <div class="stat-label">可用模型</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">0</div>
+                        <div class="stat-number" id="stat-learned">0</div>
                         <div class="stat-label">已学习</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">0%</div>
+                        <div class="stat-number" id="stat-rate">0%</div>
                         <div class="stat-label">完成率</div>
                     </div>
                 </div>
@@ -805,14 +805,14 @@
                         </div>
                     </div>
                 </a>
-                <a href="#" class="model-card" data-model-id="neifenmian">
+                <a href="neifenmi.html" class="model-card" data-model-id="neifenmian">
                     <div class="card-preview">
                         <div class="card-icon"><img src="../images/anatomy.png" alt="内分泌腺" width="40" height="40"></div>
                         <div class="card-badge">易考</div>
                     </div>
                     <div class="card-info">
                         <div class="card-title">人体内分泌腺</div>
-                        <div class="card-desc">有丝分裂的全过程，染色体行为与数量变化</div>
+                        <div class="card-desc">内分泌腺通过无导管结构，使激素直接进入血液并随循环输送至全身，调节机体生命活动</div>
                         <div class="card-footer">
                             <span class="card-tag">第3章 · 体液调节</span>
                             <div class="card-actions">
@@ -911,6 +911,7 @@
 
     <script>
         const API_BASE = 'http://localhost:8000/api';
+        const CURRENT_BOOK = '选择性必修一';
 
         // JWT 解析
         function parseJwt(token) {
@@ -1098,7 +1099,46 @@
             });
         });
 
+        // ===== 学习进度统计 =====
+        async function updateLearningStats() {
+            const learnedEl = document.getElementById('stat-learned');
+            const rateEl = document.getElementById('stat-rate');
+            const availEl = document.getElementById('stat-available');
+            const token = getToken();
+            if (!token) return;
+            try {
+                const resp = await fetch(`${API_BASE}/model/learning/stats`, { headers: { 'token': token } });
+                const data = await resp.json();
+                if (data.success && data.data) {
+                    const book = data.data.books[CURRENT_BOOK];
+                    if (book) {
+                        if (availEl) availEl.textContent = book.total;
+                        if (learnedEl) learnedEl.textContent = book.learned;
+                        if (rateEl) rateEl.textContent = book.total ? Math.round(book.learned / book.total * 100) + '%' : '0%';
+                    }
+                }
+            } catch (e) { /* 忽略 */ }
+        }
+
+        // 点击模型卡片进入学习时，记录学习进度
+        document.querySelectorAll('.model-card').forEach(card => {
+            const modelId = resolveModelId(card);
+            if (!modelId) return;
+            card.addEventListener('click', () => {
+                const token = getToken();
+                if (!token) return;
+                fetch(`${API_BASE}/model/${modelId}/learn`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'token': token },
+                    keepalive: true
+                }).then(resp => resp.json()).then(data => {
+                    if (data.success) updateLearningStats();
+                }).catch(() => {});
+            });
+        });
+
         highlightFavoriteModels();
+        updateLearningStats();
     </script>
 </body>
 
