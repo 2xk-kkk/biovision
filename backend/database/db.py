@@ -252,6 +252,9 @@ def init_db():
         )
     ''')
 
+    # 迁移：为答题记录表添加错误原因字段（用户自行设置错题原因）
+    add_column_if_not_exists(conn, 'user_answers', 'error_reason', 'TEXT')
+
     # PK排行榜表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS pk_leaderboard (

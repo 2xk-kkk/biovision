@@ -1991,28 +1991,8 @@
                                     <p class="panel-subtitle">最近需要优先复习的知识点</p>
                                 </div>
                             </div>
-                            <div class="summary-list" style="padding: 0;">
-                                <div class="summary-item">
-                                    <div>
-                                        <strong>细胞膜运输</strong>
-                                        <small>主动运输与协助扩散混淆</small>
-                                    </div>
-                                    <span class="badge2">今日</span>
-                                </div>
-                                <div class="summary-item">
-                                    <div>
-                                        <strong>DNA 复制</strong>
-                                        <small>半保留复制概念不清</small>
-                                    </div>
-                                    <span class="badge2">3天前</span>
-                                </div>
-                                <div class="summary-item">
-                                    <div>
-                                        <strong>生态系统能量流动</strong>
-                                        <small>能量传递效率计算错误</small>
-                                    </div>
-                                    <span class="badge2">4天前</span>
-                                </div>
+                            <div class="summary-list" style="padding: 0;" id="wrongReminderList">
+                                <div style="text-align: center; padding: 20px; color: #64748b; font-size: 0.85rem;">加载中...</div>
                             </div>
                         </div>
 
@@ -2815,6 +2795,7 @@
                 await loadUserCollects(userId);
                 await loadUserModelFavorites(userId);
                 await loadWrongBook(userId);
+                await loadWrongBookReminder(userId);
             } else {
                 console.log('未登录：API调用失败或返回错误');
                 localStorage.removeItem('token');
@@ -2881,6 +2862,11 @@
                         <a href="../login/login-main.html" class="btn btn-primary" style="margin-top: 20px;">立即登录</a>
                     </div>
                 `;
+            }
+
+            const reminderContainer = document.getElementById('wrongReminderList');
+            if (reminderContainer) {
+                reminderContainer.innerHTML = '<div style="text-align:center;padding:20px;color:#64748b;font-size:0.85rem;">请先登录</div>';
             }
         }
 
@@ -3430,14 +3416,23 @@
                     const isMastered = item.mastered === 1;
                     const badgeClass = isMastered ? 'badge' : 'badge2';
                     const badgeText = isMastered ? '已掌握' : (item.wrong_count > 1 ? `错${item.wrong_count}次` : '待复习');
+                    const reason = item.error_reason || '';
+                    const reasonHtml = reason
+                        ? `<small style="color:#7b1fa2;">📍 错误原因：${reason}</small>`
+                        : `<small style="color:#b0b0b0;">尚未设置错误原因</small>`;
+                    const reasonBtnText = reason ? '修改原因' : '设置原因';
 
                     return `
                     <div class="summary-item" style="cursor: pointer;" onclick="window.open('../practice/quiz.html?question_id=${item.question_id}', '_blank')">
                         <div style="flex: 1; min-width: 0;">
                             <strong>${dateStr} · ${stemDisplay}</strong>
                             <small>你的答案: ${userAns} → 正确答案: ${item.correct_answer}</small>
+                            ${reasonHtml}
                         </div>
-                        <span class="${badgeClass}">${badgeText}</span>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                            <span class="${badgeClass}">${badgeText}</span>
+                            <button class="btn btn-secondary" style="padding:3px 10px;font-size:0.75rem;border-radius:6px;" onclick="event.stopPropagation(); openReasonModal(${item.question_id}, '${reason}')">${reasonBtnText}</button>
+                        </div>
                     </div>`;
                 }).join('');
 
@@ -3462,6 +3457,142 @@
                 if (paginationEl) paginationEl.innerHTML = '';
             }
         }
+
+        /* =========================
+           错题提醒 - 加载最近需要复习的错题（真实数据）
+        ========================= */
+        // 错误原因预设选项（用户自行选择）
+        const ERROR_REASON_OPTIONS = [
+            { icon: '🧠', text: '知识点遗忘' },
+            { icon: '🔀', text: '概念混淆' },
+            { icon: '📖', text: '审题不清' },
+            { icon: '🔢', text: '计算错误' },
+            { icon: '😅', text: '粗心大意' }
+        ];
+        let reasonTargetQuestionId = null;
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '未知时间';
+            const d = new Date(dateStr.replace(' ', 'T'));
+            if (isNaN(d.getTime())) return '未知时间';
+            const now = new Date();
+            const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+            if (diffDays <= 0) return '今日';
+            if (diffDays === 1) return '1天前';
+            return diffDays + '天前';
+        }
+
+        async function loadWrongBookReminder(userId) {
+            const container = document.getElementById('wrongReminderList');
+            if (!container) return;
+
+            const token = getTokenFromStorage();
+            if (!token) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#64748b;font-size:0.85rem;">请先登录</div>';
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE_URL}/wrong-answers?page=1&page_size=3&status=unmastered`, {
+                    headers: { 'token': token }
+                });
+                const result = await resp.json();
+
+                if (!result.success || !result.data || !result.data.items || result.data.items.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:24px;color:#64748b;font-size:0.85rem;">暂无待复习的错题 🎉</div>';
+                    return;
+                }
+
+                const items = result.data.items;
+                container.innerHTML = items.map(item => {
+                    const stemText = item.stem ? item.stem.replace(/<[^>]*>/g, '').substring(0, 16) : '错题';
+                    const stemDisplay = stemText + (item.stem && item.stem.replace(/<[^>]*>/g, '').length > 16 ? '…' : '');
+                    const reason = item.error_reason || '待复习，建议设置错误原因';
+                    const timeLabel = formatRelativeTime(item.last_answer_time);
+                    return `
+                        <div class="summary-item" style="cursor:pointer;" onclick="window.open('../practice/quiz.html?question_id=${item.question_id}', '_blank')">
+                            <div>
+                                <strong>${stemDisplay}</strong>
+                                <small>${reason}</small>
+                            </div>
+                            <span class="badge2">${timeLabel}</span>
+                        </div>`;
+                }).join('');
+            } catch (error) {
+                console.error('加载错题提醒失败:', error);
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#64748b;font-size:0.85rem;">加载失败</div>';
+            }
+        }
+
+        /* =========================
+           设置错误原因（模态框）
+        ========================= */
+        function openReasonModal(questionId, currentReason) {
+            reasonTargetQuestionId = questionId;
+            const list = document.getElementById('reasonModalList');
+            if (!list) return;
+
+            list.innerHTML = ERROR_REASON_OPTIONS.map(opt => {
+                const selected = opt.text === currentReason;
+                return `
+                    <div class="reason-option${selected ? ' selected' : ''}" onclick="saveReason('${opt.text}')">
+                        <span class="reason-icon">${opt.icon}</span>
+                        <span class="reason-text">${opt.text}</span>
+                    </div>`;
+            }).join('');
+
+            const overlay = document.getElementById('reasonModalOverlay');
+            if (overlay) overlay.classList.add('show');
+        }
+
+        function closeReasonModal() {
+            const overlay = document.getElementById('reasonModalOverlay');
+            if (overlay) overlay.classList.remove('show');
+            reasonTargetQuestionId = null;
+        }
+
+        async function saveReason(reason) {
+            const questionId = reasonTargetQuestionId;
+            if (!questionId) return;
+
+            const token = getTokenFromStorage();
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE_URL}/wrong-answers/${questionId}/reason`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'token': token },
+                    body: JSON.stringify({ error_reason: reason })
+                });
+                const result = await resp.json();
+
+                if (result.success) {
+                    closeReasonModal();
+                    if (currentUser && currentUser.id) {
+                        loadWrongBook(currentUser.id, wrongBookPage);
+                        loadWrongBookReminder(currentUser.id);
+                    }
+                } else {
+                    alert(result.msg || '保存失败');
+                }
+            } catch (e) {
+                console.error('保存错误原因失败:', e);
+                alert('保存失败，请重试');
+            }
+        }
+
+        // 绑定错误原因模态框的关闭事件
+        document.addEventListener('DOMContentLoaded', function () {
+            const reasonCloseBtn = document.getElementById('reasonModalClose');
+            const reasonOverlay = document.getElementById('reasonModalOverlay');
+            if (reasonCloseBtn) reasonCloseBtn.addEventListener('click', closeReasonModal);
+            if (reasonOverlay) reasonOverlay.addEventListener('click', (event) => {
+                if (event.target === reasonOverlay) closeReasonModal();
+            });
+        });
 
         /* =========================
            图片裁剪功能
@@ -4661,6 +4792,45 @@
             </div>
             <div class="modal-list" id="followersModalList">
                 <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置错误原因模态框 -->
+    <style>
+        .reason-modal-content { max-width: 420px; }
+        .reason-list { padding: 12px; }
+        .reason-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid #eee;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        .reason-option:last-child { margin-bottom: 0; }
+        .reason-option:hover {
+            background: rgba(102, 126, 234, 0.06);
+            border-color: rgba(102, 126, 234, 0.45);
+        }
+        .reason-option.selected {
+            background: rgba(102, 126, 234, 0.12);
+            border-color: #667eea;
+        }
+        .reason-option .reason-icon { font-size: 18px; }
+        .reason-option .reason-text { font-size: 0.9rem; color: #374151; font-weight: 500; }
+    </style>
+    <div class="modal-overlay" id="reasonModalOverlay">
+        <div class="modal-content reason-modal-content">
+            <div class="modal-header">
+                <h3>设置错误原因</h3>
+                <button class="modal-close" id="reasonModalClose">&times;</button>
+            </div>
+            <div class="reason-list" id="reasonModalList">
+                <!-- 由 JS 动态生成原因选项 -->
             </div>
         </div>
     </div>

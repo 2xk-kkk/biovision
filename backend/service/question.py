@@ -1,5 +1,5 @@
 from database.db import get_db_connection
-from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure, get_textbook_progress, get_textbook_chapter_progress, add_to_wrong_book, get_related_questions_by_knowledge, get_question_by_id
+from model.question import add_exam, add_question, get_questions_by_exam, get_exams, save_user_answer, get_user_answers, get_exam_stats, get_exam_id, get_wrong_answers, get_wrong_answer_stats, mark_mastered, retry_wrong_answer, set_wrong_answer_reason, get_questions_by_textbook, get_questions_by_type, get_daily_answer_counts, get_total_answer_count, get_question_bank_structure, get_textbook_progress, get_textbook_chapter_progress, add_to_wrong_book, get_related_questions_by_knowledge, get_question_by_id
 from model.knowledge_point import get_knowledge_points_by_ids, get_knowledge_point_by_id
 from service.knowledge_tagging import run_auto_tagging
 from utils.response import ApiResponse
@@ -162,6 +162,19 @@ def submit_retry_answer(user_id, question_id, answer):
     finally:
         db.close()
 
+def set_wrong_answer_reason_service(user_id, question_id, error_reason):
+    db = get_db_connection()
+    try:
+        success = set_wrong_answer_reason(db, user_id, question_id, error_reason)
+        if success:
+            return ApiResponse.success(msg="已保存错误原因")
+        else:
+            return ApiResponse.error(msg="未找到该错题记录")
+    except Exception as e:
+        return ApiResponse.error(msg=f"保存错误原因失败: {str(e)}")
+    finally:
+        db.close()
+
 def toggle_mastered_service(user_id, question_id, mastered=1):
     db = get_db_connection()
     try:
@@ -285,8 +298,8 @@ def get_questions_by_textbook_service(textbook=None, chapter=None, section=None,
         db.close()
 
 
-def add_to_wrong_book_service(user_id, question_id, user_answer=None):
-    """将题目加入错题本"""
+def add_to_wrong_book_service(user_id, question_id, user_answer=None, error_reason=None):
+    """将题目加入错题本（可同时设置错误原因）"""
     db = get_db_connection()
     try:
         cursor = db.cursor()
@@ -294,8 +307,8 @@ def add_to_wrong_book_service(user_id, question_id, user_answer=None):
         question = cursor.fetchone()
         if not question:
             return ApiResponse.error(msg="题目不存在")
-        
-        add_to_wrong_book(db, user_id, question_id, user_answer)
+
+        add_to_wrong_book(db, user_id, question_id, user_answer, error_reason)
         return ApiResponse.success(msg="已加入错题本")
     except Exception as e:
         return ApiResponse.error(msg=f"加入错题本失败: {str(e)}")

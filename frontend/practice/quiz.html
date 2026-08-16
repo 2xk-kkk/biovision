@@ -759,6 +759,118 @@
             display: flex;
         }
 
+        /* 加入错题本 - 选择错误原因弹窗 */
+        .reason-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            animation: fadeInModal 0.3s ease;
+        }
+
+        .reason-modal.show {
+            display: flex;
+        }
+
+        .reason-modal-content {
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px;
+            width: 92%;
+            max-width: 440px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .reason-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .reason-modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .reason-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .reason-modal-close:hover {
+            color: #666;
+        }
+
+        .reason-modal-sub {
+            font-size: 0.82rem;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .reason-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .reason-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 1px solid #eee;
+            transition: all 0.2s;
+        }
+
+        .reason-option:hover {
+            background: rgba(102, 126, 234, 0.06);
+            border-color: rgba(102, 126, 234, 0.45);
+        }
+
+        .reason-option-icon {
+            font-size: 18px;
+        }
+
+        .reason-option-text {
+            font-size: 0.92rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .reason-skip-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px dashed #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            color: #888;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .reason-skip-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
         .result-content {
             background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
             border-radius: 24px;
@@ -1501,6 +1613,19 @@
 
     <div class="submit-warning" id="submitWarning">⚠️ 请先选择答案</div>
 
+    <!-- 加入错题本 - 选择错误原因弹窗 -->
+    <div class="reason-modal" id="reasonModal">
+        <div class="reason-modal-content">
+            <div class="reason-modal-header">
+                <div class="reason-modal-title">选择错误原因</div>
+                <button class="reason-modal-close" onclick="closeReasonModal()">×</button>
+            </div>
+            <div class="reason-modal-sub">加入错题本前，选择本题做错的原因（可跳过）</div>
+            <div class="reason-options" id="reasonOptions"></div>
+            <button class="reason-skip-btn" onclick="confirmAddToWrongBook('')">暂不设置，直接加入</button>
+        </div>
+    </div>
+
     <div class="result-modal" id="resultModal">
         <div class="result-content with-card">
             <div class="result-layout">
@@ -2061,35 +2186,80 @@
             }
         }
 
-        async function addToWrongBook() {
+        // 错误原因预设选项（加入错题本时可选择）
+        const ERROR_REASON_OPTIONS = [
+            { icon: '🧠', text: '知识点遗忘' },
+            { icon: '🔀', text: '概念混淆' },
+            { icon: '📖', text: '审题不清' },
+            { icon: '🔢', text: '计算错误' },
+            { icon: '😅', text: '粗心大意' }
+        ];
+
+        function openReasonModal() {
+            const optionsEl = document.getElementById('reasonOptions');
+            if (optionsEl) {
+                optionsEl.innerHTML = ERROR_REASON_OPTIONS.map(opt =>
+                    `<div class="reason-option" onclick="confirmAddToWrongBook('${opt.text}')">
+                        <span class="reason-option-icon">${opt.icon}</span>
+                        <span class="reason-option-text">${opt.text}</span>
+                    </div>`
+                ).join('');
+            }
+            const modal = document.getElementById('reasonModal');
+            if (modal) modal.classList.add('show');
+        }
+
+        function closeReasonModal() {
+            const modal = document.getElementById('reasonModal');
+            if (modal) modal.classList.remove('show');
+        }
+
+        function addToWrongBook() {
             if (isAddedToWrongBook) return;
-            
+
             const question = quizQuestions[currentQuestionIndex];
             if (!question) return;
-            
-            const userAnswer = answers[question.id] || '';
+
             const token = localStorage.getItem('token');
-            
             if (!token) {
                 alert('请先登录');
                 return;
             }
-            
+
+            // 先弹出选择错误原因弹窗，选完后调用 confirmAddToWrongBook
+            openReasonModal();
+        }
+
+        async function confirmAddToWrongBook(reason) {
+            closeReasonModal();
+
+            const question = quizQuestions[currentQuestionIndex];
+            if (!question) return;
+
+            const userAnswer = answers[question.id] || '';
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
             const wrongBookBtn = document.getElementById('wrongBookBtn');
             const wrongBookText = wrongBookBtn.querySelector('.wrong-book-text');
             const wrongBookIcon = wrongBookBtn.querySelector('.wrong-book-icon');
-            
+
             wrongBookBtn.disabled = true;
             wrongBookText.textContent = '添加中...';
-            
+
             try {
-                const response = await fetch(`${API_BASE_URL}/wrong-answers/${question.id}?answer=${encodeURIComponent(userAnswer)}`, {
+                const url = `${API_BASE_URL}/wrong-answers/${question.id}?answer=${encodeURIComponent(userAnswer)}&error_reason=${encodeURIComponent(reason || '')}`;
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'token': token }
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     isAddedToWrongBook = true;
                     wrongBookBtn.classList.add('added');

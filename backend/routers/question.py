@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, Query
-from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service, get_textbook_progress_service, get_textbook_chapter_progress_service, add_to_wrong_book_service, get_related_questions_service, get_single_question_service, run_knowledge_tagging_service
+from service.question import import_questions, get_exam_list, get_exam_questions, submit_answer, get_exam_progress, get_user_exam_answers, get_wrong_answer_list, get_wrong_answer_stats_service, submit_retry_answer, toggle_mastered_service, set_wrong_answer_reason_service, get_questions_by_textbook_service, get_user_daily_answers, get_question_bank_structure_service, get_textbook_progress_service, get_textbook_chapter_progress_service, add_to_wrong_book_service, get_related_questions_service, get_single_question_service, run_knowledge_tagging_service
 from model.knowledge_point import get_knowledge_points_by_chapter_key, get_all_knowledge_points
 from database.db import get_db_connection
 from utils.jwt_utils import verify_jwt
@@ -93,6 +93,18 @@ def master_wrong_answer(question_id: int, request: MasterRequest, token: str = H
     user_id = int(payload["msg"]["user_id"])
     return toggle_mastered_service(user_id, question_id, request.mastered)
 
+class ReasonRequest(BaseModel):
+    error_reason: str
+
+@router.put("/wrong-answers/{question_id}/reason")
+def set_wrong_answer_reason(question_id: int, request: ReasonRequest, token: str = Header(...)):
+    payload = verify_jwt(token)
+    if not payload["success"]:
+        return ApiResponse.error(msg="请先登录")
+
+    user_id = int(payload["msg"]["user_id"])
+    return set_wrong_answer_reason_service(user_id, question_id, request.error_reason)
+
 @router.get("/questions/textbook")
 def textbook_questions(
     textbook: str = Query(None),
@@ -128,14 +140,14 @@ def textbook_chapters(textbook: str = Query(...), user_id: int = Query(...)):
 
 
 @router.post("/wrong-answers/{question_id}")
-def add_wrong_answer(question_id: int, answer: str = None, token: str = Header(...)):
-    """将题目加入错题本"""
+def add_wrong_answer(question_id: int, answer: str = None, error_reason: str = None, token: str = Header(...)):
+    """将题目加入错题本（可同时设置错误原因）"""
     payload = verify_jwt(token)
     if not payload["success"]:
         return ApiResponse.error(msg="请先登录")
-    
+
     user_id = int(payload["msg"]["user_id"])
-    return add_to_wrong_book_service(user_id, question_id, answer)
+    return add_to_wrong_book_service(user_id, question_id, answer, error_reason)
 
 
 @router.get("/questions/related/{question_id}")
