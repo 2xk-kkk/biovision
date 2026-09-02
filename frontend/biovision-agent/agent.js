@@ -10,9 +10,15 @@
   var SIZE = 74;          // 必须与 agent.css 中 #bio-agent 的宽高一致
   var LS_KEY = 'biovision.bioagent.pos';
 
+  // 对话页(chat.html)与 agent.js 同目录，按本脚本所在位置推算，任意目录深度都可用
+  var scriptSrc = document.currentScript ? document.currentScript.src : '';
+  var CHAT_URL = scriptSrc ? scriptSrc.slice(0, scriptSrc.lastIndexOf('/') + 1) + 'chat.html' : '';
+
   var config = {
-    tip: '生物智能体 · 开发中',
-    onTap: null           // 后续接入点击行为（如弹出对话面板）
+    tip: 'Biovison智能助手',
+    onTap: function () {               // 点击小球：跳转对话界面（复用同一个聊天标签，避免越开越多）
+      if (CHAT_URL) window.open(CHAT_URL, 'biovision-agent-chat');
+    }
   };
 
   var svgNS = 'http://www.w3.org/2000/svg';

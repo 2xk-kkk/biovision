@@ -175,6 +175,8 @@
   };
 })();
 </script>
+
+<link rel="stylesheet" href="../../biovision-agent/agent.css">
 </head>
 <body>
 <a href="../../index.html" class="back-home"><span class="arrow">&larr;</span> 返回首页</a>
@@ -582,5 +584,7 @@ function resetGlucose(){cancelAnimationFrame(bgAnimId);glucoseLevel=5.0;glucoseH
 for(let i=0;i<50;i++) glucoseHistory.push(5.0+(Math.random()-0.5)*0.3);
 trackGlucose();
 </script>
+
+<script src="../../biovision-agent/agent.js"></script>
 </body>
 </html>
