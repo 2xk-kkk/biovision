@@ -601,6 +601,37 @@
             }
         }
     </style>
+<script>
+/* 全站统一：同一个网页只要没关，点两次就复用上次的标签，不新开 */
+(function () {
+  function tabName(url) {
+    try {
+      var u = new URL(url, location.href);
+      return '__biotab__' + u.pathname + u.search;
+    } catch (e) {
+      return '__biotab__' + String(url);
+    }
+  }
+  /* 拦截所有 target="_blank" 的链接点击 */
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('a[target="_blank"]') : null;
+    if (!el) return;
+    if (el.hasAttribute && el.hasAttribute('download')) return; /* 下载链接保持默认 */
+    var href = el.href;
+    if (!href || href.slice(0, 11).toLowerCase() === 'javascript:') return;
+    e.preventDefault();
+    window.open(href, tabName(href));
+  });
+  /* 覆写 window.open：把 _blank / 空名 改成按网址复用 */
+  var nativeOpen = window.open;
+  window.open = function (url, name, features) {
+    if (name === '_blank' || name === undefined || name === null || name === '') {
+      name = tabName(url);
+    }
+    return nativeOpen.call(window, url, name, features);
+  };
+})();
+</script>
 </head>
 
 <body>
@@ -723,7 +754,7 @@
             </div>
 
             <div class="models-grid">
-                <a href="jiaomujunpeiyang.html" class="model-card">
+                <a href="jiaomujunpeiyang.html" class="model-card" target="_blank">
                     <div class="card-preview">
                         <div class="card-icon"><img src="../images/bacteria.png" alt="酵母菌" width="40" height="40"></div>
                     </div>
@@ -739,7 +770,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="plantcell_zhajiao.html" class="model-card">
+                <a href="plantcell_zhajiao.html" class="model-card" target="_blank">
                     <div class="card-preview">
                         <div class="card-icon"><img src="../images/plant.png" alt="植物" width="40" height="40"></div>
                         <div class="card-badge">易考</div>
@@ -756,7 +787,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="dankelong.html" class="model-card">
+                <a href="dankelong.html" class="model-card" target="_blank">
                     <div class="card-preview">
                         <div class="card-icon"><img src="../images/sample.png" alt="抗体" width="40" height="40"></div>
                         <div class="card-badge">易考</div>
@@ -773,7 +804,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="shoujing.html" class="model-card">
+                <a href="shoujing.html" class="model-card" target="_blank">
                     <div class="card-preview">
                         <div class="card-icon"><img src="../images/reproduction.png" alt="精子细胞" width="40" height="40"></div>
                         <div class="card-badge">易考</div>
@@ -790,7 +821,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="peitaifayu.html" class="model-card">
+                <a href="peitaifayu.html" class="model-card" target="_blank">
                     <div class="card-preview">
                         <div class="card-icon"><img src="../images/embryo.png" alt="胚胎" width="40" height="40"></div>
                     </div>
@@ -806,7 +837,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="PCR.html" class="model-card">
+                <a href="PCR.html" class="model-card" target="_blank">
                     <div class="card-preview">
                         <div class="card-icon">🧪</div>
                         <div class="card-badge">易考</div>
@@ -823,7 +854,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="zaitigoujian.html" class="model-card">
+                <a href="zaitigoujian.html" class="model-card" target="_blank">
                     <div class="card-preview">
                         <div class="card-icon"><img src="../images/dna.png" alt="DNA" width="40" height="40"></div>
                         <div class="card-badge">易考</div>

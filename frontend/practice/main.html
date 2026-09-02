@@ -1361,6 +1361,37 @@
             }
         }
     </style>
+<script>
+/* 全站统一：同一个网页只要没关，点两次就复用上次的标签，不新开 */
+(function () {
+  function tabName(url) {
+    try {
+      var u = new URL(url, location.href);
+      return '__biotab__' + u.pathname + u.search;
+    } catch (e) {
+      return '__biotab__' + String(url);
+    }
+  }
+  /* 拦截所有 target="_blank" 的链接点击 */
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('a[target="_blank"]') : null;
+    if (!el) return;
+    if (el.hasAttribute && el.hasAttribute('download')) return; /* 下载链接保持默认 */
+    var href = el.href;
+    if (!href || href.slice(0, 11).toLowerCase() === 'javascript:') return;
+    e.preventDefault();
+    window.open(href, tabName(href));
+  });
+  /* 覆写 window.open：把 _blank / 空名 改成按网址复用 */
+  var nativeOpen = window.open;
+  window.open = function (url, name, features) {
+    if (name === '_blank' || name === undefined || name === null || name === '') {
+      name = tabName(url);
+    }
+    return nativeOpen.call(window, url, name, features);
+  };
+})();
+</script>
 </head>
 <body>
     <!-- 顶部导航栏 -->
@@ -2075,7 +2106,7 @@
                     const card = document.createElement('div');
                     card.className = 'subject-card';
                     card.onclick = () => {
-                        window.location.href = 'textbook-chapter.html?textbook=' + encodeURIComponent(link);
+                        window.open('textbook-chapter.html?textbook=' + encodeURIComponent(link));
                     };
                     card.innerHTML = `
                         <div class="subject-icon">${icon}</div>
@@ -2163,22 +2194,22 @@
                             var name = nameEl.textContent;
                             switch (name) {
                                 case '真题大观':
-                                    window.location.href = 'exams.html';
+                                    window.open('exams.html');
                                     break;
                                 case '试卷练习':
-                                    window.location.href = 'exam-practice.html';
+                                    window.open('exam-practice.html');
                                     break;
                                 case '错题集':
-                                    window.location.href = 'wrong-answers.html';
+                                    window.open('wrong-answers.html');
                                     break;
                                 case '教材溯源':
-                                    window.location.href = 'textbook-trace.html';
+                                    window.open('textbook-trace.html');
                                     break;
                                 case '导图Agent':
-                                    window.location.href = 'mindmap.html';
+                                    window.open('mindmap.html');
                                     break;
                                 case '院校PK':
-                                    window.location.href = 'college-pk.html';
+                                    window.open('college-pk.html');
                                     break;
                                 default:
                                     alert('即将打开: ' + name);

@@ -436,7 +436,38 @@
         }
       }
     </style>
-  </head>
+  <script>
+/* 全站统一：同一个网页只要没关，点两次就复用上次的标签，不新开 */
+(function () {
+  function tabName(url) {
+    try {
+      var u = new URL(url, location.href);
+      return '__biotab__' + u.pathname + u.search;
+    } catch (e) {
+      return '__biotab__' + String(url);
+    }
+  }
+  /* 拦截所有 target="_blank" 的链接点击 */
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('a[target="_blank"]') : null;
+    if (!el) return;
+    if (el.hasAttribute && el.hasAttribute('download')) return; /* 下载链接保持默认 */
+    var href = el.href;
+    if (!href || href.slice(0, 11).toLowerCase() === 'javascript:') return;
+    e.preventDefault();
+    window.open(href, tabName(href));
+  });
+  /* 覆写 window.open：把 _blank / 空名 改成按网址复用 */
+  var nativeOpen = window.open;
+  window.open = function (url, name, features) {
+    if (name === '_blank' || name === undefined || name === null || name === '') {
+      name = tabName(url);
+    }
+    return nativeOpen.call(window, url, name, features);
+  };
+})();
+</script>
+</head>
   <body>
     <a class="back-link" href="main.html" aria-label="返回上一页">← 返回</a>
     <div class="app">
