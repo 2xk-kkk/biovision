@@ -1,0 +1,140 @@
+/* ============================================================
+   生物视界 · BioAgent —— 悬浮智能体宠物样式
+   当前阶段：仅图标（DNA 双螺旋，蓝透明，可拖动）
+   ============================================================ */
+
+#bio-agent,
+#bio-agent * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+#bio-agent {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  width: 74px;
+  height: 74px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;              /* 保证触屏拖动不触发滚动/缩放 */
+  will-change: transform;
+}
+
+/* ---------- 小球本体 ---------- */
+.ba-orb {
+  position: absolute;
+  inset: 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: grab;
+  /* 蓝色半透明玻璃体 */
+  background:
+    radial-gradient(circle at 32% 26%, rgba(224, 242, 254, 0.95), rgba(147, 197, 253, 0.45) 34%, rgba(59, 130, 246, 0.5) 62%, rgba(29, 78, 216, 0.55));
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(191, 219, 254, 0.7);
+  box-shadow:
+    inset 0 0 10px rgba(191, 219, 254, 0.35),
+    inset -4px -6px 12px rgba(30, 58, 138, 0.35),
+    0 8px 22px rgba(30, 64, 175, 0.35);
+  animation: ba-float 3.4s ease-in-out infinite;
+  transition: transform 0.25s ease;
+  outline: none;
+}
+
+.ba-orb:focus-visible {
+  outline: 2px solid #bfdbfe;
+  outline-offset: 2px;
+}
+
+.ba-orb:hover {
+  transform: scale(1.06);
+}
+
+#bio-agent.ba-dragging .ba-orb,
+.ba-orb:active {
+  cursor: grabbing;
+  animation-play-state: paused;
+  transition: none;
+}
+
+.ba-orb svg {
+  width: 76%;
+  height: 76%;
+  filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.45));
+  pointer-events: none;
+}
+
+/* ---------- 外圈脉冲光环 ---------- */
+.ba-halo {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(147, 197, 253, 0.6);
+  animation: ba-pulse 2.6s ease-out infinite;
+  pointer-events: none;
+}
+
+/* ---------- 高光（左上玻璃反光点） ---------- */
+.ba-orb::after {
+  content: "";
+  position: absolute;
+  top: 11%;
+  left: 18%;
+  width: 22%;
+  height: 14%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  filter: blur(1px);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+/* ---------- 提示气泡 ---------- */
+.ba-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1;
+  color: #eff6ff;
+  background: rgba(30, 58, 138, 0.85);
+  border: 1px solid rgba(191, 219, 254, 0.5);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.ba-orb:hover .ba-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- 动画 ---------- */
+@keyframes ba-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+@keyframes ba-pulse {
+  0%   { transform: scale(0.82); opacity: 0.8; }
+  70%  { transform: scale(1.25); opacity: 0; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* 尊重“减弱动态效果”系统设置 */
+@media (prefers-reduced-motion: reduce) {
+  #bio-agent .ba-orb,
+  #bio-agent .ba-halo {
+    animation: none;
+  }
+}

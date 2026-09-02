@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bioagent-icon-only>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioAgent 对话 · 生物视界</title>
+    <link rel="stylesheet" href="agent.css">
+    <style>
+        /* ============ 基础 ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, 'Microsoft YaHei', sans-serif;
+            color: #0f172a;
+            background: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ============ 顶部导航（与 index 一致，仅改相对路径） ============ */
+        .top {
+            background: linear-gradient(45deg, #ffffff, #f0f5f9, #d9e8ed, #c5e5fd, #c7e9fb);
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .logo {
+            width: 120px;
+            height: 40px;
+            background-image: url(../images/logo.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-form {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-btn {
+            background: #667eea;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            background-color: #f0f6fd;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 220px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #667eea;
+        }
+
+        .dropdown.show .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-top: 4px solid;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            overflow: hidden;
+            object-fit: cover;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: white;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .avatar-wrapper:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .user-dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .search {
+                display: none;
+            }
+        }
+
+        /* ============ 对话布局 ============ */
+        #chatShell {
+            max-width: 920px;
+            height: calc(100vh - 60px);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 白色整体上叠一层极淡蓝色辉光，让输入框毛玻璃有可透感 */
+        #chatShell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(600px 260px at 50% 104%, rgba(59, 130, 246, 0.10), transparent 70%),
+                radial-gradient(360px 200px at 8% 20%, rgba(59, 130, 246, 0.05), transparent 70%);
+        }
+
+        /* ---- 顶部栏（智能体信息） ---- */
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 8px 12px;
+            border-bottom: 1px solid #eef2f7;
+            z-index: 1;
+        }
+
+        .agent-avatar {
+            position: relative;
+            width: 54px;
+            height: 54px;
+            flex: 0 0 auto;
+        }
+
+        .agent-avatar .ba-orb {
+            cursor: default;
+            animation: none;
+        }
+
+        .agent-avatar .ba-halo {
+            border-color: rgba(59, 130, 246, 0.35);
+        }
+
+        .ai-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ai-name {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .ai-sub {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
+            font-size: 12.5px;
+            color: #64748b;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+        }
+
+        .head-actions .ghost-btn {
+            border: 1px solid #d7e2f5;
+            background: #fff;
+            color: #2563eb;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .head-actions .ghost-btn:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+        }
+
+        /* ---- 消息区 ---- */
+        .msgs {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 1;
+            scroll-behavior: smooth;
+        }
+
+        .msgs::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .msgs::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .welcome {
+            margin: auto;
+            text-align: center;
+            padding: 24px 10px;
+            max-width: 560px;
+            animation: fadeUp .4s ease;
+        }
+
+        .welcome h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .welcome p {
+            margin-top: 10px;
+            color: #64748b;
+            line-height: 1.7;
+            font-size: 14.5px;
+        }
+
+        .demo-tip {
+            font-size: 12.5px !important;
+            color: #94a3b8 !important;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            border: 1px solid #dbe7fb;
+            background: #fff;
+            color: #334155;
+            padding: 9px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .18s;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, .04);
+        }
+
+        .chip:hover {
+            border-color: #60a5fa;
+            color: #2563eb;
+            background: #f3f8ff;
+            transform: translateY(-1px);
+        }
+
+        /* 消息 */
+        .msg {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            animation: fadeUp .25s ease;
+        }
+
+        .msg.user {
+            justify-content: flex-end;
+        }
+
+        .msg.ai .mini-ai {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            margin-top: 2px;
+            background:
+                radial-gradient(circle at 32% 26%, rgba(224, 242, 254, .95), rgba(147, 197, 253, .5) 40%, rgba(59, 130, 246, .7));
+            border: 1px solid rgba(147, 197, 253, .8);
+            box-shadow: 0 2px 6px rgba(37, 99, 235, .2);
+        }
+
+        .bubble {
+            max-width: 78%;
+            padding: 11px 15px;
+            font-size: 15px;
+            line-height: 1.75;
+            word-break: break-word;
+            white-space: pre-wrap;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, .06);
+        }
+
+        /* AI：白色气泡（左） */
+        .msg.ai .bubble {
+            background: #ffffff;
+            border: 1px solid rgba(96, 165, 250, .35);
+            color: #1e293b;
+            border-radius: 4px 16px 16px 16px;
+        }
+
+        /* 用户：蓝色气泡（右），与 AI 明显区分 */
+        .msg.user .bubble {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #ffffff;
+            border-radius: 16px 4px 16px 16px;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, .22);
+        }
+
+        .msg.user .files,
+        .bubble .files {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, .35);
+        }
+
+        .msg.user .file-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            background: rgba(255, 255, 255, .18);
+            border-radius: 8px;
+            padding: 4px 9px;
+            margin: 3px 4px 0 0;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 5px;
+            padding: 6px 2px;
+        }
+
+        .typing-dots i {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #93c5fd;
+            animation: blink 1.2s infinite;
+        }
+
+        .typing-dots i:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .typing-dots i:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+        @keyframes blink {
+            0%, 80%, 100% {
+                opacity: .3;
+                transform: translateY(0);
+            }
+            40% {
+                opacity: 1;
+                transform: translateY(-3px);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---- 输入区（蓝色描边 · 毛玻璃） ---- */
+        .composer-wrap {
+            padding: 8px 4px 16px;
+            z-index: 1;
+        }
+
+        .composer {
+            border: 1.5px solid rgba(59, 130, 246, .55);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, .72);
+            backdrop-filter: blur(14px) saturate(1.5);
+            -webkit-backdrop-filter: blur(14px) saturate(1.5);
+            box-shadow:
+                0 10px 34px rgba(37, 99, 235, .14),
+                inset 0 1px 0 rgba(255, 255, 255, .85);
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .composer:focus-within {
+            border-color: #3b82f6;
+            box-shadow:
+                0 12px 38px rgba(37, 99, 235, .2),
+                0 0 0 3px rgba(59, 130, 246, .14),
+                inset 0 1px 0 rgba(255, 255, 255, .85);
+        }
+
+        .attach-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 12px 2px;
+        }
+
+        .file-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 220px;
+            background: rgba(239, 246, 255, .9);
+            border: 1px solid rgba(96, 165, 250, .5);
+            border-radius: 10px;
+            padding: 5px 10px;
+            font-size: 12.5px;
+            color: #1e40af;
+        }
+
+        .file-pill .fname {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-pill .fdel {
+            cursor: pointer;
+            color: #64748b;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .file-pill .fdel:hover {
+            color: #ef4444;
+        }
+
+        .composer-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            padding: 8px 8px 6px 12px;
+        }
+
+        .tools {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            padding-bottom: 5px;
+        }
+
+        .tool {
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: background .2s, transform .1s;
+        }
+
+        .tool:hover {
+            background: rgba(59, 130, 246, .12);
+        }
+
+        .tool:active {
+            transform: scale(.92);
+        }
+
+        .composer textarea {
+            flex: 1;
+            border: none;
+            outline: none;
+            resize: none;
+            background: transparent;
+            font: inherit;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #0f172a;
+            padding: 7px 2px 6px;
+            max-height: 132px;
+        }
+
+        .composer textarea::placeholder {
+            color: #9aa7bd;
+        }
+
+        .send {
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 14px rgba(37, 99, 235, .3);
+            transition: opacity .2s, transform .1s, box-shadow .2s;
+        }
+
+        .send:hover:not(:disabled) {
+            box-shadow: 0 8px 18px rgba(37, 99, 235, .4);
+            transform: translateY(-1px);
+        }
+
+        .send:active:not(:disabled) {
+            transform: scale(.94);
+        }
+
+        .send:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .composer-hint {
+            text-align: center;
+            font-size: 11.5px;
+            color: #a3b3c9;
+            padding: 2px 0 7px;
+        }
+
+        /* ---- 轻提示 ---- */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 120px;
+            transform: translateX(-50%) translateY(8px);
+            background: rgba(15, 23, 42, .85);
+            color: #fff;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s, transform .25s;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 720px) {
+            .agent-header {
+                padding: 12px 6px 10px;
+            }
+            .ai-name {
+                font-size: 15px;
+            }
+            .bubble {
+                max-width: 88%;
+            }
+            #chatShell {
+                padding: 0 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航（与 index.html 一致） -->
+    <div class="top">
+        <div class="logo"></div>
+
+        <div class="search">
+            <form class="search-form" onsubmit="return false">
+                <input type="text" class="search-input" placeholder="搜索">
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <div class="nav-area">
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+
+                <div class="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">知识清单</a>
+                    <div class="dropdown-menu">
+                        <a href="../knowledge/book1/1.1.html" class="dropdown-item" data-module="必修一" style="color: #90b2e6;">🔬必修一：分子与细胞</a>
+                        <a href="../knowledge/book2/2.1.html" class="dropdown-item" data-module="必修二" style="color: #a194e3;">🧬必修二：遗传与进化</a>
+                        <a href="../knowledge/book3/3.1.html" class="dropdown-item" data-module="选择性必修一" style="color: #c576b4;">⚖️选择性必修一：稳态与调节</a>
+                        <a href="../knowledge/book4/4.1.html" class="dropdown-item" data-module="选择性必修二" style="color: burlywood;">🌿选择性必修二：生物与环境</a>
+                        <a href="../knowledge/book5/5.1.html" class="dropdown-item" data-module="选择性必修三" style="color: #6bd3b1;">🧫选择性必修三：生物技术与工程</a>
+                    </div>
+                </div>
+
+                <a href="../PPT/main.html" class="nav-link" target="_blank">PPT快搭</a>
+                <a href="../practice/main.html" class="nav-link" target="_blank">每日训练</a>
+                <a href="../3D model/main.html" class="nav-link" target="_blank">可视学习</a>
+                <a href="../forum/main.html" class="nav-link" target="_blank">论坛</a>
+            </div>
+
+            <div class="user-actions">
+                <div class="avatar-wrapper" id="userAvatarBtn">
+                    <img id="userAvatarImg" class="avatar" src="../images/touxiang.png" alt="用户头像" />
+                    <div class="upload-overlay">+</div>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="../user-center/main.html" class="user-dropdown-item" target="_blank">
+                            <i class="fas fa-user"></i> 个人中心
+                        </a>
+                        <a href="#" class="user-dropdown-item">
+                            <i class="fas fa-cog"></i> 设置
+                        </a>
+                        <a href="../login/login-main.html" class="user-dropdown-item danger" onclick="localStorage.clear()">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 对话主体 -->
+    <div id="chatShell">
+        <header class="agent-header">
+            <div class="agent-avatar">
+                <span class="ba-halo"></span>
+                <div class="ba-orb" id="hdrOrb" role="img" aria-label="BioAgent 智能体头像"></div>
+            </div>
+            <div class="ai-meta">
+                <div class="ai-name">BioAgent · 生物智能体</div>
+                <div class="ai-sub"><span class="dot"></span>在线 · 高中生物教学助手</div>
+            </div>
+            <div class="head-actions">
+                <button class="ghost-btn" id="btnNewChat" title="清空并开始新对话">＋ 新对话</button>
+            </div>
+        </header>
+
+        <main class="msgs" id="msgs"></main>
+
+        <footer class="composer-wrap">
+            <div class="composer" id="composer">
+                <div class="attach-row" id="attachRow" hidden></div>
+                <div class="composer-row">
+                    <div class="tools">
+                        <button type="button" class="tool" id="btnDoc" title="上传文档（PDF / Word / PPT / TXT / MD）">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" stroke="#2563eb" stroke-width="1.7" stroke-linejoin="round"/>
+                                <path d="M14 2v6h6" stroke="#2563eb" stroke-width="1.7" stroke-linejoin="round"/>
+                                <path d="M12 18v-4m0 0-2 2m2-2 2 2" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md" multiple hidden>
+                    </div>
+                    <textarea id="input" rows="1" placeholder="输入你的问题，Enter 发送，Shift+Enter 换行…"></textarea>
+                    <button type="button" class="send" id="btnSend" aria-label="发送">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M22 2 11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 2 15 22l-4-9-9-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="composer-hint">内容由 AI 生成，仅供学习参考 · 演示版暂不真正上传，仅展示交互</div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- agent.js：icon-only 模式，不注入右下角可拖拽小球，仅暴露图标工厂 -->
+    <script src="agent.js"></script>
+
+    <script>
+        /* ================= 顶栏头像逻辑（与 index 一致） ================= */
+        const API_BASE = 'http://localhost:8000/api';
+
+        function parseJwt(token) {
+            try {
+                const b = token.split('.')[1];
+                const p = b.replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(decodeURIComponent(atob(p).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+            } catch (e) { return null; }
+        }
+
+        function defaultAvatarSVG(u, s = 40) {
+            const colors = ['#4338ca', '#be185d', '#0369a1', '#15803d', '#c2410c', '#7c3aed', '#dc2626', '#b45309'];
+            const c = ((u || '用').trim()[0] || '用').charCodeAt(0) % colors.length;
+            const m = Math.floor(s / 2), r = Math.floor(s * .45), fs = Math.floor(s * .45), ty = Math.floor(s * .65);
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${s} ${s}'%3E%3Ccircle cx='${m}' cy='${m}' r='${r}' fill='${colors[c]}'/%3E%3Ctext x='${m}' y='${ty}' text-anchor='middle' font-size='${fs}' fill='white'%3E${encodeURIComponent((u||'用').trim()[0]||'用')}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function guestAvatarSVG(s = 40) {
+            const m = Math.floor(s / 2), r = Math.floor(s * .45), hr = Math.floor(s * .12), hy = Math.floor(s * .35);
+            const bw = Math.floor(s * .1), y1 = Math.floor(s * .6), y2 = Math.floor(s * .85);
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${s} ${s}'%3E%3Ccircle cx='${m}' cy='${m}' r='${r}' fill='%23d1d5db'/%3E%3Ccircle cx='${m}' cy='${hy}' r='${hr}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(s*.3)} ${y1} Q${m} ${y2} ${Math.floor(s*.7)} ${y1}' fill='none' stroke='%239ca3af' stroke-width='${bw}' stroke-linecap='round'/%3E%3C/svg%3E`;
+        }
+
+        async function loadUserAvatar() {
+            const img = document.getElementById('userAvatarImg');
+            const g = guestAvatarSVG(40);
+            if (!img) return;
+            const token = localStorage.getItem('token');
+            if (!token) { img.src = g; return; }
+            try {
+                const p = parseJwt(token);
+                if (!p || !p.user_id) { img.src = g; return; }
+                const r = await fetch(`${API_BASE}/user/${p.user_id}/info`);
+                const d = await r.json();
+                if (d.success && d.data && d.data.avatar) img.src = d.data.avatar;
+                else if (d.data && d.data.username) img.src = defaultAvatarSVG(d.data.username);
+            } catch (e) { img.src = g; }
+        }
+
+        const userAvatarBtn = document.getElementById('userAvatarBtn');
+        const userDrop = document.getElementById('userDropdownMenu');
+        if (userAvatarBtn && userDrop) {
+            userAvatarBtn.addEventListener('click', e => { e.stopPropagation(); userDrop.classList.toggle('show'); });
+        }
+        document.addEventListener('click', e => {
+            if (userDrop && !userDrop.contains(e.target) && e.target !== userAvatarBtn) userDrop.classList.remove('show');
+            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+        });
+        document.querySelectorAll('.dropdown-toggle').forEach(t => {
+            t.addEventListener('click', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                t.closest('.dropdown').classList.toggle('show');
+            });
+        });
+        loadUserAvatar();
+
+        /* ================= 对话主逻辑 ================= */
+        const msgs = document.getElementById('msgs');
+        const input = document.getElementById('input');
+        const btnSend = document.getElementById('btnSend');
+        const attachRow = document.getElementById('attachRow');
+        const fileInput = document.getElementById('fileInput');
+        const toastEl = document.getElementById('toast');
+        const chipsData = [
+            { icon: '🧬', text: '解释一下什么是基因突变？' },
+            { icon: '🌿', text: '光合作用的过程是怎样的？' },
+            { icon: '⚡', text: '帮我梳理“细胞呼吸”知识点' },
+            { icon: '📊', text: '有丝分裂和减数分裂的区别？' }
+        ];
+
+        // 头像：复用 BioAgent 螺旋图标
+        document.getElementById('hdrOrb').appendChild(window.BioAgentIcon.create());
+
+        function mountWelcome() {
+            msgs.innerHTML = '';
+            const w = document.createElement('section');
+            w.className = 'welcome';
+            w.id = 'welcome';
+            w.innerHTML = `
+                <h2>👋 你好，我是 BioAgent</h2>
+                <p>生物视界教学智能体：帮你答疑、梳理考点；<br>也可以上传教材 / 讲义 / 题目文档后提问。</p>
+                <p class="demo-tip">当前为前端演示版，AI 回复为本地占位，等待接入后端。</p>`;
+            const chips = document.createElement('div');
+            chips.className = 'chips';
+            chipsData.forEach(c => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'chip';
+                b.innerHTML = `<span>${c.icon}</span>${c.text}`;
+                b.addEventListener('click', () => sendText(c.text));
+                chips.appendChild(b);
+            });
+            w.appendChild(chips);
+            msgs.appendChild(w);
+        }
+
+        function scrollBottom() { msgs.scrollTop = msgs.scrollHeight; }
+
+        // ---- 上传/附件 ----
+        let files = [];
+
+        function fmtSize(n) {
+            if (n < 1024) return n + ' B';
+            if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+            return (n / 1048576).toFixed(1) + ' MB';
+        }
+
+        function renderAttach() {
+            attachRow.innerHTML = '';
+            files.forEach((f, i) => {
+                const pill = document.createElement('div');
+                pill.className = 'file-pill';
+                const icon = (f.type && f.type.startsWith('image/')) ? '🖼️' : '📄';
+                pill.innerHTML = `<span>${icon}</span><span class="fname">${f.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span><span style="opacity:.7">· ${fmtSize(f.size)}</span><span class="fdel" title="移除">&times;</span>`;
+                pill.querySelector('.fdel').addEventListener('click', () => { files.splice(i, 1); renderAttach(); syncSend(); });
+                attachRow.appendChild(pill);
+            });
+            attachRow.hidden = files.length === 0;
+        }
+
+        document.getElementById('btnDoc').addEventListener('click', () => {
+            fileInput.value = '';
+            fileInput.click();
+        });
+        fileInput.addEventListener('change', () => {
+            for (const f of fileInput.files) {
+                if (files.length >= 5) { toast('最多同时附加 5 个文件'); break; }
+                files.push({ name: f.name, size: f.size, type: f.type || '' });
+            }
+            renderAttach();
+            syncSend();
+        });
+
+        // ---- 发送 ----
+        function syncSend() {
+            const hasText = input.value.trim().length > 0;
+            btnSend.disabled = !(hasText || files.length > 0);
+        }
+
+        function autoGrow() {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 132) + 'px';
+        }
+
+        input.addEventListener('input', () => { autoGrow(); syncSend(); });
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!btnSend.disabled) sendCurrent();
+            }
+        });
+
+        function addUserMsg(text, fileNames) {
+            const row = document.createElement('div');
+            row.className = 'msg user';
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            const p = document.createElement('p');
+            p.textContent = text || (fileNames.length ? '请基于我上传的文档回答。' : '');
+            b.appendChild(p);
+            if (fileNames.length) {
+                const f = document.createElement('div');
+                f.className = 'files';
+                fileNames.forEach(n => {
+                    const c = document.createElement('span');
+                    c.className = 'file-chip';
+                    c.textContent = '📎 ' + n;
+                    f.appendChild(c);
+                });
+                b.appendChild(f);
+            }
+            row.appendChild(b);
+            msgs.appendChild(row);
+        }
+
+        function showTyping() {
+            const row = document.createElement('div');
+            row.className = 'msg ai typing';
+            row.innerHTML = '<div class="mini-ai"></div><div class="bubble"><span class="typing-dots"><i></i><i></i><i></i></span></div>';
+            msgs.appendChild(row);
+            scrollBottom();
+            return row;
+        }
+
+        function addAiMsg(text) {
+            const row = document.createElement('div');
+            row.className = 'msg ai';
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            const p = document.createElement('p');
+            p.textContent = text;
+            b.appendChild(p);
+            row.appendChild(b);
+            msgs.appendChild(row);
+            scrollBottom();
+        }
+
+        function sendCurrent() {
+            const text = input.value.trim();
+            const fileNames = files.map(f => f.name);
+            if (!text && !files.length) return;
+            sendText(text, fileNames);
+        }
+
+        function sendText(text, fileNames = []) {
+            const w = document.getElementById('welcome');
+            if (w) w.remove();
+            addUserMsg(text, fileNames);
+
+            // 清空输入与附件
+            input.value = '';
+            input.style.height = 'auto';
+            files = [];
+            renderAttach();
+            syncSend();
+
+            const typing = showTyping();
+            const delay = 600 + Math.random() * 700;
+            setTimeout(() => {
+                typing.remove();
+                addAiMsg(answerOf(text, fileNames));
+            }, delay);
+        }
+
+        // ---- 占位回复（演示，等待后端） ----
+        function answerOf(q, fileNames) {
+            if (fileNames.length) {
+                return `已收到你上传的 ${fileNames.length} 份文件（${fileNames.join('、')}）。\n\n当前为前端演示版，尚未真正解析文档内容；接入 AI 后端后，我会基于文档内容为你答疑。`;
+            }
+            const s = (q || '').toLowerCase();
+            if (/(你好|您好|hi|hello|嗨|哈喽|在吗|在么)/.test(s)) {
+                return '你好呀！我是 BioAgent，生物视界教学智能体。\n\n你可以直接问我知识点，比如“光合作用有几个阶段？”，或上传教材 / 题目文档让我帮忙解答。';
+            }
+            if (/(光合|叶绿体|光反应|暗反应|c3|c4)/.test(s)) {
+                return '关于光合作用（演示版回答）：\n\n· 场所：叶绿体\n· 阶段：光反应（类囊体薄膜）+ 暗反应/卡尔文循环（叶绿体基质）\n· 光反应产物：O₂、[H](NADPH)、ATP\n· 暗反应：CO₂ 的固定 → C₃ 还原 → C₅ 再生\n\n接入后端后我会给出更精准、结合教材图表的讲解。';
+            }
+            if (/(呼吸|有氧|无氧|线粒体)/.test(s)) {
+                return '关于细胞呼吸（演示版回答）：\n\n有氧呼吸三阶段：\n① 细胞质基质：葡萄糖 → 丙酮酸 + [H] + 少量 ATP\n② 线粒体基质：丙酮酸 + H₂O → CO₂ + [H] + 少量 ATP\n③ 线粒体内膜：[H] + O₂ → H₂O + 大量 ATP\n\n无氧呼吸：产生酒精 + CO₂（植物）或乳酸（动物/部分微生物）。';
+            }
+            if (/(基因|遗传|突变|dna|染色体|减数)/.test(s)) {
+                return '关于遗传（演示版回答）：\n\n· DNA 双螺旋、基因是有遗传效应的 DNA 片段\n· 减数分裂产生配子，受精作用恢复染色体数\n· 基因突变、基因重组、染色体变异是变异的三大来源\n\n你可以让我展开具体某一点，如“伴性遗传”。';
+            }
+            if (/(细胞|细胞器|叶绿体|内质网|高尔基|核糖体|细胞膜)/.test(s)) {
+                return '关于细胞结构（演示版回答）：\n\n· 细胞膜：控制物质进出，流动镶嵌模型\n· 细胞器分工：核糖体=蛋白质合成，内质网/高尔基体=加工分泌，线粒体=供能，叶绿体=光合\n\n想深入了解某个细胞器可以继续问我。';
+            }
+            return '这个问题我来想一想……（演示版回答）\n\n已收到你的问题：「' + (q || '') + '」\n\n目前是纯前端演示，回复由本地模板生成；待接入 AI 后端后即可给出实时、完整的解答。你也可以先试试点上方快捷问题。';
+        }
+
+        // ---- 新对话 / Toast ----
+        document.getElementById('btnNewChat').addEventListener('click', () => {
+            files = [];
+            renderAttach();
+            input.value = '';
+            syncSend();
+            mountWelcome();
+        });
+
+        let toastTimer = null;
+        function toast(msg) {
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+        }
+
+        mountWelcome();
+        syncSend();
+    </script>
+</body>
+
+</html>

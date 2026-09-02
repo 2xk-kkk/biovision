@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioAgent 图标预览</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 45%, #bfdbfe 100%);
+    }
+    .note {
+      padding: 24px 28px;
+      color: #1e3a8a;
+      font-size: 14px;
+      line-height: 1.9;
+      background: rgba(255, 255, 255, 0.5);
+      max-width: 520px;
+      margin: 40px auto;
+      border-radius: 14px;
+      border: 1px solid rgba(191, 219, 254, 0.8);
+      box-shadow: 0 8px 24px rgba(30, 64, 175, 0.08);
+    }
+    .note b { color: #1d4ed8; }
+  </style>
+  <link rel="stylesheet" href="agent.css">
+</head>
+<body>
+  <div class="note">
+    这是 <b>BioAgent 悬浮智能体</b> 的图标阶段预览（DNA 双螺旋 · 蓝色半透明）。
+    <br>· 拖动右下角的圆球，可把它放到任意位置；
+    <br>· 刷新页面后位置会被记住（localStorage）；
+    <br>· 鼠标悬停会显示名称气泡。
+    <br><br>
+    <span style="font-size:12px;color:#64748b;">页面仅供预览图标。正式使用通过各平台页面引入
+    <code>biovision-agent/agent.css</code> 与 <code>biovision-agent/agent.js</code>。</span>
+  </div>
+
+  <script src="agent.js"></script>
+</body>
+</html>
