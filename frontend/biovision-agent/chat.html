@@ -454,8 +454,206 @@
             font-size: 15px;
             line-height: 1.75;
             word-break: break-word;
-            white-space: pre-wrap;
             box-shadow: 0 4px 14px rgba(15, 23, 42, .06);
+        }
+
+        /* 用户消息是纯文本，保留换行；AI 消息用 Markdown 渲染，交给块级元素排版 */
+        .msg.user .bubble {
+            white-space: pre-wrap;
+        }
+
+        /* ---- AI 回复里的 Markdown ---- */
+        .bubble h3,
+        .bubble h4,
+        .bubble h5 {
+            margin: 14px 0 6px;
+            line-height: 1.5;
+        }
+
+        .bubble h3 {
+            font-size: 17px;
+        }
+
+        .bubble h4 {
+            font-size: 15.5px;
+        }
+
+        .bubble h5 {
+            font-size: 14.5px;
+            color: #475569;
+        }
+
+        .bubble h3:first-child,
+        .bubble h4:first-child,
+        .bubble h5:first-child,
+        .bubble p:first-child {
+            margin-top: 0;
+        }
+
+        .bubble p {
+            margin: 8px 0;
+        }
+
+        .bubble ul,
+        .bubble ol {
+            margin: 8px 0;
+            padding-left: 22px;
+        }
+
+        .bubble li {
+            margin: 3px 0;
+        }
+
+        .bubble code {
+            background: #eef4ff;
+            border: 1px solid #dbe7fb;
+            border-radius: 5px;
+            padding: 1px 5px;
+            font-size: 13px;
+            font-family: Consolas, Monaco, monospace;
+        }
+
+        .bubble pre {
+            background: #f6f9ff;
+            border: 1px solid #e2ecfb;
+            border-radius: 10px;
+            padding: 10px 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .bubble pre code {
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .bubble table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 13.5px;
+        }
+
+        .bubble th,
+        .bubble td {
+            border: 1px solid #e2ecfb;
+            padding: 6px 9px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .bubble th {
+            background: #f2f7ff;
+            font-weight: 700;
+        }
+
+        .bubble blockquote {
+            margin: 8px 0;
+            padding: 4px 12px;
+            border-left: 3px solid #93c5fd;
+            background: #f8fbff;
+            color: #475569;
+        }
+
+        .bubble hr {
+            border: none;
+            border-top: 1px solid #e5eaf3;
+            margin: 12px 0;
+        }
+
+        /* ---- 参考来源 ---- */
+        .sources {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed #dbe7fb;
+            font-size: 12.5px;
+            color: #64748b;
+        }
+
+        .sources summary {
+            cursor: pointer;
+            color: #2563eb;
+            user-select: none;
+        }
+
+        .sources a,
+        .sources span.src {
+            display: block;
+            margin: 4px 0 0 4px;
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .sources a:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .sources .badge {
+            display: inline-block;
+            background: #eef4ff;
+            border: 1px solid #dbe7fb;
+            color: #3b6fd4;
+            border-radius: 5px;
+            padding: 0 5px;
+            margin-right: 5px;
+            font-size: 11.5px;
+        }
+
+        /* ---- 模型选择 ---- */
+        .model-select {
+            border: 1px solid #d7e2f5;
+            background: #fff;
+            color: #2563eb;
+            padding: 7px 9px;
+            border-radius: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+            max-width: 168px;
+        }
+
+        .model-select:hover {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+
+        /* ---- 思考中（reasoner 的思维链） ---- */
+        .thinking {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12.5px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .thinking .dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .thinking .dots i {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            animation: blink 1.2s infinite;
+        }
+
+        .thinking .dots i:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .thinking .dots i:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+        .err-bubble {
+            background: #fff5f5 !important;
+            border-color: #fecaca !important;
+            color: #b91c1c !important;
         }
 
         /* AI：白色气泡（左） */
@@ -792,6 +990,7 @@
                 <div class="ai-sub"><span class="dot"></span>在线 · 高中生物学习平台助手</div>
             </div>
             <div class="head-actions">
+                <select class="model-select" id="modelSelect" title="选择回答模型"></select>
                 <button class="ghost-btn" id="btnNewChat" title="清空并开始新对话">＋ 新对话</button>
             </div>
         </header>
@@ -820,7 +1019,7 @@
                         </svg>
                     </button>
                 </div>
-                <div class="composer-hint">内容由 AI 生成，仅供学习参考 · 演示版暂不真正上传，仅展示交互</div>
+                <div class="composer-hint">内容由 AI 生成，仅供学习参考 · 回答会参考本平台教材与题库</div>
             </div>
         </footer>
     </div>
@@ -832,7 +1031,21 @@
 
     <script>
         /* ================= 顶栏头像逻辑（与 index 一致） ================= */
-        const API_BASE = 'http://localhost:8000/api';
+        // 后端地址。页面由 app.py 提供时同源，用相对路径最稳（走 Cloudflare 隧道也不会指错）；
+        // 但若用 Live Server / 直接双击 html（file://）打开，相对路径找不到后端，
+        // 会在启动时探测一次并回退到本机 8000 端口。
+        let API_BASE = '/api';
+        const API_FALLBACK = 'http://localhost:8000/api';
+
+        async function resolveApiBase() {
+            if (location.protocol === 'file:') { API_BASE = API_FALLBACK; return; }
+            try {
+                const r = await fetch(API_BASE + '/agent/models', { method: 'GET' });
+                if (!r.ok) API_BASE = API_FALLBACK;
+            } catch (e) {
+                API_BASE = API_FALLBACK;
+            }
+        }
 
         function parseJwt(token) {
             try {
@@ -842,33 +1055,59 @@
             } catch (e) { return null; }
         }
 
-        function defaultAvatarSVG(u, s = 40) {
+        // 用户名首字彩色头像。和 index.html 的实现保持一致：
+        // 颜色必须 encodeURIComponent——# 直接写进 data URI 会被当成 fragment，
+        // 整个 SVG 被截断，浏览器只会显示一个碎图图标。
+        function defaultAvatarSVG(username, s = 40) {
             const colors = ['#4338ca', '#be185d', '#0369a1', '#15803d', '#c2410c', '#7c3aed', '#dc2626', '#b45309'];
-            const c = ((u || '用').trim()[0] || '用').charCodeAt(0) % colors.length;
+            const avatarChar = (username || '用').trim()[0] || '用';
+            const avatarColor = colors[avatarChar.charCodeAt(0) % colors.length];
             const m = Math.floor(s / 2), r = Math.floor(s * .45), fs = Math.floor(s * .45), ty = Math.floor(s * .65);
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${s} ${s}'%3E%3Ccircle cx='${m}' cy='${m}' r='${r}' fill='${colors[c]}'/%3E%3Ctext x='${m}' y='${ty}' text-anchor='middle' font-size='${fs}' fill='white'%3E${encodeURIComponent((u||'用').trim()[0]||'用')}%3C/text%3E%3C/svg%3E`;
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${s} ${s}'%3E%3Ccircle cx='${m}' cy='${m}' r='${r}' fill='${encodeURIComponent(avatarColor)}'/%3E%3Ctext x='${m}' y='${ty}' text-anchor='middle' font-size='${fs}' fill='white'%3E${encodeURIComponent(avatarChar)}%3C/text%3E%3C/svg%3E`;
         }
 
-        function guestAvatarSVG(s = 40) {
-            const m = Math.floor(s / 2), r = Math.floor(s * .45), hr = Math.floor(s * .12), hy = Math.floor(s * .35);
-            const bw = Math.floor(s * .1), y1 = Math.floor(s * .6), y2 = Math.floor(s * .85);
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${s} ${s}'%3E%3Ccircle cx='${m}' cy='${m}' r='${r}' fill='%23d1d5db'/%3E%3Ccircle cx='${m}' cy='${hy}' r='${hr}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(s*.3)} ${y1} Q${m} ${y2} ${Math.floor(s*.7)} ${y1}' fill='none' stroke='%239ca3af' stroke-width='${bw}' stroke-linecap='round'/%3E%3C/svg%3E`;
+        // 未登录默认头像 SVG —— 与 index.html / 用户中心保持同一套视觉
+        function guestAvatarSVG(size = 40) {
+            const centerX = Math.floor(size / 2);
+            const centerY = Math.floor(size / 2);
+            const radius = Math.floor(size * 0.45);
+            const headRadius = Math.floor(size * 0.12);
+            const headY = Math.floor(size * 0.35);
+            const bodyStroke = Math.floor(size * 0.1);
+            const bodyY1 = Math.floor(size * 0.6);
+            const bodyY2 = Math.floor(size * 0.85);
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${size} ${size}'%3E%3Ccircle cx='${centerX}' cy='${centerY}' r='${radius}' fill='%23d1d5db'/%3E%3Ccircle cx='${centerX}' cy='${headY}' r='${headRadius}' fill='%239ca3af'/%3E%3Cpath d='M${Math.floor(size * 0.3)} ${bodyY1} Q${centerX} ${bodyY2} ${Math.floor(size * 0.7)} ${bodyY1}' fill='none' stroke='%239ca3af' stroke-width='${bodyStroke}' stroke-linecap='round'/%3E%3C/svg%3E`;
         }
 
-        async function loadUserAvatar() {
+        let lastAvatarKey = null;
+
+        // 取头像的顺序和 index.html / 用户中心完全一致：
+        // 登录 + 上传过头像 → 用真实头像；登录但没上传 → 用户名首字彩色头像；
+        // 未登录 / 取不到 → 灰色剪影。
+        async function loadUserAvatar(force = false) {
             const img = document.getElementById('userAvatarImg');
-            const g = guestAvatarSVG(40);
+            const guestAvatar = guestAvatarSVG(40);
             if (!img) return;
-            const token = localStorage.getItem('token');
-            if (!token) { img.src = g; return; }
+            const token = localStorage.getItem('token') || '';
+            // 登录状态没变就不重复请求：这个页面的窗口是按名字复用的，
+            // 每次获得焦点都会调到这里，不做去重会反复打接口。
+            const key = `${token}|${API_BASE}`;
+            if (!force && key === lastAvatarKey) return;
+            lastAvatarKey = key;
+            if (!token) { img.src = guestAvatar; return; }
             try {
                 const p = parseJwt(token);
-                if (!p || !p.user_id) { img.src = g; return; }
+                if (!p || !p.user_id) { img.src = guestAvatar; return; }
                 const r = await fetch(`${API_BASE}/user/${p.user_id}/info`);
                 const d = await r.json();
-                if (d.success && d.data && d.data.avatar) img.src = d.data.avatar;
-                else if (d.data && d.data.username) img.src = defaultAvatarSVG(d.data.username);
-            } catch (e) { img.src = g; }
+                if (d.success && d.data && d.data.avatar) {
+                    img.src = d.data.avatar;
+                } else if (d.data && d.data.username) {
+                    img.src = defaultAvatarSVG(d.data.username);
+                } else {
+                    img.src = guestAvatar;
+                }
+            } catch (e) { img.src = guestAvatar; }
         }
 
         const userAvatarBtn = document.getElementById('userAvatarBtn');
@@ -887,7 +1126,15 @@
                 t.closest('.dropdown').classList.toggle('show');
             });
         });
-        loadUserAvatar();
+        // 注意：这里不要立刻调 loadUserAvatar()——此时 API_BASE 还没探测完，
+        // 用相对路径去请求可能失败，失败就永远停在默认头像上。
+        // 实际调用放在 init() 里、resolveApiBase() 之后。
+        // 智能体窗口是按窗口名复用的：可能在未登录时就打开过，
+        // 之后别处登录了再切回来，头像还是旧的。焦点回来时补一次。
+        window.addEventListener('focus', () => loadUserAvatar());
+        window.addEventListener('storage', e => {
+            if (!e.key || e.key === 'token' || e.key === 'user_avatar') loadUserAvatar(true);
+        });
 
         /* ================= 对话主逻辑 ================= */
         const msgs = document.getElementById('msgs');
@@ -896,6 +1143,7 @@
         const attachRow = document.getElementById('attachRow');
         const fileInput = document.getElementById('fileInput');
         const toastEl = document.getElementById('toast');
+        const modelSelect = document.getElementById('modelSelect');
         const chipsData = [
             { icon: '🧬', text: '解释一下什么是基因突变？' },
             { icon: '🌿', text: '光合作用的过程是怎样的？' },
@@ -903,8 +1151,190 @@
             { icon: '📊', text: '有丝分裂和减数分裂的区别？' }
         ];
 
+        const CONV_KEY = 'biovision.bioagent.conv';
+        const CLIENT_KEY = 'biovision.bioagent.client';
+
         // 头像：复用 BioAgent 螺旋图标
         document.getElementById('hdrOrb').appendChild(window.BioAgentIcon.create());
+
+        /* ---------------- 请求层：登录态 / 游客标识 ---------------- */
+        function clientId() {
+            let v = localStorage.getItem(CLIENT_KEY);
+            if (!v) {
+                v = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2));
+                localStorage.setItem(CLIENT_KEY, v);
+            }
+            return v;
+        }
+
+        function reqHeaders(extra) {
+            const h = Object.assign({ 'X-Client-Id': clientId() }, extra || {});
+            const token = localStorage.getItem('token');
+            if (token) h['Authorization'] = 'Bearer ' + token;
+            return h;
+        }
+
+        let currentModel = null;
+        let conversationId = Number(sessionStorage.getItem(CONV_KEY)) || null;
+        let busy = false;
+
+        function setConversation(id) {
+            conversationId = id || null;
+            try {
+                if (id) sessionStorage.setItem(CONV_KEY, String(id));
+                else sessionStorage.removeItem(CONV_KEY);
+            } catch (e) { /* 隐私模式下忽略 */ }
+        }
+
+        /* ---------------- Markdown 渲染（先转义再转换，避免 XSS） ---------------- */
+        function esc(s) {
+            return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        }
+
+        function mdInline(s) {
+            return s
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+                .replace(/~~([^~]+)~~/g, '<del>$1</del>');
+        }
+
+        function mdRow(line) {
+            return line.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+        }
+
+        function renderMarkdown(src) {
+            const lines = esc(src || '').split('\n');
+            const out = [];
+            let i = 0;
+
+            while (i < lines.length) {
+                const line = lines[i];
+
+                // 代码块
+                if (/^\s*```/.test(line)) {
+                    const buf = [];
+                    i++;
+                    while (i < lines.length && !/^\s*```/.test(lines[i])) buf.push(lines[i++]);
+                    i++;
+                    out.push('<pre><code>' + buf.join('\n') + '</code></pre>');
+                    continue;
+                }
+
+                // 表格：当前行是 |...| 且下一行是分隔行
+                if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\s*\|[\s:\-|]+\|\s*$/.test(lines[i + 1])) {
+                    const head = mdRow(line);
+                    i += 2;
+                    const rows = [];
+                    while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) rows.push(mdRow(lines[i++]));
+                    out.push(
+                        '<table><thead><tr>' + head.map(c => '<th>' + mdInline(c) + '</th>').join('') +
+                        '</tr></thead><tbody>' +
+                        rows.map(r => '<tr>' + r.map(c => '<td>' + mdInline(c) + '</td>').join('') + '</tr>').join('') +
+                        '</tbody></table>'
+                    );
+                    continue;
+                }
+
+                // 标题：模型常用 ## 作一级小标题，这里让 # 和 ## 都落到 h3
+                const h = line.match(/^(#{1,6})\s+(.*)$/);
+                if (h) {
+                    const level = Math.min(Math.max(h[1].length + 1, 3), 5);
+                    out.push('<h' + level + '>' + mdInline(h[2]) + '</h' + level + '>');
+                    i++;
+                    continue;
+                }
+
+                // 分隔线
+                if (/^\s*([-*_])\1{2,}\s*$/.test(line)) {
+                    out.push('<hr>');
+                    i++;
+                    continue;
+                }
+
+                // 引用（源码先整体转义，所以这里匹配的是 &gt;）
+                if (/^\s*&gt;\s?/.test(line)) {
+                    const buf = [];
+                    while (i < lines.length && /^\s*&gt;\s?/.test(lines[i])) {
+                        buf.push(lines[i++].replace(/^\s*&gt;\s?/, ''));
+                    }
+                    out.push('<blockquote>' + mdInline(buf.join(' ')) + '</blockquote>');
+                    continue;
+                }
+
+                // 列表（无序 / 有序）
+                const isUl = /^\s*[-*+]\s+/.test(line);
+                const isOl = /^\s*\d+[.)]\s+/.test(line);
+                if (isUl || isOl) {
+                    const tag = isOl ? 'ol' : 'ul';
+                    const items = [];
+                    while (i < lines.length && (isOl ? /^\s*\d+[.)]\s+/.test(lines[i]) : /^\s*[-*+]\s+/.test(lines[i]))) {
+                        items.push(lines[i++].replace(/^\s*(?:[-*+]|\d+[.)])\s+/, ''));
+                    }
+                    out.push('<' + tag + '>' + items.map(t => '<li>' + mdInline(t) + '</li>').join('') + '</' + tag + '>');
+                    continue;
+                }
+
+                // 空行
+                if (!line.trim()) {
+                    i++;
+                    continue;
+                }
+
+                // 普通段落：把连续的非空行并成一段
+                const buf = [];
+                while (i < lines.length && lines[i].trim() &&
+                       !/^\s*```/.test(lines[i]) && !/^(#{1,6})\s+/.test(lines[i]) &&
+                       !/^\s*[-*+]\s+/.test(lines[i]) && !/^\s*\d+[.)]\s+/.test(lines[i]) &&
+                       !/^\s*&gt;\s?/.test(lines[i]) && !/^\s*\|.*\|\s*$/.test(lines[i])) {
+                    buf.push(lines[i++]);
+                }
+                // 兜底：流式过程中表格只到了一半（有表头没分隔行）时，
+                // 这一行不匹配任何分支又进不了段落，必须强行吃掉，否则死循环卡死页面。
+                if (!buf.length) buf.push(lines[i++]);
+                out.push('<p>' + mdInline(buf.join('<br>')) + '</p>');
+            }
+            return out.join('');
+        }
+
+        /* ---------------- 会话与来源渲染 ---------------- */
+        function sourcesBlock(sources) {
+            if (!sources || !sources.length) return null;
+            const det = document.createElement('details');
+            det.className = 'sources';
+            det.innerHTML = '<summary>参考了 ' + sources.length + ' 条平台资料</summary>';
+            sources.forEach(s => {
+                const text = '<span class="badge">' + esc(s.type) + '</span>' + esc(s.title) +
+                    (s.subtitle ? ' · ' + esc(s.subtitle) : '');
+                if (s.link) {
+                    const a = document.createElement('a');
+                    a.href = s.link;
+                    a.target = '_blank';
+                    a.innerHTML = text;
+                    det.appendChild(a);
+                } else {
+                    const sp = document.createElement('span');
+                    sp.className = 'src';
+                    sp.innerHTML = text;
+                    det.appendChild(sp);
+                }
+            });
+            return det;
+        }
+
+        function addAiMsg(markdown, sources) {
+            const row = document.createElement('div');
+            row.className = 'msg ai';
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.innerHTML = renderMarkdown(markdown);
+            const src = sourcesBlock(sources);
+            if (src) b.appendChild(src);
+            row.appendChild(b);
+            msgs.appendChild(row);
+            scrollBottom();
+            return b;
+        }
 
         function mountWelcome() {
             msgs.innerHTML = '';
@@ -913,8 +1343,8 @@
             w.id = 'welcome';
             w.innerHTML = `
                 <h2>👋 你好，我是 BioAgent</h2>
-                <p>生物视界教学智能体：帮你答疑、梳理考点；<br>也可以上传教材 / 讲义 / 题目文档后提问。</p>
-                <p class="demo-tip">当前为前端演示版，AI 回复为本地占位，等待接入后端。</p>`;
+                <p>生物视界教学智能体：答疑、梳理考点、讲题；<br>回答会结合本平台的电子教材、知识清单与题库。</p>
+                <p class="demo-tip">也可以上传教材 / 讲义 / 题目文档后再提问。</p>`;
             const chips = document.createElement('div');
             chips.className = 'chips';
             chipsData.forEach(c => {
@@ -922,7 +1352,7 @@
                 b.type = 'button';
                 b.className = 'chip';
                 b.innerHTML = `<span>${c.icon}</span>${c.text}`;
-                b.addEventListener('click', () => sendText(c.text));
+                b.addEventListener('click', () => { if (!busy) sendText(c.text, []); });
                 chips.appendChild(b);
             });
             w.appendChild(chips);
@@ -931,8 +1361,56 @@
 
         function scrollBottom() { msgs.scrollTop = msgs.scrollHeight; }
 
-        // ---- 上传/附件 ----
-        let files = [];
+        /* ---------------- 模型列表 ---------------- */
+        async function loadModels() {
+            try {
+                const r = await fetch(`${API_BASE}/agent/models`, { headers: reqHeaders() });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const d = await r.json();
+                if (!d.success) throw new Error(d.msg || '加载失败');
+                const usable = d.data.models.filter(m => m.available);
+                modelSelect.innerHTML = '';
+                if (!usable.length) {
+                    modelSelect.innerHTML = '<option value="">未配置模型</option>';
+                    showBanner('后端已连上，但没读到 API Key。请在 backend/PPT/.env 或 backend/biovision-agent/.env 里配置 DEEPSEEK_API_KEY 后重启后端。');
+                    return;
+                }
+                usable.forEach(m => {
+                    const o = document.createElement('option');
+                    o.value = m.key;
+                    o.textContent = m.label;
+                    o.title = m.desc || '';
+                    modelSelect.appendChild(o);
+                });
+                currentModel = usable.some(m => m.key === d.data.default) ? d.data.default : usable[0].key;
+                modelSelect.value = currentModel;
+            } catch (e) {
+                modelSelect.innerHTML = '<option value="">模型加载失败</option>';
+                showBanner('连不上后端 ' + API_BASE + '（' + (e.message || e) + '）。请确认后端已启动：cd backend && python app.py，然后刷新本页。');
+            }
+        }
+
+        // 顶部提示条：把「为什么用不了」直接说清楚，而不是只在下拉框里留两个字
+        function showBanner(text) {
+            try {
+                let b = document.getElementById('agentBanner');
+                if (!b) {
+                    b = document.createElement('div');
+                    b.id = 'agentBanner';
+                    b.style.cssText = 'margin:10px 18px 0;padding:10px 14px;border-radius:10px;'
+                        + 'background:#fef3c7;border:1px solid #fcd34d;color:#92400e;font-size:13px;line-height:1.6;';
+                    const host = document.querySelector('.msgs');
+                    if (host && host.parentNode) host.parentNode.insertBefore(b, host);
+                    else document.body.insertBefore(b, document.body.firstChild);
+                }
+                b.textContent = text;
+            } catch (e) { /* 提示条只是辅助，画不出来不影响主流程 */ }
+        }
+
+        modelSelect.addEventListener('change', () => { currentModel = modelSelect.value; });
+
+        /* ---------------- 上传/附件 ---------------- */
+        let files = [];   // {name,size,type,file,attId,state}
 
         function fmtSize(n) {
             if (n < 1024) return n + ' B';
@@ -945,9 +1423,12 @@
             files.forEach((f, i) => {
                 const pill = document.createElement('div');
                 pill.className = 'file-pill';
-                const icon = (f.type && f.type.startsWith('image/')) ? '🖼️' : '📄';
-                pill.innerHTML = `<span>${icon}</span><span class="fname">${f.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span><span style="opacity:.7">· ${fmtSize(f.size)}</span><span class="fdel" title="移除">&times;</span>`;
-                pill.querySelector('.fdel').addEventListener('click', () => { files.splice(i, 1); renderAttach(); syncSend(); });
+                const mark = f.state === 'uploading' ? '⏳' : (f.state === 'error' ? '⚠️' : '📄');
+                pill.innerHTML = `<span>${mark}</span><span class="fname">${esc(f.name)}</span>` +
+                    `<span style="opacity:.7">· ${fmtSize(f.size)}</span><span class="fdel" title="移除">&times;</span>`;
+                pill.querySelector('.fdel').addEventListener('click', () => {
+                    files.splice(i, 1); renderAttach(); syncSend();
+                });
                 attachRow.appendChild(pill);
             });
             attachRow.hidden = files.length === 0;
@@ -957,19 +1438,40 @@
             fileInput.value = '';
             fileInput.click();
         });
+
         fileInput.addEventListener('change', () => {
             for (const f of fileInput.files) {
                 if (files.length >= 5) { toast('最多同时附加 5 个文件'); break; }
-                files.push({ name: f.name, size: f.size, type: f.type || '' });
+                const item = { name: f.name, size: f.size, type: f.type || '', file: f, attId: null, state: 'uploading' };
+                files.push(item);
+                uploadOne(item);
             }
             renderAttach();
             syncSend();
         });
 
-        // ---- 发送 ----
+        async function uploadOne(item) {
+            const fd = new FormData();
+            fd.append('file', item.file, item.name);
+            try {
+                const r = await fetch(`${API_BASE}/agent/upload`, { method: 'POST', headers: reqHeaders(), body: fd });
+                const d = await r.json();
+                if (!r.ok || !d.success) throw new Error(d.detail || d.msg || '上传失败');
+                item.attId = d.data.id;
+                item.state = 'done';
+            } catch (e) {
+                item.state = 'error';
+                toast(`${item.name}：${e.message || '上传失败'}`);
+            }
+            renderAttach();
+            syncSend();
+        }
+
+        /* ---------------- 发送 ---------------- */
         function syncSend() {
             const hasText = input.value.trim().length > 0;
-            btnSend.disabled = !(hasText || files.length > 0);
+            const uploading = files.some(f => f.state === 'uploading');
+            btnSend.disabled = busy || uploading || !(hasText || files.some(f => f.attId));
         }
 
         function autoGrow() {
@@ -1006,6 +1508,7 @@
             }
             row.appendChild(b);
             msgs.appendChild(row);
+            scrollBottom();
         }
 
         function showTyping() {
@@ -1017,77 +1520,167 @@
             return row;
         }
 
-        function addAiMsg(text) {
-            const row = document.createElement('div');
-            row.className = 'msg ai';
-            const b = document.createElement('div');
-            b.className = 'bubble';
-            const p = document.createElement('p');
-            p.textContent = text;
-            b.appendChild(p);
-            row.appendChild(b);
-            msgs.appendChild(row);
-            scrollBottom();
-        }
-
         function sendCurrent() {
             const text = input.value.trim();
-            const fileNames = files.map(f => f.name);
-            if (!text && !files.length) return;
-            sendText(text, fileNames);
+            const ready = files.filter(f => f.attId);
+            if (!text && !ready.length) return;
+            sendText(text, ready.map(f => ({ id: f.attId, name: f.name })));
         }
 
-        function sendText(text, fileNames = []) {
+        async function sendText(text, attached) {
             const w = document.getElementById('welcome');
             if (w) w.remove();
-            addUserMsg(text, fileNames);
+            addUserMsg(text, attached.map(a => a.name));
 
             // 清空输入与附件
             input.value = '';
             input.style.height = 'auto';
             files = [];
             renderAttach();
+
+            busy = true;
             syncSend();
-
             const typing = showTyping();
-            const delay = 600 + Math.random() * 700;
-            setTimeout(() => {
+
+            try {
+                const resp = await fetch(`${API_BASE}/agent/chat`, {
+                    method: 'POST',
+                    headers: reqHeaders({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({
+                        message: text,
+                        conversation_id: conversationId,
+                        attachment_ids: attached.map(a => a.id),
+                        model: currentModel,
+                        stream: true
+                    })
+                });
+
+                if (!resp.ok || !resp.body) {
+                    let detail = `请求失败（${resp.status}）`;
+                    try { const e = await resp.json(); detail = e.detail || e.msg || detail; } catch (err) { /* 忽略 */ }
+                    typing.remove();
+                    addAiMsg(detail, null).classList.add('err-bubble');
+                    return;
+                }
+
+                await readStream(resp, text, typing);
+            } catch (e) {
                 typing.remove();
-                addAiMsg(answerOf(text, fileNames));
-            }, delay);
+                addAiMsg('网络异常，没能连上助手：' + (e.message || e), null).classList.add('err-bubble');
+            } finally {
+                busy = false;
+                syncSend();
+            }
         }
 
-        // ---- 占位回复（演示，等待后端） ----
-        function answerOf(q, fileNames) {
-            if (fileNames.length) {
-                return `已收到你上传的 ${fileNames.length} 份文件（${fileNames.join('、')}）。\n\n当前为前端演示版，尚未真正解析文档内容；接入 AI 后端后，我会基于文档内容为你答疑。`;
+        // 逐块解析后端 SSE：meta / reasoning / content / done / error
+        async function readStream(resp, question, typing) {
+            const reader = resp.body.getReader();
+            const decoder = new TextDecoder();
+            let buf = '';
+            let bubble = null;
+            let answer = '';
+            let errMsg = '';
+            let thinking = null;
+            let sources = null;
+
+            const handle = ev => {
+                if (ev.type === 'meta') {
+                    setConversation(ev.conversation_id);
+                    if (ev.sources && ev.sources.length) sources = ev.sources;
+                } else if (ev.type === 'reasoning') {
+                    if (!thinking && !bubble) {
+                        typing.remove();
+                        thinking = document.createElement('div');
+                        thinking.className = 'thinking';
+                        thinking.innerHTML = '深度思考中<span class="dots"><i></i><i></i><i></i></span>';
+                        const row = document.createElement('div');
+                        row.className = 'msg ai';
+                        row.innerHTML = '<div class="mini-ai"></div>';
+                        const holder = document.createElement('div');
+                        holder.appendChild(thinking);
+                        row.appendChild(holder);
+                        msgs.appendChild(row);
+                        scrollBottom();
+                    }
+                } else if (ev.type === 'content') {
+                    if (thinking) { thinking.closest('.msg').remove(); thinking = null; }
+                    if (!bubble) {
+                        typing.remove();
+                        bubble = addAiMsg('', null);
+                    }
+                    answer += ev.delta;
+                    bubble.innerHTML = renderMarkdown(answer);
+                    scrollBottom();
+                } else if (ev.type === 'done') {
+                    if (ev.conversation_id) setConversation(ev.conversation_id);
+                } else if (ev.type === 'error') {
+                    errMsg = ev.message || '生成失败';
+                }
+            };
+
+            for (;;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buf += decoder.decode(value, { stream: true });
+                let idx;
+                while ((idx = buf.indexOf('\n\n')) >= 0) {
+                    const chunk = buf.slice(0, idx);
+                    buf = buf.slice(idx + 2);
+                    for (const line of chunk.split('\n')) {
+                        if (!line.startsWith('data:')) continue;
+                        try { handle(JSON.parse(line.slice(5).trim())); } catch (e) { /* 跳过坏帧 */ }
+                    }
+                }
             }
-            const s = (q || '').toLowerCase();
-            if (/(你好|您好|hi|hello|嗨|哈喽|在吗|在么)/.test(s)) {
-                return '你好呀！我是 BioAgent，生物视界教学智能体。\n\n你可以直接问我知识点，比如“光合作用有几个阶段？”，或上传教材 / 题目文档让我帮忙解答。';
+
+            typing.remove();
+            if (thinking) { thinking.closest('.msg').remove(); }
+
+            if (errMsg) {
+                if (bubble) bubble.classList.add('err-bubble');
+                else addAiMsg(errMsg, null).classList.add('err-bubble');
+            } else if (!answer && !bubble) {
+                addAiMsg('助手没有返回内容，请重试。', null).classList.add('err-bubble');
+            } else if (bubble && sources) {
+                const src = sourcesBlock(sources);
+                if (src) { bubble.appendChild(src); scrollBottom(); }
             }
-            if (/(光合|叶绿体|光反应|暗反应|c3|c4)/.test(s)) {
-                return '关于光合作用（演示版回答）：\n\n· 场所：叶绿体\n· 阶段：光反应（类囊体薄膜）+ 暗反应/卡尔文循环（叶绿体基质）\n· 光反应产物：O₂、[H](NADPH)、ATP\n· 暗反应：CO₂ 的固定 → C₃ 还原 → C₅ 再生\n\n接入后端后我会给出更精准、结合教材图表的讲解。';
-            }
-            if (/(呼吸|有氧|无氧|线粒体)/.test(s)) {
-                return '关于细胞呼吸（演示版回答）：\n\n有氧呼吸三阶段：\n① 细胞质基质：葡萄糖 → 丙酮酸 + [H] + 少量 ATP\n② 线粒体基质：丙酮酸 + H₂O → CO₂ + [H] + 少量 ATP\n③ 线粒体内膜：[H] + O₂ → H₂O + 大量 ATP\n\n无氧呼吸：产生酒精 + CO₂（植物）或乳酸（动物/部分微生物）。';
-            }
-            if (/(基因|遗传|突变|dna|染色体|减数)/.test(s)) {
-                return '关于遗传（演示版回答）：\n\n· DNA 双螺旋、基因是有遗传效应的 DNA 片段\n· 减数分裂产生配子，受精作用恢复染色体数\n· 基因突变、基因重组、染色体变异是变异的三大来源\n\n你可以让我展开具体某一点，如“伴性遗传”。';
-            }
-            if (/(细胞|细胞器|叶绿体|内质网|高尔基|核糖体|细胞膜)/.test(s)) {
-                return '关于细胞结构（演示版回答）：\n\n· 细胞膜：控制物质进出，流动镶嵌模型\n· 细胞器分工：核糖体=蛋白质合成，内质网/高尔基体=加工分泌，线粒体=供能，叶绿体=光合\n\n想深入了解某个细胞器可以继续问我。';
-            }
-            return '这个问题我来想一想……（演示版回答）\n\n已收到你的问题：「' + (q || '') + '」\n\n目前是纯前端演示，回复由本地模板生成；待接入 AI 后端后即可给出实时、完整的解答。你也可以先试试点上方快捷问题。';
         }
 
-        // ---- 新对话 / Toast ----
+        /* ---------------- 历史会话恢复 ---------------- */
+        async function restoreConversation() {
+            if (!conversationId) return false;
+            try {
+                const r = await fetch(`${API_BASE}/agent/conversations/${conversationId}`, { headers: reqHeaders() });
+                const d = await r.json();
+                if (!d.success || !d.data.messages.length) { setConversation(null); return false; }
+                msgs.innerHTML = '';
+                d.data.messages.forEach(m => {
+                    if (m.role === 'user') {
+                        const names = (m.meta.attachments || []).map(a => a.filename);
+                        addUserMsg(m.content, names);
+                    } else {
+                        addAiMsg(m.content, m.meta.sources || []);
+                    }
+                });
+                return true;
+            } catch (e) {
+                setConversation(null);
+                return false;
+            }
+        }
+
+        /* ---------------- 新对话 / Toast ---------------- */
         document.getElementById('btnNewChat').addEventListener('click', () => {
+            if (busy) return;
+            setConversation(null);
             files = [];
             renderAttach();
             input.value = '';
-            syncSend();
+            input.style.height = 'auto';
             mountWelcome();
+            syncSend();
         });
 
         let toastTimer = null;
@@ -1095,11 +1688,18 @@
             toastEl.textContent = msg;
             toastEl.classList.add('show');
             clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+            toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
         }
 
-        mountWelcome();
-        syncSend();
+        /* ---------------- 启动 ---------------- */
+        (async function init() {
+            await resolveApiBase();
+            loadUserAvatar();          // 必须等 API_BASE 探测完，否则取不到真实头像
+            await loadModels();
+            const restored = await restoreConversation();
+            if (!restored) mountWelcome();
+            syncSend();
+        })();
     </script>
 </body>
 

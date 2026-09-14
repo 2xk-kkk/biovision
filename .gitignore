@@ -21,3 +21,6 @@ build/
 # Uploads / Outputs
 uploads/
 outputs/
+
+# 智能体知识库索引缓存（可用 POST /api/agent/kb/rebuild 重新生成）
+backend/biovision-agent/.cache/

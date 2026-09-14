@@ -55,6 +55,15 @@ app.include_router(pk.router, prefix="/api", tags=["院校PK"])
 app.include_router(model.router, prefix="/api", tags=["3D模型"])
 app.include_router(model3d_router.router, prefix="/api", tags=["3D模型"])
 
+# 智能体（BioAgent）。包目录名带连字符，与前端 frontend/biovision-agent 对应，
+# 不能用 import 语句引入，改用 importlib 按名字加载。
+import sys
+import importlib
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+_agent_router = importlib.import_module("biovision-agent.router")
+app.include_router(_agent_router.router, prefix="/api", tags=["智能体"])
+
 # 挂载 PPT 输出文件和资源文件（需要挂载两个路径，因为 HTML 内相对路径 ../assets/ 会解析到 /api/ppt/decks/assets/）
 os.makedirs(PPT_OUTPUT_DIR, exist_ok=True)
 os.makedirs(PPT_ASSET_DIR, exist_ok=True)
