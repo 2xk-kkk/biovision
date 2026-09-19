@@ -1,0 +1,22 @@
+# 版本控制与 IDE
+.git
+.gitignore
+.idea
+.vs
+.vscode
+
+# 密钥：只能运行时注入，烤进镜像会随镜像分发泄露
+**/.env
+
+# 运行期数据：这些走卷挂载，镜像里不该有
+**/*.db
+**/*.db-wal
+**/*.db-shm
+backend/uploads
+backend/PPT/outputs
+backend/biovision-agent/.cache
+runtime
+
+# Python 缓存
+**/__pycache__
+**/*.py[cod]

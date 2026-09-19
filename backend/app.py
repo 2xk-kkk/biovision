@@ -76,9 +76,6 @@ from fastapi.responses import FileResponse
 def favicon():
     return FileResponse(os.path.join(FRONTEND_DIR, "images", "logo.png"))
 
-# 前端静态文件挂载在根路径，API路由优先匹配
-app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -87,6 +84,10 @@ def health():
 @app.get("/api/stats")
 def stats():
     return get_forum_stats()
+
+# 前端静态文件挂载在根路径。必须放在最后注册：它是通配路由，
+# 会把注册在它之后的普通路由全部遮蔽（返回前端 index.html 而不是接口响应）。
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 
 if __name__ == "__main__":

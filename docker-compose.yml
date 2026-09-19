@@ -1,0 +1,28 @@
+services:
+  biovision:
+    build: .
+    image: biovision:latest
+    container_name: biovision
+    # 服务器重启、进程崩溃后自动拉起，这是「7×24」的兜底
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    # API Key 从这里读，容器外注入，不进镜像也不进 git
+    env_file:
+      - backend/PPT/.env
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      # 运行期数据一律挂在 runtime/ 下，该目录已 gitignore。
+      # 不要直接挂 backend/forum.db —— 它被 git 跟踪，服务器上 git pull 会覆盖线上数据。
+      - ./runtime/forum.db:/app/backend/forum.db
+      - ./runtime/uploads:/app/backend/uploads
+      - ./runtime/ppt-outputs:/app/backend/PPT/outputs
+      - ./runtime/agent-cache:/app/backend/biovision-agent/.cache
+    healthcheck:
+      # slim 镜像里没有 curl，用 python 自带的 urllib 探活
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

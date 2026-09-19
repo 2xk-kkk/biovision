@@ -24,3 +24,7 @@ outputs/
 
 # 智能体知识库索引缓存（可用 POST /api/agent/kb/rebuild 重新生成）
 backend/biovision-agent/.cache/
+
+# 部署运行期数据实盘（数据库 / 上传 / PPT 产物），由 docker-compose 挂载。
+# 必须忽略：否则服务器上 git pull 会覆盖线上的真实数据。
+runtime/
