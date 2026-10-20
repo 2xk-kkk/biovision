@@ -29,7 +29,7 @@ from database.db import get_db_connection
 # 标点 / 选项标记正则
 OPTION_LABEL_RE = re.compile(r'[A-D][.、．]\s*')
 HTML_TAG_RE = re.compile(r'<[^>]+>')
-PUNCTUATION_RE = re.compile(r'[，。！？、；：""''（）【】《》…—·（）\s]+')
+PUNCTUATION_RE = re.compile(r'[，。！？、；：“”‘’（）【】《》…—·\s]+')
 MULTI_SPACE_RE = re.compile(r'\s{2,}')
 
 # 匹配阈值
