@@ -79,6 +79,9 @@
   .map-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
   @media(max-width:860px){.map-layout{grid-template-columns:1fr}}
   .map-svg{width:100%;height:auto;display:block}
+  .body-img-wrap{position:relative;max-width:560px;margin:0 auto}
+  .body-img-wrap img{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line);box-shadow:0 6px 18px rgba(15,118,110,.08)}
+  .body-overlay{position:absolute;left:0;top:0;width:100%;height:100%}
   .gland-dot{cursor:pointer}
   .gland-dot .core{transition:.2s}
   .gland-dot:hover .core{transform:scale(1.25);transform-origin:center}
@@ -290,7 +293,12 @@
       <p class="sec-sub">点击图中闪烁的腺体标记，查看它分泌的激素与作用。</p>
       <div class="map-layout">
         <div>
-          <svg class="map-svg" id="bodyMap" viewBox="0 0 640 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="人体内分泌腺示意图"></svg>
+          <div class="body-img-wrap">
+            
+            <img src="../../uploads/endocrine_body.png" alt="人体主要内分泌腺示意图">
+
+            <svg class="body-overlay" id="bodyMap" viewBox="0 0 1082 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="人体内分泌腺示意图"></svg>
+          </div>
         </div>
         <div class="detail-panel card" id="detailPanel" style="box-shadow:none;border:1px solid var(--line)">
           <div class="detail-head">
@@ -457,45 +465,52 @@ const GLAND_COLORS = {
 const glands = [
   {
     id:"hypothalamus", name:"下丘脑", color:"#f59e0b", role:"调节枢纽",
-    cx:320, cy:58, labelSide:"left",
+    cx:461, cy:66, chip:{x:615, y:2},
     hormones:["促甲状腺激素释放激素(TRH)","促性腺激素释放激素(GnRH)","促肾上腺皮质激素释放激素(CRH)"],
     func:"分泌多种释放激素，作用于垂体，调控垂体分泌相应激素。是联系神经调节与激素调节的枢纽。",
     tip:"口诀：下丘脑是总调度，先把指令传给垂体。"
   },
   {
     id:"pituitary", name:"垂体", color:"#8b5cf6", role:"总开关",
-    cx:320, cy:86, labelSide:"left",
+    cx:463, cy:106, chip:{x:692, y:157},
     hormones:["生长激素(GH)","促甲状腺激素(TSH)","促性腺激素","促肾上腺皮质激素(ACTH)"],
     func:"接受下丘脑调节，分泌多种促激素调节相应内分泌腺；分泌生长激素调节生长发育。",
     tip:"口诀：垂体承上又启下，生长激素从这里来。"
   },
   {
     id:"thyroid", name:"甲状腺", color:"#ef4444", role:"代谢与发育",
-    cx:320, cy:142, labelSide:"right",
+    cx:477, cy:215, chip:{x:730, y:351},
     hormones:["甲状腺激素"],
     func:"调节体内有机物代谢、促进生长和发育、提高神经的兴奋性。",
     tip:"口诀：甲状腺管代谢；幼年缺乏会得呆小症，成年缺乏会反应迟钝。"
   },
   {
     id:"adrenal", name:"肾上腺", color:"#f97316", role:"应激与水盐",
-    cx:320, cy:226, labelSide:"left",
+    cx:520, cy:453, dots:[[443,455],[520,453]], chip:{x:730, y:490}, leader:true,
     hormones:["醛固酮、皮质醇(皮质)","肾上腺素(髓质)"],
     func:"皮质分泌醛固酮、皮质醇，调节水盐代谢和有机物代谢；髓质分泌肾上腺素，提高机体应激能力。",
     tip:"口诀：肾上腺应应激——遇到危险时肾上腺素让你心跳加速、反应敏捷。"
   },
   {
-    id:"pancreas", name:"胰岛", color:"#10b981", role:"血糖调节",
-    cx:320, cy:272, labelSide:"right",
+    id:"pancreas", name:"胰腺", color:"#10b981", role:"血糖调节",
+    cx:498, cy:473, chip:{x:66, y:157},
     hormones:["胰岛素(胰岛B细胞)","胰高血糖素(胰岛A细胞)"],
-    func:"胰岛B细胞分泌胰岛素降低血糖，胰岛A细胞分泌胰高血糖素升高血糖，二者共同维持血糖平衡。",
+    func:"胰腺中的胰岛B细胞分泌胰岛素降低血糖，胰岛A细胞分泌胰高血糖素升高血糖，二者共同维持血糖平衡。",
     tip:"口诀：胰岛把糖控——B降A升，记住『B降糖』。"
   },
   {
-    id:"gonad", name:"性腺", color:"#ec4899", role:"生殖与第二性征",
-    cx:320, cy:336, labelSide:"right",
-    hormones:["雌激素、孕激素(卵巢)","雄激素·睾酮(睾丸)"],
-    func:"卵巢分泌雌激素和孕激素，睾丸分泌雄激素(睾酮)，促进生殖器官发育、生殖细胞生成和第二性征出现。",
-    tip:"口诀：性腺管生殖——卵巢产雌激素，睾丸产雄激素。"
+    id:"ovary", name:"卵巢", color:"#ec4899", role:"女性性腺",
+    cx:420, cy:605, dots:[[420,605],[542,603]], chip:{x:66, y:468},
+    hormones:["雌激素","孕激素"],
+    func:"卵巢分泌雌激素和孕激素，促进女性生殖器官的发育、卵细胞的生成和女性第二性征的出现。",
+    tip:"口诀：性腺管生殖——卵巢分泌雌激素和孕激素。"
+  },
+  {
+    id:"testis", name:"睾丸", color:"#3b82f6", role:"男性性腺",
+    cx:406, cy:802, chip:{x:68, y:782},
+    hormones:["雄激素(睾酮)"],
+    func:"睾丸分泌雄激素（主要是睾酮），促进男性生殖器官的发育、精子的生成和男性第二性征的出现。",
+    tip:"口诀：性腺管生殖——睾丸分泌雄激素。"
   }
 ];
 
@@ -503,53 +518,29 @@ const glands = [
 const bodySvg = document.getElementById("bodyMap");
 
 function drawBody(){
-  let s = `<defs>
-    <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e2f0ee"/><stop offset="1" stop-color="#cde3e0"/>
-    </linearGradient>
-  </defs>`;
+  let s = "";
 
-  // 人体轮廓
-  s += `<g fill="url(#bodyGrad)" stroke="#a7c8c3" stroke-width="2">
-    <ellipse cx="320" cy="72" rx="42" ry="48"/>
-    <path d="M320 118 L320 132"/>
-    <rect x="300" y="122" width="40" height="20" rx="10" fill="url(#bodyGrad)"/>
-    <path d="M320 142 C 258 150 244 200 246 250 C 246 300 268 360 282 392 L 292 500 L 306 500 L 316 420 L 324 500 L 338 500 L 348 392 C 362 360 394 300 394 250 C 396 200 382 150 320 142 Z"/>
-    <path d="M246 250 C 220 300 214 360 210 400 L 224 400 C 228 360 236 306 260 262 Z" stroke="#a7c8c3"/>
-    <path d="M394 250 C 420 300 426 360 430 400 L 416 400 C 412 360 404 306 380 262 Z" stroke="#a7c8c3"/>
-    <path d="M292 500 C 290 528 288 548 284 560 L 300 560 C 303 548 306 528 308 500 Z"/>
-    <path d="M338 500 C 340 528 342 548 346 560 L 330 560 C 327 548 324 528 322 500 Z"/>
-  </g>`;
-
-  // 腺体标记点
+  // 腺体标记点（支持一个腺体多个标记，如双侧肾上腺、卵巢）
   glands.forEach(g=>{
     const c = g.color;
-    s += `<g class="gland-dot" data-id="${g.id}" transform="translate(${g.cx},${g.cy})">
-      <circle class="ring" r="16" fill="none" stroke="${c}" stroke-width="2.5"/>
-      <circle class="core" r="9" fill="${c}" stroke="#fff" stroke-width="2"/>
-    </g>`;
+    (g.dots || [[g.cx, g.cy]]).forEach(([px, py])=>{
+      s += `<g class="gland-dot" data-id="${g.id}" transform="translate(${px},${py})">
+        <circle class="ring" r="27" fill="none" stroke="${c}" stroke-width="4"/>
+        <circle class="core" r="15" fill="${c}" stroke="#fff" stroke-width="3.5"/>
+      </g>`;
+    });
   });
 
-  // 标签 + 引导线
+  // 标签（覆盖图片上的文字标注；肾上腺图中无文字标注，补一条引线）
   glands.forEach(g=>{
-    const left = g.labelSide === "left";
-    const lx = left ? 118 : 522;
-    const ty = g.cy;
-    const dotX = g.cx;
-    const dx = left ? -1 : 1;
+    const {x, y} = g.chip;
     s += `<g class="gland-label" data-id="${g.id}">
-      <line x1="${dotX + dx*11}" y1="${ty}" x2="${lx - dx*14}" y2="${ty}" stroke="${g.color}" stroke-width="1.4" stroke-dasharray="3 3"/>
-      <rect class="chip" x="${left ? lx-110 : lx}" y="${ty-15}" width="110" height="30" rx="15" fill="#fff" stroke="${g.color}" stroke-width="1.5"/>
-      <circle cx="${left ? lx-94 : lx+16}" cy="${ty}" r="6" fill="${g.color}"/>
-      <text x="${left ? lx-82 : lx+28}" y="${ty+5}" text-anchor="start">${g.name}</text>
+      ${g.leader ? `<line x1="${x}" y1="${y+25}" x2="${g.cx+20}" y2="${g.cy}" stroke="${g.color}" stroke-width="2.4" stroke-dasharray="6 5"/>` : ""}
+      <rect class="chip" x="${x}" y="${y}" width="186" height="51" rx="25" fill="#ffffff" stroke="${g.color}" stroke-width="2.5"/>
+      <circle cx="${x+28}" cy="${y+25}" r="10" fill="${g.color}"/>
+      <text x="${x+48}" y="${y+34}" font-size="26" font-weight="700" fill="#334155">${g.name}</text>
     </g>`;
   });
-
-  // 图内说明文字（性腺标注两个）
-  s += `<g font-size="11" fill="#64748b">
-    <text x="282" y="238" text-anchor="end">左肾上腺</text>
-    <text x="358" y="238">右肾上腺</text>
-  </g>`;
 
   bodySvg.innerHTML = s;
 
@@ -577,7 +568,7 @@ function selectGland(id){
   // 高亮对应标记
   document.querySelectorAll("#bodyMap .gland-dot").forEach(el=>{
     const on = el.dataset.id===id;
-    el.querySelector(".core").setAttribute("r", on ? 12 : 9);
+    el.querySelector(".core").setAttribute("r", on ? 19 : 15);
     el.style.opacity = on ? 1 : .45;
   });
   document.querySelectorAll("#bodyMap .gland-label").forEach(el=>{
