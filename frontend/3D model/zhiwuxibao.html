@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -4080,5 +4080,26 @@ No matching component was found for:
   <body>
     <div id="root"></div>
 
-  </body>
+  <style id="_inject_hide_ui">
+  .topbar, .left-rail, .right-rail { display: none !important; }
+  .app-shell, .app-grid { display: block !important; width: 100vw !important; height: 100vh !important; padding: 0 !important; margin: 0 !important; }
+  .stage-column, .stage-panel { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; padding: 0 !important; margin: 0 !important; }
+  .stage-toolbar, .stage-title { display: none !important; }
+  .canvas-wrap { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; }
+  .canvas-wrap canvas { width: 100% !important; height: 100% !important; position: fixed !important; inset: 0 !important; }
+  .panel, .modal-layer, .toast, .bottom-grid, .fun-fact { display: none !important; }
+  .mastery-meter, .avatar-button, .language-switch, .view-card, .compare-row, .comparison-columns, .comparison-modal, .organelle-list, .organelle-orb { display: none !important; }
+</style>
+<script id="_inject_force_hide">
+(function(){
+  var css = document.getElementById('_inject_hide_ui');
+  if(!css){ css=document.createElement('style'); css.id='_inject_hide_ui'; document.head.appendChild(css); }
+  css.textContent = '.topbar,.left-rail,.right-rail,.stage-toolbar,.stage-title,.panel,.modal-layer,.toast,.bottom-grid,.fun-fact,.mastery-meter,.avatar-button,.language-switch,.view-card,.compare-row,.comparison-columns,.comparison-modal,.organelle-list,.organelle-orb{display:none!important}.app-shell,.app-grid{display:block!important;width:100vw!important;height:100vh!important;padding:0!important;margin:0!important}.stage-column,.stage-panel{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;padding:0!important;margin:0!important}.canvas-wrap{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important}.canvas-wrap canvas{width:100%!important;height:100%!important;position:fixed!important;inset:0!important}';
+  function apply(){ var els = document.querySelectorAll('.topbar,.left-rail,.right-rail,.stage-toolbar,.stage-title,.panel,.modal-layer,.toast,.bottom-grid,.fun-fact,.mastery-meter,.avatar-button,.language-switch,.view-card,.compare-row,.comparison-columns,.comparison-modal,.organelle-list,.organelle-orb'); for(var i=0;i<els.length;i++){ els[i].style.display='none'; } var cw = document.querySelector('.canvas-wrap'); if(cw){ cw.style.cssText='position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important'; var cvs = cw.querySelectorAll('canvas'); for(var j=0;j<cvs.length;j++){ cvs[j].style.cssText='width:100%!important;height:100%!important;position:fixed!important;inset:0!important'; } } }
+  var mo = new MutationObserver(function(){ apply(); });
+  mo.observe(document.documentElement, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
+  setInterval(apply, 1000);
+})();
+<\/script>
+</body>
 </html>
