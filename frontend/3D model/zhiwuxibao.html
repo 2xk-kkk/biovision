@@ -4087,8 +4087,14 @@ No matching component was found for:
 .stage-title{display:none!important}
 .compare-panel{display:none!important}
 .learning-panel{display:none!important}
-.app-shell{padding:0!important;max-width:none!important;width:100%!important}
-.app-grid{grid-template-columns:220px minmax(0,1fr) minmax(280px,320px)!important;gap:12px!important;max-width:none!important;margin:0!important;width:100%!important}
-.left-rail{width:220px!important;min-width:0!important}
-.organelle-panel{margin:0!important}
+.app-shell{padding:0!important;max-width:none!important;width:100%!important;overflow-x:hidden!important}
+.app-grid{display:grid!important;grid-template-columns:220px minmax(0,1fr) 320px!important;grid-template-rows:auto 1fr!important;column-gap:12px!important;row-gap:0!important;align-items:start!important;max-width:none!important;margin:0!important;width:100%!important;position:relative!important}
+.left-rail{grid-column:1!important;grid-row:1!important;width:220px!important;min-width:0!important;display:flex!important;flex-direction:column!important;gap:0!important;align-self:start!important}
+.bottom-grid{grid-column:1!important;grid-row:2!important;align-self:start!important;display:flex!important;flex-direction:column!important;gap:0!important;width:100%!important;margin:0!important;padding:0!important}
+.right-rail{grid-column:3!important;grid-row:1!important;align-self:start!important}
+.stage-panel{position:absolute!important;left:232px!important;right:332px!important;top:0!important;height:100vh!important;min-height:0!important;padding:0!important;overflow:hidden!important}
+.canvas-wrap{inset:0!important}
+.micro-card-row{display:flex!important;flex-direction:column!important;gap:6px!important}
+.micro-card{display:flex!important;align-items:center!important;gap:8px!important;height:48px!important;min-height:0!important;padding:6px 8px!important}
+.add-card{display:none!important}
 </style>
